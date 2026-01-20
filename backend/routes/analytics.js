@@ -65,7 +65,7 @@ router.post('/track', async (req, res) => {
 
         // S'assurer que la ligne analytics existe
         await pool.query(
-            'INSERT INTO article_analytics (article_id, created_at) VALUES ($1, NOW()) ON CONFLICT (article_id) DO NOTHING',
+            'INSERT INTO article_analytics (article_id) VALUES ($1) ON CONFLICT (article_id) DO NOTHING',
             [article_id]
         );
 

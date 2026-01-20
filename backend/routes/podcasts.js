@@ -32,7 +32,7 @@ const podcastSchema = Joi.object({
 
   author_id: Joi.number().integer().optional(),
 
-  cover_image_url: Joi.string().uri().allow('').optional()
+  cover_image: Joi.string().uri().allow('').optional()
 });
 
 // ==========================================
@@ -48,7 +48,7 @@ router.get('/', async (req, res) => {
         p.title,
         p.description,
         p.audio_url,
-        p.cover_image_url,
+        p.cover_image,
         p.duration_seconds,
         p.category,
         p.status,
@@ -137,7 +137,7 @@ router.post('/', isWriter, cpUpload, async (req, res) => {
       });
     }
 
-    const { title, description, category, author_id, cover_image_url } = value;
+    const { title, description, category, author_id, cover_image } = value;
 
     // Validation Audio (Obligatoire)
     if (!req.files || !req.files['audio_file']) {
@@ -148,7 +148,7 @@ router.post('/', isWriter, cpUpload, async (req, res) => {
     }
 
     let audioUrl = '';
-    let finalImageUrl = cover_image_url || '';
+    let finalImageUrl = cover_image || '';
     let duration = 0;
 
     // 1. Upload Audio vers Cloudinary
@@ -194,7 +194,7 @@ router.post('/', isWriter, cpUpload, async (req, res) => {
         title, 
         description, 
         audio_url, 
-        cover_image_url, 
+        cover_image, 
         duration_seconds, 
         category, 
         author_id, 
@@ -252,10 +252,10 @@ router.put('/:id', isWriter, cpUpload, async (req, res) => {
       });
     }
 
-    const { title, description, category, cover_image_url } = value;
+    const { title, description, category, cover_image } = value;
 
     // Vérifier que le podcast existe
-    const checkQuery = 'SELECT id, audio_url, cover_image_url FROM podcasts WHERE id = $1';
+    const checkQuery = 'SELECT id, audio_url, cover_image FROM podcasts WHERE id = $1';
     const checkResult = await pool.query(checkQuery, [id]);
 
     if (checkResult.rows.length === 0) {
@@ -266,7 +266,7 @@ router.put('/:id', isWriter, cpUpload, async (req, res) => {
     }
 
     let audioUrl = checkResult.rows[0].audio_url;
-    let finalImageUrl = checkResult.rows[0].cover_image_url;
+    let finalImageUrl = checkResult.rows[0].cover_image;
     let duration = 0;
 
     // Nouvel audio ?
@@ -297,8 +297,8 @@ router.put('/:id', isWriter, cpUpload, async (req, res) => {
       } catch (e) {
         console.error("❌ Erreur Upload Image:", e);
       }
-    } else if (cover_image_url) {
-      finalImageUrl = cover_image_url;
+    } else if (cover_image) {
+      finalImageUrl = cover_image;
     }
 
     // Mise à jour
@@ -308,7 +308,7 @@ router.put('/:id', isWriter, cpUpload, async (req, res) => {
       // Si nouvel audio, on met à jour duration aussi
       query = `
         UPDATE podcasts 
-        SET title=$1, description=$2, audio_url=$3, cover_image_url=$4, duration_seconds=$5, category=$6, updated_at=NOW()
+        SET title=$1, description=$2, audio_url=$3, cover_image=$4, duration_seconds=$5, category=$6, updated_at=NOW()
         WHERE id=$7 
         RETURNING id, title
       `;
@@ -317,7 +317,7 @@ router.put('/:id', isWriter, cpUpload, async (req, res) => {
       // Sinon on garde la durée existante
       query = `
         UPDATE podcasts 
-        SET title=$1, description=$2, cover_image_url=$3, category=$4, updated_at=NOW()
+        SET title=$1, description=$2, cover_image=$3, category=$4, updated_at=NOW()
         WHERE id=$5 
         RETURNING id, title
       `;
@@ -382,7 +382,7 @@ router.get('/category/:category', async (req, res) => {
         p.title,
         p.description,
         p.audio_url,
-        p.cover_image_url,
+        p.cover_image,
         p.duration_seconds,
         p.category,
         p.is_premium,

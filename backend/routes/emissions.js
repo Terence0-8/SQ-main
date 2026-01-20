@@ -38,7 +38,7 @@ const emissionSchema = Joi.object({
 
   category: Joi.string().max(100).allow('').optional(),
 
-  author_id: Joi.number().integer().optional(),
+  host_id: Joi.number().integer().optional(),
 
   thumbnail_url: Joi.string().uri().allow('').optional()
 });
@@ -82,7 +82,7 @@ router.get('/', async (req, res) => {
         e.created_at,
         u.username as author_name
       FROM emissions e
-      LEFT JOIN users u ON e.author_id = u.id
+      LEFT JOIN users u ON e.host_id = u.id
       WHERE e.status = 'published'
     `;
 
@@ -119,7 +119,7 @@ router.get('/:id', async (req, res) => {
         e.*,
         u.username as author_name
       FROM emissions e
-      LEFT JOIN users u ON e.author_id = u.id
+      LEFT JOIN users u ON e.host_id = u.id
       WHERE e.id = $1
     `;
 
@@ -157,7 +157,7 @@ router.post('/', isWriter, upload.single('image_file'), async (req, res) => {
       });
     }
 
-    const { title, description, video_url, duration_seconds, category, author_id, thumbnail_url } = value;
+    const { title, description, video_url, duration_seconds, category, host_id, thumbnail_url } = value;
 
     let finalThumbnailUrl = thumbnail_url || '';
 
@@ -196,7 +196,7 @@ router.post('/', isWriter, upload.single('image_file'), async (req, res) => {
         thumbnail_url, 
         duration_seconds, 
         category, 
-        author_id, 
+        host_id, 
         status, 
         is_premium,
         created_at, 
@@ -213,7 +213,7 @@ router.post('/', isWriter, upload.single('image_file'), async (req, res) => {
       finalThumbnailUrl,
       duration_seconds || 0,
       category || 'Politique',
-      author_id || req.session.user.id
+      host_id || req.session.user.id
     ];
 
     const { rows } = await pool.query(query, values);
@@ -371,7 +371,7 @@ router.get('/category/:category', async (req, res) => {
         e.created_at,
         u.username as author_name
       FROM emissions e
-      LEFT JOIN users u ON e.author_id = u.id
+      LEFT JOIN users u ON e.host_id = u.id
       WHERE e.status = 'published' AND e.category = $1
       ORDER BY e.created_at DESC
       LIMIT 20
