@@ -12,31 +12,42 @@ const isAuthenticated = (req, res, next) => {
 };
 
 // POST /api/subscriptions/upgrade
+// POST /api/subscriptions/upgrade
 router.post('/upgrade', isAuthenticated, async (req, res) => {
   console.log("🔔 Demande d'abonnement reçue pour :", req.session.user.email);
-  
+
   try {
     const userId = req.session.user.id;
-    const { plan } = req.body; 
-    const duration = plan === 'yearly' ? '1 year' : '1 month';
+    const { plan } = req.body;
 
-    // 1. Mise à jour SQL
+    // ✅ Validation stricte du plan
+    if (!['monthly', 'yearly'].includes(plan)) {
+      return res.status(400).json({
+        success: false,
+        error: "Plan invalide. Choix: 'monthly' ou 'yearly'"
+      });
+    }
+
+    // ✅ Durée sécurisée (pas d'injection possible)
+    const intervalValue = plan === 'yearly' ? 1 : 1;
+    const intervalUnit = plan === 'yearly' ? 'year' : 'month';
+
+    // ✅ Requête SQL avec paramètres sécurisés
     await pool.query(`
       UPDATE users 
       SET role = 'subscriber', 
           is_subscriber = TRUE,
           subscription_start_date = NOW(),
-          subscription_end_date = NOW() + INTERVAL '${duration}'
+          subscription_end_date = NOW() + ($2 || ' ' || $3)::INTERVAL
       WHERE id = $1
-    `, [userId]);
+    `, [userId, intervalValue, intervalUnit]);
 
     console.log("✅ SQL mis à jour pour l'utilisateur ID :", userId);
 
-    // 2. Mise à jour Session (Sans callback bloquant cette fois)
+    // Mise à jour Session
     req.session.user.role = 'subscriber';
     req.session.user.is_subscriber = true;
 
-    // 3. Réponse immédiate
     res.json({ success: true, message: "Bienvenue au club !" });
 
   } catch (err) {
@@ -45,15 +56,16 @@ router.post('/upgrade', isAuthenticated, async (req, res) => {
   }
 });
 
+
 // POST /api/subscriptions/cancel
 router.post('/cancel', isAuthenticated, async (req, res) => {
   try {
     const userId = req.session.user.id;
     await pool.query("UPDATE users SET role = 'reader', is_subscriber = FALSE WHERE id = $1", [userId]);
-    
+
     req.session.user.role = 'reader';
     req.session.user.is_subscriber = false;
-    
+
     res.json({ success: true, message: "Abonnement résilié." });
   } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
