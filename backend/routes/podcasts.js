@@ -4,8 +4,9 @@ const pool = require('../config/database');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
+const Joi = require('joi');
+const { isWriter } = require('../middleware/auth');
 
-// Configuration Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -14,149 +15,399 @@ cloudinary.config({
 
 const upload = multer({ dest: 'uploads/' });
 
-// GET /api/podcasts
-// Récupérer la liste
-router.get('/', async (req, res) => {
-  try {
-    const query = `
-      SELECT p.*, u.first_name || ' ' || u.last_name as author_name 
-      FROM podcasts p LEFT JOIN users u ON p.author_id = u.id
-      WHERE p.status = 'published' ORDER BY p.created_at DESC
-    `;
-    const { rows } = await pool.query(query);
-    res.json({ success: true, data: rows });
-  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+// ==========================================
+// VALIDATION SCHEMA
+// ==========================================
+const podcastSchema = Joi.object({
+  title: Joi.string().min(5).max(255).required()
+    .messages({
+      'string.min': 'Le titre doit contenir au moins 5 caractères',
+      'string.max': 'Le titre ne doit pas dépasser 255 caractères',
+      'any.required': 'Le titre est requis'
+    }),
+
+  description: Joi.string().allow('').optional(),
+
+  category: Joi.string().max(100).allow('').optional(),
+
+  author_id: Joi.number().integer().optional(),
+
+  cover_image_url: Joi.string().uri().allow('').optional()
 });
 
-// GET /api/podcasts/:id
-// Récupérer un épisode spécifique
+// ==========================================
+// 1. LISTE DES PODCASTS PUBLIÉS
+// ==========================================
+router.get('/', async (req, res) => {
+  try {
+    const { category } = req.query;
+
+    let query = `
+      SELECT 
+        p.id,
+        p.title,
+        p.description,
+        p.audio_url,
+        p.cover_image_url,
+        p.duration_seconds,
+        p.category,
+        p.status,
+        p.is_premium,
+        p.play_count,
+        p.created_at,
+        u.username as author_name
+      FROM podcasts p
+      LEFT JOIN users u ON p.author_id = u.id
+      WHERE p.status = 'published'
+    `;
+
+    const params = [];
+
+    if (category) {
+      params.push(category);
+      query += ` AND p.category = $1`;
+    }
+
+    query += ` ORDER BY p.created_at DESC LIMIT 50`;
+
+    const { rows } = await pool.query(query, params);
+    res.json({ success: true, count: rows.length, data: rows });
+  } catch (err) {
+    console.error('❌ Erreur liste podcasts:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
+// ==========================================
+// 2. DÉTAIL D'UN PODCAST
+// ==========================================
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const query = `SELECT * FROM podcasts WHERE id = $1`;
+
+    if (isNaN(id)) {
+      return res.status(400).json({ success: false, error: 'ID invalide' });
+    }
+
+    const query = `
+      SELECT 
+        p.*,
+        u.username as author_name
+      FROM podcasts p
+      LEFT JOIN users u ON p.author_id = u.id
+      WHERE p.id = $1
+    `;
+
     const { rows } = await pool.query(query, [id]);
-    if (rows.length === 0) return res.status(404).json({ success: false, error: 'Introuvable' });
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Podcast introuvable'
+      });
+    }
+
+    // Incrémenter le compteur de lectures
+    await pool.query('UPDATE podcasts SET play_count = play_count + 1 WHERE id = $1', [id]);
+
     res.json({ success: true, podcast: rows[0] });
-  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+  } catch (err) {
+    console.error('❌ Erreur détail podcast:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
 });
 
-// POST /api/podcasts
-// Créer un podcast (Audio + Image Fichier OU Image URL)
-const cpUpload = upload.fields([{ name: 'audio_file', maxCount: 1 }, { name: 'image_file', maxCount: 1 }]);
+// ==========================================
+// 3. CRÉER UN PODCAST (Admin/Writer)
+// ==========================================
+const cpUpload = upload.fields([
+  { name: 'audio_file', maxCount: 1 },
+  { name: 'image_file', maxCount: 1 }
+]);
 
-router.post('/', cpUpload, async (req, res) => {
+router.post('/', isWriter, cpUpload, async (req, res) => {
   try {
-    // On récupère aussi 'image_url' du formulaire
-    const { title, description, category, author_id, transcript, image_url } = req.body;
-    
+    // Validation
+    const { error, value } = podcastSchema.validate(req.body);
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        error: error.details[0].message
+      });
+    }
+
+    const { title, description, category, author_id, cover_image_url } = value;
+
     // Validation Audio (Obligatoire)
-    if (!req.files['audio_file']) {
-      return res.status(400).json({ success: false, error: 'Fichier audio requis.' });
+    if (!req.files || !req.files['audio_file']) {
+      return res.status(400).json({
+        success: false,
+        error: 'Fichier audio requis'
+      });
     }
 
     let audioUrl = '';
-    let finalImageUrl = image_url; // On commence avec l'URL fournie (ou vide)
+    let finalImageUrl = cover_image_url || '';
     let duration = 0;
 
-    // 1. Upload Audio (Cloudinary)
+    // 1. Upload Audio vers Cloudinary
     const audioFile = req.files['audio_file'][0];
     try {
-      const audioRes = await cloudinary.uploader.upload(audioFile.path, { 
-        resource_type: "video", 
-        folder: "solitiquo_podcasts" 
+      const audioRes = await cloudinary.uploader.upload(audioFile.path, {
+        resource_type: "video",
+        folder: "solitiquo_podcasts"
       });
       audioUrl = audioRes.secure_url;
-      duration = Math.round(audioRes.duration);
-      fs.unlinkSync(audioFile.path); // Nettoyage
+      duration = Math.round(audioRes.duration || 0);
+      fs.unlinkSync(audioFile.path);
     } catch (e) {
-      console.error("Erreur Upload Audio:", e);
-      return res.status(500).json({ success: false, error: "Échec upload audio" });
+      console.error("❌ Erreur Upload Audio:", e);
+      return res.status(500).json({
+        success: false,
+        error: "Échec de l'upload audio"
+      });
     }
 
-    // 2. Gestion Image (Fichier > URL > Défaut)
+    // 2. Gestion Image (Fichier prioritaire > URL > Défaut)
     if (req.files['image_file']) {
-      // Cas A : Fichier uploadé (Prioritaire)
       const imgFile = req.files['image_file'][0];
       try {
-        const imgRes = await cloudinary.uploader.upload(imgFile.path, { folder: "solitiquo_covers" });
+        const imgRes = await cloudinary.uploader.upload(imgFile.path, {
+          folder: "solitiquo_covers"
+        });
         finalImageUrl = imgRes.secure_url;
         fs.unlinkSync(imgFile.path);
-      } catch (e) { console.error("Erreur Upload Image:", e); }
-    } 
-    
-    // Si à la fin on n'a toujours rien (ni fichier, ni URL valide), on met l'image par défaut
+      } catch (e) {
+        console.error("❌ Erreur Upload Image:", e);
+      }
+    }
+
+    // Image par défaut si rien fourni
     if (!finalImageUrl) {
       finalImageUrl = 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=500&q=80';
     }
 
-    // 3. Enregistrement en Base
-    const slug = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
-
+    // 3. Insertion en base
     const query = `
-      INSERT INTO podcasts (title, slug, description, transcript, audio_url, image_url, duration, category, author_id, status, created_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'published', NOW())
-      RETURNING id
+      INSERT INTO podcasts (
+        title, 
+        description, 
+        audio_url, 
+        cover_image_url, 
+        duration_seconds, 
+        category, 
+        author_id, 
+        status, 
+        is_premium,
+        created_at, 
+        updated_at
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, 'published', FALSE, NOW(), NOW())
+      RETURNING id, title
     `;
-    
-    const { rows } = await pool.query(query, [
-      title, 
-      slug, 
-      description, 
-      transcript || '', 
-      audioUrl, 
-      finalImageUrl, 
-      duration, 
-      category || 'Politique', 
-      author_id || 1
-    ]);
-    
-    res.json({ success: true, podcast: rows[0] });
+
+    const values = [
+      title,
+      description || '',
+      audioUrl,
+      finalImageUrl,
+      duration,
+      category || 'Général',
+      author_id || req.session.user.id
+    ];
+
+    const { rows } = await pool.query(query, values);
+
+    res.json({
+      success: true,
+      message: 'Podcast créé',
+      podcast: rows[0]
+    });
 
   } catch (err) {
-    console.error("Erreur Serveur Podcast:", err);
-    res.status(500).json({ success: false, error: err.message });
+    console.error("❌ Erreur création podcast:", err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 });
 
-// RÉCUPÉRER LE PODCAST À LA UNE (Par page)
-router.get('/featured/:page', async (req, res) => {
-    try {
-        const { page } = req.params;
-        let query = "";
-        let params = [];
+// ==========================================
+// 4. METTRE À JOUR UN PODCAST (Admin/Writer)
+// ==========================================
+router.put('/:id', isWriter, cpUpload, async (req, res) => {
+  try {
+    const { id } = req.params;
 
-        if (page === 'index') {
-            // INDEX : Toujours le dernier podcast publié (toutes catégories)
-            query = "SELECT * FROM podcasts WHERE is_hidden = FALSE ORDER BY created_at DESC LIMIT 1";
-        } 
-        else if (page === 'politique') {
-            // POLITIQUE : Celui tagué 'politique', sinon le dernier de la catégorie Politique
-            query = `
-                SELECT * FROM podcasts 
-                WHERE featured_scope = 'politique' 
-                OR (featured_scope IS NULL AND category = 'Politique')
-                ORDER BY featured_scope NULLS LAST, created_at DESC LIMIT 1
-            `;
-        } 
-        else if (page === 'social') {
-            // SOCIAL : Celui tagué 'social', sinon le dernier de la catégorie Social
-            query = `
-                SELECT * FROM podcasts 
-                WHERE featured_scope = 'social' 
-                OR (featured_scope IS NULL AND category = 'Social')
-                ORDER BY featured_scope NULLS LAST, created_at DESC LIMIT 1
-            `;
-        } else {
-            return res.json({ success: false, message: "Page inconnue" });
-        }
+    if (isNaN(id)) {
+      return res.status(400).json({ success: false, error: 'ID invalide' });
+    }
 
-        const result = await pool.query(query);
-        if (result.rows.length > 0) {
-            res.json({ success: true, data: result.rows[0] });
-        } else {
-            res.json({ success: false, message: "Aucun podcast trouvé" });
-        }
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    // Validation
+    const { error, value } = podcastSchema.validate(req.body);
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        error: error.details[0].message
+      });
+    }
+
+    const { title, description, category, cover_image_url } = value;
+
+    // Vérifier que le podcast existe
+    const checkQuery = 'SELECT id, audio_url, cover_image_url FROM podcasts WHERE id = $1';
+    const checkResult = await pool.query(checkQuery, [id]);
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Podcast introuvable'
+      });
+    }
+
+    let audioUrl = checkResult.rows[0].audio_url;
+    let finalImageUrl = checkResult.rows[0].cover_image_url;
+    let duration = 0;
+
+    // Nouvel audio ?
+    if (req.files && req.files['audio_file']) {
+      const audioFile = req.files['audio_file'][0];
+      try {
+        const audioRes = await cloudinary.uploader.upload(audioFile.path, {
+          resource_type: "video",
+          folder: "solitiquo_podcasts"
+        });
+        audioUrl = audioRes.secure_url;
+        duration = Math.round(audioRes.duration || 0);
+        fs.unlinkSync(audioFile.path);
+      } catch (e) {
+        console.error("❌ Erreur Upload Audio:", e);
+      }
+    }
+
+    // Nouvelle image ?
+    if (req.files && req.files['image_file']) {
+      const imgFile = req.files['image_file'][0];
+      try {
+        const imgRes = await cloudinary.uploader.upload(imgFile.path, {
+          folder: "solitiquo_covers"
+        });
+        finalImageUrl = imgRes.secure_url;
+        fs.unlinkSync(imgFile.path);
+      } catch (e) {
+        console.error("❌ Erreur Upload Image:", e);
+      }
+    } else if (cover_image_url) {
+      finalImageUrl = cover_image_url;
+    }
+
+    // Mise à jour
+    let query, values;
+
+    if (duration > 0) {
+      // Si nouvel audio, on met à jour duration aussi
+      query = `
+        UPDATE podcasts 
+        SET title=$1, description=$2, audio_url=$3, cover_image_url=$4, duration_seconds=$5, category=$6, updated_at=NOW()
+        WHERE id=$7 
+        RETURNING id, title
+      `;
+      values = [title, description, audioUrl, finalImageUrl, duration, category, id];
+    } else {
+      // Sinon on garde la durée existante
+      query = `
+        UPDATE podcasts 
+        SET title=$1, description=$2, cover_image_url=$3, category=$4, updated_at=NOW()
+        WHERE id=$5 
+        RETURNING id, title
+      `;
+      values = [title, description, finalImageUrl, category, id];
+    }
+
+    const { rows } = await pool.query(query, values);
+
+    res.json({
+      success: true,
+      message: 'Podcast mis à jour',
+      podcast: rows[0]
+    });
+
+  } catch (err) {
+    console.error("❌ Erreur modification podcast:", err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
+// ==========================================
+// 5. SUPPRIMER UN PODCAST (Admin/Writer)
+// ==========================================
+router.delete('/:id', isWriter, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (isNaN(id)) {
+      return res.status(400).json({ success: false, error: 'ID invalide' });
+    }
+
+    const result = await pool.query('DELETE FROM podcasts WHERE id = $1 RETURNING id', [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Podcast introuvable'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Podcast supprimé'
+    });
+
+  } catch (err) {
+    console.error('❌ Erreur suppression podcast:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
+// ==========================================
+// 6. PODCASTS PAR CATÉGORIE (Politique/Social)
+// ==========================================
+router.get('/category/:category', async (req, res) => {
+  try {
+    const { category } = req.params;
+
+    const query = `
+      SELECT 
+        p.id,
+        p.title,
+        p.description,
+        p.audio_url,
+        p.cover_image_url,
+        p.duration_seconds,
+        p.category,
+        p.is_premium,
+        p.play_count,
+        p.created_at,
+        u.username as author_name
+      FROM podcasts p
+      LEFT JOIN users u ON p.author_id = u.id
+      WHERE p.status = 'published' AND p.category = $1
+      ORDER BY p.created_at DESC
+      LIMIT 20
+    `;
+
+    const { rows } = await pool.query(query, [category]);
+
+    res.json({
+      success: true,
+      category: category,
+      count: rows.length,
+      data: rows
+    });
+  } catch (err) {
+    console.error('❌ Erreur podcasts par catégorie:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
 });
 
 module.exports = router;
