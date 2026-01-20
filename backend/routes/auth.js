@@ -2,23 +2,75 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
 const bcrypt = require('bcrypt');
+const Joi = require('joi');
 
+// ============================================
+// SCHÉMAS DE VALIDATION JOI
+// ============================================
+
+const registerSchema = Joi.object({
+  username: Joi.string()
+    .alphanum()
+    .min(3)
+    .max(30)
+    .required()
+    .messages({
+      'string.alphanum': 'Le nom d\'utilisateur ne doit contenir que des lettres et chiffres',
+      'string.min': 'Le nom d\'utilisateur doit contenir au moins 3 caractères',
+      'string.max': 'Le nom d\'utilisateur ne doit pas dépasser 30 caractères',
+      'any.required': 'Le nom d\'utilisateur est requis'
+    }),
+
+  email: Joi.string()
+    .email()
+    .required()
+    .messages({
+      'string.email': 'Email invalide',
+      'any.required': 'L\'email est requis'
+    }),
+
+  password: Joi.string()
+    .min(8)
+    .pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)'))
+    .required()
+    .messages({
+      'string.min': 'Le mot de passe doit contenir au moins 8 caractères',
+      'string.pattern.base': 'Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre',
+      'any.required': 'Le mot de passe est requis'
+    })
+});
+
+const loginSchema = Joi.object({
+  email: Joi.string().required(),
+  password: Joi.string().required()
+});
+
+const updateProfileSchema = Joi.object({
+  username: Joi.string().alphanum().min(3).max(30).required(),
+  email: Joi.string().email().required()
+});
+
+// ============================================
 // 1. INSCRIPTION (Sign Up)
+// ============================================
 router.post('/register', async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    // ✅ Validation avec Joi
+    const { error, value } = registerSchema.validate(req.body);
 
-    // Vérif basique
-    if (!username || !email || !password) {
-      return res.status(400).json({ success: false, error: "Tous les champs sont requis." });
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        error: error.details[0].message
+      });
     }
 
-    // Hachage du mot de passe (Sécurité)
+    const { username, email, password } = value;
+
+    // Hachage du mot de passe
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Rôle par défaut = 'reader' (Lecteur). 
-    // Seul un Admin pourra changer le rôle en 'writer' via la base de données pour l'instant.
     const query = `
       INSERT INTO users (username, email, password, role, is_active)
       VALUES ($1, $2, $3, 'reader', TRUE)
@@ -34,28 +86,42 @@ router.post('/register', async (req, res) => {
 
   } catch (err) {
     console.error(err);
-    if (err.code === '23505') { // Code erreur Postgres pour "Doublon"
-      return res.status(400).json({ success: false, error: "Cet email ou nom d'utilisateur existe déjà." });
+    if (err.code === '23505') {
+      return res.status(400).json({
+        success: false,
+        error: "Cet email ou nom d'utilisateur existe déjà."
+      });
     }
     res.status(500).json({ success: false, error: "Erreur serveur." });
   }
 });
 
+// ============================================
 // 2. CONNEXION (Login)
+// ============================================
 router.post('/login', async (req, res) => {
   try {
-    // Note : Le frontend envoie l'identifiant (pseudo ou email) dans la variable 'email'
-    const { email, password } = req.body;
+    // ✅ Validation basique
+    const { error, value } = loginSchema.validate(req.body);
 
-    // --- CORRECTION ICI ---
-    // On vérifie si la valeur correspond à la colonne 'email' OU à la colonne 'username'
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        error: "Email et mot de passe requis"
+      });
+    }
+
+    const { email, password } = value;
+
+    // Chercher par email OU username
     const query = 'SELECT * FROM users WHERE email = $1 OR username = $1';
-
-    // On exécute la requête. Postgres va remplacer les deux $1 par la valeur de 'email'
     const result = await pool.query(query, [email]);
 
     if (result.rows.length === 0) {
-      return res.status(400).json({ success: false, error: "Email ou mot de passe incorrect." });
+      return res.status(400).json({
+        success: false,
+        error: "Email ou mot de passe incorrect."
+      });
     }
 
     const user = result.rows[0];
@@ -63,10 +129,13 @@ router.post('/login', async (req, res) => {
     // Vérifier le mot de passe
     const validPass = await bcrypt.compare(password, user.password);
     if (!validPass) {
-      return res.status(400).json({ success: false, error: "Email ou mot de passe incorrect." });
+      return res.status(400).json({
+        success: false,
+        error: "Email ou mot de passe incorrect."
+      });
     }
 
-    // CRUCIAL : On sauvegarde l'info dans la session serveur
+    // Sauvegarder dans session
     req.session.user = {
       id: user.id,
       username: user.username,
@@ -82,17 +151,20 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// ============================================
 // 3. DÉCONNEXION (Logout)
+// ============================================
 router.post('/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) return res.status(500).json({ success: false, error: "Erreur déconnexion" });
-    res.clearCookie('connect.sid'); // Nom par défaut du cookie
+    res.clearCookie('connect.sid');
     res.json({ success: true, message: "Déconnecté." });
   });
 });
 
+// ============================================
 // 4. QUI SUIS-JE ? (Check Session)
-// Permet au Front-end de savoir si on est connecté et quel est notre rôle
+// ============================================
 router.get('/me', (req, res) => {
   if (req.session.user) {
     res.json({ success: true, isLoggedIn: true, user: req.session.user });
@@ -101,27 +173,52 @@ router.get('/me', (req, res) => {
   }
 });
 
-// Route pour mettre à jour le profil (Nom, Email)
+// ============================================
+// 5. MISE À JOUR PROFIL
+// ============================================
 router.put('/update', async (req, res) => {
-  // FIX: Utiliser req.session.user au lieu de req.session.userId
-  if (!req.session.user) return res.status(401).json({ error: "Non connecté" });
+  if (!req.session.user) {
+    return res.status(401).json({
+      success: false,
+      error: "Non connecté"
+    });
+  }
 
-  const { username, email } = req.body;
+  // ✅ Validation
+  const { error, value } = updateProfileSchema.validate(req.body);
+
+  if (error) {
+    return res.status(400).json({
+      success: false,
+      error: error.details[0].message
+    });
+  }
+
+  const { username, email } = value;
 
   try {
-    // Mise à jour SQL
     const result = await pool.query(
       'UPDATE users SET username = $1, email = $2 WHERE id = $3 RETURNING id, username, email, role',
       [username, email, req.session.user.id]
     );
 
-    // Mettre à jour la session avec les nouvelles infos
+    // Mettre à jour la session
     req.session.user = result.rows[0];
 
-    res.json({ success: true, user: result.rows[0], message: "Profil mis à jour !" });
+    res.json({
+      success: true,
+      user: result.rows[0],
+      message: "Profil mis à jour !"
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Erreur serveur ou email déjà pris." });
+    if (err.code === '23505') {
+      return res.status(400).json({
+        success: false,
+        error: "Email déjà utilisé"
+      });
+    }
+    res.status(500).json({ success: false, error: "Erreur serveur" });
   }
 });
 
