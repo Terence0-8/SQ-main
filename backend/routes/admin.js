@@ -1,232 +1,461 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
+const Joi = require('joi');
+const { isAdmin, isWriter } = require('../middleware/auth');
 
-// Fix #3 - Import des middlewares de permissions
-const { isAdmin, isWriter, isModerator } = require('../middleware/auth');
+// ==========================================
+// VALIDATION SCHEMAS
+// ==========================================
+const pollSchema = Joi.object({
+  question: Joi.string().min(10).max(500).required(),
+  options: Joi.array().items(Joi.string().min(1).max(200)).min(2).max(10).required(),
+  ends_at: Joi.date().iso().optional()
+});
 
-// 1. STATISTIQUES
+const partySchema = Joi.object({
+  name: Joi.string().min(3).max(255).required(),
+  acronym: Joi.string().max(20).allow('').optional(),
+  logo_url: Joi.string().uri().allow('').optional(),
+  ideology: Joi.string().max(100).allow('').optional(),
+  description: Joi.string().allow('').optional()
+});
+
+// ==========================================
+// 1. STATISTIQUES GÉNÉRALES
+// ==========================================
 router.get('/stats', isAdmin, async (req, res) => {
   try {
     const articlesCount = await pool.query("SELECT COUNT(*) FROM articles WHERE status = 'published'");
     const podcastsCount = await pool.query("SELECT COUNT(*) FROM podcasts WHERE status = 'published'");
-    const commentsPending = await pool.query("SELECT COUNT(*) FROM comments WHERE status = 'flagged'");
+    const usersCount = await pool.query("SELECT COUNT(*) FROM users WHERE is_active = TRUE");
+    const subscribersCount = await pool.query("SELECT COUNT(*) FROM users WHERE is_subscriber = TRUE");
+    const commentsPending = await pool.query("SELECT COUNT(*) FROM comments WHERE is_approved = FALSE");
 
     res.json({
       success: true,
       stats: {
-        articles: articlesCount.rows[0].count,
-        podcasts: podcastsCount.rows[0].count,
-        pendingComments: commentsPending.rows[0].count
+        articles: parseInt(articlesCount.rows[0].count),
+        podcasts: parseInt(podcastsCount.rows[0].count),
+        users: parseInt(usersCount.rows[0].count),
+        subscribers: parseInt(subscribersCount.rows[0].count),
+        pendingComments: parseInt(commentsPending.rows[0].count)
       }
     });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) {
+    console.error('❌ Erreur stats:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
 });
 
-// 2. LISTE ARTICLES (Writers peuvent voir)
+// ==========================================
+// 2. GESTION ARTICLES
+// ==========================================
 router.get('/content/articles', isWriter, async (req, res) => {
   try {
     const query = `
-      SELECT a.id, a.title, a.image_url, a.category, a.status, a.published_at, a.views_count, a.is_premium,
-      u.username as author_name
+      SELECT 
+        a.id, 
+        a.title, 
+        a.featured_image, 
+        a.category, 
+        a.status, 
+        a.published_at, 
+        a.views_count, 
+        a.is_premium,
+        u.username as author_name
       FROM articles a
       LEFT JOIN users u ON a.author_id = u.id
-      ORDER BY a.published_at DESC LIMIT 50
+      ORDER BY a.created_at DESC 
+      LIMIT 100
     `;
     const result = await pool.query(query);
-    const articles = result.rows.map(art => ({
-      ...art,
-      is_premium: (art.is_premium === true || art.is_premium === 't')
-    }));
-    res.json({ success: true, data: articles });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    res.json({ success: true, count: result.rows.length, data: result.rows });
+  } catch (err) {
+    console.error('❌ Erreur liste articles:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
 });
 
-// 3. TOGGLE PREMIUM
+// ==========================================
+// 3. TOGGLE PREMIUM (Articles/Podcasts/Emissions)
+// ==========================================
 router.put('/content/:type/:id/toggle-premium', isAdmin, async (req, res) => {
   try {
     const { type, id } = req.params;
-    const table = type === 'article' ? 'articles' : null;
-    if (!table) return res.status(400).json({ error: "Type non supporté" });
-    await pool.query(`UPDATE ${table} SET is_premium = NOT is_premium WHERE id = $1`, [id]);
-    res.json({ success: true, message: "Statut mis à jour" });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+
+    if (isNaN(id)) {
+      return res.status(400).json({ success: false, error: 'ID invalide' });
+    }
+
+    const allowedTypes = {
+      'article': 'articles',
+      'podcast': 'podcasts',
+      'emission': 'emissions'
+    };
+
+    const table = allowedTypes[type];
+
+    if (!table) {
+      return res.status(400).json({
+        success: false,
+        error: 'Type non supporté. Utiliser: article, podcast ou emission'
+      });
+    }
+
+    // Utilisation sécurisée - table validée avant insertion
+    const query = `UPDATE ${table} SET is_premium = NOT is_premium WHERE id = $1 RETURNING is_premium`;
+    const result = await pool.query(query, [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Contenu introuvable'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Statut premium mis à jour',
+      is_premium: result.rows[0].is_premium
+    });
+  } catch (err) {
+    console.error('❌ Erreur toggle premium:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
 });
 
-// 4. WORKFLOW
+// ==========================================
+// 4. WORKFLOW PUBLICATION (Approuver/Rejeter articles)
+// ==========================================
 router.put('/workflow/:id', isAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { action } = req.body;
-    let newStatus = action === 'approve' ? 'published' : 'draft';
-    const dateUpdate = action === 'approve' ? ', published_at = NOW()' : '';
-    await pool.query(`UPDATE articles SET status = $1 ${dateUpdate} WHERE id = $2`, [newStatus, id]);
-    res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+
+    if (isNaN(id)) {
+      return res.status(400).json({ success: false, error: 'ID invalide' });
+    }
+
+    if (!['approve', 'reject'].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Action invalide. Utiliser: approve ou reject'
+      });
+    }
+
+    const newStatus = action === 'approve' ? 'published' : 'draft';
+    const publishedAt = action === 'approve' ? 'NOW()' : 'NULL';
+
+    const query = `
+      UPDATE articles 
+      SET status = $1, published_at = ${publishedAt}, updated_at = NOW() 
+      WHERE id = $2 
+      RETURNING id, title, status
+    `;
+
+    const result = await pool.query(query, [newStatus, id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Article introuvable'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: action === 'approve' ? 'Article publié' : 'Article rejeté',
+      article: result.rows[0]
+    });
+  } catch (err) {
+    console.error('❌ Erreur workflow:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
 });
 
-// 5. SUPPRESSION UNIVERSELLE (Avec nettoyage des liens)
+// ==========================================
+// 5. SUPPRESSION CONTENU (Article/Podcast/Emission)
+// ==========================================
 router.delete('/content/:type/:id', isAdmin, async (req, res) => {
+  const client = await pool.connect();
   try {
     const { type, id } = req.params;
-    const tables = { 'article': 'articles', 'podcast': 'podcasts', 'emission': 'emissions' };
 
-    if (!tables[type]) return res.status(400).json({ error: "Type invalide" });
-
-    const client = await pool.connect();
-    try {
-      await client.query('BEGIN');
-
-      // CAS 1 : ARTICLES (Nettoyage existant)
-      if (type === 'article') {
-        await client.query('DELETE FROM article_analytics WHERE article_id = $1', [id]);
-        await client.query('DELETE FROM comments WHERE article_id = $1', [id]);
-      }
-
-      // CAS 2 : PODCASTS (NOUVEAU - Correction du bug)
-      if (type === 'podcast') {
-        // On "détache" le podcast des partis qui l'utilisent (on met le champ à NULL)
-        // Cela permet de garder le Parti intact, juste sans podcast associé.
-        await client.query('UPDATE parties SET podcast_id = NULL WHERE podcast_id = $1', [id]);
-      }
-
-      // Suppression effective du contenu
-      await client.query(`DELETE FROM ${tables[type]} WHERE id = $1`, [id]);
-
-      await client.query('COMMIT');
-      res.json({ success: true });
-    } catch (e) {
-      await client.query('ROLLBACK');
-      console.error("Erreur suppression:", e); // Utile pour voir l'erreur dans le terminal
-      // On renvoie l'erreur exacte pour le debug si besoin, ou un message générique
-      res.status(500).json({ error: e.message });
+    if (isNaN(id)) {
+      return res.status(400).json({ success: false, error: 'ID invalide' });
     }
-    finally { client.release(); }
-  } catch (err) { res.status(500).json({ error: err.message }); }
+
+    const allowedTypes = {
+      'article': 'articles',
+      'podcast': 'podcasts',
+      'emission': 'emissions'
+    };
+
+    const table = allowedTypes[type];
+
+    if (!table) {
+      return res.status(400).json({
+        success: false,
+        error: 'Type invalide. Utiliser: article, podcast ou emission'
+      });
+    }
+
+    await client.query('BEGIN');
+
+    // Nettoyage des dépendances selon le type
+    if (type === 'article') {
+      await client.query('DELETE FROM article_analytics WHERE article_id = $1', [id]);
+      await client.query('DELETE FROM comments WHERE article_id = $1', [id]);
+    }
+
+    // Suppression du contenu principal
+    const deleteQuery = `DELETE FROM ${table} WHERE id = $1 RETURNING id`;
+    const result = await client.query(deleteQuery, [id]);
+
+    if (result.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({
+        success: false,
+        error: 'Contenu introuvable'
+      });
+    }
+
+    await client.query('COMMIT');
+    res.json({
+      success: true,
+      message: 'Contenu supprimé avec succès'
+    });
+
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('❌ Erreur suppression:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  } finally {
+    client.release();
+  }
 });
 
-// 6. MODÉRATION (Admins uniquement)
-router.get('/comments/pending', isModerator, async (req, res) => {
+// ==========================================
+// 6. MODÉRATION COMMENTAIRES
+// ==========================================
+router.get('/comments/pending', isAdmin, async (req, res) => {
   try {
-    const result = await pool.query(`SELECT c.id, c.content, c.flag_reason, u.username FROM comments c JOIN users u ON c.user_id = u.id WHERE c.status = 'flagged'`);
-    res.json({ success: true, data: result.rows });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    const query = `
+      SELECT 
+        c.id, 
+        c.content, 
+        c.created_at,
+        c.article_id,
+        u.username,
+        a.title as article_title
+      FROM comments c
+      JOIN users u ON c.user_id = u.id
+      LEFT JOIN articles a ON c.article_id = a.id
+      WHERE c.is_approved = FALSE
+      ORDER BY c.created_at DESC
+      LIMIT 100
+    `;
+    const result = await pool.query(query);
+    res.json({ success: true, count: result.rows.length, data: result.rows });
+  } catch (err) {
+    console.error('❌ Erreur commentaires en attente:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
 });
 
-router.post('/comments/:id/:action', isModerator, async (req, res) => {
+router.post('/comments/:id/:action', isAdmin, async (req, res) => {
   try {
     const { id, action } = req.params;
-    if (action === 'approve') await pool.query("UPDATE comments SET status = 'approved' WHERE id = $1", [id]);
-    else if (action === 'delete') await pool.query("DELETE FROM comments WHERE id = $1", [id]);
-    res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+
+    if (isNaN(id)) {
+      return res.status(400).json({ success: false, error: 'ID invalide' });
+    }
+
+    if (!['approve', 'delete'].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Action invalide. Utiliser: approve ou delete'
+      });
+    }
+
+    let query, result;
+
+    if (action === 'approve') {
+      query = 'UPDATE comments SET is_approved = TRUE WHERE id = $1 RETURNING id';
+      result = await pool.query(query, [id]);
+    } else {
+      query = 'DELETE FROM comments WHERE id = $1 RETURNING id';
+      result = await pool.query(query, [id]);
+    }
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Commentaire introuvable'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: action === 'approve' ? 'Commentaire approuvé' : 'Commentaire supprimé'
+    });
+  } catch (err) {
+    console.error('❌ Erreur modération commentaire:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
 });
 
-// --- 7. SONDAGES (C'est ce qui manquait ou était mal placé) ---
-router.get('/polls/stats', isAdmin, async (req, res) => {
+// ==========================================
+// 7. GESTION SONDAGES
+// ==========================================
+router.get('/polls', isAdmin, async (req, res) => {
   try {
-    // CORRECTION : On récupère directement 'votes_count' depuis la table des options
-    // au lieu d'essayer de le recalculer depuis la table des votes (poll_votes).
     const query = `
-            SELECT 
-                p.id, 
-                p.question, 
-                p.is_active, 
-                p.category, 
-                p.created_at,
-                (SELECT COUNT(*) FROM poll_votes WHERE poll_id = p.id) as total_votes,
-                json_agg(json_build_object(
-                    'id', po.id, 
-                    'text', po.label, 
-                    'votes', po.votes_count 
-                )) as options
-            FROM polls p
-            LEFT JOIN poll_options po ON p.id = po.poll_id
-            GROUP BY p.id, p.question, p.is_active, p.category, p.created_at
-            ORDER BY p.created_at DESC
-        `;
+      SELECT 
+        p.id,
+        p.question,
+        p.options,
+        p.is_active,
+        p.ends_at,
+        p.created_at,
+        (SELECT COUNT(*) FROM poll_votes WHERE poll_id = p.id) as total_votes
+      FROM polls p
+      ORDER BY p.created_at DESC
+    `;
     const result = await pool.query(query);
-    res.json({ success: true, data: result.rows });
+    res.json({ success: true, count: result.rows.length, data: result.rows });
   } catch (err) {
-    console.error("ERREUR SQL POLLS:", err.message);
-    res.status(500).json({ error: err.message });
+    console.error('❌ Erreur liste sondages:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 });
 
 router.post('/polls', isAdmin, async (req, res) => {
-  const client = await pool.connect();
   try {
-    const { question, options, category } = req.body;
-    const cat = category || 'Général';
-    await client.query('BEGIN');
-    await client.query("UPDATE polls SET is_active = false WHERE category = $1", [cat]);
-    const resPoll = await client.query("INSERT INTO polls (question, category, is_active) VALUES ($1, $2, true) RETURNING id", [question, cat]);
-    const pollId = resPoll.rows[0].id;
-    for (const opt of options) {
-      await client.query("INSERT INTO poll_options (poll_id, label) VALUES ($1, $2)", [pollId, opt]);
+    // Validation
+    const { error, value } = pollSchema.validate(req.body);
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        error: error.details[0].message
+      });
     }
-    await client.query('COMMIT');
-    res.json({ success: true });
-  } catch (e) { await client.query('ROLLBACK'); res.status(500).json({ error: e.message }); }
-  finally { client.release(); }
+
+    const { question, options, ends_at } = value;
+
+    // Formater les options en JSONB
+    const optionsJson = options.map(text => ({ text, votes: 0 }));
+
+    const query = `
+      INSERT INTO polls (question, options, created_by, is_active, ends_at, created_at)
+      VALUES ($1, $2, $3, TRUE, $4, NOW())
+      RETURNING id, question
+    `;
+
+    const result = await pool.query(query, [
+      question,
+      JSON.stringify(optionsJson),
+      req.session.user.id,
+      ends_at || null
+    ]);
+
+    res.json({
+      success: true,
+      message: 'Sondage créé',
+      poll: result.rows[0]
+    });
+  } catch (err) {
+    console.error('❌ Erreur création sondage:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
+router.put('/polls/:id/toggle', isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (isNaN(id)) {
+      return res.status(400).json({ success: false, error: 'ID invalide' });
+    }
+
+    const query = `
+      UPDATE polls 
+      SET is_active = NOT is_active 
+      WHERE id = $1 
+      RETURNING id, is_active
+    `;
+    const result = await pool.query(query, [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Sondage introuvable'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: result.rows[0].is_active ? 'Sondage activé' : 'Sondage désactivé',
+      poll: result.rows[0]
+    });
+  } catch (err) {
+    console.error('❌ Erreur toggle sondage:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
 });
 
 router.delete('/polls/:id', isAdmin, async (req, res) => {
-  try {
-    await pool.query("DELETE FROM polls WHERE id = $1", [req.params.id]);
-    res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// --- 8. PARTIS (C'est ce qui manquait ou était mal placé) ---
-router.get('/parties', isAdmin, async (req, res) => {
-  try {
-    const result = await pool.query("SELECT * FROM parties ORDER BY name ASC");
-    res.json({ success: true, data: result.rows });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-router.post('/parties', isAdmin, async (req, res) => {
-  try {
-    const { name, orientation, logo_url, description } = req.body;
-    await pool.query("INSERT INTO parties (name, orientation, logo_url, description) VALUES ($1, $2, $3, $4)", [name, orientation, logo_url, description]);
-    res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-router.delete('/parties/:id', isAdmin, async (req, res) => {
-  try {
-    await pool.query("DELETE FROM parties WHERE id = $1", [req.params.id]);
-    res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// DÉFINIR UN PODCAST À LA UNE (Politique ou Social)
-router.put('/podcasts/:id/feature', isAdmin, async (req, res) => {
   const client = await pool.connect();
   try {
     const { id } = req.params;
-    const { scope } = req.body; // 'politique', 'social' ou 'none'
+
+    if (isNaN(id)) {
+      return res.status(400).json({ success: false, error: 'ID invalide' });
+    }
 
     await client.query('BEGIN');
 
-    // 1. Si on définit une nouvelle "Une", on retire l'ancienne pour cette catégorie
-    if (scope && scope !== 'none') {
-      await client.query("UPDATE podcasts SET featured_scope = NULL WHERE featured_scope = $1", [scope]);
-      // 2. On applique le tag au nouveau podcast
-      await client.query("UPDATE podcasts SET featured_scope = $1 WHERE id = $2", [scope, id]);
-    } else {
-      // 3. Si 'none', on retire juste le tag de ce podcast
-      await client.query("UPDATE podcasts SET featured_scope = NULL WHERE id = $1", [id]);
+    // Supprimer les votes associés
+    await client.query('DELETE FROM poll_votes WHERE poll_id = $1', [id]);
+
+    // Supprimer le sondage
+    const result = await client.query('DELETE FROM polls WHERE id = $1 RETURNING id', [id]);
+
+    if (result.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({
+        success: false,
+        error: 'Sondage introuvable'
+      });
     }
 
     await client.query('COMMIT');
-    res.json({ success: true });
-  } catch (e) {
+    res.json({
+      success: true,
+      message: 'Sondage supprimé'
+    });
+  } catch (err) {
     await client.query('ROLLBACK');
-    res.status(500).json({ error: e.message });
-  } finally { client.release(); }
+    console.error('❌ Erreur suppression sondage:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  } finally {
+    client.release();
+  }
 });
 
-// IMPORTANT : CETTE LIGNE DOIT ÊTRE LA TOUTE DERNIÈRE
+// ==========================================
+// 8. GESTION PARTIS POLITIQUES
+// ==========================================
+router.get('/parties', isAdmin, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM parties ORDER BY name ASC');
+    res.json({ success: true, count: result.rows.length, data: result.rows });
+  } catch (err) {
+    console.error('❌ Erreur liste partis:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;
