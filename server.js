@@ -5,6 +5,7 @@ const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const pool = require('./backend/config/database');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -33,6 +34,29 @@ app.use(cookieParser());
 app.use(express.static(__dirname));
 // Permettre l'accès aux images uploadées via l'URL /uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// =============================================================================
+// 3. RATE LIMITING - Protection brute-force
+// =============================================================================
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Max 100 requêtes par IP
+  message: { success: false, error: 'Trop de requêtes, réessayez dans 15 minutes' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5, // Max 5 tentatives de connexion
+  message: { success: false, error: 'Trop de tentatives de connexion, réessayez dans 15 minutes' },
+  skipSuccessfulRequests: true // Ne compte que les échecs
+});
+
+// Appliquer limites
+app.use('/api/', apiLimiter);
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
 
 // =============================================================================
 // 2. SESSIONS - Fix #8 Sessions sécurisées
