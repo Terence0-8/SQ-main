@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Partis politiques — Solitiquo</title>
+  <link rel="stylesheet" href="solitiquo.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Header -->
+  <header class="main-header">
+    <div class="header-container">
+      <!-- Burger (mobile) -->
+      <button class="burger-menu" id="burgerMenu" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <!-- Colonne gauche: Recherche seule -->
+      <div class="left-section">
+        <div class="search-stack">
+          <div class="search-row">
+            <button class="search-btn" id="searchBtn" aria-label="Rechercher">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="M21 21l-4.35-4.35"></path>
+              </svg>
+            </button>
+            <span class="search-label" id="searchLabel">Rechercher</span>
+          </div>
+          <div class="search-container" id="searchContainer" role="search" aria-hidden="true">
+            <input type="text" class="search-input" placeholder="Rechercher des articles..." id="searchInput" autocomplete="off"/>
+            <button class="search-submit" type="button" aria-label="Lancer la recherche">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9,18 15,12 9,6"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Colonne centre: Logo + NAV avec Emissions à gauche -->
+      <div class="center-section">
+        <div class="logo-section">
+          <!-- Remplacer l’ancien chemin Windows par un fichier du projet -->
+          <img src="D:\Térence\Progs\Ad CC\Images\SVG\BLEU ROUGE VRAI ET BIEN.svg" alt="Logo Solitiquo" class="logo-official" loading="eager">
+          <div class="logo-separator"></div>
+          <div class="title-container">
+            <!-- Lien vers l’accueil (index.html) -->
+            <a href="index.html#home" class="site-title">Solitiquo</a>
+            <span class="subtitle">Cameroun</span>
+          </div>
+        </div>
+
+        <!-- NAV desktop -->
+        <nav class="main-nav" id="mainNav" role="navigation">
+          <a href="emissions.html" class="nav-link primary-btn" data-section="emissions" title="Émissions">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="23 7 16 12 23 17 23 7"></polygon>
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+            </svg>
+            Émissions
+          </a>
+          <a href="politique.html" class="nav-link" data-section="politique" title="Politique">Politique</a>
+          <a href="partis.html" class="nav-link" data-section="partis" title="Partis politiques">Partis politiques</a>
+          <a href="social.html" class="nav-link" data-section="social" title="Social">Social</a>
+          <a href="podcasts.html" class="nav-link primary-btn" data-section="podcasts" title="Podcasts">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+            Podcasts
+          </a>
+        </nav>
+
+        <!-- NAV mobile (burger) -->
+        <nav class="mobile-nav" id="mobileNav" role="navigation" aria-hidden="true">
+          <button class="mobile-nav-close" id="mobileNavClose" aria-label="Fermer">×</button>
+          <a href="emissions.html" class="mobile-nav-link emissions-mobile" data-section="emissions">Émissions</a>
+          <a href="politique.html" class="mobile-nav-link" data-section="politique">Politique</a>
+          <a href="partis.html" class="mobile-nav-link" data-section="partis">Partis politiques</a>
+          <a href="social.html" class="mobile-nav-link" data-section="social">Social</a>
+          <a href="podcasts.html" class="mobile-nav-link podcasts-mobile" data-section="podcasts">Podcasts</a>
+        </nav>
+      </div>
+
+      <!-- Colonne droite: Connexion au-dessus, FR/EN en dessous -->
+      <div class="right-section">
+        <div class="auth-stack">
+          <a href="auth.html" class="auth-btn" id="authBtn" aria-label="Connexion / Inscription">Connexion • Inscription</a>
+          <div class="lang-toggle" aria-label="Langue">
+            <a href="index.html#fr" class="lang-link active" id="langFR">FR</a>
+            <span class="lang-separator">/</span>
+            <a href="index.html#en" class="lang-link" id="langEN">EN</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero-compact">
+    <div class="hero-inner">
+      <h1>Partis politiques</h1>
+      <p>Congrès, alliances et positions officielles.</p>
+    </div>
+  </section>
+
+  <main class="page-main">
+    <!-- Mise en avant égale de chaque carte -->
+    <section class="content-section">
+      <div class="equal-cards">
+        <a class="equal-card" href="parti-1.html">
+          <img src="https://images.unsplash.com/photo-1503428593586-e225b39bddfe?w=800&h=520&fit=crop" alt="">
+          <div class="eq-body">
+            <h3>Congrès annuel: ligne politique réaffirmée</h3>
+            <p>Le parti fixe ses priorités pour les deux prochaines années.</p>
+          </div>
+        </a>
+        <a class="equal-card" href="parti-2.html">
+          <img src="https://images.unsplash.com/photo-1530032847030-89d3d1f3b6a0?w=800&h=520&fit=crop" alt="">
+          <div class="eq-body">
+            <h3>Alliance: négociations en cours</h3>
+            <p>Discussions sur un programme commun et un partage des circonscriptions.</p>
+          </div>
+        </a>
+        <a class="equal-card" href="parti-3.html">
+          <img src="https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=800&h=520&fit=crop" alt="">
+          <div class="eq-body">
+            <h3>Primaires: calendrier dévoilé</h3>
+            <p>Règles de participation et modalités de vote.</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <h3 class="section-title">Communiqués & tribunes</h3>
+      <div class="list-grid">
+        <a class="list-item" href="parti-4.html"><span>Communiqué sur la réforme électorale</span><span class="meta">3 min</span></a>
+        <a class="list-item" href="parti-5.html"><span>Tribune: vision économique</span><span class="meta">6 min</span></a>
+        <a class="list-item" href="parti-6.html"><span>Positions sur la politique étrangère</span><span class="meta">5 min</span></a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-content">
+      <div class="footer-col"><h5>Solitiquo</h5><p>L’actualité politique et sociale de référence pour l’Afrique et sa diaspora</p></div>
+      <div class="footer-col"><h5>Sections</h5><ul><li><a href="politique.html">Politique</a></li><li><a href="partis.html">Partis politiques</a></li><li><a href="social.html">Social</a></li><li><a href="podcasts.html">Podcasts</a></li><li><a href="index.html#emissions">Émissions</a></li></ul></div>
+      <div class="footer-col"><h5>Légal</h5><ul><li><a href="#mentions-legales">Mentions légales</a></li><li><a href="#politique-confidentialite">Politique de confidentialité</a></li><li><a href="#conditions-utilisation">Conditions d’utilisation</a></li><li><a href="#cookies">Politique des cookies</a></li></ul></div>
+      <div class="footer-col"><h5>Contact</h5><ul><li><a href="#contact">Nous écrire</a></li><li><a href="auth.html">Connexion • Inscription</a></li><li>© 2025 Solitiquo</li></ul></div>
+    </div>
+  </footer>
+
+  <script src="Solitiquo homepage JS.js"></script>
+</body>
+</html>

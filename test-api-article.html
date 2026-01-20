@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel de test API Solitiquo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial,sans-serif; background: #f8f9fa; margin:0; padding:30px;}
+    h1,h2 {color:#223366;}
+    .section {background: #fff; border-radius: 8px; padding: 25px; margin-bottom: 28px; box-shadow:0 2px 8px #00000018;}
+    label {display:block; margin:15px 0 5px;}
+    input, textarea, select {width:100%;padding:9px;border:1px solid #cddbe8; border-radius:4px;}
+    textarea {min-height:60px;}
+    button {margin-top:18px;padding:10px 18px;background:#2779c6;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:15px;}
+    button:hover {background:#125099;}
+    .result {background:#f7f7fa;border-radius:4px;margin:15px 0 0 0;padding:12px 15px;white-space:pre-wrap;font-family:Menlo,monospace;font-size:13px;}
+    .success {background:#d4edda;border:1px solid #b9e6bc;color: #155724;}
+    .error {background:#f8d7da;border:1px solid #f5c6cb;color:#721c24;}
+    .cite {background:#e7f2ff; border-left: 4px solid #398df7; margin: 19px 0 0 0; padding: 9px 12px; font-size:12px; color:#1e2e50; border-radius:4px;}
+    .endpoint {font-size:13px;color:#557;margin:11px 0;}
+    .flex {display:flex;gap:32px;}
+    @media (max-width:900px){.flex{flex-direction:column;}}
+  </style>
+</head>
+<body>
+  <h1>📝 Panel de test API Solitiquo</h1>
+  <p>
+    &gt; Testez la création d’<strong>article</strong>, de <strong>podcast</strong> ou d’<strong>émission</strong> (<span style="color:#2779c6">POST</span> /api) avec affichage de citation et métadonnées.<br>
+    <span style="font-size:13px;color:#555">Lancez le serveur backend puis envoyez vos requêtes ci-dessous&nbsp;! (<code>http://localhost:5000</code>)</span>
+  </p>
+  
+  <div class="flex">
+    <!-- ARTICLE -->
+    <div class="section" style="flex:1">
+      <h2>Créer un Article</h2>
+      <small class="endpoint">POST /api/articles</small>
+      <form id="formArticle">
+        <label>Titre *</label>
+        <input required name="title" placeholder="Titre">
+        <label>Slug *</label>
+        <input required name="slug" placeholder="mon-article">
+        <label>Contenu *</label>
+        <textarea required name="content" placeholder="Contenu de l'article"></textarea>
+        <label>Résumé</label>
+        <input name="excerpt" placeholder="Résumé...">
+        <label>ID auteur *</label>
+        <input required name="author_id" type="number" value="1">
+        <label>Catégorie</label>
+        <input name="category">
+        <label>Status</label>
+        <select name="status"><option value="draft">Brouillon</option><option value="published" selected>Publié</option></select>
+        <button>Créer l'article</button>
+        <div id="resultArticle" class="result" style="display:none"></div>
+        <div id="citeArticle" class="cite" style="display:none"></div>
+      </form>
+    </div>
+    <!-- PODCAST -->
+    <div class="section" style="flex:1">
+      <h2>Créer un Podcast</h2>
+      <small class="endpoint">POST /api/podcasts</small>
+      <form id="formPodcast">
+        <label>Titre *</label>
+        <input required name="title">
+        <label>Slug *</label>
+        <input required name="slug">
+        <label>Description</label>
+        <input name="description">
+        <label>URL Audio *</label>
+        <input required name="audio_url" value="https://audio.solitiquo.com/monpodcast.mp3">
+        <label>ID auteur *</label>
+        <input required name="author_id" type="number" value="1">
+        <label>Status</label>
+        <select name="status"><option value="draft">Brouillon</option><option value="published" selected>Publié</option></select>
+        <button>Créer le podcast</button>
+        <div id="resultPodcast" class="result" style="display:none"></div>
+        <div id="citePodcast" class="cite" style="display:none"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- EMISSION -->
+  <div class="section" style="max-width:700px">
+    <h2>Créer une Émission</h2>
+    <small class="endpoint">POST /api/emissions</small>
+    <form id="formEmission">
+      <label>Titre *</label>
+      <input required name="title">
+      <label>Slug *</label>
+      <input required name="slug">
+      <label>Description</label>
+      <input name="description">
+      <label>URL Vidéo *</label>
+      <input required name="video_url" value="https://video.solitiquo.com/monemission.mp4">
+      <label>ID auteur *</label>
+      <input required name="author_id" type="number" value="1">
+      <label>En direct ?</label>
+      <select name="is_live">
+        <option value="false" selected>Non</option>
+        <option value="true">Oui</option>
+      </select>
+      <label>Status</label>
+      <select name="status"><option value="draft">Brouillon</option><option value="published" selected>Publié</option></select>
+      <button>Créer l'émission</button>
+      <div id="resultEmission" class="result" style="display:none"></div>
+      <div id="citeEmission" class="cite" style="display:none"></div>
+    </form>
+  </div>
+
+  <script>
+    // Helper pour POST (gère affichage + citation vraie)
+    function handleSubmit(formId, url, resultId, citeId) {
+      document.getElementById(formId).addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = Object.fromEntries(new FormData(e.target).entries());
+        if (data.author_id) data.author_id = Number(data.author_id);
+        if ('is_live' in data) data.is_live = data.is_live === "true";
+        const resultBox = document.getElementById(resultId);
+        const citeBox = document.getElementById(citeId);
+        resultBox.style.display = 'block';
+        resultBox.textContent = "⏳ Envoi de la requête...";
+        resultBox.className = 'result';
+        citeBox.textContent = '';
+        citeBox.style.display = 'none';
+
+        // Affichage citation complète
+        const citation = `POST ${url}
+Headers:
+  Content-Type: application/json
+
+Corps JSON:
+${JSON.stringify(data, null, 2)}
+`;
+        
+        try {
+          const fetchRes = await fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(data)
+          });
+          const json = await fetchRes.json();
+          if (fetchRes.ok && json.success) {
+            resultBox.className = 'result success';
+            resultBox.textContent = "✅ Création réussie ! \n\n" + JSON.stringify(json, null, 2);
+            citeBox.textContent = citation + "\nRéponse API (HTTP "+fetchRes.status+"):\n" + JSON.stringify(json, null, 2);
+            citeBox.style.display = 'block';
+            e.target.reset();
+          } else {
+            resultBox.className = 'result error';
+            resultBox.textContent = "❌ Erreur API ! \n\n" + JSON.stringify(json, null, 2);
+            citeBox.textContent = citation + "\nRéponse API (HTTP "+fetchRes.status+"):\n" + JSON.stringify(json, null, 2);
+            citeBox.style.display = 'block';
+          }
+        }
+        catch(err) {
+          resultBox.className = 'result error';
+          resultBox.textContent = "❌ Erreur de connexion ("+err.name+") !\n\n" + err.message;
+          citeBox.textContent = citation + "\n❌ Échec connexion API. Vérifiez le backend.";
+          citeBox.style.display = 'block';
+        }
+      });
+    }
+
+    // Bind
+    handleSubmit('formArticle','http://localhost:5000/api/articles','resultArticle','citeArticle');
+    handleSubmit('formPodcast','http://localhost:5000/api/podcasts','resultPodcast','citePodcast');
+    handleSubmit('formEmission','http://localhost:5000/api/emissions','resultEmission','citeEmission');
+  </script>
+</body>
+</html>

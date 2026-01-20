@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Page introuvable - Erreur 404 | Solitiquo</title>
+  <meta name="description" content="La page que vous recherchez n'existe pas ou a été déplacée." />
+  <link rel="stylesheet" href="solitiquo.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    /* Styles spécifiques page 404 */
+    .error-404-page {
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1.5rem;
+      background: linear-gradient(135deg, #f8fbf1 0%, #ffffff 100%);
+    }
+    
+    .error-404-container {
+      max-width: 700px;
+      text-align: center;
+    }
+    
+    .error-404-number {
+      font-size: 10rem;
+      font-weight: 900;
+      font-family: 'Playfair Display', serif;
+      color: var(--primary-dark);
+      line-height: 1;
+      margin-bottom: 1rem;
+      text-shadow: 4px 4px 0 rgba(200, 40, 35, 0.15);
+      position: relative;
+      display: inline-block;
+    }
+    
+    .error-404-number::before {
+      content: '404';
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      color: var(--accent-red);
+      opacity: 0.3;
+      z-index: -1;
+    }
+    
+    .error-404-title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 1.5rem;
+      font-family: 'Playfair Display', serif;
+    }
+    
+    .error-404-text {
+      font-size: 1.1rem;
+      color: var(--text-light);
+      margin-bottom: 2.5rem;
+      line-height: 1.7;
+    }
+    
+    .error-404-illustration {
+      margin: 2rem 0;
+      opacity: 0.6;
+    }
+    
+    .error-404-illustration svg {
+      width: 200px;
+      height: auto;
+      color: var(--accent-red);
+    }
+    
+    .error-404-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 3rem;
+    }
+    
+    .error-404-btn {
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1rem;
+    }
+    
+    .error-404-btn-primary {
+      background: var(--accent-red);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(200, 40, 35, 0.3);
+    }
+    
+    .error-404-btn-primary:hover {
+      background: #b01f1b;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(200, 40, 35, 0.4);
+    }
+    
+    .error-404-btn-secondary {
+      background: var(--primary-dark);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(55, 70, 61, 0.2);
+    }
+    
+    .error-404-btn-secondary:hover {
+      background: #2a3530;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(55, 70, 61, 0.3);
+    }
+    
+    .error-404-suggestions {
+      background: #fff;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+    
+    .error-404-suggestions h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .suggestions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      text-align: left;
+    }
+    
+    .suggestion-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem;
+      background: var(--background-light);
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--text-dark);
+      font-weight: 500;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .suggestion-link:hover {
+      background: var(--accent-red);
+      color: #fff;
+      transform: translateX(4px);
+      border-color: var(--accent-red);
+    }
+    
+    .suggestion-link svg {
+      flex-shrink: 0;
+      color: var(--accent-red);
+      transition: color 0.3s ease;
+    }
+    
+    .suggestion-link:hover svg {
+      color: #fff;
+    }
+    
+    @media screen and (max-width: 768px) {
+      .error-404-number {
+        font-size: 6rem;
+      }
+      
+      .error-404-title {
+        font-size: 1.6rem;
+      }
+      
+      .error-404-text {
+        font-size: 1rem;
+      }
+      
+      .error-404-actions {
+        flex-direction: column;
+      }
+      
+      .error-404-btn {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .suggestions-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- HEADER (simplifié pour page 404) -->
+  <header class="main-header">
+    <div class="header-container">
+      <div class="center-section" style="width: 100%; justify-content: center;">
+        <div class="logo-section">
+          <img src="Drence CC ROUGE VRAI ET BIEN.svg" alt="Logo Solitiquo" class="logo-official" loading="eager" />
+          <div class="logo-separator"></div>
+          <div class="title-container">
+            <a href="index.html" class="site-title">Solitiquo</a>
+            <span class="subtitle">Cameroun</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENU 404 -->
+  <main class="error-404-page">
+    <div class="error-404-container">
+      <!-- Numéro 404 -->
+      <div class="error-404-number">404</div>
+      
+      <!-- Illustration -->
+      <div class="error-404-illustration">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      
+      <!-- Titre et description -->
+      <h1 class="error-404-title">Page introuvable</h1>
+      <p class="error-404-text">
+        Désolé, la page que vous recherchez n'existe pas ou a été déplacée.<br />
+        Veuillez vérifier l'URL ou retourner à l'accueil.
+      </p>
+      
+      <!-- Boutons d'action -->
+      <div class="error-404-actions">
+        <a href="index.html" class="error-404-btn error-404-btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          Retour à l'accueil
+        </a>
+        
+        <a href="recherche.html" class="error-404-btn error-404-btn-secondary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="M21 21l-4.35-4.35"/>
+          </svg>
+          Rechercher
+        </a>
+      </div>
+      
+      <!-- Suggestions -->
+      <div class="error-404-suggestions">
+        <h3>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+          Pages populaires
+        </h3>
+        <div class="suggestions-grid">
+          <a href="politique.html" class="suggestion-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            Politique
+          </a>
+          
+          <a href="social.html" class="suggestion-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            Social
+          </a>
+          
+          <a href="podcasts.html" class="suggestion-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+            Podcasts
+          </a>
+          
+          <a href="emissions.html" class="suggestion-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="23 7 16 12 23 17 23 7"/>
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            </svg>
+            Missions
+          </a>
+          
+          <a href="partis-politiques.html" class="suggestion-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            Partis politiques
+          </a>
+          
+          <a href="contact.html" class="suggestion-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            Contact
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-content">
+      <div class="footer-col">
+        <h5>Solitiquo</h5>
+        <p>L'actualité politique et sociale de référence</p>
+      </div>
+      <div class="footer-col">
+        <h5>Sections</h5>
+        <ul>
+          <li><a href="politique.html">Politique</a></li>
+          <li><a href="partis-politiques.html">Partis politiques</a></li>
+          <li><a href="social.html">Social</a></li>
+          <li><a href="podcasts.html">Podcasts</a></li>
+          <li><a href="emissions.html">Missions</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Légal</h5>
+        <ul>
+          <li><a href="mentions-legales.html">Mentions légales</a></li>
+          <li><a href="politique-confidentialite.html">Politique de confidentialité</a></li>
+          <li><a href="conditions-utilisation.html">Conditions d'utilisation</a></li>
+          <li><a href="cookies.html">Cookies</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contact</h5>
+        <ul>
+          <li><a href="contact.html">Nous écrire</a></li>
+          <li><a href="auth.html">Connexion</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 Solitiquo</p>
+    </div>
+  </footer>
+
+  <script src="solitiquo.js"></script>
+</body>
+</html>

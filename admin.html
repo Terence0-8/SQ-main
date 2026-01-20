@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Console Admin — Solitiquo</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* DESIGN SYSTEM PREMIUM */
+        :root {
+            --sidebar-bg: #0f172a;
+            --sidebar-text: #94a3b8;
+            --sidebar-hover: #1e293b;
+            --primary-brand: #37463D;
+            --accent-red: #C82823;
+            --bg-app: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --border-light: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-app);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #333;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            height: 70px;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            text-decoration: none;
+        }
+
+        .brand img {
+            height: 28px;
+            margin-right: 12px;
+            filter: brightness(0) invert(1);
+        }
+
+        .brand span {
+            font-family: 'Playfair Display';
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: white;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 24px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-item {
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--sidebar-text);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item:hover {
+            background: var(--sidebar-hover);
+            color: white;
+            transform: translateX(4px);
+        }
+
+        .nav-item.active {
+            background: var(--sidebar-hover);
+            color: white;
+            font-weight: 600;
+            border-left: 3px solid var(--accent-red);
+        }
+
+        /* MAIN CONTENT */
+        /* CORRECTION SCROLL : On s'assure que le contenu peut défiler */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            background: var(--bg-app);
+            /* Le conteneur ne bouge pas */
+        }
+
+        /* 1. FORCE L'ALIGNEMENT EN HAUT */
+        .scroll-zone {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+            /* Ces 3 lignes forcent le contenu à rester en haut */
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: flex-start !important;
+        }
+
+        /* On s'assure que les sections ne poussent pas vers le bas */
+        .view-section {
+            width: 100%;
+            margin: 0 !important;
+            /* Reset total des marges */
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        .top-bar {
+            height: 70px;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+
+        .page-title {
+            font-family: 'Playfair Display';
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .action-btn {
+            background: var(--primary-brand);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(55, 70, 61, 0.2);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(55, 70, 61, 0.3);
+        }
+
+
+
+        /* 2. STYLE DES MINIATURES */
+        .mini-thumb {
+            width: 45px;
+            height: 45px;
+            border-radius: 6px;
+            object-fit: cover;
+            margin-right: 15px;
+            border: 1px solid #e2e8f0;
+            background: #f1f5f9;
+            flex-shrink: 0;
+            /* Empêche l'écrasement */
+        }
+
+        .title-row {
+            display: flex;
+            align-items: center;
+            text-align: left;
+        }
+
+        /* TABLES PREMIUM */
+        .table-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 16px 24px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #64748b;
+            background: #f8fafc;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        td {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 0.9rem;
+            color: var(--text-main);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        /* ELEMENTS */
+        .badge {
+            display: inline-flex;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-pub {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-draft {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .badge-pending {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .btn-icon-sm {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            font-size: 1.1rem;
+        }
+
+        .btn-icon-sm:hover {
+            border-color: #cbd5e1;
+            color: #0f172a;
+            background: #f1f5f9;
+            transform: translateY(-1px);
+        }
+
+        .btn-icon-sm.del:hover {
+            background: #fee2e2;
+            color: #b91c1c;
+            border-color: #fecaca;
+        }
+
+        .btn-valid {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #86efac;
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-right: 5px;
+        }
+
+        .btn-reject {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fca5a5;
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        /* SweetAlert Custom */
+        .swal2-popup {
+            font-family: 'Inter', sans-serif;
+            border-radius: 16px;
+        }
+
+
+        /* --- STYLE MODAL PREMIUM (Nouveau Sondage) --- */
+        .premium-modal-container {
+            text-align: left;
+            padding: 0 10px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .pm-group {
+            margin-bottom: 20px;
+        }
+
+        .pm-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--primary-brand);
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .pm-input,
+        .pm-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: 'Inter';
+            font-size: 0.95rem;
+            color: #1e293b;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+        }
+
+        .pm-input:focus,
+        .pm-select:focus {
+            background: #fff;
+            border-color: var(--primary-brand);
+            box-shadow: 0 0 0 4px rgba(55, 70, 61, 0.1);
+        }
+
+        .pm-input::placeholder {
+            color: #94a3b8;
+        }
+
+        .pm-divider {
+            height: 1px;
+            background: #eee;
+            margin: 20px 0;
+        }
+
+        .pm-subtitle {
+            font-family: 'Playfair Display';
+            font-size: 1.1rem;
+            color: var(--text-main);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <a href="index.html" class="brand">
+            <img src="logo.svg" alt="S" onerror="this.style.display='none'">
+            <span>Solitiquo</span>
+        </a>
+        <nav class="nav-menu">
+            <div class="nav-item active" onclick="switchView('dashboard')">📊 Vue d'ensemble</div>
+            <div class="nav-item" onclick="switchView('articles')">📝 Articles <span id="badge-art-pending"
+                    class="badge badge-pending" style="display:none; margin-left:auto; font-size:0.6rem;">0</span></div>
+            <div class="nav-item" onclick="switchView('podcasts')">🎙️ Podcasts</div>
+            <div class="nav-item" onclick="switchView('emissions')">📺 Émissions</div>
+            <div class="nav-item" onclick="switchView('parties')">🏛️ Partis</div>
+            <div class="nav-item" onclick="switchView('polls')">📊 Sondages</div>
+            <div class="nav-item" onclick="switchView('moderation')">🛡️ Modération <span id="badge-mod"
+                    class="badge badge-draft" style="display:none; margin-left:auto;">0</span></div>
+            <div class="nav-item" style="margin-top:auto; color:#ef4444;" onclick="SolitiquoAPI.logout()">🚪 Déconnexion
+            </div>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-bar">
+            <h1 class="page-title" id="page-header">Vue d'ensemble</h1>
+            <div id="header-actions"></div>
+        </header>
+
+        <div class="scroll-zone">
+            <div id="view-dashboard" class="view-section active">
+                <div style="background:white; padding:40px; border-radius:12px; text-align:center;">
+                    <h2 style="font-family:'Playfair Display'; margin-bottom:10px;">Bienvenue dans votre Tour de
+                        Contrôle</h2>
+                    <p style="color:#666;">Sélectionnez une rubrique dans le menu pour gérer le contenu.</p>
+                </div>
+            </div>
+
+            <div id="view-articles" class="view-section">
+                <div class="table-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:35%;">Article</th>
+                                <th>Statut</th>
+                                <th>Accès</th>
+                                <th>Validation</th>
+                                <th>Analytics</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="list-articles">
+                            <tr>
+                                <td colspan="6" style="text-align:center; padding:3rem;">Chargement...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-podcasts" class="view-section">
+                <div class="table-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Podcast</th>
+                                <th>Catégorie</th>
+                                <th>Date</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="list-podcasts">
+                            <tr>
+                                <td colspan="4" style="text-align:center;">Chargement...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-emissions" class="view-section">
+                <div class="table-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Émission</th>
+                                <th>Catégorie</th>
+                                <th>Date</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="list-emissions">
+                            <tr>
+                                <td colspan="4" style="text-align:center;">Chargement...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-parties" class="view-section">
+                <div class="table-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Logo</th>
+                                <th>Nom du Parti</th>
+                                <th>Orientation</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="list-parties"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-polls" class="view-section">
+                <div class="table-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Question</th>
+                                <th>Statut</th>
+                                <th>Votes Total</th>
+                                <th>Résultats</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="list-polls"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-moderation" class="view-section">
+                <div class="table-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Auteur</th>
+                                <th>Message</th>
+                                <th>Raison</th>
+                                <th style="text-align:right;">Décision</th>
+                            </tr>
+                        </thead>
+                        <tbody id="list-moderation"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        // --- 1. INITIALISATION ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await SolitiquoAPI.getProfile();
+            // Vérification Admin
+            if (!user || (user.role !== 'admin' && user.role !== 'writer')) {
+                window.location.href = 'auth.html';
+                return;
+            }
+            loadAllData();
+        });
+
+        // --- 2. FONCTIONS GLOBALES (Navigation) ---
+        function switchView(viewName) {
+            // 1. Menu Actif
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            // On cherche le nav-item qui contient le texte ou le onclick correspondant
+            const items = document.querySelectorAll('.nav-item');
+            items.forEach(item => {
+                if (item.textContent.toLowerCase().includes(viewName) || (item.getAttribute('onclick') && item.getAttribute('onclick').includes(viewName)))
+                    item.classList.add('active');
+            });
+
+            // 2. Section Active (Affichage du contenu)
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            const activeSection = document.getElementById(`view-${viewName}`);
+            if (activeSection) activeSection.classList.add('active');
+
+            // 3. Header et Boutons d'action
+            const header = document.getElementById('page-header');
+            const actions = document.getElementById('header-actions');
+            actions.innerHTML = ""; // Reset boutons
+
+            if (viewName === 'articles') {
+                header.textContent = "Gestion des Articles";
+                actions.innerHTML = `<a href="editeur-article.html" class="action-btn"><span>+</span> Nouvel Article</a>`;
+            } else if (viewName === 'podcasts') {
+                header.textContent = "Gestion des Podcasts";
+                actions.innerHTML = `<a href="editeur-podcast.html" class="action-btn"><span>+</span> Nouveau Podcast</a>`;
+            } else if (viewName === 'emissions') {
+                header.textContent = "Gestion des Émissions";
+                actions.innerHTML = `<a href="editeur-emission.html" class="action-btn"><span>+</span> Nouvelle Émission</a>`;
+            } else if (viewName === 'parties') {
+                header.textContent = "Répertoire des Partis";
+                // Ce bouton appelle openNewPartyModal()
+                actions.innerHTML = `<button onclick="openNewPartyModal()" class="action-btn"><span>+</span> Nouveau Parti</button>`;
+                loadParties(); // On charge les données spécifiquement
+            } else if (viewName === 'polls') {
+                header.textContent = "Historique des Sondages";
+                actions.innerHTML = `<button onclick="openNewPollModal()" class="action-btn"><span>+</span> Sondage Hebdo</button>`;
+                loadPolls();
+            } else {
+                header.textContent = "Vue d'ensemble";
+            }
+        }
+
+        // --- 3. CHARGEMENT DES DONNÉES ---
+        async function loadAllData() {
+            try {
+                // Articles
+                const res = await fetch(API_URL + '/admin/content/articles');
+                const json = await res.json();
+                renderArticles(json.data || []);
+
+                // Badge brouillons
+                const drafts = (json.data || []).filter(a => a.status === 'draft').length;
+                const badge = document.getElementById('badge-art-pending');
+                if (drafts > 0) { badge.style.display = 'inline-flex'; badge.textContent = drafts; }
+                else badge.style.display = 'none';
+
+                loadOtherContent(); // Charge le reste (podcasts, emissions, etc.)
+            } catch (e) { console.error("Erreur articles", e); }
+        }
+
+        async function loadOtherContent() {
+            try {
+                // Podcasts & Emissions
+                const resP = await fetch(API_URL + '/podcasts');
+                renderPodcasts((await resP.json()).data || []);
+
+                const resE = await fetch(API_URL + '/emissions');
+                renderEmissions((await resE.json()).data || []);
+
+                // Modération
+                const resM = await fetch(API_URL + '/admin/comments/pending');
+                const jsonM = await resM.json();
+                const tbody = document.getElementById('list-moderation');
+                if (jsonM.data && jsonM.data.length > 0) {
+                    document.getElementById('badge-mod').style.display = 'inline-flex';
+                    document.getElementById('badge-mod').textContent = jsonM.data.length;
+                    tbody.innerHTML = jsonM.data.map(c => `
+                    <tr>
+                        <td><strong>${c.username}</strong></td>
+                        <td style="color:#444;">${c.content}</td>
+                        <td style="color:#b91c1c; font-weight:bold;">${c.flag_reason}</td>
+                        <td style="text-align:right;">
+                            <button class="btn-valid" onclick="modComment(${c.id}, 'approve')">✔</button>
+                            <button class="btn-reject" onclick="modComment(${c.id}, 'delete')">✖</button>
+                        </td>
+                    </tr>`).join('');
+                } else { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;padding:2rem;">Aucun signalement.</td></tr>'; }
+
+            } catch (e) { console.error(e); }
+        }
+
+        // --- RENDUS HTML (Listes) ---
+        function renderArticles(data) {
+            const tbody = document.getElementById('list-articles');
+            if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:3rem; color:#999;">Aucun article.</td></tr>'; return; }
+
+            tbody.innerHTML = data.map(art => {
+                let statusBadge = art.status === 'draft' ? `<span class="badge badge-draft">Brouillon</span>` : `<span class="badge badge-pub">Publié</span>`;
+                const isPrem = (art.is_premium === true);
+                const premClass = isPrem ? 'color:#b91c1c; background:#fef2f2; border-color:#fecaca;' : 'color:#64748b; background:#f1f5f9; border-color:#e2e8f0;';
+                const premLabel = isPrem ? '🔒 Premium' : '🔓 Gratuit';
+
+                let validationBtns = `<span style="color:#ccc;">-</span>`;
+                if (art.status === 'draft') {
+                    validationBtns = `<button class="btn-valid" onclick="workflow(${art.id}, 'approve')" title="Publier">Publier</button>`;
+                }
+
+                // AJOUT IMAGE ICI
+                return `
+            <tr>
+                <td>
+                    <div class="title-row">
+                        <img src="${art.image_url || 'https://placehold.co/50'}" class="mini-thumb" onerror="this.src='https://placehold.co/50'">
+                        <div>
+                            <div style="font-weight:700; color:#0f172a; font-size:0.95rem;">${art.title}</div>
+                            <div style="font-size:0.8rem; color:#64748b; margin-top:2px;">${art.category} • ${art.author_name || 'Rédaction'}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>${statusBadge}</td>
+                <td>
+                    <button onclick="togglePremium('article', ${art.id}, ${isPrem})" style="border:1px solid; border-radius:6px; padding:4px 10px; font-weight:700; font-size:0.75rem; cursor:pointer; ${premClass}">
+                        ${premLabel}
+                    </button>
+                </td>
+                <td>${validationBtns}</td>
+                <td><span style="font-weight:700;">${art.views_count || 0}</span> <span style="font-size:0.8rem; color:#999;">vues</span></td>
+                <td style="text-align:right;">
+                    <div class="row-actions">
+                        <a href="article.html?id=${art.id}" target="_blank" class="btn-icon-sm" title="Voir">👁️</a>
+                        <a href="editeur-article.html?id=${art.id}" class="btn-icon-sm" title="Modifier">✏️</a>
+                        <button onclick="deleteItem('article', ${art.id})" class="btn-icon-sm del" title="Supprimer">🗑️</button>
+                    </div>
+                </td>
+            </tr>`;
+            }).join('');
+        }
+
+        function renderEmissions(data) {
+            const tbody = document.getElementById('list-emissions');
+            if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Vide</td></tr>'; return; }
+            tbody.innerHTML = data.map(e => `
+            <tr>
+                <td style="font-weight:600;">${e.title}</td>
+                <td><span class="badge" style="background:#eee;">${e.category}</span></td>
+                <td>${new Date(e.published_at).toLocaleDateString()}</td>
+                <td style="text-align:right;">
+                    <div class="row-actions">
+                        <a href="emissions.html" target="_blank" class="btn-icon-sm" title="Voir la liste">📺</a>
+                        <a href="editeur-emission.html?id=${e.id}" class="btn-icon-sm" title="Modifier">✏️</a>
+                        <button onclick="deleteItem('emission', ${e.id})" class="btn-icon-sm del">🗑️</button>
+                    </div>
+                </td>
+            </tr>`).join('');
+        }
+
+        function renderPodcasts(data) {
+            const tbody = document.getElementById('list-podcasts');
+            if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Vide</td></tr>'; return; }
+
+            tbody.innerHTML = data.map(p => {
+                // Affichage d'un petit badge si le podcast est à la une
+                let featBadge = '';
+                if (p.featured_scope === 'politique') featBadge = '<span class="badge" style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0;">⭐ Une Pol.</span>';
+                if (p.featured_scope === 'social') featBadge = '<span class="badge" style="background:#fef9c3; color:#854d0e; border:1px solid #fde047;">⭐ Une Soc.</span>';
+
+                return `
+            <tr>
+                <td>
+                    <div class="title-row">
+                        <img src="${p.image_url || 'https://placehold.co/50'}" class="mini-thumb" onerror="this.src='https://placehold.co/50'">
+                        <div>
+                            <div style="font-weight:600;">${p.title}</div>
+                            ${featBadge}
+                        </div>
+                    </div>
+                </td>
+                <td><span class="badge" style="background:#eee;">${p.category}</span></td>
+                <td>${new Date(p.created_at).toLocaleDateString()}</td>
+                <td style="text-align:right;">
+                    <div class="row-actions">
+                        <button onclick="setFeatured(${p.id})" class="btn-icon-sm" title="Mettre à la une" style="color:#EAB308;">⭐</button>
+                        <a href="podcasts.html" target="_blank" class="btn-icon-sm" title="Voir">🎧</a>
+                        <a href="editeur-podcast.html?id=${p.id}" class="btn-icon-sm" title="Modifier">✏️</a>
+                        <button onclick="deleteItem('podcast', ${p.id})" class="btn-icon-sm del">🗑️</button>
+                    </div>
+                </td>
+            </tr>`;
+            }).join('');
+        }
+
+        // Nouvelle fonction pour choisir la page
+        async function setFeatured(id) {
+            const { value: scope } = await Swal.fire({
+                title: 'Mettre ce podcast à la une ?',
+                input: 'radio',
+                inputOptions: {
+                    'politique': 'Page Politique',
+                    'social': 'Page Social',
+                    'none': 'Retirer de la une'
+                },
+                inputValidator: (value) => {
+                    if (!value) return 'Vous devez choisir une option'
+                }
+            });
+
+            if (scope) {
+                await fetch(`${API_URL}/admin/podcasts/${id}/feature`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ scope }),
+                    credentials: 'include'
+                });
+                const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+                Toast.fire({ icon: 'success', title: 'Mis à jour !' });
+                loadOtherContent(); // Recharger la liste pour voir le badge
+            }
+        }
+
+        // --- SONDAGES ---
+        // Variable globale pour stocker les sondages chargés (évite le bug des apostrophes)
+        let globalPollsData = [];
+
+        // --- SONDAGES (Correction Bug Graphique + Layout) ---
+        async function loadPolls() {
+            const tbody = document.getElementById('list-polls');
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Chargement...</td></tr>';
+
+            try {
+                const res = await fetch(API_URL + '/admin/polls/stats');
+                if (!res.ok) throw new Error(`Erreur Serveur (${res.status})`);
+
+                const json = await res.json();
+
+                // 1. On sauvegarde les données proprement
+                globalPollsData = json.data || [];
+
+                if (globalPollsData.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Aucun sondage trouvé.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = globalPollsData.map(p => {
+                    const isActive = p.is_active ? '<span class="badge badge-pub">Actif</span>' : '<span class="badge" style="background:#eee;">Clôturé</span>';
+
+                    // 2. On passe seulement l'ID à la fonction (plus de JSON cassé par les guillemets)
+                    return `
+                <tr>
+                    <td style="font-weight:600;">${p.question} <div style="font-size:0.7rem; color:#888; font-weight:400;">${p.category || 'Général'}</div></td>
+                    <td>${isActive}</td>
+                    <td>${p.total_votes} votes</td>
+                    <td>
+                        <button class="btn-valid" onclick="openChartById(${p.id})" style="font-size:0.7rem;">Voir Graphique</button>
+                    </td>
+                    <td style="text-align:right;">
+                        <button onclick="deleteItem('polls', ${p.id})" class="btn-icon-sm del">🗑️</button>
+                    </td>
+                </tr>`;
+                }).join('');
+            } catch (e) {
+                console.error("Err Polls", e);
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Erreur chargement : ${e.message}</td></tr>`;
+            }
+        }
+
+        // Nouvelle fonction qui cherche les données dans la variable globale
+        function openChartById(id) {
+            // Retrouver le sondage dans la liste mémoire
+            const poll = globalPollsData.find(p => p.id === id);
+            if (!poll) return Swal.fire('Erreur', 'Données introuvables', 'error');
+
+            const labels = poll.options.map(o => o.text || o.label);
+            const data = poll.options.map(o => o.votes || o.votes_count);
+
+            Swal.fire({
+                title: `<span style="font-family:'Playfair Display'; font-size:1.5rem; color:#37463D;">${poll.question}</span>`,
+                width: 800,
+                html: '<div style="position:relative; height:350px; width:100%;"><canvas id="pollChart"></canvas></div>',
+                showCloseButton: true,
+                showConfirmButton: false,
+                didOpen: () => {
+                    const ctx = document.getElementById('pollChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                data: data,
+                                backgroundColor: ['#37463D', '#C82823', '#EAB308', '#94A3B8', '#1E293B', '#475569'],
+                                borderWidth: 2,
+                                borderColor: '#ffffff'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '60%',
+                            plugins: {
+                                legend: {
+                                    position: 'right',
+                                    labels: {
+                                        font: { family: 'Inter', size: 13 },
+                                        boxWidth: 12,
+                                        padding: 20,
+                                        usePointStyle: true,
+                                        generateLabels: function (chart) {
+                                            const data = chart.data;
+                                            if (data.labels.length && data.datasets.length) {
+                                                const dataset = data.datasets[0];
+                                                const total = dataset.data.reduce((acc, val) => acc + val, 0);
+                                                return data.labels.map((label, i) => {
+                                                    const val = dataset.data[i];
+                                                    const pct = total > 0 ? Math.round((val / total) * 100) + '%' : '0%';
+                                                    return {
+                                                        text: `${label} :  ${val} votes  (${pct})`,
+                                                        fillStyle: dataset.backgroundColor[i],
+                                                        hidden: isNaN(dataset.data[i]) || chart.getDatasetMeta(0).data[i].hidden,
+                                                        index: i,
+                                                        fontColor: '#333'
+                                                    };
+                                                });
+                                            }
+                                            return [];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+
+        function showPollChart(dataStr) {
+            const poll = JSON.parse(decodeURIComponent(dataStr));
+            // On s'assure de récupérer les bons champs (labels et data)
+            const labels = poll.options.map(o => o.text || o.label);
+            const data = poll.options.map(o => o.votes || o.votes_count);
+
+            Swal.fire({
+                title: `<span style="font-family:'Playfair Display'; font-size:1.5rem; color:#37463D;">${poll.question}</span>`,
+                // On élargit la popup pour que la légende tienne confortablement à droite
+                width: 850,
+                html: '<div style="position:relative; height:350px; width:100%;"><canvas id="pollChart"></canvas></div>',
+                showCloseButton: true,
+                showConfirmButton: false,
+                didOpen: () => {
+                    const ctx = document.getElementById('pollChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                data: data,
+                                backgroundColor: [
+                                    '#37463D', // Vert Solitiquo
+                                    '#C82823', // Rouge Solitiquo
+                                    '#EAB308', // Jaune
+                                    '#94A3B8', // Gris
+                                    '#1E293B', // Bleu nuit
+                                    '#475569'  // Ardoise
+                                ],
+                                borderWidth: 2,
+                                borderColor: '#ffffff'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '60%',
+                            plugins: {
+                                legend: {
+                                    position: 'right', // Position à droite pour la liste détaillée
+                                    align: 'center',
+                                    labels: {
+                                        font: { family: 'Inter', size: 13, weight: 500 },
+                                        boxWidth: 12,
+                                        padding: 20,
+                                        usePointStyle: true, // Points ronds plus élégants
+                                        // C'est ici que l'on calcule les stats pour la légende
+                                        generateLabels: function (chart) {
+                                            const data = chart.data;
+                                            if (data.labels.length && data.datasets.length) {
+                                                const dataset = data.datasets[0];
+                                                // Calcul du total des votes
+                                                const total = dataset.data.reduce((acc, val) => acc + val, 0);
+
+                                                return data.labels.map((label, i) => {
+                                                    const val = dataset.data[i];
+                                                    const pct = total > 0 ? Math.round((val / total) * 100) + '%' : '0%';
+
+                                                    // Construction du texte : "Option : X votes (Y%)"
+                                                    const text = `${label} :  ${val} votes  (${pct})`;
+
+                                                    return {
+                                                        text: text,
+                                                        fillStyle: dataset.backgroundColor[i],
+                                                        hidden: isNaN(dataset.data[i]) || chart.getDatasetMeta(0).data[i].hidden,
+                                                        index: i,
+                                                        fontColor: '#333'
+                                                    };
+                                                });
+                                            }
+                                            return [];
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    // On garde le tooltip simple pour la précision au survol
+                                    callbacks: {
+                                        label: function (context) {
+                                            return ` ${context.label}: ${context.raw} votes`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        // --- MODAL "NOUVEAU SONDAGE" (Version Premium) ---
+        async function openNewPollModal() {
+            // On utilise ici le HTML personnalisé pour le style "Solitiquo"
+            const { value: formValues } = await Swal.fire({
+                title: '<span style="font-family:Playfair Display; font-weight:800; color:#37463D; font-size:1.8rem;">Sondage de la semaine</span>',
+                html: `
+                <div class="premium-modal-container">
+                    <div class="pm-group">
+                        <label class="pm-label">La Question</label>
+                        <input id="swal-question" class="pm-input" placeholder="Ex: Pour ou contre la réforme...">
+                    </div>
+                    
+                    <div class="pm-group">
+                        <label class="pm-label">Catégorie</label>
+                        <select id="swal-cat" class="pm-select">
+                            <option value="Politique">Politique</option>
+                            <option value="Social">Social</option>
+                            <option value="Général">Général</option>
+                        </select>
+                    </div>
+
+                    <div class="pm-divider"></div>
+                    <div class="pm-subtitle">Les Options de réponse</div>
+
+                    <div class="pm-group">
+                        <input id="swal-opt1" class="pm-input" placeholder="Option 1 (Ex: Oui)">
+                    </div>
+                    <div class="pm-group">
+                        <input id="swal-opt2" class="pm-input" placeholder="Option 2 (Ex: Non)">
+                    </div>
+                    <div class="pm-group">
+                        <input id="swal-opt3" class="pm-input" placeholder="Option 3 (Facultatif)">
+                    </div>
+                </div>
+            `,
+                width: 650,
+                confirmButtonText: 'Publier le Sondage',
+                confirmButtonColor: '#37463D',
+                showCancelButton: true,
+                cancelButtonText: 'Annuler',
+                focusConfirm: false,
+                // Récupération des valeurs des champs personnalisés
+                preConfirm: () => {
+                    return [
+                        document.getElementById('swal-question').value,
+                        document.getElementById('swal-opt1').value,
+                        document.getElementById('swal-opt2').value,
+                        document.getElementById('swal-opt3').value,
+                        document.getElementById('swal-cat').value
+                    ]
+                }
+            });
+
+            if (formValues) {
+                const [q, o1, o2, o3, cat] = formValues;
+                const options = [o1, o2];
+                if (o3 && o3.trim() !== "") options.push(o3);
+
+                if (!q || !o1 || !o2) return Swal.fire('Incomplet', 'Une question et au moins 2 options sont requises.', 'warning');
+
+                try {
+                    await fetch(API_URL + '/admin/polls', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ question: q, options, category: cat }),
+                        credentials: 'include'
+                    });
+
+                    const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
+                    Toast.fire({ icon: 'success', title: 'Sondage publié avec succès !' });
+
+                    loadPolls();
+                } catch (e) { Swal.fire('Erreur', 'Impossible de créer le sondage', 'error'); }
+            }
+        }
+
+        // --- PARTIS ---
+        async function loadParties() {
+            const tbody = document.getElementById('list-parties');
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Chargement...</td></tr>';
+
+            try {
+                const res = await fetch(API_URL + '/admin/parties');
+                if (!res.ok) throw new Error(`Erreur Serveur (${res.status})`);
+
+                const json = await res.json();
+
+                if (!json.data || json.data.length === 0) {
+                    tbody.innerHTML = "<tr><td colspan='4' style='text-align:center;'>Aucun parti trouvé.</td></tr>";
+                    return;
+                }
+
+                tbody.innerHTML = json.data.map(p => {
+                    // 1. Gestion des badges d'orientation (Correction du N/A)
+                    // La BDD renvoie 'type', on le convertit en affichage propre
+                    let badgeClass = 'badge-pending'; // Gris/Jaune par défaut
+                    let label = p.type || 'Non défini';
+
+                    if (p.type === 'majorite') {
+                        label = 'Majorité';
+                        badgeClass = 'badge-pub'; // Vert
+                    } else if (p.type === 'opposition') {
+                        label = 'Opposition';
+                        badgeClass = 'badge-draft'; // Rouge
+                    } else if (p.type === 'historique') {
+                        label = 'Historique';
+                        badgeClass = 'badge'; // Gris standard
+                    }
+
+                    // 2. Création de la ligne
+                    return `
+                <tr>
+                    <td>
+                        <div style="width:40px; height:40px; background:#f4f4f4; border-radius:4px; display:flex; align-items:center; justify-content:center; border:1px solid #eee;">
+                            <img src="${p.logo_url || 'img/default.png'}" style="max-width:100%; max-height:100%;" onerror="this.style.display='none'">
+                        </div>
+                    </td>
+                    <td style="font-weight:700; font-size:0.95rem;">${p.name}</td>
+                    <td><span class="badge ${badgeClass}">${label}</span></td>
+                    <td style="text-align:right;">
+                        <div class="row-actions" style="display:flex; justify-content:flex-end; gap:8px;">
+                            <a href="dossier.html?id=${p.id}" target="_blank" class="btn-icon-sm" title="Voir le dossier public">👁️</a>
+                            <a href="editeur-parti.html?id=${p.id}" class="btn-icon-sm" title="Modifier">✏️</a>
+                            <button onclick="deleteItem('parties', ${p.id})" class="btn-icon-sm del" title="Supprimer">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `}).join('');
+            } catch (e) {
+                console.error("Err Parties", e);
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">Erreur chargement : ${e.message}</td></tr>`;
+            }
+        }
+        async function openNewPartyModal() {
+            // Redirection vers l'éditeur complet pour créer un parti
+            window.location.href = 'editeur-parti.html';
+        }
+
+        // --- UTILS ---
+        async function togglePremium(type, id, currentStatus) {
+            // Définir les textes selon l'état actuel
+            const actionText = currentStatus ? "Passer en Gratuit" : "Passer en Premium";
+            const icon = currentStatus ? 'unlock' : 'lock'; // Tu peux mettre 'warning' ou 'question' si tu n'as pas FontAwesome, ici j'utilise les icones sweetalert natives
+            const confirmColor = currentStatus ? '#64748b' : '#C82823'; // Gris pour gratuit, Rouge pour premium
+
+            // 1. Fenêtre de confirmation
+            const result = await Swal.fire({
+                title: 'Changer l\'accès ?',
+                html: `Cet article est actuellement <b>${currentStatus ? 'Premium' : 'Gratuit'}</b>.<br>Voulez-vous le rendre <b>${currentStatus ? 'accessible à tous' : 'réservé aux abonnés'}</b> ?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: confirmColor,
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: `Oui, ${actionText}`,
+                cancelButtonText: 'Annuler',
+                reverseButtons: true
+            });
+
+            // 2. Si l'utilisateur confirme
+            if (result.isConfirmed) {
+                try {
+                    const res = await fetch(`${API_URL}/admin/content/${type}/${id}/toggle-premium`, { method: 'PUT', credentials: 'include' });
+                    const json = await res.json();
+
+                    if (json.success) {
+                        // Petit Toast de succès rapide
+                        const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, timerProgressBar: true });
+                        Toast.fire({ icon: 'success', title: 'Accès mis à jour !' });
+                        loadAllData(); // Rafraîchir le tableau
+                    } else {
+                        Swal.fire('Erreur', json.error, 'error');
+                    }
+                } catch (e) { Swal.fire('Erreur', 'Problème réseau', 'error'); }
+            }
+        }
+
+        async function workflow(id, action) {
+            try {
+                const res = await fetch(`${API_URL}/admin/workflow/${id}`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action }), credentials: 'include'
+                });
+                if ((await res.json()).success) {
+                    Swal.fire({ title: 'Parfait !', text: 'Action effectuée.', icon: 'success', timer: 1500, showConfirmButton: false });
+                    loadAllData();
+                }
+            } catch (e) { Swal.fire('Oups', 'Erreur réseau', 'error'); }
+        }
+
+        async function deleteItem(type, id) {
+            const result = await Swal.fire({
+                title: 'Êtes-vous sûr ?', text: "Cette action est irréversible !", icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#C82823', cancelButtonColor: '#3085d6', confirmButtonText: 'Oui, supprimer', cancelButtonText: 'Annuler'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    // Construction dynamique de l'URL selon le type
+                    let url = `${API_URL}/admin/content/${type}/${id}`;
+                    if (type === 'polls') url = `${API_URL}/admin/polls/${id}`;
+                    if (type === 'parties') url = `${API_URL}/admin/parties/${id}`;
+
+                    const res = await fetch(url, { method: 'DELETE', credentials: 'include' });
+                    const json = await res.json();
+
+                    if (json.success) {
+                        Swal.fire('Supprimé !', 'Le contenu a été effacé.', 'success');
+                        // Rechargement intelligent de la vue active
+                        if (type === 'polls') loadPolls();
+                        else if (type === 'parties') loadParties();
+                        else loadAllData();
+                    } else {
+                        Swal.fire('Erreur', json.error || 'Erreur serveur', 'error');
+                    }
+                } catch (e) { Swal.fire('Erreur', 'Impossible de supprimer.', 'error'); }
+            }
+        }
+
+        async function modComment(id, action) {
+            try {
+                await fetch(`${API_URL}/admin/comments/${id}/${action}`, { method: 'POST', credentials: 'include' });
+                loadAllData(); // Rafraîchit les notifs
+            } catch (e) { }
+        }
+    </script>
+</body>
+
+</html>

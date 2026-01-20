@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chargement... — Podcast Solitiquo</title>
+  <link rel="stylesheet" href="solitiquo.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  
+  <script>
+    function handleImgError(img) {
+        img.onerror = null;
+        img.src = 'https://placehold.co/600x600/111/FFF?text=Podcast';
+    }
+  </script>
+
+  <style>
+    /* --- STYLES SPÉCIFIQUES PLAYER V3 (Glassmorphism) --- */
+    :root { --primary-dark: #37463D; --accent-red: #C82823; --pod-bg: #111111; --glass-border: rgba(255,255,255,0.1); }
+    
+    body { background: #f8f9fa; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
+    
+    /* Header Premium (Copié de Index) */
+    .premium-header { background: white; border-bottom: 1px solid #eaeaea; position: sticky; top: 0; z-index: 1000; padding: 0 30px; height: 80px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+    .ph-left, .ph-right { flex: 1; display: flex; align-items: center; } .ph-center { flex: 2; display: flex; justify-content: center; }
+    .ph-brand { text-decoration: none; display: flex; align-items: center; height: 50px; } .ph-brand img { height: 42px; width: auto; display: block; }
+    .brand-sep { width: 1px; height: 30px; background: #ccc; margin: 0 15px; } .brand-text { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 800; color: var(--primary-dark); letter-spacing: -0.5px; position: relative; top: 2px; }
+    .ph-nav { display: flex; gap: 30px; } .ph-link { text-decoration: none; color: #2c2c2c; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; position: relative; transition: color 0.3s; font-family: 'Inter'; }
+    .ph-link:hover, .ph-link.active { color: var(--accent-red); }
+    .ph-link::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 2px; background: var(--accent-red); transition: width 0.3s; } .ph-link:hover::after { width: 100%; }
+    .ph-btn-auth { background: #2c2c2c; color: white; padding: 10px 24px; border-radius: 30px; text-decoration: none; font-size: 0.85rem; font-weight: 700; transition: all 0.3s; } .ph-btn-auth:hover { background: var(--accent-red); transform: translateY(-2px); }
+
+    /* ZONE PLAYER */
+    .player-section { padding: 3rem 0 5rem; flex: 1; }
+    .container-limited { max-width: 1100px; margin: 0 auto; padding: 0 20px; width: 100%; }
+    #loading-container { text-align: center; padding: 5rem; }
+
+    /* GLASSMORPHISM PLAYER CSS */
+    .glass-hero-wrapper { position: relative; border-radius: 24px; overflow: hidden; background: #1a1a1a; color: white; box-shadow: 0 30px 60px rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); }
+    .glass-bg { position: absolute; inset: -20px; background-size: cover; background-position: center; filter: blur(50px) brightness(0.4); opacity: 0.7; z-index: 1; }
+    .glass-content { position: relative; z-index: 2; padding: 3.5rem; backdrop-filter: blur(10px); }
+    
+    .glass-top-row { display: grid; grid-template-columns: 280px 1fr; gap: 3rem; align-items: flex-start; margin-bottom: 3rem; }
+    .glass-cover-box { position: relative; width: 100%; aspect-ratio: 1/1; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); }
+    .glass-img { width: 100%; height: 100%; object-fit: cover; }
+    .glass-overlay-btn { position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 3rem; opacity: 0; transition: 0.3s; cursor: pointer; }
+    .glass-cover-box:hover .glass-overlay-btn { opacity: 1; }
+    
+    .glass-info-box { flex: 1; padding-top: 10px; }
+    .glass-badges { display: flex; gap: 15px; margin-bottom: 1.5rem; font-size: 0.8rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.7); }
+    .g-badge { color: var(--accent-red); border: 1px solid var(--accent-red); padding: 4px 10px; border-radius: 4px; }
+    .glass-h1 { font-family: 'Playfair Display'; font-size: 3.5rem; line-height: 1.1; margin: 0 0 1.5rem 0; text-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+    
+    /* Visualiseur */
+    .glass-visualizer { display: flex; gap: 5px; height: 35px; align-items: flex-end; opacity: 0.4; margin-top: 20px; }
+    .bar { width: 6px; background: var(--accent-red); border-radius: 3px; height: 6px; transition: height 0.1s; }
+    .is-playing .glass-visualizer { opacity: 1; }
+    .is-playing .bar { animation: equalizer 0.8s infinite ease-in-out; }
+    .is-playing .bar:nth-child(odd) { animation-duration: 0.6s; } .is-playing .bar:nth-child(2n) { animation-duration: 1.1s; } .is-playing .bar:nth-child(3n) { animation-duration: 0.9s; }
+    @keyframes equalizer { 0% {height: 6px;} 50% {height: 100%;} 100% {height: 6px;} }
+
+    /* Contrôles */
+    .glass-controls-area { background: rgba(0,0,0,0.2); padding: 1.5rem 2rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); }
+    .g-progress-row { display: flex; align-items: center; gap: 15px; font-family: 'Inter'; font-size: 0.85rem; font-weight: 600; color: #ccc; margin-bottom: 1.5rem; }
+    .g-track { flex: 1; height: 6px; background: rgba(255,255,255,0.15); border-radius: 3px; position: relative; cursor: pointer; }
+    .g-fill { height: 100%; background: var(--accent-red); border-radius: 3px; width: 0%; pointer-events: none; }
+    input[type=range] { position: absolute; top: -7px; left: 0; width: 100%; height: 20px; opacity: 0; cursor: pointer; margin: 0; }
+
+    .g-buttons-row { display: flex; justify-content: space-between; align-items: center; }
+    .g-main-btns { display: flex; align-items: center; gap: 25px; }
+    .g-btn-prim { width: 65px; height: 65px; border-radius: 50%; border: none; background: white; color: black; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s; }
+    .g-btn-prim:hover { transform: scale(1.1); background: var(--accent-red); color: white; }
+    .g-btn-sec { background: none; border: none; color: #ccc; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.9rem; }
+    .g-btn-sec:hover { color: white; }
+
+    .g-extra-btns { display: flex; align-items: center; gap: 20px; }
+    .g-text-btn { background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); color: white; padding: 8px 16px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; transition: 0.2s; }
+    .g-text-btn:hover { background: rgba(255,255,255,0.2); }
+    
+    /* Transcription */
+    .glass-transcript-drawer { max-height: 0; overflow: hidden; opacity: 0; transition: all 0.4s ease; background: rgba(0,0,0,0.3); border-radius: 12px; margin-top: 0; }
+    .g-transcript-inner { padding: 2rem; font-size: 1rem; line-height: 1.7; color: #ddd; }
+    .time-marker { color: var(--accent-red); font-weight: 700; cursor: pointer; margin-right: 10px; background: rgba(200,40,35,0.15); padding: 2px 6px; border-radius: 4px; transition: 0.2s; }
+    .time-marker:hover { background: var(--accent-red); color: white; }
+
+    /* INFO GRID */
+    .info-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 4rem; margin-top: 4rem; }
+    .info-title { font-family: 'Playfair Display'; font-size: 1.5rem; margin-bottom: 1rem; color: var(--primary-dark); border-bottom: 2px solid #ddd; padding-bottom: 5px; display: inline-block; }
+    .info-text { color: #444; line-height: 1.8; margin-bottom: 2rem; font-size: 1.05rem; }
+    .info-list li { margin-bottom: 10px; color: #555; }
+
+    /* Footer */
+    .premium-footer { background: #1a1a1a; color: #ccc; padding: 4rem 0; margin-top: auto; }
+    .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 3rem; max-width: 1300px; margin: 0 auto; padding: 0 30px; }
+    .footer-logo { height: 35px; filter: brightness(0) invert(1); margin-bottom: 1.5rem; }
+    .footer-col h4 { color: white; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.2rem; font-size: 0.85rem; }
+    .footer-link { display: block; color: #888; text-decoration: none; margin-bottom: 10px; transition: color 0.3s; font-size: 0.9rem; } .footer-link:hover { color: white; }
+    .footer-bottom { border-top: 1px solid #333; margin-top: 3rem; padding-top: 2rem; text-align: center; font-size: 0.8rem; opacity: 0.6; }
+
+    @media(max-width: 900px) { 
+      .glass-top-row { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+      .glass-cover-box { width: 200px; height: 200px; margin: 0 auto; }
+      .g-buttons-row { flex-direction: column; gap: 20px; }
+      .info-grid { grid-template-columns: 1fr; }
+      .ph-nav { display: none; }
+    }
+  </style>
+</head>
+<body>
+<a href="javascript:history.length > 1 ? history.back() : window.location.href='index.html'" class="floating-back-btn" aria-label="Retour page précédente">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      <span>Retour</span>
+  </a>
+  <header class="premium-header">
+    <div class="ph-left"><a href="index.html" class="ph-brand"><img src="logo.svg"><div class="brand-sep"></div><span class="brand-text">Solitiquo</span></a></div>
+    <div class="ph-center"><nav class="ph-nav"><a href="podcasts.html" class="ph-link active">← Retour aux Podcasts</a></nav></div>
+    <div class="ph-right"><a href="auth.html" class="ph-btn-auth">S'identifier</a></div>
+  </header>
+
+  <div id="loading-container"><p style="color:#888; font-size:1.2rem;">Chargement de l'épisode...</p></div>
+
+  <section class="player-section" id="main-content" style="display:none;">
+    <div class="container-limited">
+        
+        <div id="podcast-player-container"></div>
+
+        <div class="info-grid">
+            <div>
+                <h3 class="info-title">À propos de cet épisode</h3>
+                <div id="pod-desc" class="info-text"></div>
+            </div>
+            
+            <div>
+                <h3 class="info-title">Détails</h3>
+                <ul class="info-list" style="list-style:none; padding:0; color:#555;">
+                   <li><strong>Catégorie :</strong> <span id="pod-cat"></span></li>
+                   <li><strong>Durée :</strong> <span id="pod-duration"></span></li>
+                   <li><strong>Date :</strong> <span id="pod-date"></span></li>
+                </ul>
+                <div id="chapters-block" style="display:none; margin-top:30px;">
+    <h3 class="info-title">Sommaire</h3>
+    <ul id="chapters-list" style="list-style:none; padding:0;"></ul>
+</div>
+            </div>
+        </div>
+
+    </div>
+  </section>
+
+  <footer class="premium-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <img src="logo.svg" class="footer-logo">
+        <p style="font-size:0.9rem; opacity:0.7;">Le média de référence.</p>
+      </div>
+      <div class="footer-col"><h4>Rubriques</h4><a href="politique.html" class="footer-link">Politique</a><a href="social.html" class="footer-link">Social</a></div>
+      <div class="footer-col"><h4>Légal</h4><a href="mentions-legales.html" class="footer-link">Mentions</a></div>
+      <div class="footer-col"><h4>Contact</h4><a href="contact.html" class="footer-link">Nous écrire</a></div>
+    </div>
+    <div class="footer-bottom">&copy; 2025 Solitiquo.</div>
+  </footer>
+
+  <div id="transcript-data" style="display:none;"></div>
+
+  <script src="js/api.js"></script>
+  <script src="podcast-player.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Récupérer l'ID dans l'URL
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+
+      if (!id) {
+        document.getElementById('loading-container').innerHTML = "<p>Aucun épisode demandé. <a href='podcasts.html'>Retour à la liste</a></p>";
+        return;
+      }
+
+      // 3. Appel API pour récupérer les infos du podcast
+      try {
+        // IMPORTANT : On utilise fetch directement ou via SolitiquoAPI si la méthode existe
+        const res = await fetch(`http://localhost:5000/api/podcasts/${id}`);
+        const json = await res.json();
+        
+        if (json.success) {
+            const pod = json.podcast;
+            
+            // 4. Remplir la page avec les données
+            document.title = `${pod.title} — Solitiquo`;
+            document.getElementById('pod-desc').textContent = pod.description;
+            document.getElementById('pod-cat').textContent = pod.category;
+            document.getElementById('pod-date').textContent = SolitiquoAPI.formatDate(pod.created_at);
+            document.getElementById('pod-duration').textContent = Math.floor(pod.duration/60) + " min";
+
+            // Si des chapitres existent
+if (pod.chapters) {
+    const chapters = typeof pod.chapters === 'string' ? JSON.parse(pod.chapters) : pod.chapters;
+    const list = document.getElementById('chapters-list');
+    
+    if (chapters.length > 0) {
+        document.getElementById('chapters-block').style.display = 'block';
+        
+        chapters.forEach(chap => {
+            const li = document.createElement('li');
+            li.style.cssText = "padding:8px 0; border-bottom:1px solid #eee; cursor:pointer; display:flex; gap:10px;";
+            li.innerHTML = `<span style="font-weight:700; color:#C82823;">${chap.time}</span> <span>${chap.title}</span>`;
+            
+            // Clic pour se déplacer dans l'audio
+            li.onclick = () => {
+                const parts = chap.time.split(':');
+                const seconds = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+                if(window.player) {
+                    window.player.seekTo(seconds); // Suppose que ton player a cette méthode
+                    window.player.play();
+                }
+            };
+            list.appendChild(li);
+        });
+    }
+}
+
+            // Remplir la transcription cachée (pour que le player la lise)
+            document.getElementById('transcript-data').innerHTML = pod.transcript || "<p>Pas de transcription disponible.</p>";
+
+            // 5. Afficher la zone principale (supprimer le loading)
+            document.getElementById('loading-container').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+
+            // 6. Lancer le Player V3
+            window.player = new SolitiquoPodcastPlayer('podcast-player-container', 
+                pod.audio_url, 
+                {
+                  title: pod.title,
+                  episode: id, 
+                  duration: Math.floor(pod.duration/60) + ':' + (pod.duration%60).toString().padStart(2,'0'),
+                  date: SolitiquoAPI.formatDate(pod.created_at),
+                  category: pod.category,
+                  cover: pod.image_url || 'https://via.placeholder.com/400',
+                  transcriptId: 'transcript-data'
+                }
+            );
+        } else {
+            document.getElementById('loading-container').innerHTML = "<p>Épisode introuvable.</p>";
+        }
+      } catch (e) {
+        console.error(e);
+        document.getElementById('loading-container').innerHTML = "<p>Erreur de chargement. Vérifiez votre connexion.</p>";
+      }
+    });
+  </script>
+
+</body>
+</html>

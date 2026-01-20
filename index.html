@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Solitiquo — L'Actualité Premium</title>
+  <link rel="stylesheet" href="solitiquo.css" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,400&family=Nunito:wght@600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <script>
+    function handleImgError(img) {
+      img.onerror = null;
+      img.src = 'https://placehold.co/600x400/eee/999?text=Solitiquo';
+    }
+  </script>
+
+  <style>
+    :root {
+      --primary-dark: #37463D;
+      --accent-red: #C82823;
+      --pod-bg: #111111;
+    }
+
+    /* --- HEADER PREMIUM --- */
+    .premium-header {
+      background: white;
+      border-bottom: 1px solid #eaeaea;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      padding: 0 30px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    }
+
+    .ph-left,
+    .ph-right {
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .ph-center {
+      flex: 2;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* BURGER */
+    .burger-container {
+      margin-right: 20px;
+      display: none;
+    }
+
+    .burger-btn {
+      background: transparent;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .burger-line {
+      width: 20px;
+      height: 2px;
+      background: #333;
+      transition: all 0.3s ease;
+    }
+
+    .burger-btn:hover {
+      border-color: var(--accent-red);
+    }
+
+    .burger-btn:hover .burger-line {
+      background: var(--accent-red);
+    }
+
+    /* IDENTITÉ */
+    .ph-brand {
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      height: 50px;
+    }
+
+    .ph-brand img {
+      height: 42px;
+      width: auto;
+      display: block;
+    }
+
+    .brand-sep {
+      width: 1px;
+      height: 30px;
+      background: #ccc;
+      margin: 0 15px;
+    }
+
+    .brand-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      letter-spacing: -0.5px;
+      position: relative;
+      top: 2px;
+    }
+
+    .ph-nav {
+      display: flex;
+      gap: 30px;
+    }
+
+    .ph-link {
+      text-decoration: none;
+      color: #2c2c2c;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: relative;
+      transition: color 0.3s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .ph-link:hover,
+    .ph-link.active {
+      color: var(--accent-red);
+    }
+
+    .ph-link::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--accent-red);
+      transition: width 0.3s;
+    }
+
+    .ph-link:hover::after {
+      width: 100%;
+    }
+
+    .ph-btn-auth {
+      background: #2c2c2c;
+      color: white;
+      padding: 10px 24px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 700;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+
+    .ph-btn-auth:hover {
+      background: var(--accent-red);
+      transform: translateY(-2px);
+    }
+
+    /* RECHERCHE */
+    .search-stack {
+      position: relative;
+    }
+
+    .search-container {
+      position: absolute;
+      top: 50px;
+      right: 0;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      border: 1px solid #eee;
+      display: flex;
+      width: 280px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+    }
+
+    .search-container.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .search-input {
+      border: none;
+      outline: none;
+      width: 100%;
+      padding: 5px;
+      font-size: 0.9rem;
+    }
+
+    .search-submit {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    /* --- 1. HERO SECTION (50vh - Calibrage Précis) --- */
+    .grand-hero-section {
+      position: relative;
+      height: 50vh;
+      /* Moitié de l'écran exactement */
+      min-height: 400px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .hero-bg-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 8s ease;
+    }
+
+    .grand-hero-section:hover .hero-bg-img {
+      transform: scale(1.03);
+    }
+
+    .hero-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to top, #111 0%, rgba(0, 0, 0, 0.5) 50%, transparent 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 5% 2rem 5%;
+      color: white;
+    }
+
+    .hero-tag {
+      background: var(--accent-red);
+      color: white;
+      padding: 5px 12px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+      align-self: flex-start;
+    }
+
+    .hero-title-main {
+      font-family: 'Playfair Display', serif;
+      font-size: 3rem;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 0.5rem;
+      max-width: 1000px;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .hero-excerpt {
+      font-size: 1.1rem;
+      line-height: 1.4;
+      opacity: 0.9;
+      max-width: 800px;
+      margin-bottom: 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* --- 2. PODCAST BAND (Compacté et Dense) --- */
+    .podcast-band {
+      background: var(--pod-bg);
+      color: white;
+      /* Padding vertical réduit pour gagner de la place */
+      padding: 1.5rem 5%;
+      display: grid;
+      grid-template-columns: 140px 1fr auto;
+      /* Image plus petite (140px) */
+      gap: 2rem;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .pod-bg-icon {
+      position: absolute;
+      right: 10%;
+      top: 50%;
+      transform: translateY(-50%) rotate(-10deg);
+      font-size: 15rem;
+      opacity: 0.05;
+      pointer-events: none;
+      color: white;
+    }
+
+    .pod-thumb {
+      width: 140px;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 6px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .sound-wave {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      height: 14px;
+      margin-bottom: 5px;
+    }
+
+    .bar {
+      width: 3px;
+      background: var(--accent-red);
+      animation: wave 1s infinite ease-in-out;
+    }
+
+    .bar:nth-child(odd) {
+      animation-duration: 0.8s;
+    }
+
+    .bar:nth-child(2n) {
+      animation-duration: 1.1s;
+    }
+
+    @keyframes wave {
+
+      0%,
+      100% {
+        height: 4px;
+      }
+
+      50% {
+        height: 100%;
+      }
+    }
+
+    .pod-info h3 {
+      font-family: 'Playfair Display';
+      font-size: 1.8rem;
+      margin: 0 0 5px 0;
+      color: white;
+      line-height: 1.1;
+    }
+
+    .pod-tag-small {
+      color: var(--accent-red);
+      font-weight: 800;
+      letter-spacing: 1px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      margin-right: 10px;
+    }
+
+    .pod-desc {
+      color: #aaa;
+      font-size: 0.9rem;
+      max-width: 650px;
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    .pod-play-btn {
+      background: white;
+      color: black;
+      padding: 10px 25px;
+      border-radius: 50px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: transform 0.3s;
+      border: none;
+      font-weight: 700;
+      font-size: 0.9rem;
+      z-index: 5;
+    }
+
+    .pod-play-btn:hover {
+      background: var(--accent-red);
+      color: white;
+      transform: scale(1.05);
+    }
+
+    /* SCROLL INDICATOR (Placé stratégiquement) */
+    .scroll-wrapper {
+      grid-column: span 3;
+      /* Prend toute la largeur en bas du podcast */
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .scroll-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.3s;
+    }
+
+    .scroll-indicator:hover {
+      opacity: 1;
+    }
+
+    .scroll-circle {
+      width: 30px;
+      height: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: bounce 2s infinite;
+    }
+
+    .scroll-arrow {
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid white;
+      border-bottom: 2px solid white;
+      transform: rotate(45deg);
+      margin-top: -3px;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      20%,
+      50%,
+      80%,
+      100% {
+        transform: translateY(0);
+      }
+
+      40% {
+        transform: translateY(-5px);
+      }
+
+      60% {
+        transform: translateY(-3px);
+      }
+    }
+
+
+    /* --- 3. LAYOUT CONTENU (Visible sans scroll excessif) --- */
+    .main-container {
+      max-width: 1300px;
+      margin: 3rem auto;
+      padding: 0 30px;
+      display: grid;
+      grid-template-columns: 2.5fr 1fr;
+      gap: 4rem;
+    }
+
+    .section-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--primary-dark);
+      border-bottom: 2px solid var(--primary-dark);
+      padding-bottom: 8px;
+      margin-bottom: 2rem;
+      display: inline-block;
+    }
+
+    /* ARTICLES */
+    .article-row {
+      display: grid;
+      grid-template-columns: 1.2fr 1.8fr;
+      gap: 2rem;
+      margin-bottom: 3rem;
+      padding-bottom: 3rem;
+      border-bottom: 1px solid #eee;
+      align-items: center;
+    }
+
+    .article-row:last-child {
+      border-bottom: none;
+    }
+
+    .art-img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      border-radius: 4px;
+      transition: filter 0.3s;
+    }
+
+    .article-row:hover .art-img {
+      filter: brightness(0.95);
+    }
+
+    .art-cat {
+      color: var(--accent-red);
+      font-weight: 800;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .art-title {
+      font-family: 'Playfair Display';
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin: 0 0 8px 0;
+      line-height: 1.2;
+      transition: color 0.3s;
+    }
+
+    .article-row:hover .art-title {
+      color: var(--accent-red);
+    }
+
+    .art-desc {
+      color: #555;
+      line-height: 1.6;
+      font-size: 1rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* SIDEBAR */
+    .poll-box {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      padding: 1.8rem;
+      border-radius: 8px;
+      border-top: 4px solid var(--primary-dark);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .poll-q {
+      font-family: 'Playfair Display';
+      font-size: 1.2rem;
+      color: var(--primary-dark);
+      margin-bottom: 1.2rem;
+      line-height: 1.3;
+      font-weight: 700;
+    }
+
+    /* DÉCOUVRIR */
+    .discover-section {
+      background: #F8F9FA;
+      padding: 4rem 0;
+      margin-top: 4rem;
+      border-top: 1px solid #eee;
+    }
+
+    .discover-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 0 30px;
+    }
+
+    .discover-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+    }
+
+    .disco-card {
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+    }
+
+    .disco-img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      transition: transform 0.3s;
+    }
+
+    .disco-card:hover .disco-img {
+      transform: translateY(-5px);
+    }
+
+    .disco-title {
+      font-family: 'Playfair Display';
+      font-size: 1.15rem;
+      color: #2c2c2c;
+      font-weight: 700;
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    .disco-card:hover .disco-title {
+      color: var(--accent-red);
+    }
+
+    .disco-date {
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: 5px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    /* FOOTER */
+    .premium-footer {
+      background: #1a1a1a;
+      color: #ccc;
+      padding: 4rem 0;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr;
+      gap: 3rem;
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 0 30px;
+    }
+
+    .footer-logo {
+      height: 35px;
+      filter: brightness(0) invert(1);
+      margin-bottom: 1.5rem;
+    }
+
+    .footer-col h4 {
+      color: white;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1.2rem;
+      font-size: 0.85rem;
+    }
+
+    .footer-link {
+      display: block;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 10px;
+      transition: color 0.3s;
+      font-size: 0.9rem;
+    }
+
+    .footer-link:hover {
+      color: white;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid #333;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      text-align: center;
+      font-size: 0.8rem;
+      opacity: 0.6;
+    }
+
+    /* --- MENU MOBILE --- */
+    .mobile-nav-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 9998;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+
+    .mobile-nav-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .mobile-nav-sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 300px;
+      height: 100vh;
+      background: #111;
+      z-index: 9999;
+      transform: translateX(-100%);
+      transition: transform 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+      padding: 2rem;
+      color: white;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mobile-nav-sidebar.nav-open {
+      transform: translateX(0);
+    }
+
+    .mobile-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3rem;
+    }
+
+    .mobile-logo {
+      height: 30px;
+      filter: brightness(0) invert(1);
+    }
+
+    .mobile-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+    }
+
+    .mobile-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .mobile-link {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      color: #888;
+      text-decoration: none;
+      display: block;
+      margin-bottom: 1.5rem;
+      transition: 0.3s;
+    }
+
+    .mobile-link:hover {
+      color: white;
+      border-left: 2px solid var(--accent-red);
+      padding-left: 10px;
+    }
+
+    @media (max-width: 1000px) {
+      .premium-header {
+        padding: 0 20px;
+      }
+
+      .ph-nav {
+        display: none;
+      }
+
+      .burger-container {
+        display: flex;
+      }
+
+      .grand-hero-section {
+        height: 50vh;
+      }
+
+      .hero-title-main {
+        font-size: 2.5rem;
+      }
+
+      .podcast-band {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 1.5rem;
+        padding: 2rem 20px;
+        height: auto;
+      }
+
+      .pod-thumb {
+        margin: 0 auto;
+        transform: none;
+        width: 140px;
+        height: 140px;
+      }
+
+      .pod-play-btn {
+        margin: 0 auto;
+      }
+
+      .sound-wave {
+        justify-content: center;
+      }
+
+      .scroll-wrapper {
+        display: none;
+      }
+
+      /* Pas de flèche sur mobile */
+
+      .main-container {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+        margin-top: 2rem;
+      }
+
+      .article-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .art-img {
+        height: 200px;
+      }
+
+      .discover-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .discover-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-title-main {
+        font-size: 2rem;
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="premium-header">
+    <div class="ph-left">
+      <div class="burger-container">
+        <button class="burger-btn" id="burgerBtn">
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+        </button>
+      </div>
+
+      <a href="index.html" class="ph-brand">
+        <img src="logo.svg" alt="S">
+        <div class="brand-sep"></div>
+        <span class="brand-text">Solitiquo</span>
+      </a>
+    </div>
+
+    <div class="ph-center">
+      <nav class="ph-nav">
+        <a href="politique.html" class="ph-link">Politique</a>
+        <a href="social.html" class="ph-link">Social</a>
+        <a href="partis-politiques.html" class="ph-link">Partis</a>
+        <a href="emissions.html" class="ph-link">Émissions</a>
+        <a href="podcasts.html" class="ph-link">Podcasts</a>
+      </nav>
+    </div>
+
+    <div class="ph-right" style="justify-content: flex-end; gap: 20px;">
+      <div class="search-stack">
+        <div class="search-row">
+          <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
+            </svg>
+          </button>
+          <span class="search-label" id="searchLabel">Rechercher</span>
+        </div>
+
+        <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
+
+          <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput"
+            autocomplete="off" required />
+
+          <button class="search-submit" type="submit" aria-label="Lancer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+
+        </form>
+      </div>
+      <a href="auth.html" class="ph-btn-auth">S'identifier</a>
+    </div>
+  </header>
+
+  <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+  <nav id="mobileNav" class="mobile-nav-sidebar">
+    <div class="mobile-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img src="logo.svg" class="mobile-logo" alt="S">
+        <span style="font-family:'Playfair Display';font-weight:700;font-size:1.5rem;">Solitiquo</span>
+      </div>
+      <button id="mobileNavClose" class="mobile-close">×</button>
+    </div>
+    <ul class="mobile-links">
+      <li class="mobile-link-item"><a href="index.html" class="mobile-link active">Accueil</a></li>
+      <li class="mobile-link-item"><a href="politique.html" class="mobile-link">Politique</a></li>
+      <li class="mobile-link-item"><a href="social.html" class="mobile-link">Social</a></li>
+      <li class="mobile-link-item"><a href="partis-politiques.html" class="mobile-link">Partis</a></li>
+      <li class="mobile-link-item"><a href="podcasts.html" class="mobile-link">Podcasts</a></li>
+    </ul>
+    <div style="margin-top:auto; padding-top:2rem; border-top:1px solid #333;">
+      <a href="auth.html"
+        style="color:white; text-decoration:none; font-weight:700; display:flex; align-items:center; gap:10px;">
+        <span>👤</span> S'identifier
+      </a>
+    </div>
+  </nav>
+
+
+  <div id="hero-dynamic">
+    <section class="grand-hero-section" style="background:#ddd;"></section>
+  </div>
+
+  <section class="podcast-band">
+    <div class="pod-bg-icon">🎙️</div>
+
+    <div class="pod-thumb-container">
+      <img src="https://placehold.co/400x400" class="pod-thumb" alt="Podcast" id="index-pod-img"
+        onerror="handleImgError(this)">
+    </div>
+
+    <div class="pod-info">
+      <div style="display:flex; align-items:center; margin-bottom:10px;">
+        <span class="pod-tag-small">PODCAST À LA UNE</span>
+        <div class="sound-wave">
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+        </div>
+      </div>
+      <h3 id="index-pod-title">Chargement du podcast...</h3>
+      <p class="pod-desc" id="index-pod-desc">Le dernier épisode disponible sur Solitiquo.</p>
+    </div>
+
+    <a href="#" class="pod-play-btn" id="index-pod-link" style="text-decoration:none;">
+      <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M8 5v14l11-7z" />
+      </svg>
+      <span>Écouter</span>
+    </a>
+
+    <div class="scroll-wrapper">
+      <div class="scroll-indicator" onclick="scrollToContent()">
+        <div class="scroll-circle">
+          <div class="scroll-arrow"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="main-container" id="main-content-anchor">
+    <main>
+      <div class="section-label">L'Essentiel de l'info</div>
+      <div id="magazine-feed">
+        <p style="text-align:center; padding:2rem; color:#888;">Chargement...</p>
+      </div>
+    </main>
+
+    <aside>
+      <div class="section-label" style="border-color:var(--primary-dark); color:var(--primary-dark);">L'Observatoire
+      </div>
+      <div id="home-poll-card" class="poll-box">
+        <p style="text-align:center; color:#888;">Chargement...</p>
+      </div>
+    </aside>
+  </div>
+
+  <section class="discover-section">
+    <div class="discover-container">
+      <div class="section-label" style="border-color:#ccc; color:#888; margin-bottom:2rem;">À Découvrir</div>
+      <div id="discover-grid" class="discover-grid"></div>
+    </div>
+  </section>
+
+
+  <footer class="premium-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <div style="display:flex; gap:10px; align-items:center; margin-bottom:1.5rem;">
+          <img src="logo.svg" class="footer-logo" alt="S" onerror="handleImgError(this)">
+          <span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
+        </div>
+        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le média de référence pour l'analyse politique et
+          sociale au Cameroun.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Rubriques</h4>
+        <a href="politique.html" class="footer-link">Politique</a>
+        <a href="social.html" class="footer-link">Social</a>
+        <a href="partis-politiques.html" class="footer-link">Partis</a>
+      </div>
+      <div class="footer-col">
+        <h4>Légal</h4>
+        <a href="mentions-legales.html" class="footer-link">Mentions légales</a>
+        <a href="conditions-utilisation.html" class="footer-link">CGU</a>
+        <a href="politique-confidentialite.html" class="footer-link">Confidentialité</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <a href="contact.html" class="footer-link">Nous écrire</a>
+        <a href="auth.html" class="footer-link">S'identifier</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    // --- UTILITAIRES ---
+    function handleImgError(img) {
+      img.onerror = null;
+      img.src = 'https://placehold.co/600x400/eee/999?text=Solitiquo';
+    }
+
+    // --- NAVIGATION MENU MOBILE ---
+    const burger = document.getElementById('burgerBtn');
+    const mobileNav = document.getElementById('mobileNav');
+    const mobileClose = document.getElementById('mobileNavClose');
+    const overlay = document.getElementById('mobileNavOverlay');
+
+    function toggleMenu(show) {
+      if (show) { mobileNav.classList.add('nav-open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+      else { mobileNav.classList.remove('nav-open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+    }
+    if (burger) burger.addEventListener('click', () => toggleMenu(true));
+    if (mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
+    if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
+
+    // --- RECHERCHE ---
+    const searchBtn = document.getElementById('searchBtn');
+    const searchContainer = document.getElementById('searchContainer');
+    const searchInput = document.getElementById('searchInput');
+
+    // Fonction pour ouvrir/fermer
+    function toggleSearch(e) {
+      e.stopPropagation();
+      searchContainer.classList.toggle('active');
+      if (searchContainer.classList.contains('active')) {
+        setTimeout(() => searchInput.focus(), 100);
+      }
+    }
+
+    // On active le clic sur le bouton ET sur le texte
+    if (searchBtn) searchBtn.addEventListener('click', toggleSearch);
+    if (searchLabel) searchLabel.addEventListener('click', toggleSearch);
+
+    // Fermeture au clic dehors
+    document.addEventListener('click', (e) => {
+      if (!searchContainer.contains(e.target) && !searchBtn.contains(e.target) && !searchLabel.contains(e.target)) {
+        searchContainer.classList.remove('active');
+      }
+    });
+
+
+    // --- SCROLL ARROW ---
+    window.scrollToContent = () => {
+      const target = document.querySelector('.podcast-band');
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    // --- CHARGEMENT DES ARTICLES (C'est ici qu'on corrige les liens) ---
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const res = await fetch(API_URL + '/articles');
+        const json = await res.json();
+
+        if (json.success && json.data.length > 0) {
+          const articles = json.data;
+
+          // 1. HERO (Article 0)
+          const une = articles[0];
+          // IMPORTANT : On force l'ID dans le lien ci-dessous
+          const linkUne = `article.html?id=${une.id}`;
+          const uneImg = une.image_url || 'https://via.placeholder.com/1600x900';
+
+          document.getElementById('hero-dynamic').innerHTML = `
+            <section class="grand-hero-section">
+              <a href="${linkUne}" style="position:absolute; inset:0; z-index:2;"></a>
+              <img src="${uneImg}" class="hero-bg-img" onerror="handleImgError(this)">
+              <div class="hero-overlay">
+                <span class="hero-tag">À LA UNE • ${une.category}</span>
+                <h1 class="hero-title-main">${une.title}</h1>
+                <p class="hero-excerpt">${une.excerpt || ''}</p>
+                <div class="scroll-indicator" onclick="scrollToContent()">
+                    <div class="scroll-circle"><div class="scroll-arrow"></div></div>
+                </div>
+              </div>
+            </section>
+          `;
+
+          // 2. MAGAZINE LIST (Articles 1 à 4)
+          const mainList = articles.slice(1, 5);
+          document.getElementById('magazine-feed').innerHTML = mainList.map(art => {
+            // On force la création du lien ici pour être sûr
+            const linkArt = `article.html?id=${art.id}`;
+            return `
+            <article class="article-row">
+              <div style="overflow:hidden; border-radius:4px; height:220px;">
+                <a href="${linkArt}">
+                  <img src="${art.image_url}" class="art-img" onerror="handleImgError(this)">
+                </a>
+              </div>
+              <div class="art-info">
+                <span class="art-cat">${art.category}</span>
+                <a href="${linkArt}" style="text-decoration:none;">
+                  <h3 class="art-title">${art.title}</h3>
+                </a>
+                <p class="art-desc">${art.excerpt || art.slug}</p>
+                <div style="font-size:0.8rem; color:#999; margin-top:8px;">${SolitiquoAPI.formatDate(art.published_at)}</div>
+              </div>
+            </article>
+          `}).join('');
+
+          // 3. SIDEBAR DISCOVERY (Articles 5 à 8) - Fix #14: utiliser discover-grid
+          const discoList = articles.slice(5, 9);
+          const discoverGrid = document.getElementById('discover-grid');
+          if (discoverGrid) {
+            discoverGrid.innerHTML = discoList.map(art => {
+              const linkDisco = `article.html?id=${art.id}`;
+              return `
+              <a href="${linkDisco}" class="disco-card">
+                <img src="${art.image_url}" class="disco-img" onerror="handleImgError(this)">
+                <h4 class="disco-title">${art.title}</h4>
+                <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
+              </a>
+            `}).join('');
+          }
+        }
+      } catch (e) { console.error(e); }
+
+      // Chargement Sondage
+      loadHomePoll();
+    });
+
+    // --- SONDAGE ---
+    async function loadHomePoll() {
+      const container = document.getElementById('home-poll-card');
+      try {
+        const res = await fetch(API_URL + '/polls/active/Politique');
+        const data = await res.json();
+        if (!data.success) { container.innerHTML = '<p>Aucun sondage.</p>'; return; }
+        const { poll, options, hasVoted } = data;
+
+        if (hasVoted) {
+          const total = options.reduce((a, b) => a + b.votes_count, 0);
+          const max = Math.max(...options.map(o => o.votes_count));
+          const html = options.map(opt => {
+            const pct = total === 0 ? 0 : Math.round((opt.votes_count / total) * 100);
+            const col = (opt.votes_count === max) ? '#C82823' : '#ddd';
+            return `<div style="margin-bottom:8px;">
+                <div style="font-size:0.8rem; display:flex; justify-content:space-between;"><span>${opt.label}</span><span>${pct}%</span></div>
+                <div style="height:4px; background:#eee; margin-top:2px;"><div style="width:${pct}%; background:${col}; height:100%;"></div></div>
+             </div>`;
+          }).join('');
+          container.innerHTML = `<p class="poll-q">${poll.question}</p>${html}<div style="text-align:center; font-size:0.7rem; color:#aaa; margin-top:10px;">Merci de votre vote</div>`;
+        } else {
+          container.innerHTML = `<p class="poll-q">${poll.question}</p><a href="politique.html" style="display:block; background:var(--primary-dark); color:white; text-align:center; padding:10px; border-radius:4px; text-decoration:none; font-weight:600; font-size:0.9rem;">Voter</a>`;
+        }
+      } catch (e) { console.error(e); }
+    }
+  </script>
+  <script>
+    // Charge le dernier podcast pour l'Index
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const res = await fetch(API_URL + '/podcasts/featured/index');
+        const json = await res.json();
+
+        if (json.success && json.data) {
+          const pod = json.data;
+
+          // On cible les IDs qu'on vient d'ajouter
+          const img = document.getElementById('index-pod-img');
+          const title = document.getElementById('index-pod-title');
+          const desc = document.getElementById('index-pod-desc');
+          const link = document.getElementById('index-pod-link');
+
+          if (img) img.src = pod.image_url || 'https://placehold.co/400x400';
+          if (title) title.textContent = pod.title;
+          if (desc) desc.textContent = pod.description ? (pod.description.substring(0, 100) + '...') : "Écoutez ce nouvel épisode.";
+
+          // C'est ici que le lien se fait
+          if (link) link.href = `podcast.html?id=${pod.id}`;
+        }
+      } catch (e) { console.error("Erreur podcast index", e); }
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Abonnement — Solitiquo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="solitiquo.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet" />
+  
+  <style>
+    :root { --primary-dark: #37463D; --accent-red: #C82823; }
+    body { background: #f9fafb; font-family: 'Inter', sans-serif; }
+
+    /* HEADER STANDARD (Copié de Index) */
+    .premium-header { background: white; border-bottom: 1px solid #eaeaea; position: sticky; top: 0; z-index: 1000; padding: 0 30px; height: 80px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+    .ph-left, .ph-right { flex: 1; display: flex; align-items: center; } .ph-center { flex: 2; display: flex; justify-content: center; } .ph-right { justify-content: flex-end; gap: 20px; }
+    .ph-brand { text-decoration: none; display: flex; align-items: center; height: 50px; gap: 10px; } .ph-brand img { height: 40px; } .brand-sep { width: 1px; height: 30px; background: #ccc; } .brand-text { font-family: 'Playfair Display'; font-size: 1.8rem; font-weight: 800; color: var(--primary-dark); }
+    .ph-nav { display: flex; gap: 30px; } .ph-link { text-decoration: none; color: #2c2c2c; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; transition: color 0.3s; } .ph-link:hover { color: var(--accent-red); }
+    .ph-btn-auth { background: #2c2c2c; color: white; padding: 8px 20px; border-radius: 30px; text-decoration: none; font-size: 0.85rem; font-weight: 700; transition: 0.3s; } .ph-btn-auth:hover { background: var(--accent-red); transform: translateY(-2px); }
+    /* (Styles Burger & Search omis pour brièveté, ils sont gérés par solitiquo.css/js) */
+    .burger-container { display: none; margin-right: 20px; } .search-stack { position: relative; }
+    @media (max-width: 1000px) { .premium-header { padding: 0 20px; } .ph-nav { display: none; } .burger-container { display: flex; } }
+
+    /* --- HERO ABONNEMENT --- */
+    .sub-hero {
+      text-align: center; padding: 5rem 20px 3rem;
+      background: linear-gradient(180deg, #fff 0%, #f9fafb 100%);
+    }
+    .sub-title { font-family: 'Playfair Display'; font-size: 3.5rem; color: var(--primary-dark); margin-bottom: 1rem; line-height: 1.1; }
+    .sub-desc { font-size: 1.2rem; color: #666; max-width: 700px; margin: 0 auto; line-height: 1.6; }
+
+    /* --- GRILLE OFFRES --- */
+    .pricing-container { max-width: 1100px; margin: 0 auto 6rem; padding: 0 20px; display: grid; grid-template-columns: 1fr 1.1fr 1fr; gap: 2rem; align-items: center; }
+    
+    .price-card {
+      background: white; border-radius: 16px; padding: 2.5rem;
+      border: 1px solid #eee; text-align: center; transition: transform 0.3s;
+      position: relative;
+    }
+    .price-card:hover { transform: translateY(-5px); }
+    
+    /* Carte Premium (Milieu) */
+    .price-card.featured {
+      border: 2px solid var(--primary-dark);
+      box-shadow: 0 20px 50px rgba(55, 70, 61, 0.15);
+      padding: 3.5rem 2.5rem; z-index: 2;
+    }
+    .badge-best {
+      position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+      background: var(--accent-red); color: white; padding: 5px 15px;
+      border-radius: 20px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    }
+
+    .plan-name { font-size: 1.2rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; }
+    .plan-price { font-family: 'Playfair Display'; font-size: 3.5rem; color: var(--text-main); margin-bottom: 0.5rem; }
+    .plan-period { font-size: 0.9rem; color: #999; margin-bottom: 2rem; display: block; }
+    
+    .plan-features { list-style: none; padding: 0; margin: 0 0 2rem; text-align: left; }
+    .plan-features li { margin-bottom: 1rem; color: #555; display: flex; align-items: center; gap: 10px; }
+    .check-icon { color: var(--primary-dark); font-weight: bold; }
+    .cross-icon { color: #ccc; }
+
+    .btn-sub {
+      display: block; width: 100%; padding: 15px; border-radius: 30px;
+      font-weight: 700; text-decoration: none; transition: 0.3s;
+    }
+    .btn-sub.primary { background: var(--primary-dark); color: white; box-shadow: 0 10px 20px rgba(55,70,61,0.2); }
+    .btn-sub.primary:hover { background: #2a3530; transform: scale(1.02); }
+    .btn-sub.secondary { background: #f4f4f4; color: #333; }
+    .btn-sub.secondary:hover { background: #e0e0e0; }
+
+    /* Footer */
+    .premium-footer { background: #1a1a1a; color: #ccc; padding: 4rem 0; }
+    .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 3rem; max-width: 1300px; margin: 0 auto; padding: 0 30px; }
+    .footer-link { display: block; color: #888; text-decoration: none; margin-bottom: 10px; transition: color 0.3s; font-size: 0.9rem; } .footer-link:hover { color: white; }
+    
+    @media(max-width: 900px) {
+      .pricing-container { grid-template-columns: 1fr; gap: 3rem; }
+      .premium-header { padding: 0 20px; } .ph-nav { display: none; } .burger-container { display: block; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="premium-header">
+    <div class="ph-left">
+      <div class="burger-container"><button class="burger-btn" id="burgerBtn" style="background:none;border:none;cursor:pointer;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button></div>
+      <a href="index.html" class="ph-brand"><img src="logo.svg" alt="S"><div class="brand-sep"></div><span class="brand-text">Solitiquo</span></a>
+    </div>
+    <div class="ph-center">
+      <nav class="ph-nav">
+        <a href="politique.html" class="ph-link">Politique</a>
+        <a href="social.html" class="ph-link">Social</a>
+        <a href="partis-politiques.html" class="ph-link">Partis</a>
+        <a href="emissions.html" class="ph-link">Émissions</a>
+        <a href="podcasts.html" class="ph-link">Podcasts</a>
+      </nav>
+    </div>
+    <div class="ph-right"><a href="auth.html" class="ph-btn-auth">S'identifier</a></div>
+  </header>
+
+
+  <section class="sub-hero">
+    <h1 class="sub-title">Soutenez une information libre</h1>
+    <p class="sub-desc">Accédez à nos enquêtes exclusives, profitez d'une lecture sans publicité et participez aux débats réservés à nos abonnés.</p>
+  </section>
+
+  <main class="pricing-container">
+    
+    <div class="price-card">
+      <div class="plan-name">Découverte</div>
+      <div class="plan-price">0 <span style="font-size:1.5rem;">FCFA</span></div>
+      <span class="plan-period">Accès limité</span>
+      <ul class="plan-features">
+        <li><span class="check-icon">✓</span> Articles d'actualité</li>
+        <li><span class="check-icon">✓</span> Podcasts (audio simple)</li>
+        <li><span class="cross-icon">✕</span> Publicités activées</li>
+        <li><span class="cross-icon">✕</span> Enquêtes exclusives</li>
+      </ul>
+      <a href="auth.html" class="btn-sub secondary">Créer un compte</a>
+    </div>
+
+    <div class="price-card featured">
+      <div class="badge-best">LE PLUS POPULAIRE</div>
+      <div class="plan-name">Engagé</div>
+      <div class="plan-price">2000 <span style="font-size:1.5rem;">FCFA</span></div>
+      <span class="plan-period">Par mois, sans engagement</span>
+      <ul class="plan-features">
+        <li><span class="check-icon">✓</span> <strong>Zéro publicité</strong></li>
+        <li><span class="check-icon">✓</span> Accès illimité aux enquêtes</li>
+        <li><span class="check-icon">✓</span> Commentaires prioritaires</li>
+        <li><span class="check-icon">✓</span> Newsletter exclusive</li>
+      </ul>
+      <button onclick="subscribe('monthly')" class="btn-sub primary">Je m'abonne</button>
+    </div>
+
+    <div class="price-card">
+      <div class="plan-name">Soutien</div>
+      <div class="plan-price">20.000 <span style="font-size:1.5rem;">FCFA</span></div>
+      <span class="plan-period">Par an (2 mois offerts)</span>
+      <ul class="plan-features">
+        <li><span class="check-icon">✓</span> Tous les avantages "Engagé"</li>
+        <li><span class="check-icon">✓</span> Badge "Soutien" sur le profil</li>
+        <li><span class="check-icon">✓</span> Invitations aux événements</li>
+      </ul>
+      <button onclick="subscribe('yearly')" class="btn-sub secondary">Choisir l'annuel</button>
+    </div>
+
+  </main>
+
+  <footer class="premium-footer">
+    <div class="footer-grid">
+      <div class="footer-col"><img src="logo.svg" style="height:35px; filter:brightness(0) invert(1); margin-bottom:1rem;"><p style="font-size:0.9rem; opacity:0.7;">Le média de référence.</p></div>
+      <div class="footer-col"><h4>Rubriques</h4><a href="politique.html" class="footer-link">Politique</a><a href="social.html" class="footer-link">Social</a></div>
+      <div class="footer-col"><h4>Légal</h4><a href="mentions-legales.html" class="footer-link">Mentions</a><a href="conditions-utilisation.html" class="footer-link">CGU</a></div>
+      <div class="footer-col"><h4>Contact</h4><a href="contact.html" class="footer-link">Nous écrire</a></div>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="solitiquo.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        SolitiquoAPI.initUserInterface();
+    });
+
+    async function subscribe(plan) {
+        const user = await SolitiquoAPI.getProfile();
+        
+        if(!user) {
+            // Si pas connecté -> Login
+            sessionStorage.setItem('wantsToSubscribe', plan);
+            window.location.href = 'auth.html';
+            return;
+        }
+        
+        // Si connecté -> Direction la caisse
+        window.location.href = `paiement.html?plan=${plan}`;
+    }
+
+    // --- RECHERCHE (Correction Clic sur le texte + Loupe) ---
+    const searchBtn = document.getElementById('searchBtn');
+    const searchLabel = document.getElementById('searchLabel'); // On cible le texte
+    const searchContainer = document.getElementById('searchContainer');
+    const searchInput = document.getElementById('searchInput');
+
+    // Fonction pour ouvrir/fermer
+    function toggleSearch(e) {
+        e.stopPropagation(); 
+        searchContainer.classList.toggle('active');
+        if(searchContainer.classList.contains('active')) {
+            setTimeout(() => searchInput.focus(), 100);
+        }
+    }
+
+    // On active le clic sur le bouton ET sur le texte
+    if(searchBtn) searchBtn.addEventListener('click', toggleSearch);
+    if(searchLabel) searchLabel.addEventListener('click', toggleSearch);
+
+    // Fermeture au clic dehors
+    document.addEventListener('click', (e) => {
+        if (!searchContainer.contains(e.target) && !searchBtn.contains(e.target) && !searchLabel.contains(e.target)) {
+            searchContainer.classList.remove('active');
+        }
+    });
+  </script> 
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Studio — Solitiquo</title>
+<link rel="stylesheet" href="solitiquo.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,900;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary-dark: #37463D;
+    --accent-red: #C82823;
+    --bg-app: #F0F2F5;
+    --bg-paper: #ffffff;
+    --sidebar-width: 320px;
+    --toolbar-width: 70px;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg-app); color: #2c2c2c; font-family: 'Inter', sans-serif; height: 100vh; margin: 0; overflow: hidden; display: flex; flex-direction: column; }
+
+  /* HEADER */
+  .studio-header { height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 50; flex-shrink: 0; }
+  .logo-area { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--primary-dark); }
+  .logo-area img { height: 24px; }
+  .back-btn { text-decoration: none; color: #666; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; transition: color 0.2s; }
+  .back-btn:hover { color: var(--accent-red); }
+
+  /* LAYOUT */
+  .workspace { display: flex; flex: 1; overflow: hidden; }
+
+  /* GAUCHE */
+  .toolbar-left { width: var(--toolbar-width); background: white; border-right: 1px solid #ddd; display: flex; flex-direction: column; align-items: center; padding-top: 20px; gap: 15px; z-index: 40; }
+  .tool-btn { width: 40px; height: 40px; border: 1px solid transparent; background: transparent; border-radius: 6px; cursor: pointer; color: #555; font-size: 1.1rem; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+  .tool-btn:hover { background: #f0f0f0; color: var(--primary-dark); border-color: #ddd; }
+  .tool-separator { width: 20px; height: 1px; background: #ddd; margin: 5px 0; }
+
+  /* CENTRE */
+  .paper-zone { flex: 1; overflow-y: auto; padding: 40px; display: flex; justify-content: center; }
+  .paper-sheet { width: 100%; max-width: 850px; background: var(--bg-paper); min-height: 80vh; box-shadow: 0 4px 25px rgba(0,0,0,0.08); padding: 60px 70px; border-radius: 2px; }
+  
+  #title { width: 100%; border: none; font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 900; color: var(--primary-dark); margin-bottom: 30px; outline: none; line-height: 1.1; }
+  #title::placeholder { color: #ccc; }
+  #editor-content { font-size: 1.15rem; line-height: 1.8; color: #333; outline: none; min-height: 400px; }
+  #editor-content h2 { font-family: 'Playfair Display', serif; color: var(--primary-dark); font-size: 1.8rem; margin-top: 2.5rem; margin-bottom: 1rem; }
+  #editor-content blockquote { border-left: 4px solid var(--accent-red); padding-left: 20px; margin: 20px 0; font-style: italic; color: #555; background: #f9f9f9; padding: 15px 20px; }
+  #editor-content ul { padding-left: 20px; }
+
+  /* DROITE */
+  .settings-right { width: var(--sidebar-width); background: white; border-left: 1px solid #ddd; display: flex; flex-direction: column; z-index: 40; }
+  .settings-scroll { padding: 25px; overflow-y: auto; flex: 1; }
+  .settings-footer { padding: 20px; border-top: 1px solid #eee; background: #fbfcfb; }
+
+  h3.panel-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.2px; color: #999; margin: 25px 0 15px 0; font-weight: 700; }
+  h3.panel-title:first-child { margin-top: 0; }
+  .field-group { margin-bottom: 15px; }
+  .field-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #444; }
+  .sidebar-input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 0.9rem; transition: border 0.2s; }
+  .sidebar-input:focus, select:focus, textarea:focus { border-color: var(--primary-dark); outline: none; }
+  textarea { resize: vertical; }
+
+  /* SYSTEME DE TAGS (NEW) */
+  .tags-container {
+    border: 1px solid #ddd; border-radius: 6px; padding: 5px; background: white;
+    display: flex; flex-wrap: wrap; gap: 5px;
+  }
+  .tags-container:focus-within { border-color: var(--primary-dark); }
+  .tag-chip {
+    background: #eef; color: var(--primary-dark); padding: 4px 8px; border-radius: 4px;
+    font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 5px;
+  }
+  .tag-remove { cursor: pointer; color: #999; font-weight: bold; }
+  .tag-remove:hover { color: red; }
+  #tag-input {
+    border: none; outline: none; font-size: 0.9rem; padding: 5px; flex: 1; min-width: 60px;
+  }
+
+  .img-preview-box { width: 100%; height: 160px; background: #f4f4f4; border-radius: 6px; border: 2px dashed #ddd; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; cursor: pointer; }
+  .img-preview-box img { width: 100%; height: 100%; object-fit: cover; }
+  .upload-label { font-size: 0.8rem; color: #888; pointer-events: none; }
+  
+  .btn-publish { background: var(--accent-red); color: white; border: none; padding: 14px; width: 100%; font-weight: 700; font-size: 1rem; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+  .btn-publish:hover { background: #901a16; }
+  .btn-publish:disabled { background: #ccc; cursor: not-allowed; }
+  #status-msg { margin-top: 10px; font-size: 0.85rem; text-align: center; }
+
+  @media (max-width: 1000px) { .editor-layout { flex-direction: column; overflow-y: auto; } .writing-zone { padding: 20px; } .settings-right { width: 100%; } }
+</style>
+</head>
+<body>
+
+  <header class="studio-header">
+    <div class="logo-area"><img src="logo.svg" alt="S"><span>Studio</span></div>
+    <a href="index.html" class="back-btn">← Retour au site</a>
+  </header>
+
+  <form id="articleForm" class="workspace">
+    
+    <aside class="toolbar-left">
+      <button type="button" class="tool-btn" onclick="format('bold')"><b>B</b></button>
+      <button type="button" class="tool-btn" onclick="format('italic')"><i>I</i></button>
+      <div class="tool-separator"></div>
+      <button type="button" class="tool-btn" onclick="format('formatBlock', 'h2')">H2</button>
+      <button type="button" class="tool-btn" style="font-family:'Playfair Display'; color:#C82823;" onclick="format('formatBlock', 'blockquote')">“ ”</button>
+      <div class="tool-separator"></div>
+      <button type="button" class="tool-btn" onclick="format('insertUnorderedList')">•—</button>
+      <button type="button" class="tool-btn" onclick="format('removeFormat')">✕</button>
+    </aside>
+
+    <div class="paper-zone">
+      <div class="paper-sheet">
+        <input type="text" id="title" placeholder="Titre de l'article..." autocomplete="off" required>
+        <div id="editor-content" contenteditable="true"><p>Écrivez votre article ici...</p></div>
+      </div>
+    </div>
+
+    <aside class="settings-right">
+      <div class="settings-scroll">
+        
+        <h3 class="panel-title">Publication</h3>
+        
+        <div class="field-group">
+          <label>Catégorie</label>
+          <select id="category" class="sidebar-input">
+            <option>Politique</option><option>Social</option><option>Économie</option><option>Partis</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label>Tags / Mots-clés</label>
+          <div class="tags-container" id="tags-container">
+            <input type="text" id="tag-input" placeholder="Ajouter + Entrée">
+          </div>
+          <small style="color:#999; font-size:0.75rem;">Appuyez sur Entrée pour valider un tag.</small>
+        </div>
+
+        <div class="field-group">
+          <label>Résumé</label>
+          <textarea id="excerpt" rows="4" class="sidebar-input" placeholder="Accroche..."></textarea>
+        </div>
+
+        <h3 class="panel-title">Illustration</h3>
+        <div class="field-group">
+          <div class="img-preview-box" onclick="document.getElementById('image_file').click()">
+            <img id="current-image-preview" src="" style="display:none;">
+            <span id="upload-text" class="upload-label">📷 Ajouter image</span>
+          </div>
+          <input type="file" id="image_file" accept="image/*" style="display:none;" onchange="previewImage(this)">
+        </div>
+        <div class="field-group">
+          <input type="url" id="image_url" class="sidebar-input" placeholder="Ou via URL https://..." oninput="updatePreviewFromUrl(this.value)">
+        </div>
+        <div class="field-group">
+          <input type="text" id="image_caption" class="sidebar-input" placeholder="Légende / Crédit">
+        </div>
+
+        <h3 class="panel-title">SEO</h3>
+        <div class="field-group">
+          <input type="text" id="slug" class="sidebar-input" placeholder="slug-auto" style="background:#f4f4f4; color:#666;">
+        </div>
+      </div>
+
+      <div class="settings-footer">
+        <button type="submit" class="btn-publish">Publier</button>
+        <div id="status-msg"></div>
+      </div>
+    </aside>
+  </form>
+
+<script>
+  function format(cmd, val=null) { document.execCommand(cmd, false, val); }
+  
+  // --- GESTION DES TAGS ---
+  let currentTags = [];
+  const tagInput = document.getElementById('tag-input');
+  const tagsContainer = document.getElementById('tags-container');
+
+  function renderTags() {
+    // On garde l'input, on supprime les anciennes chips
+    const chips = tagsContainer.querySelectorAll('.tag-chip');
+    chips.forEach(c => c.remove());
+    
+    currentTags.forEach((tag, index) => {
+      const chip = document.createElement('div');
+      chip.className = 'tag-chip';
+      chip.innerHTML = `${tag} <span class="tag-remove" onclick="removeTag(${index})">×</span>`;
+      tagsContainer.insertBefore(chip, tagInput);
+    });
+  }
+
+  function removeTag(index) {
+    currentTags.splice(index, 1);
+    renderTags();
+  }
+
+  tagInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const val = tagInput.value.trim();
+      if (val && !currentTags.includes(val)) {
+        currentTags.push(val);
+        tagInput.value = '';
+        renderTags();
+      }
+    }
+  });
+
+  // --- GESTION IMAGE ---
+  function previewImage(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = document.getElementById('current-image-preview');
+        img.src = e.target.result; img.style.display = 'block';
+        document.getElementById('upload-text').style.display = 'none';
+        document.getElementById('image_url').value = '';
+      }
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+  function updatePreviewFromUrl(url) {
+    if(url) {
+      const img = document.getElementById('current-image-preview');
+      img.src = url; img.style.display = 'block';
+      document.getElementById('upload-text').style.display = 'none';
+      document.getElementById('image_file').value = '';
+    }
+  }
+
+  // Slug auto
+  document.getElementById('title').addEventListener('input', e => {
+    if(!window.isEditing) {
+      document.getElementById('slug').value = e.target.value.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-');
+    }
+  });
+
+  // --- INIT ---
+  window.isEditing = false;
+  const params = new URLSearchParams(window.location.search);
+  const editId = params.get('id');
+  const submitBtn = document.querySelector('.btn-publish');
+
+  if (editId) {
+    window.isEditing = true;
+    submitBtn.textContent = "Mettre à jour";
+    loadArticleData(editId);
+  }
+
+  async function loadArticleData(id) {
+    try {
+      const res = await fetch(`http://localhost:5000/api/articles/${id}`);
+      const json = await res.json();
+      if(json.success) {
+        const art = json.article;
+        document.getElementById('title').value = art.title;
+        document.getElementById('slug').value = art.slug;
+        document.getElementById('editor-content').innerHTML = art.content;
+        document.getElementById('excerpt').value = art.excerpt || '';
+        document.getElementById('category').value = art.category;
+        document.getElementById('image_url').value = art.image_url || '';
+        document.getElementById('image_caption').value = art.image_caption || '';
+        if(art.image_url) updatePreviewFromUrl(art.image_url);
+        
+        // Charger les tags
+        if(art.tags && Array.isArray(art.tags)) {
+          currentTags = art.tags;
+          renderTags();
+        }
+      }
+    } catch(e) { console.error(e); }
+  }
+
+  // --- ENVOI ---
+  document.getElementById('articleForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const statusDiv = document.getElementById('status-msg');
+    submitBtn.textContent = 'Traitement...';
+    submitBtn.disabled = true;
+    statusDiv.textContent = '';
+    
+    const formData = new FormData();
+    formData.append('title', document.getElementById('title').value);
+    formData.append('slug', document.getElementById('slug').value);
+    formData.append('content', document.getElementById('editor-content').innerHTML);
+    formData.append('excerpt', document.getElementById('excerpt').value);
+    formData.append('category', document.getElementById('category').value);
+    formData.append('image_url', document.getElementById('image_url').value);
+    formData.append('image_caption', document.getElementById('image_caption').value);
+    
+    // Envoi des tags comme chaîne JSON
+    formData.append('tags', JSON.stringify(currentTags));
+    
+    formData.append('lang', 'fr');
+    formData.append('author_id', 1);
+
+    const fileInput = document.getElementById('image_file');
+    if (fileInput.files[0]) formData.append('image_file', fileInput.files[0]);
+
+    try {
+      const url = window.isEditing 
+        ? `http://localhost:5000/api/articles/${editId}`
+        : 'http://localhost:5000/api/articles';
+      const method = window.isEditing ? 'PUT' : 'POST';
+
+      const res = await fetch(url, { method: method, body: formData });
+      const json = await res.json();
+      
+      if (json.success) {
+        statusDiv.style.color = 'green';
+        statusDiv.textContent = window.isEditing ? '✅ Mis à jour !' : '✅ Publié !';
+        setTimeout(() => window.location.href = `article.html?id=${json.article.id}`, 1000);
+      } else {
+        throw new Error(json.error);
+      }
+    } catch (err) {
+      statusDiv.style.color = 'red';
+      statusDiv.textContent = '❌ ' + err.message;
+      submitBtn.textContent = window.isEditing ? 'Mettre à jour' : 'Publier';
+      submitBtn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

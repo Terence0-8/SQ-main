@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mon Espace — Solitiquo</title>
+  <link rel="stylesheet" href="solitiquo.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet" />
+  
+  <style>
+    :root { --primary-dark: #37463D; --accent-red: #C82823; --bg-soft: #F9FAFB; }
+    body { background: var(--bg-soft); font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; margin: 0; }
+
+    /* --- HEADER STANDARD (Copié de Index) --- */
+    .premium-header { background: white; border-bottom: 1px solid #eaeaea; position: sticky; top: 0; z-index: 1000; padding: 0 30px; height: 80px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+    .ph-left, .ph-right { flex: 1; display: flex; align-items: center; } .ph-center { flex: 2; display: flex; justify-content: center; }
+    .ph-brand { text-decoration: none; display: flex; align-items: center; height: 50px; } .ph-brand img { height: 42px; width: auto; display: block; }
+    .brand-sep { width: 1px; height: 30px; background: #ccc; margin: 0 15px; } .brand-text { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 800; color: var(--primary-dark); letter-spacing: -0.5px; position: relative; top: 2px; }
+    .ph-nav { display: flex; gap: 30px; } .ph-link { text-decoration: none; color: #2c2c2c; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; position: relative; transition: color 0.3s; font-family: 'Inter', sans-serif; }
+    .ph-link:hover, .ph-link.active { color: var(--accent-red); } .ph-link::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 2px; background: var(--accent-red); transition: width 0.3s; } .ph-link:hover::after { width: 100%; }
+    .ph-btn-auth { background: #2c2c2c; color: white; padding: 10px 24px; border-radius: 30px; text-decoration: none; font-size: 0.85rem; font-weight: 700; transition: all 0.3s; white-space: nowrap; }
+    .ph-btn-auth:hover { background: var(--accent-red); transform: translateY(-2px); }
+    
+    /* Burger & Search */
+    .burger-container { margin-right: 20px; display: none; } .burger-btn { background: transparent; border: 1px solid rgba(0,0,0,0.1); width: 45px; height: 45px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer; transition: all 0.3s ease; } .burger-line { width: 20px; height: 2px; background: #333; transition: all 0.3s ease; } .burger-btn:hover { border-color: var(--accent-red); } .burger-btn:hover .burger-line { background: var(--accent-red); }
+    .search-stack { position: relative; } .search-container { position: absolute; top: 50px; right: 0; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #eee; display: flex; width: 280px; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.3s ease; } .search-container.active { opacity: 1; visibility: visible; transform: translateY(0); } .search-input { border: none; outline: none; width: 100%; padding: 5px; font-size: 0.9rem; } .search-submit { background: none; border: none; cursor: pointer; font-size: 1.1rem; }
+    .ph-right { justify-content: flex-end; gap: 20px; }
+
+    /* --- PROFILE CONTENT --- */
+    .profile-wrapper { max-width: 1000px; margin: 4rem auto; padding: 0 30px; flex: 1; width: 100%; }
+    
+    .profile-header { margin-bottom: 3rem; border-bottom: 1px solid #eee; padding-bottom: 1.5rem; }
+    .profile-title { font-family: 'Playfair Display'; font-size: 3rem; color: var(--primary-dark); margin-bottom: 0.5rem; font-weight: 900; }
+    .profile-sub { color: #666; font-size: 1.1rem; }
+
+    .profile-grid { display: grid; grid-template-columns: 300px 1fr; gap: 3rem; }
+
+    /* GAUCHE : CARTE IDENTITÉ */
+    .id-card { background: white; border-radius: 16px; padding: 2.5rem; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.04); border: 1px solid #eee; height: fit-content; }
+    .avatar-circle { width: 100px; height: 100px; background: var(--primary-dark); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 700; margin: 0 auto 1.5rem; font-family: 'Playfair Display'; }
+    .user-name { font-weight: 700; font-size: 1.4rem; margin-bottom: 0.5rem; color: #222; }
+    .user-email { color: #888; font-size: 0.9rem; margin-bottom: 2rem; word-break: break-all; }
+    .btn-logout { display: block; width: 100%; padding: 12px; border: 1px solid #edd; color: #C82823; background: #fff5f5; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+    .btn-logout:hover { background: #ffecec; transform: translateY(-2px); }
+
+    /* DROITE : ABONNEMENT */
+    .sub-card { background: white; border-radius: 16px; padding: 3rem; box-shadow: 0 10px 30px rgba(0,0,0,0.04); border: 1px solid #eee; }
+    .section-label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #999; letter-spacing: 1px; margin-bottom: 1.5rem; display: block; }
+
+    .status-box { display: flex; align-items: center; justify-content: space-between; padding: 1.5rem; background: #f8f9fa; border-radius: 12px; border: 1px solid #eee; margin-bottom: 2.5rem; }
+    
+    /* Styles dynamiques */
+    .status-active { border-color: #bbf7d0; background: #f0fdf4; }
+    .status-active .status-text { color: #166534; }
+    .status-inactive { border-color: #fecaca; background: #fef2f2; }
+    .status-inactive .status-text { color: #991b1b; }
+
+    .status-label { font-weight: 600; color: #444; }
+    .status-text { font-weight: 800; text-transform: uppercase; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+
+    .actions-area h3 { font-family: 'Playfair Display'; margin-bottom: 1rem; color: var(--primary-dark); font-size: 1.6rem; }
+    .actions-area p { color: #666; font-size: 1rem; line-height: 1.6; margin-bottom: 2rem; }
+
+    .btn-action { padding: 14px 30px; border-radius: 30px; font-weight: 700; cursor: pointer; border: none; transition: 0.3s; font-size: 1rem; text-decoration: none; display: inline-block; }
+    .btn-upgrade { background: var(--primary-dark); color: white; }
+    .btn-upgrade:hover { background: #2a3530; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    .btn-cancel { background: #fff; border: 1px solid #ddd; color: #666; font-size: 0.9rem; }
+    .btn-cancel:hover { border-color: #999; color: #333; }
+
+    /* --- NOUVEAU : MODALE PREMIUM --- */
+    .modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(5px);
+        z-index: 99999;
+        display: flex; align-items: center; justify-content: center;
+        opacity: 0; visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+    
+    .modal-box {
+        background: white;
+        width: 90%; max-width: 450px;
+        padding: 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+        transform: translateY(20px);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        text-align: center;
+    }
+    .modal-overlay.active .modal-box { transform: translateY(0); }
+
+    .modal-icon { font-size: 3rem; margin-bottom: 1rem; display: block; }
+    .modal-title { font-family: 'Playfair Display'; font-size: 1.8rem; margin: 0 0 1rem 0; color: var(--primary-dark); font-weight: 800; }
+    .modal-text { color: #666; margin-bottom: 2rem; line-height: 1.6; font-size: 1rem; }
+    
+    .modal-actions { display: flex; flex-direction: column; gap: 10px; }
+    .btn-modal-keep { background: var(--primary-dark); color: white; border: none; padding: 14px; border-radius: 30px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 1rem; }
+    .btn-modal-keep:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(55,70,61,0.2); }
+    .btn-modal-confirm { background: transparent; color: var(--accent-red); border: none; padding: 10px; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
+    .btn-modal-confirm:hover { text-decoration: underline; }
+
+    /* FOOTER STANDARD */
+    .premium-footer { background: #1a1a1a; color: #ccc; padding: 4rem 0; margin-top: auto; }
+    .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 3rem; max-width: 1300px; margin: 0 auto; padding: 0 30px; }
+    .footer-logo { height: 35px; filter: brightness(0) invert(1); margin-bottom: 1.5rem; }
+    .footer-col h4 { color: white; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.2rem; font-size: 0.85rem; }
+    .footer-link { display: block; color: #888; text-decoration: none; margin-bottom: 10px; transition: color 0.3s; font-size: 0.9rem; } .footer-link:hover { color: white; }
+    .footer-bottom { border-top: 1px solid #333; margin-top: 3rem; padding-top: 2rem; text-align: center; font-size: 0.8rem; opacity: 0.6; }
+
+    /* Mobile Nav */
+    .mobile-nav-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9998; opacity:0; visibility:hidden; transition: all 0.3s; } .mobile-nav-overlay.active { opacity:1; visibility:visible; } .mobile-nav-sidebar { position: fixed; top:0; left:0; width: 300px; height: 100vh; background: #111; z-index: 9999; transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.77,0,0.175,1); padding: 2rem; color: white; display: flex; flex-direction: column; } .mobile-nav-sidebar.nav-open { transform: translateX(0); } .mobile-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; } .mobile-logo { height: 30px; filter: brightness(0) invert(1); } .mobile-close { background: none; border: none; color: white; font-size: 2rem; cursor: pointer; } .mobile-links { list-style: none; padding: 0; margin: 0; } .mobile-link { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: #888; text-decoration: none; display: block; margin-bottom: 1.5rem; transition:0.3s; } .mobile-link:hover { color: white; border-left: 2px solid var(--accent-red); padding-left: 10px; }
+
+    @media(max-width: 900px) {
+        .profile-grid { grid-template-columns: 1fr; }
+        .premium-header { padding: 0 20px; } .ph-nav { display: none; } .burger-container { display: flex; }
+        .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+<a href="javascript:history.length > 1 ? history.back() : window.location.href='index.html'" class="floating-back-btn" aria-label="Retour page précédente">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      <span>Retour</span>
+  </a>
+  <header class="premium-header">
+    <div class="ph-left">
+      <div class="burger-container"><button class="burger-btn" id="burgerBtn"><div class="burger-line"></div><div class="burger-line"></div><div class="burger-line"></div></button></div>
+      <a href="index.html" class="ph-brand">
+        <img src="logo.svg" alt="S">
+        <div class="brand-sep"></div>
+        <span class="brand-text">Solitiquo</span>
+      </a>
+    </div>
+    <div class="ph-center">
+      <nav class="ph-nav">
+        <a href="politique.html" class="ph-link">Politique</a>
+        <a href="social.html" class="ph-link">Social</a>
+        <a href="partis-politiques.html" class="ph-link">Partis</a>
+        <a href="emissions.html" class="ph-link">Émissions</a>
+        <a href="podcasts.html" class="ph-link">Podcasts</a>
+      </nav>
+    </div>
+    <div class="ph-right">
+      <div class="search-stack">
+        <button class="search-btn" id="searchBtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></button>
+        <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
+            <input type="text" name="q" class="search-input" id="searchInput" placeholder="Rechercher..." required />
+            <button class="search-submit" type="submit">🔍</button>
+        </form>
+      </div>
+      <a href="auth.html" class="ph-btn-auth">S'identifier</a>
+    </div>
+  </header>
+
+  <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+  <nav id="mobileNav" class="mobile-nav-sidebar">
+    <div class="mobile-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img src="logo.svg" class="mobile-logo" alt="S">
+        <span style="font-family:'Playfair Display';font-weight:700;font-size:1.5rem;">Solitiquo</span>
+      </div>
+      <button id="mobileNavClose" class="mobile-close">×</button>
+    </div>
+    <ul class="mobile-links">
+      <li class="mobile-link-item"><a href="index.html" class="mobile-link">Accueil</a></li>
+      <li class="mobile-link-item"><a href="politique.html" class="mobile-link">Politique</a></li>
+      <li class="mobile-link-item"><a href="social.html" class="mobile-link">Social</a></li>
+      <li class="mobile-link-item"><a href="partis-politiques.html" class="mobile-link">Partis</a></li>
+      <li class="mobile-link-item"><a href="podcasts.html" class="mobile-link">Podcasts</a></li>
+    </ul>
+    <div style="margin-top:auto; padding-top:2rem; border-top:1px solid #333;">
+      <a href="auth.html" style="color:white; text-decoration:none; font-weight:700; display:flex; align-items:center; gap:10px;">S'identifier</a>
+    </div>
+  </nav>
+
+
+  <main class="profile-wrapper">
+    <div class="profile-header">
+        <h1 class="profile-title">Mon Espace</h1>
+        <div class="profile-sub">Gérez vos informations et votre abonnement</div>
+    </div>
+
+    <div class="profile-grid">
+        <aside class="id-card">
+            <div class="avatar-circle" id="user-initial">?</div>
+            <div class="user-name" id="user-name">Chargement...</div>
+            <div class="user-email" id="user-email">...</div>
+            <button class="btn-logout" onclick="SolitiquoAPI.logout()">Se déconnecter</button>
+        </aside>
+
+        <section class="sub-card">
+            <span class="section-label">VOTRE ABONNEMENT</span>
+            
+            <div id="subscription-status-box" class="status-box">
+                <span class="status-label">Statut actuel</span>
+                <span class="status-text" id="status-text">...</span>
+            </div>
+
+            <div class="actions-area" id="subscription-actions">
+                </div>
+        </section>
+    </div>
+  </main>
+
+  <div id="cancelModal" class="modal-overlay">
+    <div class="modal-box">
+        <span class="modal-icon">👋</span>
+        <h3 class="modal-title">Nous sommes tristes de vous voir partir</h3>
+        <p class="modal-text">En résiliant maintenant, vous perdrez immédiatement l'accès aux articles d'analyse et aux enquêtes exclusives de Solitiquo.</p>
+        <div class="modal-actions">
+            <button class="btn-modal-keep" onclick="closeCancelModal()">Je garde mon abonnement</button>
+            <button class="btn-modal-confirm" onclick="confirmCancelAction()">Je confirme la résiliation</button>
+        </div>
+    </div>
+  </div>
+
+
+  <footer class="premium-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <div style="display:flex; gap:10px; align-items:center; margin-bottom:1.5rem;">
+            <img src="logo.svg" class="footer-logo" alt="S" onerror="handleImgError(this)">
+            <span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
+        </div>
+        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le média de référence pour l'analyse politique et sociale au Cameroun.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Rubriques</h4>
+        <a href="politique.html" class="footer-link">Politique</a>
+        <a href="social.html" class="footer-link">Social</a>
+        <a href="partis-politiques.html" class="footer-link">Partis</a>
+      </div>
+      <div class="footer-col">
+        <h4>Légal</h4>
+        <a href="mentions-legales.html" class="footer-link">Mentions légales</a>
+        <a href="conditions-utilisation.html" class="footer-link">CGU</a>
+        <a href="politique-confidentialite.html" class="footer-link">Confidentialité</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <a href="contact.html" class="footer-link">Nous écrire</a>
+        <a href="auth.html" class="footer-link">S'identifier</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script>
+    // --- NAVIGATION & RECHERCHE ---
+    const burger = document.getElementById('burgerBtn');
+    const mobileNav = document.getElementById('mobileNav');
+    const mobileClose = document.getElementById('mobileNavClose');
+    const overlay = document.getElementById('mobileNavOverlay');
+    function toggleMenu(show) {
+        if(show) { mobileNav.classList.add('nav-open'); overlay.classList.add('active'); }
+        else { mobileNav.classList.remove('nav-open'); overlay.classList.remove('active'); }
+    }
+    if(burger) burger.addEventListener('click', () => toggleMenu(true));
+    if(mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
+    if(overlay) overlay.addEventListener('click', () => toggleMenu(false));
+
+    // --- RECHERCHE ---
+    const searchBtn = document.getElementById('searchBtn');
+    const searchLabel = document.getElementById('searchLabel');
+    const searchContainer = document.getElementById('searchContainer');
+    const searchInput = document.getElementById('searchInput');
+
+    function toggleSearch(e) {
+        e.stopPropagation();
+        searchContainer.classList.toggle('active');
+        if(searchContainer.classList.contains('active')) {
+            setTimeout(() => searchInput.focus(), 100);
+        }
+    }
+
+    if(searchBtn) searchBtn.addEventListener('click', toggleSearch);
+    if(searchLabel) searchLabel.addEventListener('click', toggleSearch);
+
+    document.addEventListener('click', (e) => {
+        if (searchContainer && searchContainer.classList.contains('active')) {
+            if (!searchContainer.contains(e.target) && 
+                !searchBtn.contains(e.target) && 
+                (!searchLabel || !searchLabel.contains(e.target))) {
+                searchContainer.classList.remove('active');
+            }
+        }
+    });
+    // Gestion Auth & Profil
+    document.addEventListener('DOMContentLoaded', async () => {
+       
+        
+        // 2. Récupérer infos utilisateur
+        const user = await SolitiquoAPI.getProfile();
+        if (!user) {
+            window.location.href = 'auth.html';
+            return;
+        }
+
+        // 3. Remplir carte identité
+        document.getElementById('user-name').textContent = user.username;
+        document.getElementById('user-email').textContent = user.email;
+        document.getElementById('user-initial').textContent = user.username.charAt(0).toUpperCase();
+
+        // 4. Gérer l'affichage abonnement
+        const statusBox = document.getElementById('subscription-status-box');
+        const statusText = document.getElementById('status-text');
+        const actionArea = document.getElementById('subscription-actions');
+
+        // Cas Admin
+        if (user.role === 'admin' || user.role === 'writer') {
+            statusBox.className = "status-box status-active";
+            statusText.innerHTML = "⚡ ADMIN / ÉQUIPE";
+            actionArea.innerHTML = `
+                <h3>Compte Administrateur</h3>
+                <p>Vous disposez d'un accès illimité à tous les contenus et outils de gestion.</p>
+                <a href="admin.html" class="btn-action btn-upgrade">Accéder au Dashboard</a>
+            `;
+        } 
+        // Cas Abonné
+        else if (user.role === 'subscriber') {
+            statusBox.className = "status-box status-active";
+            statusText.innerHTML = "✅ ACTIF (PREMIUM)";
+            actionArea.innerHTML = `
+                <h3>Profitez de votre lecture</h3>
+                <p>Vous avez accès à l'intégralité des articles et enquêtes sans publicité. Merci de votre soutien.</p>
+                <button onclick="openCancelModal()" class="btn-action btn-cancel">Résilier mon abonnement</button>
+            `;
+        } 
+        // Cas Gratuit
+        else {
+            statusBox.className = "status-box status-inactive";
+            statusText.innerHTML = "GRATUIT (LIMITÉ)";
+            actionArea.innerHTML = `
+                <h3>Passez à la vitesse supérieure</h3>
+                <p>Débloquez les articles exclusifs et soutenez notre rédaction indépendante.</p>
+                <a href="abonnement.html" class="btn-action btn-upgrade">Découvrir les offres</a>
+            `;
+        }
+    });
+
+    // --- GESTION DE LA MODALE ---
+    const modal = document.getElementById('cancelModal');
+
+    function openCancelModal() {
+        modal.classList.add('active');
+    }
+
+    function closeCancelModal() {
+        modal.classList.remove('active');
+    }
+
+    // Fermeture si on clique en dehors
+    modal.addEventListener('click', (e) => {
+        if(e.target === modal) closeCancelModal();
+    });
+
+    // Fonction réelle de résiliation
+    async function confirmCancelAction() {
+        // État de chargement visuel
+        const btn = document.querySelector('.btn-modal-confirm');
+        const originalText = btn.textContent;
+        btn.textContent = "Traitement en cours...";
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('http://localhost:5000/api/subscriptions/cancel', {
+                method: 'POST',
+                credentials: 'include'
+            });
+            const json = await res.json();
+            
+            if(json.success) {
+                // Fermer et recharger
+                closeCancelModal();
+                window.location.reload(); 
+            } else {
+                alert("Erreur : " + json.error);
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        } catch(e) { 
+            alert("Erreur serveur");
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
+    }
+  </script>
+</body>
+</html>

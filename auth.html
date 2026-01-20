@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Espace Membre — Solitiquo</title>
+  <link rel="stylesheet" href="solitiquo.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,400&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  
+  <script>
+    function handleImgError(img) {
+        img.onerror = null;
+        img.src = 'https://placehold.co/600x400/eee/999?text=Solitiquo';
+    }
+  </script>
+
+  <style>
+    :root {
+      --primary-dark: #37463D;
+      --accent-red: #C82823;
+      --bg-soft: #F8F9FA;
+    }
+
+    /* --- HEADER PREMIUM (Copié de l'Index) --- */
+    .premium-header {
+      background: white; border-bottom: 1px solid #eaeaea;
+      position: sticky; top: 0; z-index: 1000;
+      padding: 0 30px; height: 80px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+    .ph-left, .ph-right { flex: 1; display: flex; align-items: center; }
+    .ph-center { flex: 2; display: flex; justify-content: center; }
+    
+    .ph-brand { text-decoration: none; display: flex; align-items: center; height: 50px; }
+    .ph-brand img { height: 42px; width: auto; display: block; }
+    .brand-sep { width: 1px; height: 30px; background: #ccc; margin: 0 15px; }
+    .brand-text { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 800; color: var(--primary-dark); letter-spacing: -0.5px; position: relative; top: 2px; }
+
+    .ph-nav { display: flex; gap: 30px; }
+    .ph-link { text-decoration: none; color: #2c2c2c; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; position: relative; transition: color 0.3s; font-family: 'Inter', sans-serif; }
+    .ph-link:hover, .ph-link.active { color: var(--accent-red); }
+    .ph-link::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 2px; background: var(--accent-red); transition: width 0.3s; }
+    .ph-link:hover::after { width: 100%; }
+
+    /* Bouton header caché sur la page auth pour éviter la redondance */
+    .ph-btn-auth { display: none; } 
+
+    /* --- MENU MOBILE & RECHERCHE --- */
+    .burger-container { margin-right: 20px; display: none; }
+    .burger-btn { background: transparent; border: 1px solid rgba(0,0,0,0.1); width: 45px; height: 45px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer; transition: all 0.3s ease; }
+    .burger-line { width: 20px; height: 2px; background: #333; transition: all 0.3s ease; }
+    .burger-btn:hover { border-color: var(--accent-red); } .burger-btn:hover .burger-line { background: var(--accent-red); }
+
+    .search-stack { position: relative; }
+    .search-container { position: absolute; top: 50px; right: 0; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #eee; display: flex; width: 280px; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.3s ease; }
+    .search-container.active { opacity: 1; visibility: visible; transform: translateY(0); }
+    .search-input { border: none; outline: none; width: 100%; padding: 5px; font-size: 0.9rem; }
+    .search-submit { background: none; border: none; cursor: pointer; font-size: 1.1rem; }
+
+    /* --- PAGE AUTHENTIFICATION (Design Premium) --- */
+    .auth-page-wrapper {
+      min-height: 80vh;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg-soft);
+      padding: 4rem 20px;
+    }
+
+    .auth-card {
+      background: white; width: 100%; max-width: 480px;
+      border-radius: 12px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.06);
+      overflow: hidden;
+      position: relative;
+      border-top: 5px solid var(--primary-dark);
+    }
+
+    /* Onglets Stylés */
+    .auth-tabs { display: flex; background: #fff; border-bottom: 1px solid #eee; }
+    .auth-tab {
+      flex: 1; text-align: center; padding: 20px;
+      font-family: 'Inter', sans-serif; font-weight: 600; color: #888;
+      cursor: pointer; transition: all 0.3s; font-size: 0.95rem;
+    }
+    .auth-tab:hover { color: var(--primary-dark); background: #fcfcfc; }
+    .auth-tab.active { color: var(--primary-dark); font-weight: 700; border-bottom: 2px solid var(--primary-dark); background: white; }
+
+    /* Contenu Formulaire */
+    .auth-content { padding: 40px; }
+    
+    .auth-title-group { text-align: center; margin-bottom: 30px; }
+    .auth-title { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--primary-dark); margin: 0 0 10px 0; font-weight: 700; }
+    .auth-subtitle { font-size: 0.9rem; color: #666; line-height: 1.5; }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 700; color: #333; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-input {
+      width: 100%; padding: 14px; border: 1px solid #e0e0e0; border-radius: 6px;
+      font-family: 'Inter', sans-serif; font-size: 1rem; transition: border-color 0.3s, box-shadow 0.3s;
+      background: #fdfdfd;
+    }
+    .form-input:focus { outline: none; border-color: var(--primary-dark); box-shadow: 0 0 0 3px rgba(55,70,61,0.1); background: white; }
+
+    .btn-auth-submit {
+      width: 100%; padding: 16px; background: var(--primary-dark); color: white;
+      border: none; border-radius: 6px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: background 0.3s, transform 0.2s; margin-top: 10px;
+    }
+    .btn-auth-submit:hover { background: #2a3530; transform: translateY(-2px); }
+
+    .auth-footer { margin-top: 25px; text-align: center; font-size: 0.9rem; color: #888; border-top: 1px solid #eee; padding-top: 20px; }
+    .auth-footer a { color: var(--accent-red); text-decoration: none; font-weight: 600; }
+    .auth-footer a:hover { text-decoration: underline; }
+
+    /* Messages Status */
+    .msg-box { padding: 12px; border-radius: 6px; font-size: 0.9rem; margin-bottom: 20px; display: none; text-align: center; }
+    .msg-error { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .msg-success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+
+    /* --- FOOTER PREMIUM (Copié) --- */
+    .premium-footer { background: #1a1a1a; color: #ccc; padding: 4rem 0; }
+    .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 3rem; max-width: 1300px; margin: 0 auto; padding: 0 30px; }
+    .footer-logo { height: 35px; filter: brightness(0) invert(1); margin-bottom: 1.5rem; }
+    .footer-col h4 { color: white; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.2rem; font-size: 0.85rem; }
+    .footer-link { display: block; color: #888; text-decoration: none; margin-bottom: 10px; transition: color 0.3s; font-size: 0.9rem; }
+    .footer-link:hover { color: white; }
+    .footer-bottom { border-top: 1px solid #333; margin-top: 3rem; padding-top: 2rem; text-align: center; font-size: 0.8rem; opacity: 0.6; }
+
+    @media (max-width: 1000px) {
+      .premium-header { padding: 0 20px; } .ph-nav { display: none; } .burger-container { display: flex; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* --- STYLE POUR L'ICÔNE MOT DE PASSE --- */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper input {
+  padding-right: 45px; /* Laisse de la place pour l'icône */
+}
+
+.btn-toggle-pass {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  transition: color 0.3s;
+}
+
+.btn-toggle-pass:hover {
+  color: var(--primary-dark);
+}
+
+  </style>
+</head>
+<body>
+<a href="javascript:history.length > 1 ? history.back() : window.location.href='index.html'" class="floating-back-btn" aria-label="Retour page précédente">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      <span>Retour</span>
+  </a>
+  <header class="premium-header">
+    <div class="ph-left">
+      <div class="burger-container"><button class="burger-btn" id="burgerBtn"><div class="burger-line"></div><div class="burger-line"></div><div class="burger-line"></div></button></div>
+      <a href="index.html" class="ph-brand">
+        <img src="logo.svg" alt="S">
+        <div class="brand-sep"></div>
+        <span class="brand-text">Solitiquo</span>
+      </a>
+    </div>
+    <div class="ph-center">
+      <nav class="ph-nav">
+        <a href="politique.html" class="ph-link">Politique</a>
+        <a href="social.html" class="ph-link">Social</a>
+        <a href="partis-politiques.html" class="ph-link">Partis</a>
+        <a href="emissions.html" class="ph-link">Émissions</a>
+        <a href="podcasts.html" class="ph-link">Podcasts</a>
+      </nav>
+    </div>
+    <div class="ph-right" style="justify-content: flex-end; gap: 20px;">
+      <div class="search-stack">
+          <div class="search-row" style="display:flex; align-items:center; cursor:pointer;">
+            <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            </button>
+            <span class="search-label" id="searchLabel" style="font-size:0.9rem; font-weight:600; margin-left:8px;">Rechercher</span>
+          </div>
+          
+          <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
+            <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput" autocomplete="off" required />
+            <button class="search-submit" type="submit" aria-label="Lancer">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </form>
+      </div>
+      </div>
+  </header>
+
+ 
+  <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+  <nav id="mobileNav" class="mobile-nav-sidebar">
+    <div class="mobile-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img src="logo.svg" class="mobile-logo" style="height:30px;filter:brightness(0) invert(1);" alt="S">
+        <span style="font-family:'Playfair Display';font-weight:700;font-size:1.5rem;">Solitiquo</span>
+      </div>
+      <button id="mobileNavClose" style="background:none;border:none;color:white;font-size:2rem;">×</button>
+    </div>
+    <ul style="list-style:none;padding:0;margin-top:2rem;">
+      <li style="margin-bottom:1.5rem;"><a href="index.html" style="color:#888;font-size:1.6rem;text-decoration:none;font-family:'Playfair Display';">Accueil</a></li>
+      <li style="margin-bottom:1.5rem;"><a href="auth.html" style="color:white;font-size:1.6rem;text-decoration:none;font-family:'Playfair Display';border-left:2px solid #C82823;padding-left:10px;">S'identifier</a></li>
+    </ul>
+  </nav>
+
+  <div class="auth-page-wrapper">
+    
+    <div class="auth-card">
+      
+      <div class="auth-tabs">
+        <div class="auth-tab active" onclick="switchTab('login')">Connexion</div>
+        <div class="auth-tab" onclick="switchTab('register')">Inscription</div>
+      </div>
+
+      <div class="auth-content">
+        
+        <div class="auth-title-group">
+            <h1 class="auth-title" id="formTitle">Bienvenue</h1>
+            <p class="auth-subtitle" id="formSubtitle">Accédez à votre espace membre premium.</p>
+        </div>
+
+        <div id="message-box" class="msg-box msg-error"></div>
+        <div id="success-box" class="msg-box msg-success"></div>
+
+        <form id="loginForm">
+  <div class="form-group">
+    <label>Email ou Nom d'utilisateur</label>
+    <input type="text" id="loginIdentifier" class="form-input" required placeholder="votre@email.com ou Pseudo">
+  </div>
+  
+  <div class="form-group">
+    <label>Mot de passe</label>
+    <div class="password-wrapper">
+      <input type="password" id="loginPwd" class="form-input" required placeholder="••••••••">
+      <button type="button" class="btn-toggle-pass" onclick="togglePassword('loginPwd', this)" aria-label="Afficher le mot de passe">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+      </button>
+    </div>
+  </div>
+  
+  <button type="submit" class="btn-auth-submit">Se connecter</button>
+  <div class="auth-footer">
+    <a href="#">Mot de passe oublié ?</a>
+  </div>
+</form>
+
+<form id="registerForm" style="display:none;">
+  <div class="form-group">
+    <label>Nom d'utilisateur</label>
+    <input type="text" id="regUser" class="form-input" required placeholder="Ex: JeanDupont">
+  </div>
+  <div class="form-group">
+    <label>Adresse Email</label>
+    <input type="email" id="regEmail" class="form-input" required placeholder="votre@email.com">
+  </div>
+  
+  <div class="form-group">
+    <label>Mot de passe</label>
+    <div class="password-wrapper">
+      <input type="password" id="regPwd" class="form-input" required placeholder="Minimum 6 caractères">
+      <button type="button" class="btn-toggle-pass" onclick="togglePassword('regPwd', this)" aria-label="Afficher le mot de passe">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+      </button>
+    </div>
+  </div>
+
+  <button type="submit" class="btn-auth-submit" style="background:#C82823;">Créer mon compte</button>
+  <div class="auth-footer">
+    En créant un compte, vous acceptez nos <a href="conditions-utilisation.html">CGU</a>.
+  </div>
+</form>
+
+      </div>
+    </div>
+  </div>
+
+  <footer class="premium-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <div style="display:flex; gap:10px; align-items:center; margin-bottom:1.5rem;">
+            <img src="logo.svg" class="footer-logo" alt="S">
+            <span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
+        </div>
+        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le média de référence pour l'analyse politique et sociale.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Rubriques</h4>
+        <a href="politique.html" class="footer-link">Politique</a>
+        <a href="social.html" class="footer-link">Social</a>
+        <a href="partis-politiques.html" class="footer-link">Partis</a>
+      </div>
+      <div class="footer-col">
+        <h4>Légal</h4>
+        <a href="mentions-legales.html" class="footer-link">Mentions légales</a>
+        <a href="conditions-utilisation.html" class="footer-link">CGU</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <a href="contact.html" class="footer-link">Nous écrire</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script>
+    // --- 1. FONCTION UTILITAIRE : GESTION IMAGE (Au cas où) ---
+    // (Déjà présent en haut de ton fichier, mais utile si rappelé ici ou via api.js)
+
+    // --- 2. MENU MOBILE ---
+    const burger = document.getElementById('burgerBtn');
+    const mobileNav = document.getElementById('mobileNav');
+    const mobileClose = document.getElementById('mobileNavClose');
+    const overlay = document.getElementById('mobileNavOverlay');
+
+    function toggleMenu(show) {
+        if(show) { 
+            mobileNav.classList.add('nav-open'); 
+            overlay.classList.add('active'); 
+            document.body.style.overflow = 'hidden'; 
+        } else { 
+            mobileNav.classList.remove('nav-open'); 
+            overlay.classList.remove('active'); 
+            document.body.style.overflow = ''; 
+        }
+    }
+    if(burger) burger.addEventListener('click', () => toggleMenu(true));
+    if(mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
+    if(overlay) overlay.addEventListener('click', () => toggleMenu(false));
+
+    // --- 3. LOGIQUE RECHERCHE (Restaurée) ---
+    const searchBtn = document.getElementById('searchBtn');
+    const searchLabel = document.getElementById('searchLabel');
+    const searchContainer = document.getElementById('searchContainer');
+    const searchInput = document.getElementById('searchInput');
+
+    function toggleSearch(e) {
+        e.stopPropagation();
+        searchContainer.classList.toggle('active');
+        if(searchContainer.classList.contains('active')) {
+            setTimeout(() => searchInput.focus(), 100);
+        }
+    }
+
+    if(searchBtn) searchBtn.addEventListener('click', toggleSearch);
+    if(searchLabel) searchLabel.addEventListener('click', toggleSearch);
+
+    document.addEventListener('click', (e) => {
+        if (searchContainer && searchContainer.classList.contains('active')) {
+            // On ferme si on clique ailleurs que sur le container, le bouton ou le label
+            if (!searchContainer.contains(e.target) && 
+                !searchBtn.contains(e.target) && 
+                (!searchLabel || !searchLabel.contains(e.target))) {
+                searchContainer.classList.remove('active');
+            }
+        }
+    });
+
+    // --- 4. LOGIQUE AUTHENTIFICATION & MOT DE PASSE ---
+
+    // A. Fonction pour afficher/masquer le mot de passe (Nouvel ajout)
+    function togglePassword(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const iconSvg = btn.querySelector('svg');
+        
+        if (input.type === "password") {
+            input.type = "text";
+            // Icône "Oeil barré"
+            iconSvg.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+        } else {
+            input.type = "password";
+            // Icône "Oeil" normal
+            iconSvg.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+        }
+    }
+
+    // B. Variables globales Auth
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const msgBox = document.getElementById('message-box');
+    const successBox = document.getElementById('success-box');
+    const tabs = document.querySelectorAll('.auth-tab');
+    const title = document.getElementById('formTitle');
+    const subtitle = document.getElementById('formSubtitle');
+
+    // C. Changement d\'onglets
+    function switchTab(mode) {
+      msgBox.style.display = 'none'; successBox.style.display = 'none';
+      if (mode === 'login') {
+        loginForm.style.display = 'block'; registerForm.style.display = 'none';
+        tabs[0].classList.add('active'); tabs[1].classList.remove('active');
+        title.textContent = "Bienvenue";
+        subtitle.textContent = "Accédez à votre espace membre premium.";
+      } else {
+        loginForm.style.display = 'none'; registerForm.style.display = 'block';
+        tabs[0].classList.remove('active'); tabs[1].classList.add('active');
+        title.textContent = "Rejoignez-nous";
+        subtitle.textContent = "Créez un compte pour participer aux débats.";
+      }
+    }
+
+    // D. Soumission Connexion (Modifié pour User OU Email)
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // On récupère le nouvel ID 'loginIdentifier' (Pseudo ou Email)
+      const identifier = document.getElementById('loginIdentifier').value;
+      const password = document.getElementById('loginPwd').value;
+      const btn = loginForm.querySelector('button[type="submit"]');
+      
+      btn.textContent = "Connexion..."; btn.disabled = true;
+      
+      // Note technique : On envoie 'email: identifier' car l'API attend souvent ce champ,
+      // mais le backend Python devra vérifier si c'est un email ou un pseudo.
+      const result = await SolitiquoAPI.login({ email: identifier, password });
+      
+      if (result.success) {
+        window.location.href = 'index.html';
+      } else {
+        msgBox.textContent = result.error || "Identifiants incorrects."; 
+        msgBox.style.display = 'block';
+        btn.textContent = "Se connecter"; btn.disabled = false;
+      }
+    });
+
+    // E. Soumission Inscription
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('regUser').value;
+      const email = document.getElementById('regEmail').value;
+      const password = document.getElementById('regPwd').value;
+      const btn = registerForm.querySelector('button[type="submit"]');
+
+      btn.textContent = "Création..."; btn.disabled = true;
+
+      const result = await SolitiquoAPI.register({ username, email, password });
+      
+      if (result.success) {
+        successBox.textContent = "Compte créé avec succès ! Redirection...";
+        successBox.style.display = 'block'; msgBox.style.display = 'none';
+        registerForm.reset();
+        setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+      } else {
+        msgBox.textContent = result.error; msgBox.style.display = 'block';
+        btn.textContent = "Créer mon compte"; btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

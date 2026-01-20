@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Social — Solitiquo</title>
+  <link rel="stylesheet" href="solitiquo.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,400&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  
+  <script>
+    function handleImgError(img) {
+        img.onerror = null;
+        img.src = 'https://placehold.co/600x400/eee/999?text=Solitiquo';
+    }
+  </script>
+
+  <style>
+    :root { --primary-dark: #37463D; --accent-red: #C82823; --pod-bg: #111111; }
+
+    /* --- HEADER PREMIUM (Standard) --- */
+    .premium-header { background: white; border-bottom: 1px solid #eaeaea; position: sticky; top: 0; z-index: 1000; padding: 0 30px; height: 80px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+    .ph-left, .ph-right { flex: 1; display: flex; align-items: center; } .ph-center { flex: 2; display: flex; justify-content: center; }
+    .ph-brand { text-decoration: none; display: flex; align-items: center; height: 50px; } .ph-brand img { height: 42px; width: auto; display: block; }
+    .brand-sep { width: 1px; height: 30px; background: #ccc; margin: 0 15px; } .brand-text { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 800; color: var(--primary-dark); letter-spacing: -0.5px; position: relative; top: 2px; }
+    .ph-nav { display: flex; gap: 30px; } .ph-link { text-decoration: none; color: #2c2c2c; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; position: relative; transition: color 0.3s; font-family: 'Inter', sans-serif; }
+    .ph-link:hover, .ph-link.active { color: var(--accent-red); } .ph-link::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 2px; background: var(--accent-red); transition: width 0.3s; } .ph-link:hover::after { width: 100%; }
+    .ph-btn-auth { background: #2c2c2c; color: white; padding: 10px 24px; border-radius: 30px; text-decoration: none; font-size: 0.85rem; font-weight: 700; transition: all 0.3s; white-space: nowrap; } .ph-btn-auth:hover { background: var(--accent-red); transform: translateY(-2px); }
+
+    /* Burger & Search */
+    .burger-container { margin-right: 20px; display: none; } .burger-btn { background: transparent; border: 1px solid rgba(0,0,0,0.1); width: 45px; height: 45px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer; transition: all 0.3s ease; } .burger-line { width: 20px; height: 2px; background: #333; transition: all 0.3s ease; } .burger-btn:hover { border-color: var(--accent-red); } .burger-btn:hover .burger-line { background: var(--accent-red); }
+    .search-stack { position: relative; } .search-container { position: absolute; top: 50px; right: 0; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #eee; display: flex; width: 280px; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.3s ease; } .search-container.active { opacity: 1; visibility: visible; transform: translateY(0); } .search-input { border: none; outline: none; width: 100%; padding: 5px; font-size: 0.9rem; } .search-submit { background: none; border: none; cursor: pointer; font-size: 1.1rem; }
+
+    /* HERO SOCIAL (Image Spécifique) */
+    .grand-hero-section { position: relative; height: 60vh; min-height: 500px; width: 100%; overflow: hidden; margin-bottom: 4rem; }
+    .hero-bg-img { width: 100%; height: 100%; object-fit: cover; transition: transform 8s ease; }
+    .grand-hero-section:hover .hero-bg-img { transform: scale(1.03); }
+    .hero-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 80%; background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.5), transparent); display: flex; flex-direction: column; justify-content: flex-end; padding: 0 5% 4rem 5%; color: white; }
+    
+    .hero-tags-wrap { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin-bottom: 15px; }
+    .hero-badge-une { background: var(--accent-red); color: white; padding: 6px 14px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; border-radius: 4px; }
+    .hero-badge-cat { background: white; color: var(--primary-dark); padding: 4px 10px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-radius: 4px; }
+    .hero-title-main { font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 900; line-height: 1.1; margin-bottom: 1rem; max-width: 1000px; text-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+    .hero-excerpt { font-size: 1.1rem; line-height: 1.5; opacity: 0.9; max-width: 800px; margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+    /* LAYOUT */
+    .main-grid { max-width: 1300px; margin: 0 auto 5rem; padding: 0 40px; display: grid; grid-template-columns: 2.5fr 1fr; gap: 4rem; }
+    .section-label { font-family: 'Inter'; font-size: 0.9rem; font-weight: 800; text-transform: uppercase; color: var(--accent-red); border-bottom: 2px solid var(--accent-red); padding-bottom: 8px; margin-bottom: 2.5rem; display: inline-block; }
+
+    /* ARTICLES MAGAZINE */
+    .article-magazine { display: grid; grid-template-columns: 220px 1fr; gap: 2rem; padding-bottom: 2rem; margin-bottom: 2rem; border-bottom: 1px solid #eee; align-items: center; }
+    .article-magazine:last-child { border-bottom: none; }
+    .mag-img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; }
+    .mag-content h3 { font-family: 'Playfair Display', serif; font-size: 1.6rem; margin: 0 0 0.8rem 0; color: #2c2c2c; line-height: 1.2; transition: color 0.3s; }
+    .article-magazine:hover h3 { color: var(--accent-red); }
+    .mag-excerpt { font-size: 1rem; color: #555; margin-bottom: 0.8rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+    /* SIDEBAR & SONDAGE */
+    .poll-feed-card { background: #fff; border: 1px solid #e0e0e0; border-left: 5px solid var(--primary-dark); border-radius: 12px; padding: 2.5rem; margin-bottom: 4rem; box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: all 0.6s ease; }
+    .poll-feed-card.fade-out { opacity: 0; transform: translateY(-30px) scale(0.95); height: 0; margin: 0; padding: 0; overflow: hidden; }
+    .poll-label { font-size: 0.75rem; color: #888; font-weight: 800; text-transform: uppercase; margin-bottom: 1rem; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+    .poll-question-large { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--primary-dark); margin-bottom: 1.5rem; line-height: 1.2; }
+    .poll-option-btn { display: block; width: 100%; padding: 15px 20px; margin-bottom: 10px; background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; text-align: left; font-size: 1rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease; position: relative; }
+    .poll-option-btn:hover { background: var(--primary-dark); color: white; border-color: var(--primary-dark); padding-left: 30px; }
+    
+    .sidebar-poll-results { background: #1a1a1a; color: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); margin-bottom: 2rem; animation: slideInRight 0.6s ease-out; }
+    @keyframes slideInRight { from {opacity:0; transform:translateX(20px);} to {opacity:1; transform:translateX(0);} }
+    .sidebar-poll-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; margin-bottom: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 0.8rem; line-height: 1.4; }
+    .res-row { margin-bottom: 1rem; }
+    .res-info { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px; }
+    .res-bar-bg { background: rgba(255,255,255,0.15); height: 6px; border-radius: 3px; overflow: hidden; }
+    .res-bar-fill { height: 100%; background: var(--accent-red); width: 0%; transition: width 1s ease; }
+    .res-winner .res-bar-fill { background: #4CAF50; }
+
+    .pod-sb-card { background: #1a1a1a; color: white; border-radius: 12px; overflow: hidden; margin-bottom: 3rem; }
+    .pod-sb-img { width: 100%; height: 200px; object-fit: cover; opacity: 0.9; transition: 0.3s; }
+    .pod-sb-card:hover .pod-sb-img { opacity: 1; }
+    .pod-sb-content { padding: 1.5rem; }
+    .pod-sb-tag { color: var(--accent-red); font-weight: 800; font-size: 0.7rem; letter-spacing: 1px; margin-bottom: 10px; display: block; }
+    .pod-sb-title { font-family: 'Playfair Display'; font-size: 1.4rem; line-height: 1.2; margin-bottom: 10px; }
+
+    /* DÉCOUVRIR */
+    .discover-section { margin-top: 4rem; }
+    .discover-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+    .discover-card { display: flex; flex-direction: column; group:hover; text-decoration: none; }
+    .discover-img-wrap { overflow: hidden; border-radius: 8px; margin-bottom: 1rem; }
+    .discover-img { width: 100%; height: 200px; object-fit: cover; transition: transform 0.5s ease; }
+    .discover-card:hover .discover-img { transform: scale(1.05); }
+    .discover-card h4 { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin: 0.5rem 0; color: #2c2c2c; line-height: 1.3; }
+    .discover-card:hover h4 { color: var(--accent-red); }
+    .discover-meta { font-size: 0.8rem; color: #888; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
+
+    /* FOOTER PREMIUM (Complet) */
+    .premium-footer { background: #1a1a1a; color: #ccc; padding: 4rem 0; margin-top: 5rem; }
+    .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 3rem; max-width: 1300px; margin: 0 auto; padding: 0 30px; }
+    .footer-logo { height: 35px; filter: brightness(0) invert(1); margin-bottom: 1.5rem; }
+    .footer-col h4 { color: white; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.2rem; font-size: 0.85rem; }
+    .footer-link { display: block; color: #888; text-decoration: none; margin-bottom: 10px; transition: color 0.3s; font-size: 0.9rem; }
+    .footer-link:hover { color: white; }
+    .footer-bottom { border-top: 1px solid #333; margin-top: 3rem; padding-top: 2rem; text-align: center; font-size: 0.8rem; opacity: 0.6; }
+
+    /* MOBILE */
+    .mobile-nav-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9998; opacity:0; visibility:hidden; transition: all 0.3s; }
+    .mobile-nav-overlay.active { opacity:1; visibility:visible; }
+    .mobile-nav-sidebar { position: fixed; top:0; left:0; width: 300px; height: 100vh; background: #111; z-index: 9999; transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.77,0,0.175,1); padding: 2rem; color: white; display: flex; flex-direction: column; }
+    .mobile-nav-sidebar.nav-open { transform: translateX(0); }
+    .mobile-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; }
+    .mobile-logo { height: 30px; filter: brightness(0) invert(1); }
+    .mobile-close { background: none; border: none; color: white; font-size: 2rem; cursor: pointer; }
+    .mobile-links { list-style: none; padding: 0; margin: 0; }
+    .mobile-link { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: #888; text-decoration: none; display: block; margin-bottom: 1.5rem; transition:0.3s; }
+    .mobile-link:hover { color: white; border-left: 2px solid var(--accent-red); padding-left: 10px; }
+
+    @media (max-width: 1000px) {
+      .premium-header { padding: 0 20px; } .ph-nav { display: none; } .burger-container { display: flex; }
+      .main-grid { grid-template-columns: 1fr; gap: 3rem; }
+      .article-magazine { grid-template-columns: 1fr; gap: 1rem; } .mag-img { height: 200px; }
+      .discover-grid { grid-template-columns: 1fr 1fr; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="premium-header">
+    <div class="ph-left">
+      <div class="burger-container"><button class="burger-btn" id="burgerBtn"><div class="burger-line"></div><div class="burger-line"></div><div class="burger-line"></div></button></div>
+      <a href="index.html" class="ph-brand">
+        <img src="logo.svg" alt="S">
+        <div class="brand-sep"></div>
+        <span class="brand-text">Solitiquo</span>
+      </a>
+    </div>
+    <div class="ph-center">
+      <nav class="ph-nav">
+        <a href="politique.html" class="ph-link">Politique</a>
+        <a href="social.html" class="ph-link active">Social</a>
+        <a href="partis-politiques.html" class="ph-link">Partis</a>
+        <a href="emissions.html" class="ph-link">Émissions</a>
+        <a href="podcasts.html" class="ph-link">Podcasts</a>
+      </nav>
+    </div>
+    <div class="ph-right" style="justify-content: flex-end; gap: 20px;">
+      <div class="search-stack">
+          <div class="search-row">
+            <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            </button>
+            <span class="search-label" id="searchLabel">Rechercher</span>
+          </div>
+          
+          <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
+            
+            <input 
+              type="text" 
+              name="q" 
+              class="search-input" 
+              placeholder="Rechercher..." 
+              id="searchInput" 
+              autocomplete="off"
+              required
+            />
+            
+            <button class="search-submit" type="submit" aria-label="Lancer">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            
+          </form>
+        </div>
+      <a href="auth.html" class="ph-btn-auth">S'identifier</a>
+    </div>
+  </header>
+
+  <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+  <nav id="mobileNav" class="mobile-nav-sidebar">
+    <div class="mobile-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img src="logo.svg" class="mobile-logo" alt="S">
+        <span style="font-family:'Playfair Display';font-weight:700;font-size:1.5rem;">Solitiquo</span>
+      </div>
+      <button id="mobileNavClose" class="mobile-close">×</button>
+    </div>
+    <ul class="mobile-links">
+      <li class="mobile-link-item"><a href="index.html" class="mobile-link">Accueil</a></li>
+      <li class="mobile-link-item"><a href="politique.html" class="mobile-link">Politique</a></li>
+      <li class="mobile-link-item"><a href="social.html" class="mobile-link active">Social</a></li>
+      <li class="mobile-link-item"><a href="partis-politiques.html" class="mobile-link">Partis</a></li>
+      <li class="mobile-link-item"><a href="podcasts.html" class="mobile-link">Podcasts</a></li>
+    </ul>
+    <div style="margin-top:auto; padding-top:2rem; border-top:1px solid #333;">
+      <a href="auth.html" style="color:white; text-decoration:none; font-weight:700; display:flex; align-items:center; gap:10px;">S'identifier</a>
+    </div>
+  </nav>
+
+  <div id="hero-dynamic">
+    <section class="grand-hero-section" style="background:#eee;"></section>
+  </div>
+
+  <div class="main-grid">
+    
+    <div class="content-left">
+      
+      <div id="main-poll-area" style="display:none;">
+        <div class="poll-feed-card" id="poll-card-inner">
+          <div class="poll-label">
+            <span style="background:var(--primary-dark); width:8px; height:8px; border-radius:50%; display:inline-block;"></span>
+            Le sondage de la semaine
+          </div>
+          <h3 class="poll-question-large" id="poll-question-main">...</h3>
+          <div id="poll-options-main"></div>
+        </div>
+      </div>
+
+      <div class="section-label">Nouveautés</div>
+      <div id="magazine-feed">
+        <p style="text-align:center; color:#888; padding:2rem;">Chargement...</p>
+      </div>
+
+      <div class="section-label" style="border-color:#ccc; color:#888; margin-top:3rem;">Découvrir</div>
+      <div id="discover-grid" class="discover-grid"></div>
+
+    </div>
+
+    <aside class="content-right">
+      
+      <div id="sidebar-poll-result-area" style="display:none;">
+        <div class="sidebar-poll-results">
+          <div style="text-transform:uppercase; font-size:0.7rem; color:#aaa; letter-spacing:1px; margin-bottom:0.8rem;">Résultats en direct</div>
+          <h4 class="sidebar-poll-title" id="poll-question-sidebar">...</h4>
+          <div id="poll-results-sidebar"></div>
+          <div style="text-align:center; font-size:0.8rem; color:#aaa; margin-top:10px;">Merci de votre vote</div>
+        </div>
+      </div>
+
+      <div class="pod-sb-card">
+        <div style="position:relative;">
+            <img src="https://placehold.co/400x300" class="pod-sb-img" alt="Podcast" id="soc-pod-img" onerror="handleImgError(this)">
+            <div style="position:absolute; top:15px; left:15px; background:var(--accent-red); color:white; font-size:0.6rem; font-weight:800; padding:4px 8px; border-radius:4px;">PODCAST</div>
+        </div>
+        <div class="pod-sb-content">
+            <span class="pod-sb-tag" id="soc-pod-cat">SOCIAL</span>
+            <h3 class="pod-sb-title" id="soc-pod-title">Chargement...</h3>
+            <p style="font-size:0.9rem; color:#ccc; line-height:1.5; margin-bottom:15px;">Le podcast social du moment.</p>
+            <a href="#" id="soc-pod-link" style="display:inline-block; background:white; color:black; text-decoration:none; padding:8px 20px; border-radius:30px; font-weight:700; cursor:pointer;">Écouter</a>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+
+  <footer class="premium-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <div style="display:flex; gap:10px; align-items:center; margin-bottom:1.5rem;">
+            <img src="logo.svg" class="footer-logo" alt="S" onerror="handleImgError(this)">
+            <span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
+        </div>
+        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le média de référence.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Rubriques</h4>
+        <a href="politique.html" class="footer-link">Politique</a>
+        <a href="social.html" class="footer-link">Social</a>
+        <a href="partis-politiques.html" class="footer-link">Partis</a>
+      </div>
+      <div class="footer-col">
+        <h4>Légal</h4>
+        <a href="mentions-legales.html" class="footer-link">Mentions légales</a>
+        <a href="conditions-utilisation.html" class="footer-link">CGU</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <a href="contact.html" class="footer-link">Nous écrire</a>
+        <a href="auth.html" class="footer-link">S'identifier</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script>
+    // --- 1. GESTIONNAIRE DE CLICS GLOBAL ---
+    document.addEventListener('click', (e) => {
+        // A. Clic sur une option de vote
+        if (e.target.classList.contains('js-poll-vote')) {
+            e.preventDefault();
+            const optionId = e.target.dataset.id;
+            submitGlobalVote(optionId);
+        }
+        
+        // B. Clic sur "Modifier mon vote"
+        if (e.target.classList.contains('js-poll-edit')) {
+            e.preventDefault();
+            renderSmartPoll(true); // Force le mode édition
+        }
+
+        // C. Clic sur "Annuler"
+        if (e.target.classList.contains('js-poll-cancel')) {
+            e.preventDefault();
+            renderSmartPoll(false); // Retour aux résultats
+        }
+    });
+
+    // --- 2. CONFIGURATION & LOGIQUE SONDAGE ---
+    let smartPollData = null;
+    
+    // DÉTECTION AUTOMATIQUE DE LA CATÉGORIE
+    // Si le fichier s'appelle 'social.html', la catégorie bascule automatiquement sur 'Social'
+    const pageCategory = window.location.pathname.includes('social') ? 'Social' : 'Politique';
+
+    async function loadSmartPoll() {
+        const mainArea = document.getElementById('main-poll-area');
+        try {
+            // Appel dynamique selon la catégorie (Social ou Politique)
+            const res = await fetch(`http://localhost:5000/api/polls/active/${pageCategory}`, { credentials: 'include' });
+            const data = await res.json();
+            
+            if (!data.success) {
+                if(mainArea) mainArea.style.display = 'none';
+                return;
+            }
+            
+            smartPollData = data;
+            renderSmartPoll(false);
+
+        } catch (e) { console.error(e); }
+    }
+
+    function renderSmartPoll(forceEdit) {
+        if(!smartPollData) return;
+        const { poll, options, hasVoted } = smartPollData;
+        
+        const mainArea = document.getElementById('main-poll-area');
+        const sidebarArea = document.getElementById('sidebar-poll-result-area');
+        const showResults = hasVoted && !forceEdit;
+
+        if (showResults) {
+            // --- VUE RÉSULTATS (SIDEBAR) ---
+            if(mainArea) mainArea.style.display = 'none';
+            if(sidebarArea) {
+                sidebarArea.style.display = 'block';
+                document.getElementById('poll-question-sidebar').textContent = poll.question;
+                
+                const total = options.reduce((a,b)=>a+(parseInt(b.votes_count)||0),0);
+                const max = Math.max(...options.map(o=>(parseInt(o.votes_count)||0)));
+
+                document.getElementById('poll-results-sidebar').innerHTML = options.map(opt => {
+                    const c = parseInt(opt.votes_count)||0;
+                    const pct = total===0?0:Math.round((c/total)*100);
+                    // Changement de couleur selon la page ? Ici on garde le rouge par défaut, 
+                    // mais tu pourrais mettre une variable CSS différente pour le social.
+                    const barColor = (c===max && total>0) ? '#C82823' : '#cbd5e1';
+                    const weight = (c===max && total>0) ? '700' : '400';
+                    
+                    return `
+                    <div style="margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:${weight}; margin-bottom:4px;">
+                            <span>${opt.label}</span><span>${pct}%</span>
+                        </div>
+                        <div style="height:5px; background:rgba(255,255,255,0.15); border-radius:3px; overflow:hidden;">
+                            <div style="width:${pct}%; background:${barColor}; height:100%; border-radius:3px; transition:width 0.5s;"></div>
+                        </div>
+                    </div>`;
+                }).join('');
+
+                const container = document.createElement('div');
+                container.style.textAlign = 'center';
+                container.style.marginTop = '15px';
+                container.innerHTML = `<button class="btn-modify-vote js-poll-edit" style="color:#aaa; border-color:#444;">Modifier mon vote</button>`;
+                
+                const existingBtn = document.getElementById('sidebar-edit-wrapper');
+                if(existingBtn) existingBtn.remove();
+                container.id = 'sidebar-edit-wrapper';
+                
+                document.getElementById('poll-results-sidebar').appendChild(container);
+            }
+        } else {
+            // --- VUE VOTE (MAIN AREA) ---
+            if(sidebarArea) sidebarArea.style.display = 'none';
+            if(mainArea) {
+                mainArea.style.display = 'block';
+                document.getElementById('poll-question-main').textContent = poll.question;
+                
+                document.getElementById('poll-options-main').innerHTML = options.map(opt => `
+                    <button class="poll-option-btn js-poll-vote" data-id="${opt.id}">${opt.label}</button>
+                `).join('');
+
+                if(hasVoted) {
+                    const cancelDiv = document.createElement('div');
+                    cancelDiv.style.textAlign = 'center';
+                    cancelDiv.style.marginTop = '10px';
+                    cancelDiv.innerHTML = `<a href="#" class="js-poll-cancel" style="color:#999; font-size:0.8rem; text-decoration:none;">Annuler</a>`;
+                    document.getElementById('poll-options-main').appendChild(cancelDiv);
+                }
+                
+                const inner = document.getElementById('poll-card-inner');
+                if(inner) { inner.classList.remove('fade-out'); inner.classList.add('poll-fade-enter'); }
+            }
+        }
+    }
+
+   async function submitGlobalVote(optionId) {
+        if(!smartPollData) return;
+        const pollId = smartPollData.poll.id;
+        const isUpdate = smartPollData.hasVoted; 
+
+        try {
+            const res = await fetch('http://localhost:5000/api/polls/vote', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({
+                    poll_id: pollId, 
+                    option_id: optionId,
+                    is_update: isUpdate
+                }),
+                credentials: 'include'
+            });
+            const json = await res.json();
+            
+            if(json.success) {
+                smartPollData.hasVoted = true;
+                smartPollData.options = json.options; 
+                renderSmartPoll(false); 
+            } else {
+                console.warn("Erreur vote:", json.message);
+                alert("Impossible de voter : " + (json.message || "Erreur inconnue"));
+                renderSmartPoll(false); 
+            }
+        } catch(e) { 
+            console.error(e); 
+            alert("Erreur de connexion au serveur.");
+        }
+    }
+    
+    // --- 3. UI (Menu Mobile & Recherche) ---
+    const burger = document.getElementById('burgerBtn');
+    const mobileNav = document.getElementById('mobileNav');
+    const mobileClose = document.getElementById('mobileNavClose');
+    const overlay = document.getElementById('mobileNavOverlay');
+
+    function toggleMenu(show) {
+        if(show) { mobileNav.classList.add('nav-open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        else { mobileNav.classList.remove('nav-open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+    }
+    if(burger) burger.addEventListener('click', () => toggleMenu(true));
+    if(mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
+    if(overlay) overlay.addEventListener('click', () => toggleMenu(false));
+
+    const searchBtn = document.getElementById('searchBtn');
+    const searchLabel = document.getElementById('searchLabel');
+    const searchContainer = document.getElementById('searchContainer');
+    const searchInput = document.getElementById('searchInput');
+
+    function toggleSearch(e) {
+        e.stopPropagation();
+        searchContainer.classList.toggle('active');
+        if(searchContainer.classList.contains('active')) { setTimeout(() => searchInput.focus(), 100); }
+    }
+    if(searchBtn) searchBtn.addEventListener('click', toggleSearch);
+    if(searchLabel) searchLabel.addEventListener('click', toggleSearch);
+    document.addEventListener('click', (e) => {
+        if (searchContainer && searchContainer.classList.contains('active')) {
+            if (!searchContainer.contains(e.target) && !searchBtn.contains(e.target) && !searchLabel.contains(e.target)) {
+                searchContainer.classList.remove('active');
+            }
+        }
+    });
+
+    // --- 4. CHARGEMENT INITIAL (ARTICLES SOCIAL + SONDAGE) ---
+    document.addEventListener('DOMContentLoaded', async () => {
+      
+      // A. Chargement Articles (Catégorie Social)
+      try {
+        const res = await fetch(`http://localhost:5000/api/articles?category=${pageCategory}`);
+        const json = await res.json();
+        
+        if (json.success && json.data.length > 0) {
+          const articles = json.data;
+          const une = articles[0];
+          // Lien vers l'article (on garde article.html, le contenu sera dynamique)
+          const linkUne = `article.html?id=${une.id}`; 
+          const uneImg = une.image_url || 'https://via.placeholder.com/1600x900';
+
+          // Injection de la "Une"
+          document.getElementById('hero-dynamic').innerHTML = `
+            <section class="grand-hero-section">
+              <a href="${linkUne}" style="position:absolute; inset:0; z-index:2;"></a>
+              <img src="${uneImg}" class="hero-bg-img" onerror="handleImgError(this)">
+              <div class="hero-overlay">
+                <div class="hero-tags-wrap">
+                    <span class="hero-badge-une">À LA UNE</span>
+                    <span class="hero-badge-cat">${une.category}</span>
+                </div>
+                <h1 class="hero-title-main">${une.title}</h1>
+                <p class="hero-excerpt">${une.excerpt || ''}</p>
+              </div>
+            </section>
+          `;
+
+          // Injection de la liste principale
+          const mainList = articles.slice(1, 4);
+          document.getElementById('magazine-feed').innerHTML = mainList.map(art => `
+            <article class="article-magazine">
+              <img src="${art.image_url}" class="mag-img" onerror="handleImgError(this)">
+              <div class="mag-content">
+                <a href="article.html?id=${art.id}" style="text-decoration:none;"><h3>${art.title}</h3></a>
+                <p class="mag-excerpt">${art.excerpt || art.slug}</p>
+                <small style="color:#888; font-size:0.85rem;">${SolitiquoAPI.formatDate(art.published_at)}</small>
+              </div>
+            </article>
+          `).join('');
+
+          // Injection de la grille "Découvrir"
+          const discoList = articles.slice(4, 10);
+          document.getElementById('discover-grid').innerHTML = discoList.map(art => `
+            <article class="discover-card">
+              <a href="article.html?id=${art.id}" class="discover-img-wrap">
+                <img src="${art.image_url}" class="discover-img" onerror="handleImgError(this)">
+              </a>
+              <div class="discover-meta">${SolitiquoAPI.formatDate(art.published_at)}</div>
+              <a href="article.html?id=${art.id}" style="text-decoration:none;">
+                <h4>${art.title}</h4>
+              </a>
+            </article>
+          `).join('');
+        }
+      } catch (e) { console.error(e); }
+
+      // B. Chargement Podcast (Spécifique Social)
+      try {
+            const resPod = await fetch(`http://localhost:5000/api/podcasts/featured/${pageCategory.toLowerCase()}`);
+            const jsonPod = await resPod.json();
+            if (jsonPod.success && jsonPod.data) {
+                const pod = jsonPod.data;
+                
+                // Définition du préfixe ID : si Social -> 'soc', sinon 'pol'
+                const prefix = pageCategory === 'Social' ? 'soc' : 'pol';
+                
+                const img = document.getElementById(`${prefix}-pod-img`);
+                const title = document.getElementById(`${prefix}-pod-title`);
+                const cat = document.getElementById(`${prefix}-pod-cat`);
+                const link = document.getElementById(`${prefix}-pod-link`);
+
+                if(img) img.src = pod.image_url || 'https://placehold.co/400x300';
+                if(title) title.textContent = pod.title;
+                if(cat) cat.textContent = pod.category.toUpperCase();
+                if(link) link.href = `podcast.html?id=${pod.id}`; 
+            }
+      } catch(e) {}
+
+      // C. Lancement du Sondage
+      loadSmartPoll();
+    });
+  </script>
+</body>
+</html>

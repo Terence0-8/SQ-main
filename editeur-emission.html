@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Studio Vidéo — Solitiquo</title>
+<link rel="stylesheet" href="solitiquo.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,900;1,400&display=swap" rel="stylesheet">
+<style>
+  :root { --primary-dark: #37463D; --accent-red: #C82823; --bg-app: #F0F2F5; --bg-paper: #ffffff; --sidebar-width: 350px; }
+  * { box-sizing: border-box; }
+  body { background: var(--bg-app); font-family: 'Inter', sans-serif; height: 100vh; margin: 0; overflow: hidden; display: flex; flex-direction: column; }
+
+  /* HEADER */
+  .studio-header { height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; }
+  .logo-area { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--primary-dark); }
+  .logo-area img { height: 24px; }
+  .back-btn { text-decoration: none; color: #666; font-size: 0.9rem; transition: color 0.2s; }
+  .back-btn:hover { color: var(--accent-red); }
+
+  /* LAYOUT */
+  .workspace { display: flex; flex: 1; overflow: hidden; }
+
+  /* GAUCHE : APERÇU */
+  .preview-zone { flex: 1; padding: 40px; display: flex; flex-direction: column; align-items: center; overflow-y: auto; }
+  .video-preview-card {
+    width: 100%; max-width: 800px; background: black; border-radius: 12px; overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2); aspect-ratio: 16/9; position: relative; display: flex; align-items: center; justify-content: center;
+  }
+  .video-placeholder { color: #666; font-size: 1.2rem; }
+  iframe { width: 100%; height: 100%; border: none; }
+
+  .info-preview { width: 100%; max-width: 800px; margin-top: 30px; text-align: left; }
+  .info-preview h1 { font-family: 'Playfair Display'; font-size: 2.5rem; color: var(--primary-dark); margin: 0 0 10px 0; }
+  .info-preview p { color: #666; line-height: 1.6; font-size: 1.1rem; }
+
+  /* DROITE : FORMULAIRE */
+  .settings-right { width: var(--sidebar-width); background: white; border-left: 1px solid #ddd; display: flex; flex-direction: column; z-index: 40; }
+  .settings-scroll { padding: 25px; overflow-y: auto; flex: 1; }
+  .settings-footer { padding: 20px; border-top: 1px solid #eee; background: #fbfcfb; }
+
+  h3.panel-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.2px; color: #999; margin: 25px 0 15px 0; font-weight: 700; }
+  h3.panel-title:first-child { margin-top: 0; }
+
+  .field-group { margin-bottom: 20px; }
+  label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: #444; }
+  .sidebar-input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 0.9rem; transition: border 0.2s; }
+  .sidebar-input:focus, select:focus, textarea:focus { border-color: var(--primary-dark); outline: none; }
+  textarea { resize: vertical; min-height: 100px; }
+
+  .btn-publish { background: var(--accent-red); color: white; border: none; padding: 14px; width: 100%; font-weight: 700; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+  .btn-publish:hover { background: #901a16; transform: translateY(-1px); }
+  .btn-publish:disabled { background: #ccc; transform: none; cursor: not-allowed; }
+  
+  #status-msg { margin-top: 10px; font-size: 0.85rem; text-align: center; font-weight: 500; }
+
+  @media (max-width: 900px) { .workspace { flex-direction: column; overflow-y: auto; } .settings-right { width: 100%; height: auto; } }
+</style>
+</head>
+<body>
+
+  <header class="studio-header">
+    <div class="logo-area"><img src="logo.svg" alt="S"><span>Studio Vidéo</span></div>
+    <a href="admin.html" class="back-btn">← Retour Dashboard</a>
+  </header>
+
+  <form id="emissionForm" class="workspace">
+    
+    <div class="preview-zone">
+      <div class="video-preview-card" id="video-container">
+        <div class="video-placeholder">L'aperçu vidéo apparaîtra ici</div>
+      </div>
+      
+      <div class="info-preview">
+        <h1 id="preview-title">Titre de l'émission...</h1>
+        <p id="preview-desc">La description s'affichera ici.</p>
+      </div>
+    </div>
+
+    <aside class="settings-right">
+      <div class="settings-scroll">
+        
+        <h3 class="panel-title">SOURCE</h3>
+        <div class="field-group">
+          <label>Lien YouTube</label>
+          <input type="url" id="video_url" class="sidebar-input" placeholder="https://www.youtube.com/watch?v=..." required oninput="updatePreview(this.value)">
+        </div>
+
+        <h3 class="panel-title">INFOS</h3>
+        <div class="field-group">
+          <label>Titre</label>
+          <input type="text" id="title" class="sidebar-input" placeholder="Titre de l'émission" required oninput="document.getElementById('preview-title').textContent = this.value || 'Titre...'">
+        </div>
+
+        <div class="field-group">
+          <label>Catégorie</label>
+          <select id="category" class="sidebar-input">
+            <option>Politique</option><option>Société</option><option>Économie</option><option>Culture</option><option>International</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label>Description</label>
+          <textarea id="description" class="sidebar-input" placeholder="Résumé, invités..." oninput="document.getElementById('preview-desc').textContent = this.value || 'Description...'"></textarea>
+        </div>
+        
+        <div class="field-group">
+            <label>Durée (Minutes)</label>
+            <input type="number" id="duration" class="sidebar-input" placeholder="ex: 45">
+        </div>
+
+        <h3 class="panel-title">IMAGE (OPTIONNEL)</h3>
+        <div class="field-group">
+            <label>Couverture personnalisée</label>
+            <input type="file" id="image_file" accept="image/*" class="sidebar-input">
+            <small style="color:#888; font-size:0.75rem;">Si vide, on utilise la miniature YouTube.</small>
+        </div>
+
+      </div>
+
+      <div class="settings-footer">
+        <button type="submit" class="btn-publish">Mettre en ligne</button>
+        <div id="status-msg"></div>
+      </div>
+    </aside>
+  </form>
+
+  <script src="js/api.js"></script>
+  <script>
+    // SÉCURITÉ
+    (async function checkAccess() {
+        const user = await SolitiquoAPI.getProfile();
+        if (!user || (user.role !== 'admin' && user.role !== 'writer')) {
+            window.location.href = 'auth.html';
+        }
+    })();
+
+    function getYoutubeId(url) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    function updatePreview(url) {
+        const id = getYoutubeId(url);
+        const container = document.getElementById('video-container');
+        
+        if(id) {
+            container.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}" allowfullscreen></iframe>`;
+        } else {
+            container.innerHTML = `<div class="video-placeholder">Lien invalide</div>`;
+        }
+    }
+
+    // ENVOI
+    document.getElementById('emissionForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.querySelector('.btn-publish');
+        const msg = document.getElementById('status-msg');
+        
+        btn.textContent = 'Traitement...'; btn.disabled = true; msg.textContent = '';
+
+        const formData = new FormData();
+        formData.append('title', document.getElementById('title').value);
+        formData.append('description', document.getElementById('description').value);
+        formData.append('category', document.getElementById('category').value);
+        formData.append('video_url', document.getElementById('video_url').value);
+        formData.append('duration', document.getElementById('duration').value || 0);
+        formData.append('author_id', 1);
+        
+        const imgFile = document.getElementById('image_file').files[0];
+        if(imgFile) formData.append('image_file', imgFile);
+
+        try {
+            const res = await fetch('http://localhost:5000/api/emissions', { method: 'POST', body: formData });
+            const json = await res.json();
+
+            if(json.success) {
+                msg.style.color = 'green'; msg.textContent = '✅ Émission publiée !';
+                setTimeout(() => window.location.href = 'emissions.html', 1000);
+            } else { throw new Error(json.error); }
+        } catch (err) {
+            msg.style.color = 'red'; msg.textContent = 'Erreur: ' + err.message;
+            btn.textContent = 'Réessayer'; btn.disabled = false;
+        }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+const express = require('express');
+const router = express.Router();
+const pool = require('../config/database');
+
+// POST /api/analytics/track
+// Reçoit les pings de lecture
+router.post('/track', async (req, res) => {
+    const { article_id, milestone } = req.body;
+
+    if (!article_id) return res.status(400).json({ error: "No ID" });
+
+    try {
+        // On s'assure que la ligne existe
+        await pool.query(`
+            INSERT INTO article_analytics (article_id) VALUES ($1) ON CONFLICT DO NOTHING
+        `, [article_id]);
+
+        // Mise à jour de la bonne colonne
+        let column = '';
+        if (milestone === 'start') column = 'reads_start';
+        else if (milestone === 25) column = 'reads_25';
+        else if (milestone === 50) column = 'reads_50';
+        else if (milestone === 75) column = 'reads_75';
+        else if (milestone === 100) column = 'reads_100';
+
+        if (column) {
+            await pool.query(`
+                UPDATE article_analytics 
+                SET ${column} = ${column} + 1, updated_at = NOW()
+                WHERE article_id = $1
+            `, [article_id]);
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Analytics Error:", err);
+        res.status(500).json({ error: "Server Error" });
+    }
+});
+
+module.exports = router;

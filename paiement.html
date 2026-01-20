@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Paiement sécurisé — Solitiquo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="solitiquo.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet" />
+  
+  <style>
+    :root { --primary-dark: #37463D; --accent-red: #C82823; --bg-soft: #F9FAFB; }
+    body { background: var(--bg-soft); font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* HEADER SIMPLE (Juste le logo pour rassurer) */
+    .checkout-header {
+      background: white; border-bottom: 1px solid #eaeaea; padding: 20px; text-align: center;
+    }
+    .checkout-logo { height: 40px; }
+
+    /* CONTAINER */
+    .checkout-container {
+      max-width: 900px; margin: 3rem auto; padding: 0 20px; width: 100%; flex: 1;
+      display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 3rem;
+    }
+
+    /* GAUCHE : FORMULAIRE */
+    .payment-box {
+      background: white; padding: 2.5rem; border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.05); border: 1px solid #eee;
+    }
+    h1 { font-family: 'Playfair Display'; color: var(--primary-dark); margin-bottom: 2rem; }
+    
+    .form-group { margin-bottom: 1.5rem; }
+    .form-label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; color: #333; }
+    .form-input {
+      width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 8px;
+      font-size: 1rem; background: #fcfcfc; transition: 0.3s;
+    }
+    .form-input:focus { border-color: var(--primary-dark); outline: none; background: white; }
+    
+    .row-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+    .btn-pay {
+      width: 100%; padding: 16px; background: var(--primary-dark); color: white;
+      border: none; border-radius: 8px; font-weight: 700; font-size: 1.1rem;
+      cursor: pointer; margin-top: 1rem; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px;
+    }
+    .btn-pay:hover { background: #2a3530; transform: translateY(-2px); }
+    .btn-pay:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+
+    /* DROITE : RÉCAP */
+    .summary-box {
+      background: #f4f6f8; padding: 2rem; border-radius: 16px; height: fit-content;
+    }
+    .summary-title { font-weight: 700; color: var(--primary-dark); margin-bottom: 1.5rem; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+    .summary-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; }
+    .summary-total { display: flex; justify-content: space-between; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #ddd; font-weight: 800; font-size: 1.2rem; color: var(--accent-red); }
+
+    /* SUCCESS OVERLAY */
+    .success-overlay {
+      position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 9999;
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center;
+    }
+    .check-icon {
+      width: 80px; height: 80px; background: #4CAF50; color: white; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 3rem; margin-bottom: 20px;
+      animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+
+    @media (max-width: 800px) { .checkout-container { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <div class="checkout-header">
+    <a href="index.html"><img src="logo.svg" alt="Solitiquo" class="checkout-logo"></a>
+  </div>
+
+  <div class="checkout-container">
+    
+    <div class="payment-box">
+      <h1>Finaliser la commande</h1>
+      
+      <form id="paymentForm">
+        <div class="form-group">
+          <label class="form-label">Titulaire de la carte</label>
+          <input type="text" class="form-input" placeholder="M. Jean Dupont" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Numéro de carte</label>
+          <input type="text" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19" required>
+        </div>
+
+        <div class="row-fields">
+          <div class="form-group">
+            <label class="form-label">Expiration</label>
+            <input type="text" class="form-input" placeholder="MM / AA" maxlength="5" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">CVC</label>
+            <input type="text" class="form-input" placeholder="123" maxlength="3" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-pay" id="payBtn">
+          <span>🔒 Payer maintenant</span>
+        </button>
+        
+        <p style="text-align:center; font-size:0.8rem; color:#999; margin-top:15px;">
+          Paiement sécurisé (Simulation). Aucune somme ne sera débitée.
+        </p>
+      </form>
+    </div>
+
+    <div class="summary-box">
+      <div class="summary-title">Récapitulatif</div>
+      
+      <div class="summary-row">
+        <span id="planName">Abonnement...</span>
+        <span id="planPrice">...</span>
+      </div>
+      <div class="summary-row" style="color:#666; font-size:0.85rem;">
+        <span>Taxes incluses</span>
+        <span>0 FCFA</span>
+      </div>
+
+      <div class="summary-total">
+        <span>Total</span>
+        <span id="totalPrice">...</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="success-overlay" id="successScreen">
+    <div class="check-icon">✓</div>
+    <h2 style="font-family:'Playfair Display'; font-size:2.5rem; color:#37463D; margin-bottom:10px;">Félicitations !</h2>
+    <p style="color:#666; font-size:1.2rem; margin-bottom:2rem;">Vous êtes désormais membre Premium.</p>
+    <a href="index.html" style="background:#37463D; color:white; padding:12px 30px; border-radius:30px; text-decoration:none; font-weight:700;">Retour à l'accueil</a>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    // 1. Récupérer le plan choisi dans l'URL
+    const params = new URLSearchParams(window.location.search);
+    const plan = params.get('plan') || 'monthly';
+
+    // 2. Afficher les infos
+    const planNameEl = document.getElementById('planName');
+    const planPriceEl = document.getElementById('planPrice');
+    const totalPriceEl = document.getElementById('totalPrice');
+
+    if (plan === 'monthly') {
+        planNameEl.textContent = "Offre Mensuelle";
+        planPriceEl.textContent = "2000 FCFA";
+        totalPriceEl.textContent = "2000 FCFA";
+    } else {
+        planNameEl.textContent = "Offre Annuelle";
+        planPriceEl.textContent = "20.000 FCFA";
+        totalPriceEl.textContent = "20.000 FCFA";
+    }
+
+    // 3. Gérer le paiement
+    document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const btn = document.getElementById('payBtn');
+        btn.innerHTML = `<span class="loader"></span> Traitement...`;
+        btn.disabled = true;
+
+        try {
+            // Appel réel au backend pour valider l'upgrade
+            const res = await fetch('http://localhost:5000/api/subscriptions/upgrade', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ plan: plan }),
+                credentials: 'include' // CRUCIAL
+            });
+            const json = await res.json();
+
+            if (json.success) {
+                // Succès !
+                setTimeout(() => {
+                    document.getElementById('successScreen').style.display = 'flex';
+                }, 1500); // Petit délai pour faire "vrai"
+            } else {
+                alert("Erreur : " + json.error);
+                btn.innerHTML = "🔒 Payer maintenant";
+                btn.disabled = false;
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Erreur de connexion au serveur.");
+            btn.disabled = false;
+        }
+    });
+  </script>
+
+</body>
+</html>
