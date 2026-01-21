@@ -12,7 +12,7 @@ const voteSchema = Joi.object({
 });
 
 // ==========================================
-// 1. RÉCUPÉRER LE SONDAGE ACTIF
+// 1. RÉCUPÉRER LE SONDAGE ACTIF (GLOBAL)
 // ==========================================
 router.get('/active', async (req, res) => {
     try {
@@ -73,7 +73,7 @@ router.get('/active', async (req, res) => {
             poll: {
                 id: poll.id,
                 question: poll.question,
-                options: poll.options, // Array JSONB
+                options: poll.options,
                 is_active: poll.is_active,
                 ends_at: poll.ends_at,
                 total_votes: totalVotes
@@ -84,6 +84,90 @@ router.get('/active', async (req, res) => {
 
     } catch (err) {
         console.error('❌ Erreur récupération sondage:', err);
+        res.status(500).json({ success: false, error: 'Erreur serveur' });
+    }
+});
+
+// ==========================================
+// 🆕 1B. RÉCUPÉRER LE SONDAGE ACTIF PAR CATÉGORIE
+// ==========================================
+router.get('/active/:category', async (req, res) => {
+    try {
+        const { category } = req.params;
+        const userId = req.session && req.session.user ? req.session.user.id : null;
+
+        // Normaliser la catégorie (Politique, Social, etc.)
+        const normalizedCategory = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
+
+        // Trouver le sondage actif pour cette catégorie
+        const pollQuery = `
+      SELECT 
+        id,
+        question,
+        options,
+        category,
+        is_active,
+        ends_at,
+        created_at
+      FROM polls 
+      WHERE is_active = TRUE 
+        AND (ends_at IS NULL OR ends_at > NOW())
+        AND category = $1
+      ORDER BY created_at DESC 
+      LIMIT 1
+    `;
+
+        const pollRes = await pool.query(pollQuery, [normalizedCategory]);
+
+        if (pollRes.rows.length === 0) {
+            return res.json({
+                success: false,
+                message: `Aucun sondage actif pour la catégorie ${normalizedCategory}`
+            });
+        }
+
+        const poll = pollRes.rows[0];
+
+        // Vérifier si l'utilisateur a déjà voté
+        let hasVoted = false;
+        let userVote = null;
+
+        if (userId) {
+            const voteCheck = await pool.query(
+                'SELECT option_index FROM poll_votes WHERE poll_id = $1 AND user_id = $2',
+                [poll.id, userId]
+            );
+
+            if (voteCheck.rows.length > 0) {
+                hasVoted = true;
+                userVote = voteCheck.rows[0].option_index;
+            }
+        }
+
+        // Calculer le total des votes
+        const totalVotesRes = await pool.query(
+            'SELECT COUNT(*) FROM poll_votes WHERE poll_id = $1',
+            [poll.id]
+        );
+        const totalVotes = parseInt(totalVotesRes.rows[0].count);
+
+        res.json({
+            success: true,
+            poll: {
+                id: poll.id,
+                question: poll.question,
+                options: poll.options,
+                category: poll.category,
+                is_active: poll.is_active,
+                ends_at: poll.ends_at,
+                total_votes: totalVotes
+            },
+            hasVoted: hasVoted,
+            userVote: userVote
+        });
+
+    } catch (err) {
+        console.error('❌ Erreur récupération sondage par catégorie:', err);
         res.status(500).json({ success: false, error: 'Erreur serveur' });
     }
 });

@@ -79,6 +79,50 @@ router.get('/', async (req, res) => {
 });
 
 // ==========================================
+// 🆕 1B. PODCASTS EN VEDETTE PAR CATÉGORIE
+// ==========================================
+router.get('/featured/:category', async (req, res) => {
+  try {
+    const { category } = req.params;
+
+    // Normaliser la catégorie
+    const normalizedCategory = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
+
+    const query = `
+      SELECT 
+        p.id,
+        p.title,
+        p.description,
+        p.audio_url,
+        p.cover_image,
+        p.duration_seconds,
+        p.category,
+        p.is_premium,
+        p.play_count,
+        p.created_at,
+        u.username as author_name
+      FROM podcasts p
+      LEFT JOIN users u ON p.author_id = u.id
+      WHERE p.status = 'published' AND p.category = $1
+      ORDER BY p.play_count DESC, p.created_at DESC
+      LIMIT 5
+    `;
+
+    const { rows } = await pool.query(query, [normalizedCategory]);
+
+    res.json({
+      success: true,
+      category: normalizedCategory,
+      count: rows.length,
+      data: rows
+    });
+  } catch (err) {
+    console.error('❌ Erreur podcasts featured:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
+// ==========================================
 // 2. DÉTAIL D'UN PODCAST
 // ==========================================
 router.get('/:id', async (req, res) => {
