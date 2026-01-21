@@ -88,7 +88,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // =============================================================================
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Max 100 requêtes par IP
+  max: 5000, // Max 5000 requêtes par IP (Augmenté pour tests)
   message: { success: false, error: 'Trop de requêtes, réessayez dans 15 minutes' },
   standardHeaders: true,
   legacyHeaders: false
@@ -96,7 +96,7 @@ const apiLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5, // Max 5 tentatives de connexion
+  max: 5000, // Max 5000 tentatives (Augmenté pour tests)
   message: { success: false, error: 'Trop de tentatives de connexion, réessayez dans 15 minutes' },
   skipSuccessfulRequests: true // Ne compte que les échecs
 });

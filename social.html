@@ -17,7 +17,7 @@
     }
   </script>
 
-  
+
 </head>
 
 <body id="page-social">
@@ -187,6 +187,7 @@
     <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
   </footer>
 
+  <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script>
     // --- 1. GESTIONNAIRE DE CLICS GLOBAL ---
@@ -222,7 +223,7 @@
       const mainArea = document.getElementById('main-poll-area');
       try {
         // Appel dynamique selon la catégorie (Social ou Politique)
-        const res = await fetch(`http://localhost:5000/api/polls/active/${pageCategory}`, { credentials: 'include' });
+        const res = await fetch(`${API_URL}/polls/active/${pageCategory}`, { credentials: 'include' });
         const data = await res.json();
 
         if (!data.success) {
@@ -315,7 +316,7 @@
       const pollId = smartPollData.poll.id;
 
       try {
-        const res = await fetch('http://localhost:5000/api/polls/vote', {
+        const res = await fetch(`${API_URL}/polls/vote`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -382,7 +383,7 @@
 
       // A. Chargement Articles (Catégorie Social)
       try {
-        const res = await fetch(`http://localhost:5000/api/articles?category=${pageCategory}`);
+        const res = await fetch(`${API_URL}/articles?category=${pageCategory}`);
         const json = await res.json();
 
         if (json.success && json.data.length > 0) {
@@ -439,7 +440,7 @@
 
       // B. Chargement Podcast (Spécifique Social)
       try {
-        const resPod = await fetch(`http://localhost:5000/api/podcasts/featured/${pageCategory.toLowerCase()}`);
+        const resPod = await fetch(`${API_URL}/podcasts/featured/${pageCategory.toLowerCase()}`);
         const jsonPod = await resPod.json();
         if (jsonPod.success && jsonPod.data) {
           const pod = jsonPod.data;

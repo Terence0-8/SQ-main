@@ -17,7 +17,7 @@
     }
   </script>
 
-  
+
 </head>
 
 <body id="page-index">
@@ -202,6 +202,7 @@
   </footer>
 
   <script src="js/config.js"></script>
+  <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script>
     // --- UTILITAIRES ---
@@ -274,14 +275,12 @@
           document.getElementById('hero-dynamic').innerHTML = `
             <section class="grand-hero-section">
               <a href="${linkUne}" style="position:absolute; inset:0; z-index:2;"></a>
-              <img src="${uneImg}" class="hero-bg-img" onerror="handleImgError(this)">
+              <img src="${uneImg}" class="hero-bg-img" style="object-position: top center;" onerror="handleImgError(this)">
               <div class="hero-overlay">
                 <span class="hero-tag">À LA UNE • ${une.category}</span>
                 <h1 class="hero-title-main">${une.title}</h1>
                 <p class="hero-excerpt">${une.excerpt || ''}</p>
-                <div class="scroll-indicator" onclick="scrollToContent()">
-                    <div class="scroll-circle"><div class="scroll-arrow"></div></div>
-                </div>
+
               </div>
             </section>
           `;
@@ -352,7 +351,7 @@
           }).join('');
           container.innerHTML = `<p class="poll-q">${poll.question}</p>${html}<div style="text-align:center; font-size:0.7rem; color:#aaa; margin-top:10px;">Merci de votre vote</div>`;
         } else {
-          container.innerHTML = `<p class="poll-q">${poll.question}</p><a href="politique.html" style="display:block; background:var(--primary-dark); color:white; text-align:center; padding:10px; border-radius:4px; text-decoration:none; font-weight:600; font-size:0.9rem;">Voter</a>`;
+          container.innerHTML = `<p class="poll-q">${poll.question}</p><a href="politique.html?poll=${poll.id}" style="display:block; background:var(--primary-dark); color:white; text-align:center; padding:10px; border-radius:4px; text-decoration:none; font-weight:600; font-size:0.9rem;">Voter</a>`;
         }
       } catch (e) { console.error(e); }
     }
