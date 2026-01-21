@@ -423,18 +423,20 @@
           `).join('');
 
           // Injection de la grille "Découvrir"
-          const discoList = articles.slice(4, 10);
-          document.getElementById('discover-grid').innerHTML = discoList.map(art => `
-            <article class="discover-card">
-              <a href="article.html?id=${art.id}" class="discover-img-wrap">
-                <img src="${art.image_url}" class="discover-img" onerror="handleImgError(this)">
-              </a>
-              <div class="discover-meta">${SolitiquoAPI.formatDate(art.published_at)}</div>
-              <a href="article.html?id=${art.id}" style="text-decoration:none;">
-                <h4>${art.title}</h4>
-              </a>
-            </article>
-          `).join('');
+          // Injection de la grille "Découvrir" (Fix: Slice 5-13 + Fallback)
+          const discoverArticles = articles.slice(5, 13);
+          const discoverGrid = document.getElementById('discover-grid');
+          if (discoverGrid && discoverArticles.length > 0) {
+            discoverGrid.innerHTML = discoverArticles.map(art => `
+                <a href="article.html?id=${art.id}" class="disco-card">
+                <img src="${art.image_url}" class="disco-img" onerror="handleImgError(this)">
+                <h4 class="disco-title">${art.title}</h4>
+                <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
+                </a>
+            `).join('');
+          } else if (discoverGrid) {
+            discoverGrid.innerHTML = '<p style="text-align:center;color:#999;">Plus d\'articles bientôt.</p>';
+          }
         }
       } catch (e) { console.error(e); }
 

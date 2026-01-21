@@ -186,7 +186,8 @@
 
     // SCROLL
     window.scrollToGrid = () => {
-      document.getElementById('replays-anchor').scrollIntoView({ behavior: 'smooth' });
+      const target = document.getElementById('replays-anchor');
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     // LECTEUR
@@ -262,7 +263,13 @@
                     `;
           }).join('');
         }
-      } catch (e) { console.error(e); }
+        else {
+          document.getElementById('video-grid').innerHTML = '<p style="text-align:center;color:#999;">Aucune émission disponible.</p>';
+        }
+      } catch (e) {
+        console.error('Erreur chargement emissions:', e);
+        document.getElementById('video-grid').innerHTML = '<p style="text-align:center;color:red;">Erreur de chargement.</p>';
+      }
     });
   </script>
 </body>

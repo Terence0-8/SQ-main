@@ -154,23 +154,37 @@
         });
 
         // 1. CHERCHER VIA L'API (Recherche Textuelle)
+        // 1. CHERCHER VIA L'API (Unified Promise.all)
         async function performSearch(query) {
             const list = document.getElementById('results-list');
             const count = document.getElementById('results-count');
             list.innerHTML = '<p style="text-align:center;color:#999;">Recherche en cours...</p>';
 
             try {
-                const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(query)}`);
-                const json = await res.json();
+                // On cherche partout en parallèle
+                const [articlesRes, partiesRes, podcastsRes] = await Promise.all([
+                    fetch(`${API_URL}/articles/search?q=${encodeURIComponent(query)}`),
+                    fetch(`${API_URL}/parties/search?q=${encodeURIComponent(query)}`),
+                    fetch(`${API_URL}/podcasts/search?q=${encodeURIComponent(query)}`)
+                ]);
 
-                if (json.success) {
-                    allData = json.results; // Stockage
-                    applyFilters(); // Affichage avec filtres par défaut (All/All)
-                } else {
-                    allData = [];
-                    renderList([]);
-                }
-            } catch (e) { console.error(e); list.innerHTML = "Erreur serveur."; }
+                // On gère les réponses même si certaines 404
+                const articlesData = articlesRes.ok ? await articlesRes.json() : { data: [] };
+                const partiesData = partiesRes.ok ? await partiesRes.json() : { data: [] };
+                const podcastsData = podcastsRes.ok ? await podcastsRes.json() : { data: [] };
+
+                const articles = (articlesData.data || []).map(i => ({ ...i, type: 'article', date: i.published_at }));
+                const parties = (partiesData.data || []).map(i => ({ ...i, type: 'article', date: new Date().toISOString() })); // Handle Parties as articles/dossiers
+                const podcasts = (podcastsData.data || []).map(i => ({ ...i, type: 'podcast', date: i.created_at }));
+
+                allData = [...articles, ...parties, ...podcasts];
+
+                applyFilters();
+
+            } catch (e) {
+                console.error(e);
+                list.innerHTML = `<p style="text-align:center;color:red;">Erreur lors de la recherche: ${e.message}</p>`;
+            }
         }
 
         // 2. CHARGER TOUT LE CONTENU (Option "Tout voir")

@@ -127,6 +127,7 @@
     }
 
     // --- RENDU GRILLE ---
+    // --- RENDU GRILLE (PREMIUM) ---
     function renderGrid(data) {
       const grid = document.getElementById('parties-grid');
       if (!grid) return;
@@ -137,38 +138,35 @@
       }
 
       grid.innerHTML = data.map(p => {
-        // Orientation / Tags
         let orientation = p.orientation || 'Opposition';
-        if (isMajority(p)) orientation = 'Majorité';
+        if (p.acronym === 'RDPC') orientation = 'Majorité';
 
-        const tagColor = (orientation === 'Majorité') ? 'var(--accent-red)' : '#333';
-        const featClass = (orientation === 'Majorité') ? 'feat-majority' : 'feat-opposition';
-
-        // Image Logo
-        const logoSrc = p.logo_url || `https://placehold.co/150x150/f0f0f0/999?text=${p.acronym}`;
+        const tagColor = (orientation === 'Majorité') ? '#C82823' : '#37463D';
+        const logoSrc = p.logo_url || `https://placehold.co/150x150?text=${p.acronym}`;
 
         return `
-              <a href="dossier.html?id=${p.id}" class="party-card ${featClass}" style="text-decoration:none; color:inherit; display:block;">
-                  <div class="party-tag" style="background:${tagColor};">${orientation}</div>
-                  
-                  <div class="party-logo-container">
-                      <img src="${logoSrc}" class="party-logo" 
-                           style="border-radius:50%; object-fit:cover; width:100%; height:100%;" 
-                           onerror="handleImgError(this)" alt="${p.acronym}">
-                  </div>
-                  
-                  <h3 class="party-name">${p.acronym}</h3>
-                  <p class="party-full-name">${p.name}</p>
-                  
-                  <div class="party-footer">
-                    <div class="pf-info">
-                        <span class="pf-label">Leader</span>
-                        <span class="pf-value">${p.leader_name ? p.leader_name.split(' ').pop() : 'N/A'}</span>
-                    </div>
-                    <div class="btn-arrow">→</div>
-                </div>
-              </a>
-            `;
+          <a href="dossier.html?id=${p.id}" class="party-card">
+            <div class="party-tag" style="background:${tagColor};">${orientation}</div>
+            
+            <div class="party-logo-container">
+              <img src="${logoSrc}" class="party-logo" alt="${p.acronym}" onerror="handleImgError(this)">
+            </div>
+            
+            <h3 class="party-name">${p.acronym}</h3>
+            <p class="party-full-name">${p.name}</p>
+            
+            <div class="party-footer">
+              <div class="pf-info">
+                <span class="pf-label">Leader</span>
+                <span class="pf-value">${p.leader_name ? p.leader_name.split(' ').pop() : 'N/A'}</span>
+              </div>
+              <div class="pf-info">
+                <span class="pf-label">Sièges</span>
+                <span class="pf-value">${p.seats_assembly || '0'}</span>
+              </div>
+            </div>
+          </a>
+        `;
       }).join('');
     }
 
@@ -191,37 +189,29 @@
     }
 
     // Fonction globale appelée par le HTML inline onclick
+    // --- LOGIQUE FILTRES (CORRIGÉE) ---
     window.filterParties = function (type) {
-      // UI Update
       document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-      // Find button that matched (optional, or just highlight current)
-      // Simple hack: highlight based on text approximate or just let user click handle it? 
-      // HTML has onclick="filterParties('all')", etc.
-      // Let's just filter.
-
-      // Highlight logic requires event target which we might not have purely from inline string call.
-      // We will just filter strictly.
-
-      // Update UI Active State manually ?
-      const map = { 'all': 0, 'majorite': 1, 'opposition': 2, 'historique': 3 };
-      const idx = map[type] || 0;
-      const btns = document.querySelectorAll('.filter-btn');
-      if (btns[idx]) { btns.forEach(b => b.classList.remove('active')); btns[idx].classList.add('active'); }
+      const activeBtn = document.querySelector(`.filter-btn[onclick*="${type}"]`);
+      if (activeBtn) activeBtn.classList.add('active');
 
       if (type === 'all') {
         renderGrid(allParties);
-      } else {
-        const filtered = allParties.filter(p => {
-          let orientation = p.orientation || 'Opposition';
-          if (isMajority(p)) orientation = 'Majorité'; // Normalize
-
-          if (type === 'majorite' && orientation === 'Majorité') return true;
-          if (type === 'opposition' && orientation === 'Opposition') return true;
-          if (type === 'historique' && p.type === 'historique') return true; // Assuming 'type' field
-          return false;
-        });
-        renderGrid(filtered);
+        return;
       }
+
+      const filtered = allParties.filter(p => {
+        let orientation = p.orientation || 'Opposition';
+        if (p.acronym === 'RDPC' || (p.name && p.name.includes('Rassemblement Démocratique'))) {
+          orientation = 'Majorité';
+        }
+        if (type === 'majorite') return orientation === 'Majorité';
+        if (type === 'opposition') return orientation === 'Opposition';
+        if (type === 'historique') return p.type === 'historique' || (p.creation_date && p.creation_date < 2000);
+        return false;
+      });
+
+      renderGrid(filtered);
     };
 
     // --- CHARGEMENT ---

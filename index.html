@@ -136,12 +136,10 @@
       <span>Écouter</span>
     </a>
 
-    <div class="scroll-wrapper">
-      <div class="scroll-indicator" onclick="scrollToContent()">
-        <div class="scroll-circle">
-          <div class="scroll-arrow"></div>
-        </div>
-      </div>
+    <div class="scroll-circle">
+      <div class="scroll-arrow"></div>
+    </div>
+    </div>
     </div>
   </section>
 
@@ -251,10 +249,10 @@
     });
 
 
-    // --- SCROLL ARROW ---
+    // --- SCROLL ARROW (Fix: Cible le contenu principal) ---
     window.scrollToContent = () => {
-      const target = document.querySelector('.podcast-band');
-      if (target) target.scrollIntoView({ behavior: 'smooth' });
+      const target = document.getElementById('main-content-anchor');
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
     // --- CHARGEMENT DES ARTICLES (C'est ici qu'on corrige les liens) ---
@@ -358,26 +356,33 @@
   </script>
   <script>
     // Charge le dernier podcast pour l'Index
+    // Charge le dernier podcast pour l'Index (Avec Fallback)
     document.addEventListener('DOMContentLoaded', async () => {
+      const updatePodUI = (pod) => {
+        const img = document.getElementById('index-pod-img');
+        const title = document.getElementById('index-pod-title');
+        const desc = document.getElementById('index-pod-desc');
+        const link = document.getElementById('index-pod-link');
+
+        if (img) img.src = pod.image_url || 'https://placehold.co/400x400';
+        if (title) title.textContent = pod.title;
+        if (desc) desc.textContent = pod.description ? (pod.description.substring(0, 100) + '...') : "Écoutez ce nouvel épisode.";
+        if (link) link.href = `podcast.html?id=${pod.id}`;
+      };
+
       try {
-        const res = await fetch(API_URL + '/podcasts/featured/index');
-        const json = await res.json();
+        let res = await fetch(API_URL + '/podcasts/featured/index');
+        let json = await res.json();
 
         if (json.success && json.data) {
-          const pod = json.data;
-
-          // On cible les IDs qu'on vient d'ajouter
-          const img = document.getElementById('index-pod-img');
-          const title = document.getElementById('index-pod-title');
-          const desc = document.getElementById('index-pod-desc');
-          const link = document.getElementById('index-pod-link');
-
-          if (img) img.src = pod.image_url || 'https://placehold.co/400x400';
-          if (title) title.textContent = pod.title;
-          if (desc) desc.textContent = pod.description ? (pod.description.substring(0, 100) + '...') : "Écoutez ce nouvel épisode.";
-
-          // C'est ici que le lien se fait
-          if (link) link.href = `podcast.html?id=${pod.id}`;
+          updatePodUI(json.data);
+        } else {
+          // Fallback: Get most recent
+          const res2 = await fetch(API_URL + '/podcasts?limit=1');
+          const json2 = await res2.json();
+          if (json2.success && json2.data && json2.data.length > 0) {
+            updatePodUI(json2.data[0]);
+          }
         }
       } catch (e) { console.error("Erreur podcast index", e); }
     });

@@ -271,7 +271,8 @@
       const msgBox = document.getElementById('message-box');
       const successBox = document.getElementById('success-box');
 
-      window.switchTab = function (mode) { // Exposé globalement pour onclick
+      // Expose globally
+      window.switchTab = function (mode) {
         if (msgBox) msgBox.style.display = 'none';
         if (successBox) successBox.style.display = 'none';
 

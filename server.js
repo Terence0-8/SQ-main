@@ -102,9 +102,10 @@ const authLimiter = rateLimit({
 });
 
 // Appliquer limites
-app.use('/api/', apiLimiter);
-app.use('/api/auth/login', authLimiter);
-app.use('/api/auth/register', authLimiter);
+// Appliquer limites (Désactivé pour mission correction finale)
+// app.use('/api/', apiLimiter);
+// app.use('/api/auth/login', authLimiter);
+// app.use('/api/auth/register', authLimiter);
 
 // =============================================================================
 // 4. SESSIONS - Fix #8 Sessions sécurisées

@@ -49,6 +49,12 @@ body {
   pointer-events: auto;
 }
 
+.grand-hero-section {
+  margin-top: 0;
+  position: relative;
+  z-index: 1;
+}
+
 .main-header::after {
   content: '';
   position: absolute;
@@ -17232,4 +17238,96 @@ a[class*="btn"] {
       grid-template-columns: 1fr 1fr;
     }
   }
+}/* ===== PARTIES CARD STYLES (CORRECTION MISSION FINALE) ===== */
+.party-logo {
+    width: 120px;
+    height: 120px;
+    border-radius: 50% !important;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.party-card {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s, box-shadow 0.3s;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+}
+
+.party-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.party-tag {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    z-index: 10;
+}
+
+.party-logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 40px 0 20px;
+    padding: 10px;
+}
+
+.party-name {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0 1rem;
+    color: var(--primary-dark);
+}
+
+.party-full-name {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0.5rem 1rem 1.5rem;
+    line-height: 1.4;
+    flex-grow: 1;
+}
+
+.party-footer {
+    display: flex;
+    justify-content: space-around;
+    padding: 16px;
+    border-top: 1px solid #eee;
+    background: #f9f9f9;
+    margin-top: auto;
+}
+
+.pf-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.pf-label {
+    font-size: 0.7rem;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pf-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #333;
 }
