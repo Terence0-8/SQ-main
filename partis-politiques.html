@@ -1,22 +1,32 @@
 ﻿<!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>L'Échiquier Politique — Solitiquo</title>
   <link rel="stylesheet" href="solitiquo.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,400&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
-  
-  <script>function handleImgError(i){i.onerror=null;i.src='https://placehold.co/150x150/f0f0f0/999?text=Logo';}</script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,400&family=Nunito:wght@600;700;800&display=swap"
+    rel="stylesheet" />
 
-  
+  <script>function handleImgError(i) { i.onerror = null; i.src = 'https://placehold.co/150x150/f0f0f0/999?text=Logo'; }</script>
+
+
 </head>
+
 <body id="page-partis-politiques">
 
   <header class="premium-header">
     <div class="ph-left">
-      <div class="burger-container"><button class="burger-btn" id="burgerBtn"><div class="burger-line"></div><div class="burger-line"></div><div class="burger-line"></div></button></div>
-      <a href="index.html" class="ph-brand"><img src="logo.svg" alt="S"><div class="brand-sep"></div><span class="brand-text">Solitiquo</span></a>
+      <div class="burger-container"><button class="burger-btn" id="burgerBtn">
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+        </button></div>
+      <a href="index.html" class="ph-brand"><img src="logo.svg" alt="S">
+        <div class="brand-sep"></div><span class="brand-text">Solitiquo</span>
+      </a>
     </div>
     <div class="ph-center">
       <nav class="ph-nav">
@@ -28,53 +38,77 @@
       </nav>
     </div>
     <div class="ph-right">
-   <div class="search-stack">
-          <div class="search-row" style="display:flex; align-items:center; cursor:pointer;">
-            <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            </button>
-            <span class="search-label" id="searchLabel" style="font-size:0.9rem; font-weight:600; margin-left:8px;">Rechercher</span>
-          </div>
-          
-          <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
-            <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput" autocomplete="off" required />
-            <button class="search-submit" type="submit" aria-label="Lancer">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-          </form>
-      </div>      
+      <div class="search-stack">
+        <div class="search-row" style="display:flex; align-items:center; cursor:pointer;">
+          <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
+            </svg>
+          </button>
+          <span class="search-label" id="searchLabel"
+            style="font-size:0.9rem; font-weight:600; margin-left:8px;">Rechercher</span>
+        </div>
+
+        <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
+          <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput"
+            autocomplete="off" required />
+          <button class="search-submit" type="submit" aria-label="Lancer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </form>
+      </div>
       <a href="auth.html" class="ph-btn-auth">S'identifier</a>
     </div>
   </header>
-  <div class="mobile-nav-overlay" id="mobileNavOverlay"></div><nav id="mobileNav" class="mobile-nav-sidebar"></nav>
+  <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+  <nav id="mobileNav" class="mobile-nav-sidebar"></nav>
 
   <section class="politics-hero">
     <div class="hero-content">
-        <h1 class="hero-title">L'Échiquier Politique</h1>
-        <p class="hero-subtitle">Comprendre les forces en présence, leur histoire et leur idéologie. <br>Accédez aux dossiers complets des formations politiques camerounaises.</p>
-        
-        <div class="filter-bar">
-            <button class="filter-btn active" onclick="filterParties('all')">Tous</button>
-            <button class="filter-btn" onclick="filterParties('majorite')">Majorité</button>
-            <button class="filter-btn" onclick="filterParties('opposition')">Opposition</button>
-            <button class="filter-btn" onclick="filterParties('historique')">Historique</button>
-        </div>
+      <h1 class="hero-title">L'Échiquier Politique</h1>
+      <p class="hero-subtitle">Comprendre les forces en présence, leur histoire et leur idéologie. <br>Accédez aux
+        dossiers complets des formations politiques camerounaises.</p>
+
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterParties('all')">Tous</button>
+        <button class="filter-btn" onclick="filterParties('majorite')">Majorité</button>
+        <button class="filter-btn" onclick="filterParties('opposition')">Opposition</button>
+        <button class="filter-btn" onclick="filterParties('historique')">Historique</button>
+      </div>
     </div>
   </section>
 
   <main class="parties-section">
     <div id="parties-grid" class="parties-grid">
-        <p style="text-align:center; width:100%; grid-column: 1 / -1; color:#666;">Chargement des données...</p>
+      <p style="text-align:center; width:100%; grid-column: 1 / -1; color:#666;">Chargement des données...</p>
     </div>
   </main>
-</div>
+  </div>
 
   <footer class="premium-footer">
     <div class="footer-grid">
-      <div class="footer-col"><div style="display:flex; gap:10px; align-items:center; margin-bottom:1.5rem;"><img src="logo.svg" class="footer-logo" alt="S" onerror="handleImgError(this)"><span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span></div><p style="font-size:0.9rem; opacity:0.7;">Le média de référence.</p></div>
-      <div class="footer-col"><h4>Rubriques</h4><a href="politique.html" class="footer-link">Politique</a><a href="social.html" class="footer-link">Social</a><a href="partis-politiques.html" class="footer-link">Partis</a></div>
-      <div class="footer-col"><h4>Légal</h4><a href="mentions-legales.html" class="footer-link">Mentions</a><a href="conditions-utilisation.html" class="footer-link">CGU</a></div>
-      <div class="footer-col"><h4>Contact</h4><a href="contact.html" class="footer-link">Nous écrire</a><a href="auth.html" class="footer-link">S'identifier</a></div>
+      <div class="footer-col">
+        <div style="display:flex; gap:10px; align-items:center; margin-bottom:1.5rem;"><img src="logo.svg"
+            class="footer-logo" alt="S" onerror="handleImgError(this)"><span
+            style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
+        </div>
+        <p style="font-size:0.9rem; opacity:0.7;">Le média de référence.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Rubriques</h4><a href="politique.html" class="footer-link">Politique</a><a href="social.html"
+          class="footer-link">Social</a><a href="partis-politiques.html" class="footer-link">Partis</a>
+      </div>
+      <div class="footer-col">
+        <h4>Légal</h4><a href="mentions-legales.html" class="footer-link">Mentions</a><a
+          href="conditions-utilisation.html" class="footer-link">CGU</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4><a href="contact.html" class="footer-link">Nous écrire</a><a href="auth.html"
+          class="footer-link">S'identifier</a>
+      </div>
     </div>
     <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
   </footer>
@@ -83,66 +117,66 @@
   <script>
     // --- INITIALISATION ---
     document.addEventListener('DOMContentLoaded', async () => {
-        await loadParties('all'); // Chargement API
+      await loadParties('all'); // Chargement API
     });
 
     let allParties = [];
 
     // --- CHARGEMENT DONNÉES (API) ---
     async function loadParties(filterType) {
-        const grid = document.getElementById('parties-grid');
-        
-        if (allParties.length === 0) {
-            try {
-                // On utilise l'API Backend que tu as créée
-                const res = await fetch('http://localhost:5000/api/parties');
-                const json = await res.json();
-                if (json.success) {
-                    allParties = json.data;
-                } else {
-                    grid.innerHTML = '<p style="text-align:center">Erreur de chargement.</p>';
-                    return;
-                }
-            } catch (e) {
-                console.error(e);
-                // Données de secours si l'API ne répond pas (Fallback)
-                allParties = [
-                    { id: 1, acronym: "RDPC", name: "Rassemblement Démocratique...", type: "majorite", leader_name: "Paul Biya", logo_url: "https://placehold.co/100x100?text=RDPC" }
-                ];
-            }
+      const grid = document.getElementById('parties-grid');
+
+      if (allParties.length === 0) {
+        try {
+          // On utilise l'API Backend que tu as créée
+          const res = await fetch('http://localhost:5000/api/parties');
+          const json = await res.json();
+          if (json.success) {
+            allParties = json.data;
+          } else {
+            grid.innerHTML = '<p style="text-align:center">Erreur de chargement.</p>';
+            return;
+          }
+        } catch (e) {
+          console.error(e);
+          // Données de secours si l'API ne répond pas (Fallback)
+          allParties = [
+            { id: 1, acronym: "RDPC", name: "Rassemblement Démocratique...", type: "majorite", leader_name: "Paul Biya", logo_url: "https://placehold.co/100x100?text=RDPC" }
+          ];
         }
+      }
 
-        // Filtrage
-        let displayData = allParties;
-        if (filterType !== 'all') displayData = allParties.filter(p => p.type === filterType);
+      // Filtrage
+      let displayData = allParties;
+      if (filterType !== 'all') displayData = allParties.filter(p => p.type === filterType);
 
-        renderGrid(displayData);
+      renderGrid(displayData);
     }
 
     // --- RENDU GRILLE ---
     function renderGrid(data) {
-        const grid = document.getElementById('parties-grid');
-        
-        if (data.length === 0) {
-            grid.innerHTML = '<p style="text-align:center; width:100%; grid-column:1/-1;">Aucun parti trouvé.</p>';
-            return;
-        }
+      const grid = document.getElementById('parties-grid');
 
-        grid.innerHTML = data.map(p => {
-            let badgeClass = 'tag-opp';
-            let badgeLabel = 'Opposition';
-            if(p.type === 'majorite') { badgeClass = 'tag-maj'; badgeLabel = 'Majorité'; }
-            if(p.type === 'historique') { badgeClass = 'tag-hist'; badgeLabel = 'Historique'; }
-            
-            // REDIRECTION VERS DOSSIER.HTML
-            return `
-            <div class="party-card" onclick="window.location.href='dossier.html?id=${p.id}'">
+      if (data.length === 0) {
+        grid.innerHTML = '<p style="text-align:center; width:100%; grid-column:1/-1;">Aucun parti trouvé.</p>';
+        return;
+      }
+
+      grid.innerHTML = data.map(p => {
+        let badgeClass = 'tag-opp';
+        let badgeLabel = 'Opposition';
+        if (p.type === 'majorite') { badgeClass = 'tag-maj'; badgeLabel = 'Majorité'; }
+        if (p.type === 'historique') { badgeClass = 'tag-hist'; badgeLabel = 'Historique'; }
+
+        // REDIRECTION VERS DOSSIER.HTML (Refactor: <a> tag for specific reliability)
+        return `
+            <a href="dossier.html?id=${p.id}" class="party-card" style="text-decoration:none; color:inherit;">
                 <div class="party-tags">
                     <span class="p-tag ${badgeClass}">${badgeLabel}</span>
                 </div>
 
                 <div class="party-logo-box">
-                    <img src="${p.logo_url}" class="party-logo" onerror="handleImgError(this)">
+                    <img src="${p.logo_url}" class="party-logo" onerror="handleImgError(this)" alt="${p.acronym} Logo">
                 </div>
                 
                 <div class="party-acronym">${p.acronym}</div>
@@ -155,15 +189,15 @@
                     </div>
                     <div class="btn-arrow">→</div>
                 </div>
-            </div>
+            </a>
         `}).join('');
     }
 
     // --- FILTRES ---
-    window.filterParties = function(type) {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
-        loadParties(type);
+    window.filterParties = function (type) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      loadParties(type);
     };
 
     // --- 1. MENU MOBILE & RECHERCHE ---
@@ -173,12 +207,12 @@
     const overlay = document.getElementById('mobileNavOverlay');
 
     function toggleMenu(show) {
-        if(show) { mobileNav.classList.add('nav-open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
-        else { mobileNav.classList.remove('nav-open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+      if (show) { mobileNav.classList.add('nav-open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+      else { mobileNav.classList.remove('nav-open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
     }
-    if(burger) burger.addEventListener('click', () => toggleMenu(true));
-    if(mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
-    if(overlay) overlay.addEventListener('click', () => toggleMenu(false));
+    if (burger) burger.addEventListener('click', () => toggleMenu(true));
+    if (mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
+    if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
 
     // --- LOGIQUE RECHERCHE UNIFIÉE ---
     const searchBtn = document.getElementById('searchBtn');
@@ -187,26 +221,27 @@
     const searchInput = document.getElementById('searchInput');
 
     function toggleSearch(e) {
-        e.stopPropagation();
-        searchContainer.classList.toggle('active');
-        if(searchContainer.classList.contains('active')) {
-            setTimeout(() => searchInput.focus(), 100);
-        }
+      e.stopPropagation();
+      searchContainer.classList.toggle('active');
+      if (searchContainer.classList.contains('active')) {
+        setTimeout(() => searchInput.focus(), 100);
+      }
     }
 
-    if(searchBtn) searchBtn.addEventListener('click', toggleSearch);
-    if(searchLabel) searchLabel.addEventListener('click', toggleSearch);
+    if (searchBtn) searchBtn.addEventListener('click', toggleSearch);
+    if (searchLabel) searchLabel.addEventListener('click', toggleSearch);
 
     document.addEventListener('click', (e) => {
-        if (searchContainer && searchContainer.classList.contains('active')) {
-            // On ferme si on clique ailleurs que sur le container, le bouton ou le label
-            if (!searchContainer.contains(e.target) && 
-                !searchBtn.contains(e.target) && 
-                (!searchLabel || !searchLabel.contains(e.target))) {
-                searchContainer.classList.remove('active');
-            }
+      if (searchContainer && searchContainer.classList.contains('active')) {
+        // On ferme si on clique ailleurs que sur le container, le bouton ou le label
+        if (!searchContainer.contains(e.target) &&
+          !searchBtn.contains(e.target) &&
+          (!searchLabel || !searchLabel.contains(e.target))) {
+          searchContainer.classList.remove('active');
         }
+      }
     });
-    </script>
+  </script>
 </body>
+
 </html>

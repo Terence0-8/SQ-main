@@ -1,226 +1,254 @@
 ﻿<!DOCTYPE html>
 <html lang="fr">
+
 <head>
-  <meta charset="UTF-8" />
-  <title>Recherche — Solitiquo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="solitiquo.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet" />
-  
-  <script>function handleImgError(i){i.onerror=null;i.src='https://placehold.co/300x200/eee/999?text=Solitiquo';}</script>
+    <meta charset="UTF-8" />
+    <title>Recherche — Solitiquo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="solitiquo.css" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:wght@700;900&display=swap"
+        rel="stylesheet" />
 
-  
+    <script>function handleImgError(i) { i.onerror = null; i.src = 'https://placehold.co/300x200/eee/999?text=Solitiquo'; }</script>
+
 </head>
+
 <body id="page-recherche">
-<a href="javascript:history.length > 1 ? history.back() : window.location.href='index.html'" class="floating-back-btn" aria-label="Retour page précédente">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      <span>Retour</span>
-  </a>
-  <header class="premium-header">
-    <div class="ph-left">
-      <a href="index.html" class="ph-brand"><img src="logo.svg" alt="S"><div class="brand-sep"></div><span class="brand-text">Solitiquo</span></a>
-    </div>
-    <div class="ph-center">
-      <nav class="ph-nav">
-        <a href="politique.html" class="ph-link">Politique</a>
-        <a href="social.html" class="ph-link">Social</a>
-        <a href="partis-politiques.html" class="ph-link">Partis</a>
-        <a href="emissions.html" class="ph-link">Émissions</a>
-        <a href="podcasts.html" class="ph-link">Podcasts</a>
-      </nav>
-    </div>
-    <div class="ph-right">
-        <button onclick="loadEverything()" style="background:none; border:none; cursor:pointer; font-weight:600; color:#555;">Tout le catalogue</button>
-        <a href="auth.html" class="ph-btn-auth">S'identifier</a>
-    </div>
-  </header>
+    <a href="javascript:history.length > 1 ? history.back() : window.location.href='index.html'"
+        class="floating-back-btn" aria-label="Retour page précédente">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        <span>Retour</span>
+    </a>
+    <header class="premium-header">
+        <div class="ph-left">
+            <a href="index.html" class="ph-brand"><img src="logo.svg" alt="S">
+                <div class="brand-sep"></div><span class="brand-text">Solitiquo</span>
+            </a>
+        </div>
+        <div class="ph-center">
+            <nav class="ph-nav">
+                <a href="politique.html" class="ph-link">Politique</a>
+                <a href="social.html" class="ph-link">Social</a>
+                <a href="partis-politiques.html" class="ph-link">Partis</a>
+                <a href="emissions.html" class="ph-link">Émissions</a>
+                <a href="podcasts.html" class="ph-link">Podcasts</a>
+            </nav>
+        </div>
+        <div class="ph-right">
+            <button onclick="loadEverything()"
+                style="background:none; border:none; cursor:pointer; font-weight:600; color:#555;">Tout le
+                catalogue</button>
+            <a href="auth.html" class="ph-btn-auth">S'identifier</a>
+        </div>
+    </header>
 
-  <main class="search-results-page">
-    <div class="search-wrap">
-        
-        <div class="results-header">
-            <h1 class="results-title" id="page-title">Explorer le contenu</h1>
-            <p class="results-count" id="results-count">...</p>
-            
-            <div style="margin-top:20px; display:flex; justify-content:center; gap:10px;">
-                <input type="text" id="internalSearch" placeholder="Nouvelle recherche..." style="padding:10px 15px; border:1px solid #ddd; border-radius:30px; width:300px; outline:none;">
-                <button onclick="window.location.href='recherche.html?q='+document.getElementById('internalSearch').value" style="background:var(--primary-dark); color:white; border:none; padding:10px 20px; border-radius:30px; cursor:pointer;">Chercher</button>
+    <main class="search-results-page">
+        <div class="search-wrap">
+
+            <div class="results-header">
+                <h1 class="results-title" id="page-title">Explorer le contenu</h1>
+                <p class="results-count" id="results-count">...</p>
+
+                <div style="margin-top:20px; display:flex; justify-content:center; gap:10px;">
+                    <input type="text" id="internalSearch" placeholder="Nouvelle recherche..."
+                        style="padding:10px 15px; border:1px solid #ddd; border-radius:30px; width:300px; outline:none;">
+                    <button
+                        onclick="window.location.href='recherche.html?q='+document.getElementById('internalSearch').value"
+                        style="background:var(--primary-dark); color:white; border:none; padding:10px 20px; border-radius:30px; cursor:pointer;">Chercher</button>
+                </div>
+            </div>
+
+            <div class="filter-zone">
+                <div class="filter-row">
+                    <span class="filter-label">Format :</span>
+                    <button class="filter-btn active" data-group="type" data-val="all">Tous</button>
+                    <button class="filter-btn" data-group="type" data-val="article">Articles</button>
+                    <button class="filter-btn" data-group="type" data-val="podcast">Podcasts</button>
+                    <button class="filter-btn" data-group="type" data-val="emission">Émissions</button>
+                </div>
+
+                <div class="filter-row">
+                    <span class="filter-label">Thème :</span>
+                    <button class="filter-btn theme-btn active" data-group="cat" data-val="all">Tous</button>
+                    <button class="filter-btn theme-btn" data-group="cat" data-val="Politique">Politique</button>
+                    <button class="filter-btn theme-btn" data-group="cat" data-val="Social">Social</button>
+                    <button class="filter-btn theme-btn" data-group="cat" data-val="Général">Général</button>
+                </div>
+            </div>
+
+            <div id="results-list"></div>
+            <div style="text-align:center; margin-top:30px;">
+                <button onclick="loadEverything()" id="btn-show-all"
+                    style="display:none; background:white; border:1px solid #ddd; padding:10px 20px; border-radius:30px; cursor:pointer;">Afficher
+                    tout le contenu du site</button>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="premium-footer">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <div style="display:flex; gap:10px; align-items:center; margin-bottom:1.5rem;"><img src="logo.svg"
+                        class="footer-logo" alt="S" onerror="handleImgError(this)"><span
+                        style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
+                </div>
+                <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le média de référence.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Rubriques</h4><a href="politique.html" class="footer-link">Politique</a><a href="social.html"
+                    class="footer-link">Social</a><a href="partis-politiques.html" class="footer-link">Partis</a>
+            </div>
+            <div class="footer-col">
+                <h4>Légal</h4><a href="mentions-legales.html" class="footer-link">Mentions</a><a
+                    href="conditions-utilisation.html" class="footer-link">CGU</a>
+            </div>
+            <div class="footer-col">
+                <h4>Contact</h4><a href="contact.html" class="footer-link">Nous écrire</a><a href="auth.html"
+                    class="footer-link">S'identifier</a>
             </div>
         </div>
+        <div class="footer-bottom">&copy; 2025 Solitiquo.</div>
+    </footer>
 
-        <div class="filter-zone">
-            <div class="filter-row">
-                <span class="filter-label">Format :</span>
-                <button class="filter-btn active" data-group="type" data-val="all">Tous</button>
-                <button class="filter-btn" data-group="type" data-val="article">Articles</button>
-                <button class="filter-btn" data-group="type" data-val="podcast">Podcasts</button>
-                <button class="filter-btn" data-group="type" data-val="emission">Émissions</button>
-            </div>
-            
-            <div class="filter-row">
-                <span class="filter-label">Thème :</span>
-                <button class="filter-btn theme-btn active" data-group="cat" data-val="all">Tous</button>
-                <button class="filter-btn theme-btn" data-group="cat" data-val="Politique">Politique</button>
-                <button class="filter-btn theme-btn" data-group="cat" data-val="Social">Social</button>
-                <button class="filter-btn theme-btn" data-group="cat" data-val="Général">Général</button>
-            </div>
-        </div>
+    <script src="js/api.js"></script>
+    <script>
+        let allData = []; // Stocke tous les résultats pour le filtrage local
 
-        <div id="results-list"></div>
-        <div style="text-align:center; margin-top:30px;">
-            <button onclick="loadEverything()" id="btn-show-all" style="display:none; background:white; border:1px solid #ddd; padding:10px 20px; border-radius:30px; cursor:pointer;">Afficher tout le contenu du site</button>
-        </div>
+        document.addEventListener('DOMContentLoaded', async () => {
 
-    </div>
-  </main>
+            const params = new URLSearchParams(window.location.search);
+            const query = params.get('q');
+            const titleEl = document.getElementById('page-title');
 
-  <footer class="premium-footer">
-    <div class="footer-grid">
-      <div class="footer-col">
-        <div style="display:flex; gap:10px; align-items:center; margin-bottom:1.5rem;"><img src="logo.svg" class="footer-logo" alt="S" onerror="handleImgError(this)"><span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span></div>
-        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le média de référence.</p>
-      </div>
-      <div class="footer-col"><h4>Rubriques</h4><a href="politique.html" class="footer-link">Politique</a><a href="social.html" class="footer-link">Social</a><a href="partis-politiques.html" class="footer-link">Partis</a></div>
-      <div class="footer-col"><h4>Légal</h4><a href="mentions-legales.html" class="footer-link">Mentions</a><a href="conditions-utilisation.html" class="footer-link">CGU</a></div>
-      <div class="footer-col"><h4>Contact</h4><a href="contact.html" class="footer-link">Nous écrire</a><a href="auth.html" class="footer-link">S'identifier</a></div>
-    </div>
-    <div class="footer-bottom">&copy; 2025 Solitiquo.</div>
-  </footer>
+            // --- CAS 1 : RECHERCHE SPÉCIFIQUE ---
+            if (query) {
+                titleEl.textContent = `Résultats de recherche : "${query}"`;
+                document.getElementById('internalSearch').value = query;
+                document.getElementById('btn-show-all').style.display = 'inline-block';
+                await performSearch(query);
+            }
+            // --- CAS 2 : PAS DE RECHERCHE (Tout afficher) ---
+            else {
+                titleEl.textContent = "Tout le catalogue";
+                await loadEverything();
+            }
 
-  <script src="js/api.js"></script>
-  <script>
-    let allData = []; // Stocke tous les résultats pour le filtrage local
+            // --- GESTION DES FILTRES ---
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Gestion Active Class (par groupe)
+                    const group = btn.dataset.group;
+                    document.querySelectorAll(`.filter-btn[data-group="${group}"]`).forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
 
-    document.addEventListener('DOMContentLoaded', async () => {
-
-        const params = new URLSearchParams(window.location.search);
-        const query = params.get('q');
-        const titleEl = document.getElementById('page-title');
-        
-        // --- CAS 1 : RECHERCHE SPÉCIFIQUE ---
-        if (query) {
-            titleEl.textContent = `Résultats de recherche : "${query}"`;
-            document.getElementById('internalSearch').value = query;
-            document.getElementById('btn-show-all').style.display = 'inline-block';
-            await performSearch(query);
-        } 
-        // --- CAS 2 : PAS DE RECHERCHE (Tout afficher) ---
-        else {
-            titleEl.textContent = "Tout le catalogue";
-            await loadEverything();
-        }
-
-        // --- GESTION DES FILTRES ---
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                // Gestion Active Class (par groupe)
-                const group = btn.dataset.group;
-                document.querySelectorAll(`.filter-btn[data-group="${group}"]`).forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-
-                applyFilters();
+                    applyFilters();
+                });
             });
         });
-    });
 
-    // 1. CHERCHER VIA L'API (Recherche Textuelle)
-    async function performSearch(query) {
-        const list = document.getElementById('results-list');
-        const count = document.getElementById('results-count');
-        list.innerHTML = '<p style="text-align:center;color:#999;">Recherche en cours...</p>';
+        // 1. CHERCHER VIA L'API (Recherche Textuelle)
+        async function performSearch(query) {
+            const list = document.getElementById('results-list');
+            const count = document.getElementById('results-count');
+            list.innerHTML = '<p style="text-align:center;color:#999;">Recherche en cours...</p>';
 
-        try {
-            const res = await fetch(`http://localhost:5000/api/search?q=${encodeURIComponent(query)}`);
-            const json = await res.json();
-            
-            if (json.success) {
-                allData = json.results; // Stockage
-                applyFilters(); // Affichage avec filtres par défaut (All/All)
-            } else {
-                allData = [];
-                renderList([]);
+            try {
+                const res = await fetch(`http://localhost:5000/api/search?q=${encodeURIComponent(query)}`);
+                const json = await res.json();
+
+                if (json.success) {
+                    allData = json.results; // Stockage
+                    applyFilters(); // Affichage avec filtres par défaut (All/All)
+                } else {
+                    allData = [];
+                    renderList([]);
+                }
+            } catch (e) { console.error(e); list.innerHTML = "Erreur serveur."; }
+        }
+
+        // 2. CHARGER TOUT LE CONTENU (Option "Tout voir")
+        async function loadEverything() {
+            const titleEl = document.getElementById('page-title');
+            titleEl.textContent = "Tout le contenu";
+            const list = document.getElementById('results-list');
+            list.innerHTML = '<p style="text-align:center;color:#999;">Chargement du catalogue...</p>';
+            document.getElementById('btn-show-all').style.display = 'none';
+
+            try {
+                // On appelle les 3 endpoints
+                const [resArt, resPod, resEm] = await Promise.all([
+                    fetch('http://localhost:5000/api/articles'),
+                    fetch('http://localhost:5000/api/podcasts'),
+                    fetch('http://localhost:5000/api/emissions')
+                ]);
+
+                const [jArt, jPod, jEm] = await Promise.all([resArt.json(), resPod.json(), resEm.json()]);
+
+                // Normalisation des données pour avoir une structure commune
+                const articles = (jArt.data || []).map(i => ({ ...i, type: 'article', date: i.published_at }));
+                const podcasts = (jPod.data || []).map(i => ({ ...i, type: 'podcast', date: i.created_at }));
+                const emissions = (jEm.data || []).map(i => ({ ...i, type: 'emission', date: i.published_at }));
+
+                // Fusion et Tri par date décroissante
+                allData = [...articles, ...podcasts, ...emissions].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                applyFilters();
+
+            } catch (e) { console.error(e); list.innerHTML = "Erreur de chargement global."; }
+        }
+
+        // 3. APPLIQUER LES FILTRES (Type + Thème)
+        function applyFilters() {
+            const typeFilter = document.querySelector('.filter-btn[data-group="type"].active').dataset.val;
+            const catFilter = document.querySelector('.filter-btn[data-group="cat"].active').dataset.val;
+
+            let filtered = allData;
+
+            // Filtre Type
+            if (typeFilter !== 'all') {
+                filtered = filtered.filter(item => item.type === typeFilter);
             }
-        } catch (e) { console.error(e); list.innerHTML = "Erreur serveur."; }
-    }
 
-    // 2. CHARGER TOUT LE CONTENU (Option "Tout voir")
-    async function loadEverything() {
-        const titleEl = document.getElementById('page-title');
-        titleEl.textContent = "Tout le contenu";
-        const list = document.getElementById('results-list');
-        list.innerHTML = '<p style="text-align:center;color:#999;">Chargement du catalogue...</p>';
-        document.getElementById('btn-show-all').style.display = 'none';
+            // Filtre Thème (Sauf pour Emissions si demandé, mais ici on filtre tout ce qui a une catégorie)
+            if (catFilter !== 'all') {
+                filtered = filtered.filter(item => {
+                    // Les émissions n'ont peut-être pas de catégorie stricte, on sécurise
+                    if (!item.category) return false;
+                    return item.category === catFilter;
+                });
+            }
 
-        try {
-            // On appelle les 3 endpoints
-            const [resArt, resPod, resEm] = await Promise.all([
-                fetch('http://localhost:5000/api/articles'),
-                fetch('http://localhost:5000/api/podcasts'),
-                fetch('http://localhost:5000/api/emissions')
-            ]);
-
-            const [jArt, jPod, jEm] = await Promise.all([resArt.json(), resPod.json(), resEm.json()]);
-
-            // Normalisation des données pour avoir une structure commune
-            const articles = (jArt.data || []).map(i => ({ ...i, type: 'article', date: i.published_at }));
-            const podcasts = (jPod.data || []).map(i => ({ ...i, type: 'podcast', date: i.created_at }));
-            const emissions = (jEm.data || []).map(i => ({ ...i, type: 'emission', date: i.published_at }));
-
-            // Fusion et Tri par date décroissante
-            allData = [...articles, ...podcasts, ...emissions].sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            applyFilters();
-
-        } catch(e) { console.error(e); list.innerHTML = "Erreur de chargement global."; }
-    }
-
-    // 3. APPLIQUER LES FILTRES (Type + Thème)
-    function applyFilters() {
-        const typeFilter = document.querySelector('.filter-btn[data-group="type"].active').dataset.val;
-        const catFilter = document.querySelector('.filter-btn[data-group="cat"].active').dataset.val;
-
-        let filtered = allData;
-
-        // Filtre Type
-        if (typeFilter !== 'all') {
-            filtered = filtered.filter(item => item.type === typeFilter);
+            renderList(filtered);
         }
 
-        // Filtre Thème (Sauf pour Emissions si demandé, mais ici on filtre tout ce qui a une catégorie)
-        if (catFilter !== 'all') {
-            filtered = filtered.filter(item => {
-                // Les émissions n'ont peut-être pas de catégorie stricte, on sécurise
-                if (!item.category) return false; 
-                return item.category === catFilter;
-            });
-        }
+        // 4. RENDU HTML
+        function renderList(data) {
+            const list = document.getElementById('results-list');
+            const count = document.getElementById('results-count');
 
-        renderList(filtered);
-    }
+            count.textContent = `${data.length} résultats trouvés`;
 
-    // 4. RENDU HTML
-    function renderList(data) {
-        const list = document.getElementById('results-list');
-        const count = document.getElementById('results-count');
-        
-        count.textContent = `${data.length} résultats trouvés`;
+            if (data.length === 0) {
+                list.innerHTML = '<div style="text-align:center; padding:4rem; color:#999;">Aucun contenu ne correspond aux filtres.</div>';
+                return;
+            }
 
-        if (data.length === 0) {
-            list.innerHTML = '<div style="text-align:center; padding:4rem; color:#999;">Aucun contenu ne correspond aux filtres.</div>';
-            return;
-        }
+            list.innerHTML = data.map(item => {
+                let link = '#', badgeClass = '', badgeText = '';
 
-        list.innerHTML = data.map(item => {
-            let link = '#', badgeClass = '', badgeText = '';
-            
-            if(item.type === 'article') { link = `article.html?id=${item.id}`; badgeClass = 'type-article'; badgeText = 'ARTICLE'; }
-            else if(item.type === 'podcast') { link = `podcast.html?id=${item.id}`; badgeClass = 'type-podcast'; badgeText = 'PODCAST'; }
-            else if(item.type === 'emission') { link = `emissions.html`; badgeClass = 'type-emission'; badgeText = 'TV'; }
+                if (item.type === 'article') { link = `article.html?id=${item.id}`; badgeClass = 'type-article'; badgeText = 'ARTICLE'; }
+                else if (item.type === 'podcast') { link = `podcast.html?id=${item.id}`; badgeClass = 'type-podcast'; badgeText = 'PODCAST'; }
+                else if (item.type === 'emission') { link = `emissions.html`; badgeClass = 'type-emission'; badgeText = 'TV'; }
 
-            const img = item.image_url || 'https://via.placeholder.com/300x200';
-            const cat = item.category ? `<span class="res-cat-badge"> • ${item.category}</span>` : '';
+                const img = item.image_url || 'https://via.placeholder.com/300x200';
+                const cat = item.category ? `<span class="res-cat-badge"> • ${item.category}</span>` : '';
 
-            return `
+                return `
             <a href="${link}" class="result-card">
                 <img src="${img}" class="res-img" onerror="handleImgError(this)">
                 <div class="res-info">
@@ -233,8 +261,9 @@
                     <div class="res-date">${SolitiquoAPI.formatDate(item.date)}</div>
                 </div>
             </a>`;
-        }).join('');
-    }
-  </script>
+            }).join('');
+        }
+    </script>
 </body>
+
 </html>

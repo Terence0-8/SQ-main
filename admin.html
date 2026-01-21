@@ -4,13 +4,12 @@
 <head>
     <meta charset="UTF-8" />
     <title>Console Admin — Solitiquo</title>
+    <link href="solitiquo.css" rel="stylesheet" />
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap"
         rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    
 
 </head>
 
@@ -420,413 +419,168 @@
                 // 1. On sauvegarde les données proprement
                 globalPollsData = json.data || [];
 
-                if (globalPollsData.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Aucun sondage trouvé.</td></tr>';
-                    return;
-                }
+                renderPolls(globalPollsData);
 
-                tbody.innerHTML = globalPollsData.map(p => {
-                    const isActive = p.is_active ? '<span class="badge badge-pub">Actif</span>' : '<span class="badge" style="background:#eee;">Clôturé</span>';
-
-                    // 2. On passe seulement l'ID à la fonction (plus de JSON cassé par les guillemets)
-                    return `
-                <tr>
-                    <td style="font-weight:600;">${p.question} <div style="font-size:0.7rem; color:#888; font-weight:400;">${p.category || 'Général'}</div></td>
-                    <td>${isActive}</td>
-                    <td>${p.total_votes} votes</td>
-                    <td>
-                        <button class="btn-valid" onclick="openChartById(${p.id})" style="font-size:0.7rem;">Voir Graphique</button>
-                    </td>
-                    <td style="text-align:right;">
-                        <button onclick="deleteItem('polls', ${p.id})" class="btn-icon-sm del">🗑️</button>
-                    </td>
-                </tr>`;
-                }).join('');
             } catch (e) {
-                console.error("Err Polls", e);
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Erreur chargement : ${e.message}</td></tr>`;
+                console.error(e);
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Erreur lors du chargement des sondages.</td></tr>';
             }
         }
 
-        // Nouvelle fonction qui cherche les données dans la variable globale
-        function openChartById(id) {
-            // Retrouver le sondage dans la liste mémoire
-            const poll = globalPollsData.find(p => p.id === id);
-            if (!poll) return Swal.fire('Erreur', 'Données introuvables', 'error');
+        function renderPolls(data) {
+            const tbody = document.getElementById('list-polls');
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Aucun sondage trouvé.</td></tr>';
+                return;
+            }
 
-            const labels = poll.options.map(o => o.text || o.label);
-            const data = poll.options.map(o => o.votes || o.votes_count);
+            // On vide le tbody
+            tbody.innerHTML = '';
 
-            Swal.fire({
-                title: `<span style="font-family:'Playfair Display'; font-size:1.5rem; color:#37463D;">${poll.question}</span>`,
-                width: 800,
-                html: '<div style="position:relative; height:350px; width:100%;"><canvas id="pollChart"></canvas></div>',
-                showCloseButton: true,
-                showConfirmButton: false,
-                didOpen: () => {
-                    const ctx = document.getElementById('pollChart').getContext('2d');
-                    new Chart(ctx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                data: data,
-                                backgroundColor: ['#37463D', '#C82823', '#EAB308', '#94A3B8', '#1E293B', '#475569'],
-                                borderWidth: 2,
-                                borderColor: '#ffffff'
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            cutout: '60%',
-                            plugins: {
-                                legend: {
-                                    position: 'right',
-                                    labels: {
-                                        font: { family: 'Inter', size: 13 },
-                                        boxWidth: 12,
-                                        padding: 20,
-                                        usePointStyle: true,
-                                        generateLabels: function (chart) {
-                                            const data = chart.data;
-                                            if (data.labels.length && data.datasets.length) {
-                                                const dataset = data.datasets[0];
-                                                const total = dataset.data.reduce((acc, val) => acc + val, 0);
-                                                return data.labels.map((label, i) => {
-                                                    const val = dataset.data[i];
-                                                    const pct = total > 0 ? Math.round((val / total) * 100) + '%' : '0%';
-                                                    return {
-                                                        text: `${label} :  ${val} votes  (${pct})`,
-                                                        fillStyle: dataset.backgroundColor[i],
-                                                        hidden: isNaN(dataset.data[i]) || chart.getDatasetMeta(0).data[i].hidden,
-                                                        index: i,
-                                                        fontColor: '#333'
-                                                    };
-                                                });
-                                            }
-                                            return [];
-                                        }
-                                    }
-                                }
-                            }
-                        }
+            data.forEach((p, index) => {
+                // p.options est une chaîne JSON, on la parse
+                let opts = [];
+                try { opts = JSON.parse(p.options); } catch (e) { }
+
+                // Calculs stats pour l'affichage (optionnel, ici on affiche juste les résultats bruts)
+                let resultsHtml = '';
+                if (opts.length > 0) {
+                    resultsHtml = '<div style="display:flex; flex-direction:column; gap:4px; font-size:0.8rem;">';
+                    opts.forEach(o => {
+                        resultsHtml += `<div><strong>${o.text}:</strong> ${o.votes} votes</div>`;
                     });
+                    resultsHtml += '</div>';
                 }
-            });
-        }
 
+                const isActive = p.is_active ? '<span class="badge badge-pub">Actif</span>' : '<span class="badge badge-draft">Fermé</span>';
 
-        function showPollChart(dataStr) {
-            const poll = JSON.parse(decodeURIComponent(dataStr));
-            // On s'assure de récupérer les bons champs (labels et data)
-            const labels = poll.options.map(o => o.text || o.label);
-            const data = poll.options.map(o => o.votes || o.votes_count);
+                // --- CORRECTION ESCAPE ---
+                // On n'injecte PAS l'objet entier dans le HTML. On passe juste l'ID.
+                // Au moment du click, la fonction ira chercher l'objet dans globalPollsData.
 
-            Swal.fire({
-                title: `<span style="font-family:'Playfair Display'; font-size:1.5rem; color:#37463D;">${poll.question}</span>`,
-                // On élargit la popup pour que la légende tienne confortablement à droite
-                width: 850,
-                html: '<div style="position:relative; height:350px; width:100%;"><canvas id="pollChart"></canvas></div>',
-                showCloseButton: true,
-                showConfirmButton: false,
-                didOpen: () => {
-                    const ctx = document.getElementById('pollChart').getContext('2d');
-                    new Chart(ctx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                data: data,
-                                backgroundColor: [
-                                    '#37463D', // Vert Solitiquo
-                                    '#C82823', // Rouge Solitiquo
-                                    '#EAB308', // Jaune
-                                    '#94A3B8', // Gris
-                                    '#1E293B', // Bleu nuit
-                                    '#475569'  // Ardoise
-                                ],
-                                borderWidth: 2,
-                                borderColor: '#ffffff'
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            cutout: '60%',
-                            plugins: {
-                                legend: {
-                                    position: 'right', // Position à droite pour la liste détaillée
-                                    align: 'center',
-                                    labels: {
-                                        font: { family: 'Inter', size: 13, weight: 500 },
-                                        boxWidth: 12,
-                                        padding: 20,
-                                        usePointStyle: true, // Points ronds plus élégants
-                                        // C'est ici que l'on calcule les stats pour la légende
-                                        generateLabels: function (chart) {
-                                            const data = chart.data;
-                                            if (data.labels.length && data.datasets.length) {
-                                                const dataset = data.datasets[0];
-                                                // Calcul du total des votes
-                                                const total = dataset.data.reduce((acc, val) => acc + val, 0);
-
-                                                return data.labels.map((label, i) => {
-                                                    const val = dataset.data[i];
-                                                    const pct = total > 0 ? Math.round((val / total) * 100) + '%' : '0%';
-
-                                                    // Construction du texte : "Option : X votes (Y%)"
-                                                    const text = `${label} :  ${val} votes  (${pct})`;
-
-                                                    return {
-                                                        text: text,
-                                                        fillStyle: dataset.backgroundColor[i],
-                                                        hidden: isNaN(dataset.data[i]) || chart.getDatasetMeta(0).data[i].hidden,
-                                                        index: i,
-                                                        fontColor: '#333'
-                                                    };
-                                                });
-                                            }
-                                            return [];
-                                        }
-                                    }
-                                },
-                                tooltip: {
-                                    // On garde le tooltip simple pour la précision au survol
-                                    callbacks: {
-                                        label: function (context) {
-                                            return ` ${context.label}: ${context.raw} votes`;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-            });
-        }
-        // --- MODAL "NOUVEAU SONDAGE" (Version Premium) ---
-        async function openNewPollModal() {
-            // On utilise ici le HTML personnalisé pour le style "Solitiquo"
-            const { value: formValues } = await Swal.fire({
-                title: '<span style="font-family:Playfair Display; font-weight:800; color:#37463D; font-size:1.8rem;">Sondage de la semaine</span>',
-                html: `
-                <div class="premium-modal-container">
-                    <div class="pm-group">
-                        <label class="pm-label">La Question</label>
-                        <input id="swal-question" class="pm-input" placeholder="Ex: Pour ou contre la réforme...">
-                    </div>
-                    
-                    <div class="pm-group">
-                        <label class="pm-label">Catégorie</label>
-                        <select id="swal-cat" class="pm-select">
-                            <option value="Politique">Politique</option>
-                            <option value="Social">Social</option>
-                            <option value="Général">Général</option>
-                        </select>
-                    </div>
-
-                    <div class="pm-divider"></div>
-                    <div class="pm-subtitle">Les Options de réponse</div>
-
-                    <div class="pm-group">
-                        <input id="swal-opt1" class="pm-input" placeholder="Option 1 (Ex: Oui)">
-                    </div>
-                    <div class="pm-group">
-                        <input id="swal-opt2" class="pm-input" placeholder="Option 2 (Ex: Non)">
-                    </div>
-                    <div class="pm-group">
-                        <input id="swal-opt3" class="pm-input" placeholder="Option 3 (Facultatif)">
-                    </div>
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+            <td>
+                <strong>${p.question}</strong>
+                <div style="font-size:0.75rem; color:#888;">ID: ${p.id}</div>
+            </td>
+            <td>${isActive}</td>
+            <td>${p.total_votes}</td>
+            <td>${resultsHtml}</td>
+            <td style="text-align:right;">
+                <div class="row-actions">
+                    <button class="btn-icon-sm" onclick="togglePollStatus(${p.id}, ${p.is_active ? 'false' : 'true'})" title="${p.is_active ? 'Fermer' : 'Ouvrir'}">⏯</button>
+                    <button class="btn-icon-sm" onclick="editPoll(${p.id})" title="Modifier">✏️</button>
+                    <button class="btn-icon-sm del" onclick="deleteItem('poll', ${p.id})" title="Supprimer">🗑️</button>
                 </div>
-            `,
-                width: 650,
-                confirmButtonText: 'Publier le Sondage',
-                confirmButtonColor: '#37463D',
-                showCancelButton: true,
-                cancelButtonText: 'Annuler',
+            </td>
+        `;
+                tbody.appendChild(tr);
+            });
+        }
+
+
+        // --- MODALES ACTIONS (Sondages) ---
+        function togglePollStatus(id, newStatus) {
+            // Appel API pour changer le statut
+            fetch(`${API_URL}/admin/polls/${id}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ is_active: newStatus }),
+                credentials: 'include'
+            }).then(() => loadPolls());
+        }
+
+        async function openNewPollModal() {
+            const { value: formValues } = await Swal.fire({
+                title: 'Nouveau Sondage',
+                html:
+                    '<input id="swal-q" class="swal2-input" placeholder="Question">' +
+                    '<textarea id="swal-opts" class="swal2-textarea" placeholder="Options (une par ligne)"></textarea>',
                 focusConfirm: false,
-                // Récupération des valeurs des champs personnalisés
                 preConfirm: () => {
                     return [
-                        document.getElementById('swal-question').value,
-                        document.getElementById('swal-opt1').value,
-                        document.getElementById('swal-opt2').value,
-                        document.getElementById('swal-opt3').value,
-                        document.getElementById('swal-cat').value
+                        document.getElementById('swal-q').value,
+                        document.getElementById('swal-opts').value
                     ]
                 }
             });
 
             if (formValues) {
-                const [q, o1, o2, o3, cat] = formValues;
-                const options = [o1, o2];
-                if (o3 && o3.trim() !== "") options.push(o3);
+                const [question, optionsRaw] = formValues;
+                const options = optionsRaw.split('\n').filter(o => o.trim() !== '');
 
-                if (!q || !o1 || !o2) return Swal.fire('Incomplet', 'Une question et au moins 2 options sont requises.', 'warning');
+                await fetch(API_URL + '/admin/polls', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question, options }),
+                    credentials: 'include'
+                });
+                loadPolls();
+            }
+        }
 
+        // --- ÉDITION SONDAGE (FIX) ---
+        async function editPoll(id) {
+            // A. Retrouver l'objet dans la variable globale via son ID
+            const poll = globalPollsData.find(p => p.id === id);
+            if (!poll) {
+                Swal.fire('Erreur', 'Sondage introuvable.', 'error');
+                return;
+            }
+
+            // B. Préparation des options (JSON -> String avec sauts de lignes)
+            let optsString = "";
+            try {
+                const opts = JSON.parse(poll.options); // [{text:"Oui", votes:0}, ...]
+                optsString = opts.map(o => o.text).join('\n');
+            } catch (e) { }
+
+            // C. Affichage de la modale pré-remplie
+            const { value: formValues } = await Swal.fire({
+                title: 'Modifier le Sondage',
+                html:
+                    `<input id="swal-edit-q" class="swal2-input" placeholder="Question" value="${poll.question.replace(/"/g, '&quot;')}">` +
+                    `<textarea id="swal-edit-opts" class="swal2-textarea" placeholder="Options (une par ligne)">${optsString}</textarea>` +
+                    `<div style="font-size:0.8rem; color:red; margin-top:10px;">Attention : Modifier les options réinitialise les votes à 0.</div>`,
+                focusConfirm: false,
+                showCancelButton: true,
+                preConfirm: () => {
+                    return [
+                        document.getElementById('swal-edit-q').value,
+                        document.getElementById('swal-edit-opts').value
+                    ]
+                }
+            });
+
+            // D. Sauvegarde
+            if (formValues) {
+                const [question, optionsRaw] = formValues;
+                const options = optionsRaw.split('\n').map(o => o.trim()).filter(o => o !== '');
+
+                // Appel PUT
                 try {
-                    await fetch(API_URL + '/admin/polls', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ question: q, options, category: cat }),
+                    const res = await fetch(`${API_URL}/admin/polls/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ question, options }), // Le backend gère la logique de réinitialisation si options change
                         credentials: 'include'
                     });
 
-                    const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
-                    Toast.fire({ icon: 'success', title: 'Sondage publié avec succès !' });
-
-                    loadPolls();
-                } catch (e) { Swal.fire('Erreur', 'Impossible de créer le sondage', 'error'); }
-            }
-        }
-
-        // --- PARTIS ---
-        async function loadParties() {
-            const tbody = document.getElementById('list-parties');
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Chargement...</td></tr>';
-
-            try {
-                const res = await fetch(API_URL + '/admin/parties');
-                if (!res.ok) throw new Error(`Erreur Serveur (${res.status})`);
-
-                const json = await res.json();
-
-                if (!json.data || json.data.length === 0) {
-                    tbody.innerHTML = "<tr><td colspan='4' style='text-align:center;'>Aucun parti trouvé.</td></tr>";
-                    return;
-                }
-
-                tbody.innerHTML = json.data.map(p => {
-                    // 1. Gestion des badges d'orientation (Correction du N/A)
-                    // La BDD renvoie 'type', on le convertit en affichage propre
-                    let badgeClass = 'badge-pending'; // Gris/Jaune par défaut
-                    let label = p.type || 'Non défini';
-
-                    if (p.type === 'majorite') {
-                        label = 'Majorité';
-                        badgeClass = 'badge-pub'; // Vert
-                    } else if (p.type === 'opposition') {
-                        label = 'Opposition';
-                        badgeClass = 'badge-draft'; // Rouge
-                    } else if (p.type === 'historique') {
-                        label = 'Historique';
-                        badgeClass = 'badge'; // Gris standard
+                    if (res.ok) {
+                        Swal.fire('Succès', 'Sondage modifié.', 'success');
+                        loadPolls();
+                    } else {
+                        Swal.fire('Erreur', 'Impossible de modifier.', 'error');
                     }
-
-                    // 2. Création de la ligne
-                    return `
-                <tr>
-                    <td>
-                        <div style="width:40px; height:40px; background:#f4f4f4; border-radius:4px; display:flex; align-items:center; justify-content:center; border:1px solid #eee;">
-                            <img src="${p.logo_url || 'img/default.png'}" style="max-width:100%; max-height:100%;" onerror="this.style.display='none'">
-                        </div>
-                    </td>
-                    <td style="font-weight:700; font-size:0.95rem;">${p.name}</td>
-                    <td><span class="badge ${badgeClass}">${label}</span></td>
-                    <td style="text-align:right;">
-                        <div class="row-actions" style="display:flex; justify-content:flex-end; gap:8px;">
-                            <a href="dossier.html?id=${p.id}" target="_blank" class="btn-icon-sm" title="Voir le dossier public">👁️</a>
-                            <a href="editeur-parti.html?id=${p.id}" class="btn-icon-sm" title="Modifier">✏️</a>
-                            <button onclick="deleteItem('parties', ${p.id})" class="btn-icon-sm del" title="Supprimer">🗑️</button>
-                        </div>
-                    </td>
-                </tr>
-            `}).join('');
-            } catch (e) {
-                console.error("Err Parties", e);
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">Erreur chargement : ${e.message}</td></tr>`;
+                } catch (e) { console.error(e); }
             }
         }
+
+        // --- MODALE PARTI (NOUVEAU) ---
         async function openNewPartyModal() {
-            // Redirection vers l'éditeur complet pour créer un parti
+            // On redirige vers l'éditeur de parti (plus simple que de tout faire en modal)
             window.location.href = 'editeur-parti.html';
-        }
-
-        // --- UTILS ---
-        async function togglePremium(type, id, currentStatus) {
-            // Définir les textes selon l'état actuel
-            const actionText = currentStatus ? "Passer en Gratuit" : "Passer en Premium";
-            const icon = currentStatus ? 'unlock' : 'lock'; // Tu peux mettre 'warning' ou 'question' si tu n'as pas FontAwesome, ici j'utilise les icones sweetalert natives
-            const confirmColor = currentStatus ? '#64748b' : '#C82823'; // Gris pour gratuit, Rouge pour premium
-
-            // 1. Fenêtre de confirmation
-            const result = await Swal.fire({
-                title: 'Changer l\'accès ?',
-                html: `Cet article est actuellement <b>${currentStatus ? 'Premium' : 'Gratuit'}</b>.<br>Voulez-vous le rendre <b>${currentStatus ? 'accessible à tous' : 'réservé aux abonnés'}</b> ?`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: confirmColor,
-                cancelButtonColor: '#94a3b8',
-                confirmButtonText: `Oui, ${actionText}`,
-                cancelButtonText: 'Annuler',
-                reverseButtons: true
-            });
-
-            // 2. Si l'utilisateur confirme
-            if (result.isConfirmed) {
-                try {
-                    const res = await fetch(`${API_URL}/admin/content/${type}/${id}/toggle-premium`, { method: 'PUT', credentials: 'include' });
-                    const json = await res.json();
-
-                    if (json.success) {
-                        // Petit Toast de succès rapide
-                        const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, timerProgressBar: true });
-                        Toast.fire({ icon: 'success', title: 'Accès mis à jour !' });
-                        loadAllData(); // Rafraîchir le tableau
-                    } else {
-                        Swal.fire('Erreur', json.error, 'error');
-                    }
-                } catch (e) { Swal.fire('Erreur', 'Problème réseau', 'error'); }
-            }
-        }
-
-        async function workflow(id, action) {
-            try {
-                const res = await fetch(`${API_URL}/admin/workflow/${id}`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action }), credentials: 'include'
-                });
-                if ((await res.json()).success) {
-                    Swal.fire({ title: 'Parfait !', text: 'Action effectuée.', icon: 'success', timer: 1500, showConfirmButton: false });
-                    loadAllData();
-                }
-            } catch (e) { Swal.fire('Oups', 'Erreur réseau', 'error'); }
-        }
-
-        async function deleteItem(type, id) {
-            const result = await Swal.fire({
-                title: 'Êtes-vous sûr ?', text: "Cette action est irréversible !", icon: 'warning',
-                showCancelButton: true, confirmButtonColor: '#C82823', cancelButtonColor: '#3085d6', confirmButtonText: 'Oui, supprimer', cancelButtonText: 'Annuler'
-            });
-
-            if (result.isConfirmed) {
-                try {
-                    // Construction dynamique de l'URL selon le type
-                    let url = `${API_URL}/admin/content/${type}/${id}`;
-                    if (type === 'polls') url = `${API_URL}/admin/polls/${id}`;
-                    if (type === 'parties') url = `${API_URL}/admin/parties/${id}`;
-
-                    const res = await fetch(url, { method: 'DELETE', credentials: 'include' });
-                    const json = await res.json();
-
-                    if (json.success) {
-                        Swal.fire('Supprimé !', 'Le contenu a été effacé.', 'success');
-                        // Rechargement intelligent de la vue active
-                        if (type === 'polls') loadPolls();
-                        else if (type === 'parties') loadParties();
-                        else loadAllData();
-                    } else {
-                        Swal.fire('Erreur', json.error || 'Erreur serveur', 'error');
-                    }
-                } catch (e) { Swal.fire('Erreur', 'Impossible de supprimer.', 'error'); }
-            }
-        }
-
-        async function modComment(id, action) {
-            try {
-                await fetch(`${API_URL}/admin/comments/${id}/${action}`, { method: 'POST', credentials: 'include' });
-                loadAllData(); // Rafraîchit les notifs
-            } catch (e) { }
         }
     </script>
 </body>
