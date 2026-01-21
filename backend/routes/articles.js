@@ -71,7 +71,7 @@ router.get('/', async (req, res) => {
         a.excerpt, 
         a.category, 
         a.published_at, 
-        a.featured_image, 
+        a.featured_image AS image_url, 
         a.language, 
         a.tags,
         a.views_count,
@@ -119,7 +119,22 @@ router.get('/:id', async (req, res) => {
 
     const query = `
       SELECT 
-        a.*, 
+        a.id,
+        a.title,
+        a.slug,
+        a.content,
+        a.excerpt,
+        a.category,
+        a.status,
+        a.is_premium,
+        a.language,
+        a.tags,
+        a.views_count,
+        a.featured_image AS image_url,
+        a.published_at,
+        a.created_at,
+        a.updated_at,
+        a.author_id,
         u.username as author_name
       FROM articles a
       LEFT JOIN users u ON a.author_id = u.id

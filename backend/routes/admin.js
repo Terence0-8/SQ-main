@@ -57,7 +57,7 @@ router.get('/content/articles', isWriter, async (req, res) => {
       SELECT 
         a.id, 
         a.title, 
-        a.featured_image, 
+        a.featured_image AS image_url, 
         a.category, 
         a.status, 
         a.published_at, 
