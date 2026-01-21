@@ -345,15 +345,21 @@ router.post('/vote', async (req, res) => {
                 });
             }
 
-            // Décrémenter l'ancienne option
-            options[oldOptionIndex].votes -= 1;
+            // Décrémenter l'ancienne option (initialiser si undefined)
+            if (typeof options[oldOptionIndex].votes !== 'number') {
+                options[oldOptionIndex].votes = 0;
+            }
+            options[oldOptionIndex].votes = Math.max(0, options[oldOptionIndex].votes - 1);
 
-            // Incrémenter la nouvelle option
+            // Incrémenter la nouvelle option (initialiser si undefined)
+            if (typeof options[option_index].votes !== 'number') {
+                options[option_index].votes = 0;
+            }
             options[option_index].votes += 1;
 
             // Mettre à jour le vote
             await client.query(
-                'UPDATE poll_votes SET option_index = $1, created_at = NOW() WHERE id = $2',
+                'UPDATE poll_votes SET option_index = $1, voted_at = NOW() WHERE id = $2',
                 [option_index, existingVote.rows[0].id]
             );
 
@@ -374,12 +380,15 @@ router.post('/vote', async (req, res) => {
 
         // --- CAS 2 : PREMIER VOTE ---
 
-        // Incrémenter l'option choisie
+        // Incrémenter l'option choisie (initialiser si undefined)
+        if (typeof options[option_index].votes !== 'number') {
+            options[option_index].votes = 0;
+        }
         options[option_index].votes += 1;
 
         // Insérer le vote
         await client.query(
-            'INSERT INTO poll_votes (poll_id, user_id, option_index, created_at) VALUES ($1, $2, $3, NOW())',
+            'INSERT INTO poll_votes (poll_id, user_id, option_index, voted_at) VALUES ($1, $2, $3, NOW())',
             [poll_id, userId, option_index]
         );
 
