@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet'); // ✅ AJOUT HELMET
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const path = require('path');
@@ -12,7 +13,54 @@ const PORT = process.env.PORT || 5000;
 const isProduction = process.env.NODE_ENV === 'production';
 
 // =============================================================================
-// 1. MIDDLEWARES DE BASE
+// 1. SÉCURITÉ HEADERS HTTP - HELMET.JS
+// =============================================================================
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'", // Pour scripts inline (à retirer progressivement)
+        "https://cdn.jsdelivr.net", // Si tu utilises des CDN
+        "https://www.googletagmanager.com" // Google Analytics si utilisé
+      ],
+      styleSrc: [
+        "'self'",
+        "'unsafe-inline'", // Pour styles inline
+        "https://fonts.googleapis.com"
+      ],
+      fontSrc: [
+        "'self'",
+        "https://fonts.gstatic.com"
+      ],
+      imgSrc: [
+        "'self'",
+        "data:",
+        "https:", // Images externes (Cloudinary, etc.)
+        "blob:"
+      ],
+      connectSrc: [
+        "'self'",
+        "https://res.cloudinary.com" // API Cloudinary
+      ],
+      mediaSrc: [
+        "'self'",
+        "https://res.cloudinary.com" // Audio/vidéo Cloudinary
+      ],
+      frameSrc: [
+        "'self'",
+        "https://www.youtube.com", // Embed YouTube
+        "https://www.facebook.com" // Embed Facebook
+      ]
+    }
+  },
+  crossOriginEmbedderPolicy: false, // Pour permettre embed YouTube/Facebook
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+
+// =============================================================================
+// 2. MIDDLEWARES DE BASE
 // =============================================================================
 
 // Fix #9 - CORS restrictif en production
@@ -59,7 +107,7 @@ app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
 // =============================================================================
-// 2. SESSIONS - Fix #8 Sessions sécurisées
+// 4. SESSIONS - Fix #8 Sessions sécurisées
 // =============================================================================
 app.use(session({
   store: new (require('connect-pg-simple')(session))({
@@ -79,7 +127,7 @@ app.use(session({
 }));
 
 // =============================================================================
-// Fix #5 - PROTECTION CSRF SIMPLE (Token dans session)
+// 5. PROTECTION CSRF - Token dans session
 // =============================================================================
 const crypto = require('crypto');
 
@@ -122,7 +170,7 @@ const verifyCsrf = (req, res, next) => {
 app.use('/api/admin', verifyCsrf);
 
 // =============================================================================
-// 3. ROUTES API
+// 6. ROUTES API
 // =============================================================================
 try {
   app.use('/api/articles', require('./backend/routes/articles'));
@@ -145,7 +193,7 @@ try {
 }
 
 // =============================================================================
-// 4. ROUTES DE BASE
+// 7. ROUTES DE BASE
 // =============================================================================
 
 // Route de test / health check
@@ -153,7 +201,13 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'Server Running',
     environment: isProduction ? 'production' : 'development',
-    user: req.session.user ? req.session.user.email : 'Visiteur'
+    user: req.session.user ? req.session.user.email : 'Visiteur',
+    security: {
+      helmet: true,
+      csrf: true,
+      rateLimit: true,
+      secureCookies: isProduction
+    }
   });
 });
 
@@ -163,12 +217,11 @@ app.get('/', (req, res) => {
 });
 
 // =============================================================================
-// Fix #7 - GESTION D'ERREURS CENTRALISÉE
+// 8. GESTION D'ERREURS CENTRALISÉE
 // =============================================================================
 
-// Route 404 pour API (Express 5 syntax)
+// Route 404 pour API
 app.use('/api', (req, res, next) => {
-  // Si on arrive ici, aucune route n'a matché
   res.status(404).json({ success: false, error: 'Route API introuvable' });
 });
 
@@ -194,13 +247,21 @@ app.use((err, req, res, next) => {
 });
 
 // =============================================================================
-// LANCEMENT
+// 9. LANCEMENT SERVEUR
 // =============================================================================
 app.listen(PORT, () => {
-  console.log(`\n🚀 Serveur lancé sur http://localhost:${PORT}`);
+  console.log(`\n🚀 Serveur Solitiquo lancé sur http://localhost:${PORT}`);
   console.log(`📂 Dossier racine : ${__dirname}`);
   console.log(`🔒 Mode : ${isProduction ? 'PRODUCTION' : 'DÉVELOPPEMENT'}`);
+  console.log('\n🛡️  Sécurité activée :');
+  console.log('   ✅ Helmet.js (Headers HTTP sécurisés)');
+  console.log('   ✅ CORS restrictif en production');
+  console.log('   ✅ Rate Limiting (100 req/15min)');
+  console.log('   ✅ Protection CSRF');
+  console.log('   ✅ Sessions sécurisées PostgreSQL');
+  console.log('   ✅ Cookies httpOnly + secure en prod');
+
   if (!isProduction) {
-    console.log('⚠️  CSRF désactivé en mode dev (headers non requis)');
+    console.log('\n⚠️  Mode développement : CSRF tolérant (headers non requis)');
   }
 });
