@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -9,85 +9,9 @@
   
   <script>function handleImgError(i){i.onerror=null;i.src='https://placehold.co/300x200/eee/999?text=Solitiquo';}</script>
 
-  <style>
-    :root { --primary-dark: #37463D; --accent-red: #C82823; }
-    
-    /* Header/Footer (Standard) */
-    .premium-header { background: white; border-bottom: 1px solid #eaeaea; position: sticky; top: 0; z-index: 1000; padding: 0 30px; height: 80px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
-    .ph-left { flex: 1; display: flex; align-items: center; } .ph-center { flex: 2; display: flex; justify-content: center; } .ph-right { flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 20px; }
-    .ph-brand { text-decoration: none; display: flex; align-items: center; height: 50px; } .ph-brand img { height: 42px; } .brand-sep { width: 1px; height: 30px; background: #ccc; margin: 0 15px; } .brand-text { font-family: 'Playfair Display'; font-size: 2rem; font-weight: 800; color: var(--primary-dark); letter-spacing: -0.5px; position: relative; top: 2px; }
-    .ph-nav { display: flex; gap: 30px; } .ph-link { text-decoration: none; color: #2c2c2c; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; } .ph-link:hover { color: var(--accent-red); }
-    .ph-btn-auth { background: #2c2c2c; color: white; padding: 10px 24px; border-radius: 30px; text-decoration: none; font-weight: 700; font-size: 0.85rem; } .ph-btn-auth:hover { background: var(--accent-red); transform: translateY(-2px); transition:0.3s; }
-
-    .search-stack { position: relative; } .search-container { position: absolute; top: 50px; right: 0; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #eee; display: flex; width: 280px; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.3s ease; } .search-container.active { opacity: 1; visibility: visible; transform: translateY(0); } .search-input { border: none; outline: none; width: 100%; padding: 5px; font-size: 0.9rem; } .search-submit { background: none; border: none; cursor: pointer; font-size: 1.1rem; }
-
-    /* PAGE RECHERCHE */
-    .search-results-page { padding: 4rem 0; background: #f8f9fa; min-height: 80vh; }
-    .search-wrap { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
-    
-    .results-header { margin-bottom: 3rem; text-align: center; }
-    .results-title { font-family: 'Playfair Display'; font-size: 2.5rem; margin-bottom: 1rem; color: var(--primary-dark); }
-    .results-count { color: #666; font-size: 1.1rem; }
-
-    /* FILTRES */
-    .filter-zone { margin-bottom: 3rem; display: flex; flex-direction: column; align-items: center; gap: 15px; }
-    .filter-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-    .filter-label { font-size: 0.75rem; text-transform: uppercase; color: #999; font-weight: 700; margin-right: 10px; align-self: center; }
-    
-    .filter-btn {
-        background: white; border: 1px solid #ddd; padding: 8px 18px;
-        border-radius: 30px; cursor: pointer; font-family: 'Inter', sans-serif;
-        font-size: 0.85rem; transition: all 0.3s ease; color: #666;
-    }
-    .filter-btn:hover { border-color: var(--primary-dark); color: var(--primary-dark); }
-    .filter-btn.active { background: var(--primary-dark); color: white; border-color: var(--primary-dark); }
-    
-    /* Thèmes (Style différent pour distinguer) */
-    .theme-btn { border-radius: 4px; border: 1px solid transparent; background: #eee; }
-    .theme-btn.active { background: var(--accent-red); color: white; border-color: var(--accent-red); }
-
-    /* CARTES RÉSULTATS */
-    .result-card {
-      display: grid; grid-template-columns: 240px 1fr; gap: 2rem;
-      background: white; padding: 2rem; border-radius: 12px; border: 1px solid #eee;
-      margin-bottom: 1.5rem; transition: transform 0.2s, box-shadow 0.2s;
-      text-decoration: none; color: inherit; align-items: center;
-    }
-    .result-card:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-color: var(--primary-dark); }
-    
-    .res-img { width: 100%; height: 160px; object-fit: cover; border-radius: 8px; background: #eee; }
-    
-    .res-type-badge { 
-      font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; 
-      padding: 4px 10px; border-radius: 4px; display: inline-block; margin-bottom: 10px; margin-right: 10px;
-    }
-    .res-cat-badge { font-size: 0.7rem; color: #888; font-weight: 700; text-transform: uppercase; }
-
-    .type-article { background: #eef; color: #37463D; border: 1px solid #37463D; }
-    .type-podcast { background: #fff1f0; color: #C82823; border: 1px solid #C82823; }
-    .type-emission { background: #333; color: #fff; border: 1px solid #333; }
-
-    .res-title { font-family: 'Playfair Display'; font-size: 1.6rem; margin: 0 0 10px 0; line-height: 1.2; }
-    .result-card:hover .res-title { color: var(--accent-red); }
-    .res-desc { color: #666; font-size: 1rem; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .res-date { color: #999; font-size: 0.85rem; margin-top: 10px; }
-
-    /* Footer */
-    .premium-footer { background: #1a1a1a; color: #ccc; padding: 4rem 0; margin-top: auto; }
-    .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 3rem; max-width: 1300px; margin: 0 auto; padding: 0 30px; }
-    .footer-logo { height: 35px; filter: brightness(0) invert(1); margin-bottom: 1.5rem; }
-    .footer-col h4 { color: white; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.2rem; font-size: 0.85rem; }
-    .footer-link { display: block; color: #888; text-decoration: none; margin-bottom: 10px; transition: color 0.3s; font-size: 0.9rem; } .footer-link:hover { color: white; }
-    .footer-bottom { border-top: 1px solid #333; margin-top: 3rem; padding-top: 2rem; text-align: center; font-size: 0.8rem; opacity: 0.6; }
-    
-    @media (max-width: 900px) {
-      .premium-header { padding: 0 20px; } .ph-nav { display: none; } 
-      .result-card { grid-template-columns: 1fr; gap: 1rem; } .res-img { height: 200px; }
-      .footer-grid { grid-template-columns: 1fr 1fr; }
-    }
-  </style>
+  
 </head>
-<body>
+<body id="page-recherche">
 <a href="javascript:history.length > 1 ? history.back() : window.location.href='index.html'" class="floating-back-btn" aria-label="Retour page précédente">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
       <span>Retour</span>

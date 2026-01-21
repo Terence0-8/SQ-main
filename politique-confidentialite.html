@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -7,54 +7,9 @@
   <link rel="stylesheet" href="solitiquo.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet" />
   
-  <style>
-    :root { --primary-dark: #37463D; --accent-red: #C82823; --bg-soft: #F9FAFB; }
-    body { background: var(--bg-soft); font-family: 'Inter', sans-serif; color: #1f2937; display: flex; flex-direction: column; min-height: 100vh; margin: 0; }
-
-    /* --- HEADER PREMIUM --- */
-    .premium-header { background: white; border-bottom: 1px solid #eaeaea; position: sticky; top: 0; z-index: 1000; padding: 0 30px; height: 80px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
-    .ph-left, .ph-right { flex: 1; display: flex; align-items: center; } .ph-center { flex: 2; display: flex; justify-content: center; } .ph-right { justify-content: flex-end; gap: 20px; }
-    .ph-brand { text-decoration: none; display: flex; align-items: center; height: 50px; gap: 10px; } .ph-brand img { height: 40px; } .brand-sep { width: 1px; height: 30px; background: #ccc; } .brand-text { font-family: 'Playfair Display'; font-size: 1.8rem; font-weight: 800; color: var(--primary-dark); }
-    .ph-nav { display: flex; gap: 30px; } .ph-link { text-decoration: none; color: #2c2c2c; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; transition: color 0.3s; } .ph-link:hover { color: var(--accent-red); }
-    .ph-btn-auth { background: #2c2c2c; color: white; padding: 8px 20px; border-radius: 30px; text-decoration: none; font-size: 0.85rem; font-weight: 700; transition: 0.3s; } .ph-btn-auth:hover { background: var(--accent-red); transform: translateY(-2px); }
-    .burger-container { display: none; margin-right: 20px; } .burger-btn { background: transparent; border: 1px solid rgba(0,0,0,0.1); width: 45px; height: 45px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer; } .burger-line { width: 20px; height: 2px; background: #333; } .search-stack { position: relative; } .search-container { position: absolute; top: 50px; right: 0; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #eee; display: flex; width: 280px; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.3s ease; } .search-container.active { opacity: 1; visibility: visible; transform: translateY(0); } .search-input { border: none; outline: none; width: 100%; padding: 5px; font-size: 0.9rem; } .search-submit { background: none; border: none; cursor: pointer; font-size: 1.1rem; }
-
-    /* --- CONTENU LÉGAL --- */
-    .legal-hero { background: var(--primary-dark); color: white; padding: 4rem 2rem; text-align: center; }
-    .legal-hero h1 { font-family: 'Playfair Display'; font-size: 3rem; margin-bottom: 1rem; }
-    .legal-hero p { font-size: 1.1rem; opacity: 0.8; }
-
-    .legal-container { max-width: 800px; margin: -3rem auto 5rem; position: relative; z-index: 2; padding: 0 20px; flex: 1; }
-    .legal-card { background: white; padding: 3rem; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); border: 1px solid #eee; }
-    
-    /* Navigation Interne */
-    .legal-nav { display: flex; gap: 15px; justify-content: center; margin-bottom: 3rem; border-bottom: 1px solid #eee; padding-bottom: 2rem; flex-wrap: wrap; }
-    .legal-nav a { text-decoration: none; color: #666; font-weight: 600; font-size: 0.9rem; padding: 8px 16px; border-radius: 20px; transition: 0.2s; background: #f4f4f4; }
-    .legal-nav a:hover { background: #e0e0e0; color: #000; }
-    .legal-nav a.active { background: var(--accent-red); color: white; }
-
-    .legal-section { margin-bottom: 2.5rem; }
-    .legal-section h2 { font-family: 'Playfair Display'; font-size: 1.5rem; color: var(--primary-dark); border-left: 4px solid var(--accent-red); padding-left: 15px; margin-bottom: 1rem; }
-    .legal-section p, .legal-section li { line-height: 1.8; color: #4b5563; margin-bottom: 1rem; }
-    .legal-section ul { padding-left: 1.5rem; }
-    .legal-section strong { color: #111; }
-    .legal-section a { color: var(--accent-red); text-decoration: underline; }
-
-    /* --- FOOTER PREMIUM --- */
-    .premium-footer { background: #1a1a1a; color: #ccc; padding: 4rem 0; margin-top: auto; }
-    .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 3rem; max-width: 1300px; margin: 0 auto; padding: 0 30px; }
-    .footer-logo { height: 35px; filter: brightness(0) invert(1); margin-bottom: 1.5rem; }
-    .footer-col h4 { color: white; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.2rem; font-size: 0.85rem; }
-    .footer-link { display: block; color: #888; text-decoration: none; margin-bottom: 10px; transition: color 0.3s; font-size: 0.9rem; } .footer-link:hover { color: white; }
-    .footer-bottom { border-top: 1px solid #333; margin-top: 3rem; padding-top: 2rem; text-align: center; font-size: 0.8rem; opacity: 0.6; }
-
-    /* Mobile */
-    .mobile-nav-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9998; opacity:0; visibility:hidden; transition: all 0.3s; } .mobile-nav-overlay.active { opacity:1; visibility:visible; } .mobile-nav-sidebar { position: fixed; top:0; left:0; width: 300px; height: 100vh; background: #111; z-index: 9999; transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.77,0,0.175,1); padding: 2rem; color: white; display: flex; flex-direction: column; } .mobile-nav-sidebar.nav-open { transform: translateX(0); } .mobile-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; } .mobile-logo { height: 30px; filter: brightness(0) invert(1); } .mobile-close { background: none; border: none; color: white; font-size: 2rem; cursor: pointer; } .mobile-links { list-style: none; padding: 0; margin: 0; } .mobile-link { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: #888; text-decoration: none; display: block; margin-bottom: 1.5rem; transition:0.3s; } .mobile-link:hover { color: white; border-left: 2px solid var(--accent-red); padding-left: 10px; }
-
-    @media (max-width: 1000px) { .premium-header { padding: 0 20px; } .ph-nav { display: none; } .burger-container { display: flex; } .footer-grid { grid-template-columns: 1fr 1fr; } }
-  </style>
+  
 </head>
-<body>
+<body id="page-politique-confidentialite">
 
   <header class="premium-header">
     <div class="ph-left">
