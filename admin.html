@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -21,6 +21,7 @@
         </a>
         <nav class="nav-menu">
             <div class="nav-item active" data-view="dashboard">📊 Vue d'ensemble</div>
+            <div class="nav-item" data-view="analytics">📈 Analytics</div>
             <div class="nav-item" data-view="articles">📝 Articles <span id="badge-art-pending"
                     class="badge badge-pending" style="display:none; margin-left:auto; font-size:0.6rem;">0</span></div>
             <div class="nav-item" data-view="podcasts">🎙️ Podcasts</div>
@@ -50,6 +51,100 @@
                     <h2 style="font-family:'Playfair Display'; margin-bottom:10px;">Bienvenue dans votre Tour de
                         Contrôle</h2>
                     <p style="color:#666;">Sélectionnez une rubrique dans le menu pour gérer le contenu.</p>
+                </div>
+            </div>
+
+            <!-- 📈 NOUVELLE SECTION ANALYTICS -->
+            <div id="view-analytics" class="view-section">
+                <!-- Statistiques Globales -->
+                <div class="analytics-grid">
+                    <div class="stat-card stat-primary">
+                        <div class="stat-icon">📰</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Articles Publiés</div>
+                            <div class="stat-value" id="stat-total-articles">-</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-success">
+                        <div class="stat-icon">👁️</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Vues Totales</div>
+                            <div class="stat-value" id="stat-total-views">-</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-warning">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Utilisateurs</div>
+                            <div class="stat-value" id="stat-total-users">-</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-premium">
+                        <div class="stat-icon">💎</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Abonnés Premium</div>
+                            <div class="stat-value" id="stat-total-subs">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Graphiques Principaux -->
+                <div class="charts-row">
+                    <!-- Progression de Lecture -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>📊 Progression de Lecture</h3>
+                            <p class="chart-subtitle">Taux de complétion des articles</p>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chart-reading-progress"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Répartition par Catégories -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>🎯 Répartition par Catégories</h3>
+                            <p class="chart-subtitle">Distribution des articles</p>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="chart-categories"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline 7 jours -->
+                <div class="chart-card chart-full">
+                    <div class="chart-header">
+                        <h3>📅 Activité des 7 derniers jours</h3>
+                        <p class="chart-subtitle">Nouveaux articles et utilisateurs</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart-timeline"></canvas>
+                    </div>
+                </div>
+
+                <!-- Top 10 Articles -->
+                <div class="table-card">
+                    <div style="padding:15px; border-bottom:1px solid #eee;">
+                        <h3>🏆 Top 10 Articles les plus consultés</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Article</th>
+                                <th>Catégorie</th>
+                                <th>Vues</th>
+                                <th>Taux Complétion</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="list-top-articles">
+                            <tr>
+                                <td colspan="5" style="text-align:center;">Chargement...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -194,10 +289,14 @@
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
     <script>
+        // Variables globales pour les graphiques
+        let chartReadingProgress = null;
+        let chartCategories = null;
+        let chartTimeline = null;
+
         document.addEventListener('DOMContentLoaded', async () => {
 
             // 1. VERIFICATION AUTH & INIT
-            // -----------------------------------------------------
             const user = await SolitiquoAPI.getProfile();
             if (!user || (user.role !== 'admin' && user.role !== 'writer')) {
                 window.location.href = 'auth.html';
@@ -206,7 +305,6 @@
             loadAllData();
 
             // 2. GESTION NAVIGATION (Sidebar)
-            // -----------------------------------------------------
             document.querySelectorAll('.nav-item[data-view]').forEach(item => {
                 item.addEventListener('click', () => {
                     switchView(item.dataset.view);
@@ -217,12 +315,8 @@
             document.getElementById('btn-logout').addEventListener('click', () => SolitiquoAPI.logout());
 
 
-            // 3. DELEGATION D'EVENEMENTS (Pour les boutons dynamiques)
-            // -----------------------------------------------------
-            // C'est ici que la magie opère : un seul écouteur pour tous les boutons générés
+            // 3. DELEGATION D'EVENEMENTS
             document.body.addEventListener('click', async (e) => {
-
-                // A. Boutons simples (data-action)
                 const btn = e.target.closest('[data-action]');
                 if (!btn) return;
 
@@ -230,22 +324,15 @@
                 const id = btn.dataset.id;
                 const type = btn.dataset.type;
 
-                // --- ACTIONS GÉNÉRIQUES ---
                 if (action === 'new-party') openNewPartyModal();
                 if (action === 'new-poll') openPollModal();
-
-                // --- ACTIONS SUR ÉLÉMENTS ---
                 if (action === 'delete') await deleteItem(type, id);
                 if (action === 'toggle-premium') await togglePremium(type, id, btn.dataset.isprem === 'true');
                 if (action === 'approve-art') await workflow(id, 'approve');
                 if (action === 'set-featured') await setFeatured(id);
-
-                // --- SONDAGES ---
                 if (action === 'toggle-poll') await togglePollStatus(id, btn.dataset.active === 'true');
                 if (action === 'edit-poll') openPollModal(id);
                 if (action === 'visualize-poll') showPollChart(id);
-
-                // --- MODERATION ---
                 if (action === 'mod-approve') await modComment(id, 'approve');
                 if (action === 'mod-delete') await modComment(id, 'delete');
 
@@ -257,9 +344,7 @@
 
 
             // 4. FONCTIONS METIERS
-            // -----------------------------------------------------
             function switchView(viewName) {
-                // 1. GESTION UI (inchangé)
                 document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
                 const activeNav = document.querySelector(`.nav-item[data-view="${viewName}"]`);
                 if (activeNav) activeNav.classList.add('active');
@@ -268,13 +353,14 @@
                 const activeSection = document.getElementById(`view-${viewName}`);
                 if (activeSection) activeSection.classList.add('active');
 
-                // 2. GESTION HEADER & ACTIONS
                 const header = document.getElementById('page-header');
                 const actions = document.getElementById('header-actions');
                 actions.innerHTML = "";
 
-                // --- LE BLOC DE LOGIQUE ---
-                if (viewName === 'articles') {
+                if (viewName === 'analytics') {
+                    header.textContent = "Tableau de Bord Analytics";
+                    loadAnalytics();
+                } else if (viewName === 'articles') {
                     header.textContent = "Gestion des Articles";
                     actions.innerHTML = `<a href="editeur-article.html" class="action-btn"><span>+</span> Nouvel Article</a>`;
                 } else if (viewName === 'podcasts') {
@@ -291,43 +377,206 @@
                     header.textContent = "Historique des Sondages";
                     actions.innerHTML = `<button class="btn-apple-add" data-action="new-poll"><span class="icon-plus">+</span> Nouveau Sondage</button>`;
                     loadPolls();
-
-                    // 👇👇 C'EST ICI QU'IL MANQUAIT LE BRANCHEMENT 👇👇
                 } else if (viewName === 'users') {
                     header.textContent = "Gestion des Utilisateurs";
-                    // Pas de bouton d'action, juste le chargement
                     loadUsers();
-                }
-                // 👆👆 FIN DE L'AJOUT 👆👆
-
-                else {
+                } else {
                     header.textContent = "Vue d'ensemble";
-                    // Optionnel : recharger les stats si on revient sur le dashboard
-                    // loadAllData(); 
+                }
+            }
+
+            // ========================================================
+            // 📈 FONCTION ANALYTICS COMPLÈTE
+            // ========================================================
+            async function loadAnalytics() {
+                try {
+                    // 1. Charger toutes les données en parallèle
+                    const [overview, readingProgress, topArticles, timeline, categories] = await Promise.all([
+                        fetch(API_URL + '/analytics/overview', { credentials: 'include' }).then(r => r.json()),
+                        fetch(API_URL + '/analytics/reading-progress', { credentials: 'include' }).then(r => r.json()),
+                        fetch(API_URL + '/analytics/top-articles', { credentials: 'include' }).then(r => r.json()),
+                        fetch(API_URL + '/analytics/timeline', { credentials: 'include' }).then(r => r.json()),
+                        fetch(API_URL + '/analytics/categories', { credentials: 'include' }).then(r => r.json())
+                    ]);
+
+                    // 2. Mettre à jour les statistiques
+                    if (overview.success) {
+                        document.getElementById('stat-total-articles').textContent = overview.data.articles.total.toLocaleString();
+                        document.getElementById('stat-total-views').textContent = overview.data.articles.totalViews.toLocaleString();
+                        document.getElementById('stat-total-users').textContent = overview.data.users.total.toLocaleString();
+                        document.getElementById('stat-total-subs').textContent = overview.data.users.subscribers.toLocaleString();
+                    }
+
+                    // 3. Graphique Progression de Lecture (Funnel)
+                    if (readingProgress.success && readingProgress.data) {
+                        const ctx1 = document.getElementById('chart-reading-progress').getContext('2d');
+                        if (chartReadingProgress) chartReadingProgress.destroy();
+                        chartReadingProgress = new Chart(ctx1, {
+                            type: 'bar',
+                            data: {
+                                labels: readingProgress.data.labels,
+                                datasets: [{
+                                    label: 'Nombre de lectures',
+                                    data: readingProgress.data.values,
+                                    backgroundColor: [
+                                        'rgba(59, 130, 246, 0.8)',
+                                        'rgba(34, 197, 94, 0.8)',
+                                        'rgba(251, 191, 36, 0.8)',
+                                        'rgba(249, 115, 22, 0.8)',
+                                        'rgba(239, 68, 68, 0.8)'
+                                    ],
+                                    borderColor: [
+                                        'rgb(59, 130, 246)',
+                                        'rgb(34, 197, 94)',
+                                        'rgb(251, 191, 36)',
+                                        'rgb(249, 115, 22)',
+                                        'rgb(239, 68, 68)'
+                                    ],
+                                    borderWidth: 2,
+                                    borderRadius: 8
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: (context) => {
+                                                const rate = readingProgress.data.rates;
+                                                const rates = [100, rate.retention_25, rate.retention_50, rate.retention_75, rate.completion];
+                                                return `${context.parsed.y.toLocaleString()} lectures (${rates[context.dataIndex]}%)`;
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString() } }
+                                }
+                            }
+                        });
+                    }
+
+                    // 4. Graphique Catégories (Donut)
+                    if (categories.success && categories.data) {
+                        const ctx2 = document.getElementById('chart-categories').getContext('2d');
+                        if (chartCategories) chartCategories.destroy();
+                        chartCategories = new Chart(ctx2, {
+                            type: 'doughnut',
+                            data: {
+                                labels: categories.data.labels,
+                                datasets: [{
+                                    data: categories.data.counts,
+                                    backgroundColor: [
+                                        '#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6',
+                                        '#ec4899', '#06b6d4', '#f97316', '#10b981', '#6366f1'
+                                    ],
+                                    borderWidth: 2,
+                                    borderColor: '#fff'
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { position: 'right' },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: (context) => {
+                                                const views = categories.data.views[context.dataIndex];
+                                                return `${context.label}: ${context.parsed} articles (${views.toLocaleString()} vues)`;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    // 5. Timeline 7 jours (Line)
+                    if (timeline.success && timeline.data) {
+                        const ctx3 = document.getElementById('chart-timeline').getContext('2d');
+                        if (chartTimeline) chartTimeline.destroy();
+                        chartTimeline = new Chart(ctx3, {
+                            type: 'line',
+                            data: {
+                                labels: timeline.data.labels,
+                                datasets: [
+                                    {
+                                        label: 'Nouveaux articles',
+                                        data: timeline.data.articles,
+                                        borderColor: '#3b82f6',
+                                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                        tension: 0.4,
+                                        fill: true
+                                    },
+                                    {
+                                        label: 'Nouveaux utilisateurs',
+                                        data: timeline.data.users,
+                                        borderColor: '#22c55e',
+                                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                                        tension: 0.4,
+                                        fill: true
+                                    }
+                                ]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { position: 'top' }
+                                },
+                                scales: {
+                                    y: { beginAtZero: true, ticks: { precision: 0 } }
+                                }
+                            }
+                        });
+                    }
+
+                    // 6. Top 10 Articles (Tableau)
+                    if (topArticles.success && topArticles.data) {
+                        const tbody = document.getElementById('list-top-articles');
+                        tbody.innerHTML = topArticles.data.map(art => `
+                            <tr>
+                                <td><strong>${art.title}</strong></td>
+                                <td><span class="badge" style="background:#f1f5f9; color:#64748b;">${art.category}</span></td>
+                                <td><strong>${art.views_count.toLocaleString()}</strong></td>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <div style="width:60px; height:6px; background:#e5e7eb; border-radius:3px; overflow:hidden;">
+                                            <div style="width:${art.completionRate}%; height:100%; background:#22c55e;"></div>
+                                        </div>
+                                        <span style="font-size:0.85rem; color:#64748b;">${art.completionRate}%</span>
+                                    </div>
+                                </td>
+                                <td style="font-size:0.85rem; color:#64748b;">${new Date(art.created_at).toLocaleDateString('fr-FR')}</td>
+                            </tr>
+                        `).join('');
+                    }
+
+                } catch (err) {
+                    console.error('❌ Erreur chargement analytics:', err);
+                    Swal.fire('Erreur', 'Impossible de charger les analytics', 'error');
                 }
             }
 
             async function loadAllData() {
                 try {
-                    // 1. CHARGER LES STATS GLOBALES (C'était l'oubli)
                     const resStats = await fetch(API_URL + '/admin/stats');
                     const jsonStats = await resStats.json();
 
                     if (jsonStats.success) {
-                        // Assure-toi d'avoir des balises avec ces IDs dans ton HTML dashboard
-                        // Ex: <h3 id="stat-articles">0</h3>
                         updateStat('stat-articles', jsonStats.stats.articles);
                         updateStat('stat-users', jsonStats.stats.users);
                         updateStat('stat-subs', jsonStats.stats.subscribers);
                         updateStat('stat-comments', jsonStats.stats.pendingComments);
                     }
 
-                    // 2. CHARGER LES ARTICLES
                     const res = await fetch(API_URL + '/admin/content/articles');
                     const json = await res.json();
                     renderArticles(json.data || []);
 
-                    // Badge brouillons
                     const drafts = (json.data || []).filter(a => a.status === 'draft').length;
                     const badge = document.getElementById('badge-art-pending');
                     if (drafts > 0) { badge.style.display = 'inline-flex'; badge.textContent = drafts; }
@@ -337,7 +586,6 @@
                 } catch (e) { console.error("Erreur chargement", e); }
             }
 
-            // Petite fonction utilitaire pour éviter les erreurs si l'élément n'existe pas encore
             function updateStat(id, value) {
                 const el = document.getElementById(id);
                 if (el) el.innerText = value;
@@ -345,20 +593,15 @@
 
             async function loadOtherContent() {
                 try {
-                    // Podcasts
                     const resP = await fetch(API_URL + '/podcasts');
                     renderPodcasts((await resP.json()).data || []);
-                    // Emissions
                     const resE = await fetch(API_URL + '/emissions');
                     renderEmissions((await resE.json()).data || []);
-                    // Moderation
                     const resM = await fetch(API_URL + '/admin/comments/pending');
                     const jsonM = await resM.json();
                     renderModeration(jsonM.data || []);
                 } catch (e) { console.error(e); }
             }
-
-            // ... (Fonctions renderArticles, renderPodcasts, etc. adaptées avec data-attributes) ...
 
             function renderArticles(data) {
                 const tbody = document.getElementById('list-articles');
@@ -446,9 +689,6 @@
                 }
             }
 
-            // FONCTION DE CHARGEMENT POUR LES SONDAGES & PARTIS
-            // (Ces fonctions doivent être accessibles par le scope)
-
             window.loadParties = async function () {
                 const tbody = document.getElementById('list-parties');
                 try {
@@ -472,7 +712,6 @@
                 try {
                     const res = await fetch(API_URL + '/admin/polls/stats');
                     const json = await res.json();
-                    // Stockage global pour édition
                     window._pollsData = json.data || [];
 
                     tbody.innerHTML = window._pollsData.map(p => {
@@ -497,16 +736,14 @@
                 } catch (e) { tbody.innerHTML = '<tr><td colspan="5">Erreur</td></tr>'; }
             }
 
-            // --- ACTIONS UNITAIRES ---
             async function deleteItem(type, id) {
                 if (!confirm("Supprimer définitivement ?")) return;
                 try {
-                    let endpoint = type === 'party' ? `/parties/${id}` : `/${type}s/${id}`; // convention pluriel
+                    let endpoint = type === 'party' ? `/parties/${id}` : `/${type}s/${id}`;
                     if (type === 'article') endpoint = `/articles/${id}`;
                     if (type === 'poll') endpoint = `/admin/polls/${id}`;
 
                     await fetch(API_URL + endpoint, { method: 'DELETE', credentials: 'include' });
-                    // Refresh current view
                     if (type === 'article') loadAllData();
                     else if (type === 'party') loadParties();
                     else if (type === 'poll') loadPolls();
@@ -515,7 +752,6 @@
             }
 
             async function togglePremium(type, id, currentStatus) {
-                // Logique simplifiée pour l'exemple
                 alert("Fonctionnalité Premium toggle à implémenter côté API pour " + id);
             }
 
@@ -532,67 +768,8 @@
                 loadOtherContent();
             }
 
-            // --- MODALES ---
             window.openNewPartyModal = () => window.location.href = 'editeur-parti.html';
 
-            window.openNewPollModal = async () => {
-                const { value: formValues } = await Swal.fire({
-                    title: '📊 Nouveau Sondage Hebdomadaire',
-                    html: `
-                        <input id="poll-question" class="swal2-input" placeholder="La question..." style="margin-bottom: 15px;">
-                        <textarea id="poll-options" class="swal2-textarea" placeholder="Option 1\nOption 2\nOption 3..." rows="5"></textarea>
-                        <div style="font-size: 0.85rem; color: #666; margin-top: 10px; text-align: left;">
-                            💡 <strong>Astuce :</strong> Une option par ligne
-                        </div>
-                    `,
-                    focusConfirm: false,
-                    showCancelButton: true,
-                    confirmButtonText: 'Créer le sondage',
-                    cancelButtonText: 'Annuler',
-                    preConfirm: () => {
-                        const question = document.getElementById('poll-question').value.trim();
-                        const optionsRaw = document.getElementById('poll-options').value;
-
-                        if (!question) {
-                            Swal.showValidationMessage('La question est obligatoire');
-                            return false;
-                        }
-
-                        const options = optionsRaw.split('\n').map(o => o.trim()).filter(o => o !== '');
-
-                        if (options.length < 2) {
-                            Swal.showValidationMessage('Vous devez fournir au moins 2 options');
-                            return false;
-                        }
-
-                        return { question, options };
-                    }
-                });
-
-                if (formValues) {
-                    const { question, options } = formValues;
-                    try {
-                        const res = await fetch(API_URL + '/admin/polls', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ question, options }),
-                            credentials: 'include'
-                        });
-
-                        if (res.ok) {
-                            const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
-                            Toast.fire({ icon: 'success', title: 'Sondage créé avec succès !' });
-                            loadPolls();
-                        } else {
-                            throw new Error('Erreur serveur');
-                        }
-                    } catch (err) {
-                        Swal.fire('Erreur', 'Impossible de créer le sondage', 'error');
-                    }
-                }
-            };
-
-            // NOUVELLE FONCTION UNIFIÉE : Création / Édition avec Glassmorphism UI
             window.openPollModal = async (pollId = null) => {
                 const isEdit = pollId !== null;
                 let poll = null;
@@ -707,8 +884,6 @@
                 }
             }
 
-
-            // NOUVELLE FONCTION : Visualisation Chart.js
             function showPollChart(id) {
                 const poll = window._pollsData.find(p => p.id == id);
                 if (!poll) return;
@@ -785,9 +960,6 @@
 
         });
 
-        // ==========================================
-        // 🔥 FONCTION AMÉLIORÉE : CHARGEMENT UTILISATEURS
-        // ==========================================
         window.loadUsers = async function () {
             const tbody = document.getElementById('list-users');
             tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Chargement...</td></tr>';
@@ -802,16 +974,13 @@
                 }
 
                 tbody.innerHTML = (json.data || []).map(u => {
-                    // --- BADGE RÔLE ---
                     const roleBadge = u.role === 'admin' 
                         ? '<span class="badge badge-pub">Admin</span>' 
                         : (u.role === 'writer' ? '<span class="badge" style="background:#fef3c7; color:#92400e;">Rédacteur</span>' : 'Lecteur');
                     
-                    // --- STATUT COMPTE (Actif/Banni) ---
                     const accountStatusStyle = u.is_active ? 'color:#10b981;' : 'color:#ef4444; font-weight:bold;';
                     const accountStatusText = u.is_active ? 'Actif' : 'Banni';
 
-                    // --- STATUT ABONNEMENT DÉTAILLÉ ---
                     let subscriptionBadge = '<span class="badge" style="background:#f1f5f9; color:#64748b;">Gratuit</span>';
                     let subscriptionDates = '-';
 
@@ -821,14 +990,11 @@
                         const isExpired = endDate < now;
 
                         if (isExpired) {
-                            // Abonnement expiré
                             subscriptionBadge = '<span class="badge" style="background:#fef2f2; color:#991b1b;">⚠️ Expiré</span>';
                         } else {
-                            // Abonnement actif
                             subscriptionBadge = '<span class="badge" style="background:#dbeafe; color:#1e40af;">🎉 Premium Actif</span>';
                         }
 
-                        // Formatage des dates
                         const startDate = u.subscription_start_date ? new Date(u.subscription_start_date).toLocaleDateString('fr-FR') : '?';
                         const endDateFormatted = endDate.toLocaleDateString('fr-FR');
                         
@@ -840,7 +1006,6 @@
                             </div>
                         `;
                     } else if (u.is_subscriber && !u.subscription_end_date) {
-                        // Cas anormal : is_subscriber = true mais pas de date
                         subscriptionBadge = '<span class="badge" style="background:#fef3c7; color:#92400e;">⚠️ Données incomplètes</span>';
                     }
 
@@ -866,17 +1031,14 @@
             }
         }
 
-        // LA FONCTION D'ACTION :
         async function toggleBanUser(id, isActive) {
-            // 1. Définir les textes selon l'action (Bannir ou Réhabiliter ?)
             const actionTitre = isActive ? "Bannir cet utilisateur ?" : "Réhabiliter cet utilisateur ?";
             const actionTexte = isActive
                 ? "Il perdra immédiatement l'accès à son compte."
                 : "Il pourra à nouveau se connecter au site.";
-            const btnColor = isActive ? '#d33' : '#10b981'; // Rouge pour bannir, Vert pour réhabiliter
+            const btnColor = isActive ? '#d33' : '#10b981';
             const btnText = isActive ? 'Oui, bannir' : 'Oui, réhabiliter';
 
-            // 2. Afficher la modale adaptée
             const result = await Swal.fire({
                 title: actionTitre,
                 text: actionTexte,
@@ -897,14 +1059,12 @@
                     headers: { 'Content-Type': 'application/json' }
                 });
 
-                // Gestion d'erreur robuste (CSRF, etc)
                 if (!res.ok) throw new Error("Erreur serveur");
 
                 const json = await res.json();
                 if (json.success) {
                     loadUsers();
                     const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
-                    // Message de succès adapté aussi !
                     Toast.fire({
                         icon: 'success',
                         title: isActive ? 'Utilisateur banni' : 'Utilisateur réhabilité'
