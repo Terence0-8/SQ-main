@@ -231,7 +231,7 @@
 
                 // --- ACTIONS GÉNÉRIQUES ---
                 if (action === 'new-party') openNewPartyModal();
-                if (action === 'new-poll') openNewPollModal();
+                if (action === 'new-poll') openPollModal();
 
                 // --- ACTIONS SUR ÉLÉMENTS ---
                 if (action === 'delete') await deleteItem(type, id);
@@ -288,7 +288,7 @@
                     loadParties();
                 } else if (viewName === 'polls') {
                     header.textContent = "Historique des Sondages";
-                    actions.innerHTML = `<button class="btn-apple-add" onclick="openPollModal()"><span class="icon-plus">+</span> Nouveau Sondage</button>`;
+                    actions.innerHTML = `<button class="btn-apple-add" data-action="new-poll"><span class="icon-plus">+</span> Nouveau Sondage</button>`;
                     loadPolls();
 
                     // 👇👇 C'EST ICI QU'IL MANQUAIT LE BRANCHEMENT 👇👇
