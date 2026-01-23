@@ -134,7 +134,7 @@
       if (imgFile) formData.append('image_file', imgFile);
 
       try {
-        const res = await fetch('http://localhost:5000/api/emissions', { method: 'POST', body: formData });
+        const res = await fetch(`${window.API_URL}/emissions`, { method: 'POST', body: formData });
         const json = await res.json();
 
         if (json.success) {

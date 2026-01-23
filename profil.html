@@ -276,7 +276,7 @@
       btn.disabled = true;
 
       try {
-        const res = await fetch('http://localhost:5000/api/subscriptions/cancel', {
+        const res = await fetch(`${window.API_URL}/subscriptions/cancel`, {
           method: 'POST',
           credentials: 'include'
         });

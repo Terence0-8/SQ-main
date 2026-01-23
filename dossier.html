@@ -182,7 +182,7 @@
 
             try {
                 const [resParti, user] = await Promise.all([
-                    fetch(`http://localhost:5000/api/parties/${id}`),
+                    fetch(`${window.API_URL}/parties/${id}`),
                     SolitiquoAPI.getProfile()
                 ]);
                 const json = await resParti.json();
@@ -226,7 +226,7 @@
 
             // LECTEUR AVEC PROGRESSION
             if (data.podcast_id) {
-                fetch(`http://localhost:5000/api/podcasts/${data.podcast_id}`)
+                fetch(`${window.API_URL}/podcasts/${data.podcast_id}`)
                     .then(res => res.json())
                     .then(podJson => {
                         if (podJson.success) {

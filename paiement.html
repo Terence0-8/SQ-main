@@ -118,7 +118,7 @@
 
       try {
         // Appel réel au backend pour valider l'upgrade
-        const res = await fetch('http://localhost:5000/api/subscriptions/upgrade', {
+        const res = await fetch(`${window.API_URL}/subscriptions/upgrade`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ plan: plan }),

@@ -1,18 +1,22 @@
 ﻿<!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8">
   <title>Panel de test API Solitiquo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+
 </head>
+
 <body id="page-test-api-article">
   <h1>📝 Panel de test API Solitiquo</h1>
   <p>
-    &gt; Testez la création d’<strong>article</strong>, de <strong>podcast</strong> ou d’<strong>émission</strong> (<span style="color:#2779c6">POST</span> /api) avec affichage de citation et métadonnées.<br>
-    <span style="font-size:13px;color:#555">Lancez le serveur backend puis envoyez vos requêtes ci-dessous&nbsp;! (<code>http://localhost:5000</code>)</span>
+    &gt; Testez la création d’<strong>article</strong>, de <strong>podcast</strong> ou d’<strong>émission</strong>
+    (<span style="color:#2779c6">POST</span> /api) avec affichage de citation et métadonnées.<br>
+    <span style="font-size:13px;color:#555">Lancez le serveur backend puis envoyez vos requêtes ci-dessous&nbsp;!
+      (<code>http://localhost:5000</code>)</span>
   </p>
-  
+
   <div class="flex">
     <!-- ARTICLE -->
     <div class="section" style="flex:1">
@@ -32,7 +36,10 @@
         <label>Catégorie</label>
         <input name="category">
         <label>Status</label>
-        <select name="status"><option value="draft">Brouillon</option><option value="published" selected>Publié</option></select>
+        <select name="status">
+          <option value="draft">Brouillon</option>
+          <option value="published" selected>Publié</option>
+        </select>
         <button>Créer l'article</button>
         <div id="resultArticle" class="result" style="display:none"></div>
         <div id="citeArticle" class="cite" style="display:none"></div>
@@ -54,7 +61,10 @@
         <label>ID auteur *</label>
         <input required name="author_id" type="number" value="1">
         <label>Status</label>
-        <select name="status"><option value="draft">Brouillon</option><option value="published" selected>Publié</option></select>
+        <select name="status">
+          <option value="draft">Brouillon</option>
+          <option value="published" selected>Publié</option>
+        </select>
         <button>Créer le podcast</button>
         <div id="resultPodcast" class="result" style="display:none"></div>
         <div id="citePodcast" class="cite" style="display:none"></div>
@@ -83,7 +93,10 @@
         <option value="true">Oui</option>
       </select>
       <label>Status</label>
-      <select name="status"><option value="draft">Brouillon</option><option value="published" selected>Publié</option></select>
+      <select name="status">
+        <option value="draft">Brouillon</option>
+        <option value="published" selected>Publié</option>
+      </select>
       <button>Créer l'émission</button>
       <div id="resultEmission" class="result" style="display:none"></div>
       <div id="citeEmission" class="cite" style="display:none"></div>
@@ -114,30 +127,30 @@ Headers:
 Corps JSON:
 ${JSON.stringify(data, null, 2)}
 `;
-        
+
         try {
           const fetchRes = await fetch(url, {
             method: 'POST',
-            headers: {'Content-Type':'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
           });
           const json = await fetchRes.json();
           if (fetchRes.ok && json.success) {
             resultBox.className = 'result success';
             resultBox.textContent = "✅ Création réussie ! \n\n" + JSON.stringify(json, null, 2);
-            citeBox.textContent = citation + "\nRéponse API (HTTP "+fetchRes.status+"):\n" + JSON.stringify(json, null, 2);
+            citeBox.textContent = citation + "\nRéponse API (HTTP " + fetchRes.status + "):\n" + JSON.stringify(json, null, 2);
             citeBox.style.display = 'block';
             e.target.reset();
           } else {
             resultBox.className = 'result error';
             resultBox.textContent = "❌ Erreur API ! \n\n" + JSON.stringify(json, null, 2);
-            citeBox.textContent = citation + "\nRéponse API (HTTP "+fetchRes.status+"):\n" + JSON.stringify(json, null, 2);
+            citeBox.textContent = citation + "\nRéponse API (HTTP " + fetchRes.status + "):\n" + JSON.stringify(json, null, 2);
             citeBox.style.display = 'block';
           }
         }
-        catch(err) {
+        catch (err) {
           resultBox.className = 'result error';
-          resultBox.textContent = "❌ Erreur de connexion ("+err.name+") !\n\n" + err.message;
+          resultBox.textContent = "❌ Erreur de connexion (" + err.name + ") !\n\n" + err.message;
           citeBox.textContent = citation + "\n❌ Échec connexion API. Vérifiez le backend.";
           citeBox.style.display = 'block';
         }
@@ -145,10 +158,10 @@ ${JSON.stringify(data, null, 2)}
     }
 
     // Bind
-    handleSubmit('formArticle','http://localhost:5000/api/articles','resultArticle','citeArticle');
-    handleSubmit('formPodcast','http://localhost:5000/api/podcasts','resultPodcast','citePodcast');
-    handleSubmit('formEmission','http://localhost:5000/api/emissions','resultEmission','citeEmission');
+    handleSubmit('formArticle', `${window.API_URL}/articles`, 'resultArticle', 'citeArticle');
+    handleSubmit('formPodcast', `${window.API_URL}/podcasts`, 'resultPodcast', 'citePodcast');
+    handleSubmit('formEmission', `${window.API_URL}/emissions`, 'resultEmission', 'citeEmission');
   </script>
 </body>
-</html>
 
+</html>

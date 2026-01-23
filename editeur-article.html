@@ -184,7 +184,7 @@
 
     async function loadArticleData(id) {
       try {
-        const res = await fetch(`http://localhost:5000/api/articles/${id}`);
+        const res = await fetch(`${window.API_URL}/articles/${id}`);
         const json = await res.json();
         if (json.success) {
           const art = json.article;
@@ -234,8 +234,8 @@
 
       try {
         const url = window.isEditing
-          ? `http://localhost:5000/api/articles/${editId}`
-          : 'http://localhost:5000/api/articles';
+          ? `${window.API_URL}/articles/${editId}`
+          : `${window.API_URL}/articles`;
         const method = window.isEditing ? 'PUT' : 'POST';
 
         const res = await fetch(url, { method: method, body: formData });

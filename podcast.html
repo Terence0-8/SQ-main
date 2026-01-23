@@ -110,7 +110,7 @@
       // 3. Appel API pour récupérer les infos du podcast
       try {
         // IMPORTANT : On utilise fetch directement ou via SolitiquoAPI si la méthode existe
-        const res = await fetch(`http://localhost:5000/api/podcasts/${id}`);
+        const res = await fetch(`${window.API_URL}/podcasts/${id}`);
         const json = await res.json();
 
         if (json.success) {

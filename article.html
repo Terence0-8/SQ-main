@@ -360,7 +360,7 @@
 
     async function loadComments(articleId) {
       try {
-        const res = await fetch(`http://localhost:5000/api/comments/${articleId}`);
+        const res = await fetch(`${window.API_URL}/comments/${articleId}`);
         const json = await res.json();
         const user = await SolitiquoAPI.getProfile();
         const isAdmin = user && (user.role === 'admin' || user.role === 'writer');
@@ -403,7 +403,7 @@
         if (!content.trim()) return;
 
         try {
-          const res = await fetch('http://localhost:5000/api/comments', {
+          const res = await fetch(`${window.API_URL}/comments`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ article_id: articleId, content: content }),
             credentials: 'include'
@@ -423,7 +423,7 @@
     function initAnalytics(articleId) {
       const milestones = { 25: false, 50: false, 75: false, 100: false };
       const sendPing = (percent) => {
-        fetch(`http://localhost:5000/api/analytics/track`, {
+        fetch(`${window.API_URL}/analytics/track`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ article_id: articleId, milestone: percent })

@@ -185,7 +185,7 @@
       else if (imgUrl) formData.append('image_url', imgUrl); // Attention: Backend doit gérer ce champ (optionnel)
 
       try {
-        const res = await fetch('http://localhost:5000/api/podcasts', { method: 'POST', body: formData });
+        const res = await fetch(`${window.API_URL}/podcasts`, { method: 'POST', body: formData });
         const json = await res.json();
 
         if (json.success) {
