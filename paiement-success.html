@@ -35,13 +35,14 @@
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
     <script>
+        // 1. Afficher l'ID de transaction
         const params = new URLSearchParams(window.location.search);
         const transactionId = params.get('transaction_id');
 
         if (transactionId) {
             document.getElementById('transId').textContent = transactionId;
 
-            // Vérification de sécurité (Double Check)
+            // 2. Vérification de sécurité (Double Check)
             SolitiquoAPI.fetchWithAuth(`/subscriptions/check-status`, {
                 method: 'POST',
                 body: JSON.stringify({ transaction_id: transactionId })
@@ -50,6 +51,26 @@
                     console.warn("Le paiement est encore en cours de validation côté serveur.");
                 }
             }).catch(err => console.error("Erreur vérification:", err));
+
+            // 3. SYNCHRONISATION IMMÉDIATE DU STATUT ABONNÉ
+            // Récupérer les données utilisateur fraîches depuis le serveur
+            fetch(`${window.API_URL}/auth/me`, { credentials: 'include' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.user) {
+                        // Mise à jour du localStorage si utilisé par l'app
+                        localStorage.setItem('user', JSON.stringify(data.user));
+
+                        console.log('✅ Statut abonné synchronisé:', data.user.is_subscriber);
+
+                        // Optionnel : afficher un message visuel
+                        if (data.user.is_subscriber) {
+                            console.log('🎉 Accès Premium activé !');
+                        }
+                    }
+                })
+                .catch(err => console.error('Erreur sync abonné:', err));
+
         } else {
             document.getElementById('transId').textContent = "Inconnu";
         }

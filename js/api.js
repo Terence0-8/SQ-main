@@ -70,6 +70,7 @@ const SolitiquoAPI = {
   logout: async () => {
     try {
       await fetch(`${API_URL}/auth/logout`, { method: 'POST', credentials: 'include' });
+      localStorage.clear(); // Nettoyage complet du localStorage
       window.location.href = 'index.html';
     } catch (e) { console.error(e); }
   },
