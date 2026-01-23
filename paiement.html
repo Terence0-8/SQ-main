@@ -1,14 +1,18 @@
 ﻿<!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <title>Paiement sécurisé — Solitiquo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="solitiquo.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet" />
-  
-  
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap"
+    rel="stylesheet" />
+
+
 </head>
+
 <body id="page-paiement">
 
   <div class="checkout-header">
@@ -16,10 +20,10 @@
   </div>
 
   <div class="checkout-container">
-    
+
     <div class="payment-box">
       <h1>Finaliser la commande</h1>
-      
+
       <form id="paymentForm">
         <div class="form-group">
           <label class="form-label">Titulaire de la carte</label>
@@ -45,7 +49,7 @@
         <button type="submit" class="btn-pay" id="payBtn">
           <span>🔒 Payer maintenant</span>
         </button>
-        
+
         <p style="text-align:center; font-size:0.8rem; color:#999; margin-top:15px;">
           Paiement sécurisé (Simulation). Aucune somme ne sera débitée.
         </p>
@@ -54,7 +58,7 @@
 
     <div class="summary-box">
       <div class="summary-title">Récapitulatif</div>
-      
+
       <div class="summary-row">
         <span id="planName">Abonnement...</span>
         <span id="planPrice">...</span>
@@ -74,11 +78,15 @@
 
   <div class="success-overlay" id="successScreen">
     <div class="check-icon">✓</div>
-    <h2 style="font-family:'Playfair Display'; font-size:2.5rem; color:#37463D; margin-bottom:10px;">Félicitations !</h2>
+    <h2 style="font-family:'Playfair Display'; font-size:2.5rem; color:#37463D; margin-bottom:10px;">Félicitations !
+    </h2>
     <p style="color:#666; font-size:1.2rem; margin-bottom:2rem;">Vous êtes désormais membre Premium.</p>
-    <a href="index.html" style="background:#37463D; color:white; padding:12px 30px; border-radius:30px; text-decoration:none; font-weight:700;">Retour à l'accueil</a>
+    <a href="index.html"
+      style="background:#37463D; color:white; padding:12px 30px; border-radius:30px; text-decoration:none; font-weight:700;">Retour
+      à l'accueil</a>
   </div>
 
+  <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script>
     // 1. Récupérer le plan choisi dans l'URL
@@ -91,50 +99,51 @@
     const totalPriceEl = document.getElementById('totalPrice');
 
     if (plan === 'monthly') {
-        planNameEl.textContent = "Offre Mensuelle";
-        planPriceEl.textContent = "2000 FCFA";
-        totalPriceEl.textContent = "2000 FCFA";
+      planNameEl.textContent = "Offre Mensuelle";
+      planPriceEl.textContent = "2000 FCFA";
+      totalPriceEl.textContent = "2000 FCFA";
     } else {
-        planNameEl.textContent = "Offre Annuelle";
-        planPriceEl.textContent = "20.000 FCFA";
-        totalPriceEl.textContent = "20.000 FCFA";
+      planNameEl.textContent = "Offre Annuelle";
+      planPriceEl.textContent = "20.000 FCFA";
+      totalPriceEl.textContent = "20.000 FCFA";
     }
 
     // 3. Gérer le paiement
     document.getElementById('paymentForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const btn = document.getElementById('payBtn');
-        btn.innerHTML = `<span class="loader"></span> Traitement...`;
-        btn.disabled = true;
+      e.preventDefault();
 
-        try {
-            // Appel réel au backend pour valider l'upgrade
-            const res = await fetch('http://localhost:5000/api/subscriptions/upgrade', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ plan: plan }),
-                credentials: 'include' // CRUCIAL
-            });
-            const json = await res.json();
+      const btn = document.getElementById('payBtn');
+      btn.innerHTML = `<span class="loader"></span> Traitement...`;
+      btn.disabled = true;
 
-            if (json.success) {
-                // Succès !
-                setTimeout(() => {
-                    document.getElementById('successScreen').style.display = 'flex';
-                }, 1500); // Petit délai pour faire "vrai"
-            } else {
-                alert("Erreur : " + json.error);
-                btn.innerHTML = "🔒 Payer maintenant";
-                btn.disabled = false;
-            }
-        } catch (err) {
-            console.error(err);
-            alert("Erreur de connexion au serveur.");
-            btn.disabled = false;
+      try {
+        // Appel réel au backend pour valider l'upgrade
+        const res = await fetch('http://localhost:5000/api/subscriptions/upgrade', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan: plan }),
+          credentials: 'include' // CRUCIAL
+        });
+        const json = await res.json();
+
+        if (json.success) {
+          // Succès !
+          setTimeout(() => {
+            document.getElementById('successScreen').style.display = 'flex';
+          }, 1500); // Petit délai pour faire "vrai"
+        } else {
+          alert("Erreur : " + json.error);
+          btn.innerHTML = "🔒 Payer maintenant";
+          btn.disabled = false;
         }
+      } catch (err) {
+        console.error(err);
+        alert("Erreur de connexion au serveur.");
+        btn.disabled = false;
+      }
     });
   </script>
 
 </body>
+
 </html>

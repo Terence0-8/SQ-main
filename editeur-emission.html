@@ -1,12 +1,16 @@
 ﻿<!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<title>Studio Vidéo — Solitiquo</title>
-<link rel="stylesheet" href="solitiquo.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,900;1,400&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Studio Vidéo — Solitiquo</title>
+  <link rel="stylesheet" href="solitiquo.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,900;1,400&display=swap"
+    rel="stylesheet">
 
 </head>
+
 <body id="page-editeur-emission">
 
   <header class="studio-header">
@@ -15,12 +19,12 @@
   </header>
 
   <form id="emissionForm" class="workspace">
-    
+
     <div class="preview-zone">
       <div class="video-preview-card" id="video-container">
         <div class="video-placeholder">L'aperçu vidéo apparaîtra ici</div>
       </div>
-      
+
       <div class="info-preview">
         <h1 id="preview-title">Titre de l'émission...</h1>
         <p id="preview-desc">La description s'affichera ici.</p>
@@ -29,41 +33,48 @@
 
     <aside class="settings-right">
       <div class="settings-scroll">
-        
+
         <h3 class="panel-title">SOURCE</h3>
         <div class="field-group">
           <label>Lien YouTube</label>
-          <input type="url" id="video_url" class="sidebar-input" placeholder="https://www.youtube.com/watch?v=..." required oninput="updatePreview(this.value)">
+          <input type="url" id="video_url" class="sidebar-input" placeholder="https://www.youtube.com/watch?v=..."
+            required oninput="updatePreview(this.value)">
         </div>
 
         <h3 class="panel-title">INFOS</h3>
         <div class="field-group">
           <label>Titre</label>
-          <input type="text" id="title" class="sidebar-input" placeholder="Titre de l'émission" required oninput="document.getElementById('preview-title').textContent = this.value || 'Titre...'">
+          <input type="text" id="title" class="sidebar-input" placeholder="Titre de l'émission" required
+            oninput="document.getElementById('preview-title').textContent = this.value || 'Titre...'">
         </div>
 
         <div class="field-group">
           <label>Catégorie</label>
           <select id="category" class="sidebar-input">
-            <option>Politique</option><option>Société</option><option>Économie</option><option>Culture</option><option>International</option>
+            <option>Politique</option>
+            <option>Société</option>
+            <option>Économie</option>
+            <option>Culture</option>
+            <option>International</option>
           </select>
         </div>
 
         <div class="field-group">
           <label>Description</label>
-          <textarea id="description" class="sidebar-input" placeholder="Résumé, invités..." oninput="document.getElementById('preview-desc').textContent = this.value || 'Description...'"></textarea>
+          <textarea id="description" class="sidebar-input" placeholder="Résumé, invités..."
+            oninput="document.getElementById('preview-desc').textContent = this.value || 'Description...'"></textarea>
         </div>
-        
+
         <div class="field-group">
-            <label>Durée (Minutes)</label>
-            <input type="number" id="duration" class="sidebar-input" placeholder="ex: 45">
+          <label>Durée (Minutes)</label>
+          <input type="number" id="duration" class="sidebar-input" placeholder="ex: 45">
         </div>
 
         <h3 class="panel-title">IMAGE (OPTIONNEL)</h3>
         <div class="field-group">
-            <label>Couverture personnalisée</label>
-            <input type="file" id="image_file" accept="image/*" class="sidebar-input">
-            <small style="color:#888; font-size:0.75rem;">Si vide, on utilise la miniature YouTube.</small>
+          <label>Couverture personnalisée</label>
+          <input type="file" id="image_file" accept="image/*" class="sidebar-input">
+          <small style="color:#888; font-size:0.75rem;">Si vide, on utilise la miniature YouTube.</small>
         </div>
 
       </div>
@@ -75,65 +86,67 @@
     </aside>
   </form>
 
+  <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script>
     // SÉCURITÉ
     (async function checkAccess() {
-        const user = await SolitiquoAPI.getProfile();
-        if (!user || (user.role !== 'admin' && user.role !== 'writer')) {
-            window.location.href = 'auth.html';
-        }
+      const user = await SolitiquoAPI.getProfile();
+      if (!user || (user.role !== 'admin' && user.role !== 'writer')) {
+        window.location.href = 'auth.html';
+      }
     })();
 
     function getYoutubeId(url) {
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-        const match = url.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : null;
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
     }
 
     function updatePreview(url) {
-        const id = getYoutubeId(url);
-        const container = document.getElementById('video-container');
-        
-        if(id) {
-            container.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}" allowfullscreen></iframe>`;
-        } else {
-            container.innerHTML = `<div class="video-placeholder">Lien invalide</div>`;
-        }
+      const id = getYoutubeId(url);
+      const container = document.getElementById('video-container');
+
+      if (id) {
+        container.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}" allowfullscreen></iframe>`;
+      } else {
+        container.innerHTML = `<div class="video-placeholder">Lien invalide</div>`;
+      }
     }
 
     // ENVOI
     document.getElementById('emissionForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = document.querySelector('.btn-publish');
-        const msg = document.getElementById('status-msg');
-        
-        btn.textContent = 'Traitement...'; btn.disabled = true; msg.textContent = '';
+      e.preventDefault();
+      const btn = document.querySelector('.btn-publish');
+      const msg = document.getElementById('status-msg');
 
-        const formData = new FormData();
-        formData.append('title', document.getElementById('title').value);
-        formData.append('description', document.getElementById('description').value);
-        formData.append('category', document.getElementById('category').value);
-        formData.append('video_url', document.getElementById('video_url').value);
-        formData.append('duration', document.getElementById('duration').value || 0);
-        formData.append('author_id', 1);
-        
-        const imgFile = document.getElementById('image_file').files[0];
-        if(imgFile) formData.append('image_file', imgFile);
+      btn.textContent = 'Traitement...'; btn.disabled = true; msg.textContent = '';
 
-        try {
-            const res = await fetch('http://localhost:5000/api/emissions', { method: 'POST', body: formData });
-            const json = await res.json();
+      const formData = new FormData();
+      formData.append('title', document.getElementById('title').value);
+      formData.append('description', document.getElementById('description').value);
+      formData.append('category', document.getElementById('category').value);
+      formData.append('video_url', document.getElementById('video_url').value);
+      formData.append('duration', document.getElementById('duration').value || 0);
+      formData.append('author_id', 1);
 
-            if(json.success) {
-                msg.style.color = 'green'; msg.textContent = '✅ Émission publiée !';
-                setTimeout(() => window.location.href = 'emissions.html', 1000);
-            } else { throw new Error(json.error); }
-        } catch (err) {
-            msg.style.color = 'red'; msg.textContent = 'Erreur: ' + err.message;
-            btn.textContent = 'Réessayer'; btn.disabled = false;
-        }
+      const imgFile = document.getElementById('image_file').files[0];
+      if (imgFile) formData.append('image_file', imgFile);
+
+      try {
+        const res = await fetch('http://localhost:5000/api/emissions', { method: 'POST', body: formData });
+        const json = await res.json();
+
+        if (json.success) {
+          msg.style.color = 'green'; msg.textContent = '✅ Émission publiée !';
+          setTimeout(() => window.location.href = 'emissions.html', 1000);
+        } else { throw new Error(json.error); }
+      } catch (err) {
+        msg.style.color = 'red'; msg.textContent = 'Erreur: ' + err.message;
+        btn.textContent = 'Réessayer'; btn.disabled = false;
+      }
     });
   </script>
 </body>
+
 </html>

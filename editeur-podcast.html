@@ -1,12 +1,16 @@
 ﻿<!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<title>Studio Podcast — Solitiquo</title>
-<link rel="stylesheet" href="solitiquo.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,900;1,400&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Studio Podcast — Solitiquo</title>
+  <link rel="stylesheet" href="solitiquo.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,900;1,400&display=swap"
+    rel="stylesheet">
 
 </head>
+
 <body id="page-editeur-podcast">
 
   <header class="studio-header">
@@ -15,7 +19,7 @@
   </header>
 
   <form id="podcastForm" class="workspace">
-    
+
     <aside class="toolbar-left">
       <button type="button" class="tool-btn" onclick="format('bold')" title="Gras"><b>B</b></button>
       <button type="button" class="tool-btn" onclick="format('italic')" title="Italique"><i>I</i></button>
@@ -26,7 +30,7 @@
     <div class="paper-zone">
       <div class="paper-sheet">
         <input type="text" id="title" placeholder="Titre de l'épisode..." required autocomplete="off">
-        
+
         <span class="section-label">DESCRIPTION</span>
         <textarea id="description" rows="3" placeholder="Résumé de l'épisode..."></textarea>
 
@@ -40,44 +44,53 @@
 
     <aside class="settings-right">
       <div class="settings-scroll">
-        
+
         <h3 class="panel-title">MÉDIAS</h3>
-        
+
         <div class="field-group">
-          <label style="font-weight:600; font-size:0.85rem; margin-bottom:8px; display:block;">Fichier Audio (MP3)</label>
+          <label style="font-weight:600; font-size:0.85rem; margin-bottom:8px; display:block;">Fichier Audio
+            (MP3)</label>
           <div class="upload-box" onclick="document.getElementById('audio_file').click()">
             <span class="upload-icon">🎙️</span>
             <span class="upload-hint">Choisir le fichier MP3</span>
             <span id="audio-name" class="file-name"></span>
           </div>
-          <input type="file" id="audio_file" accept="audio/*" style="display:none;" required onchange="showFileName(this, 'audio-name')">
+          <input type="file" id="audio_file" accept="audio/*" style="display:none;" required
+            onchange="showFileName(this, 'audio-name')">
         </div>
 
         <div class="field-group">
           <label style="font-weight:600; font-size:0.85rem; margin-bottom:8px; display:block;">Pochette</label>
-          <div class="upload-box" onclick="document.getElementById('image_file').click()" style="height:150px; display:flex; justify-content:center; align-items:center;">
+          <div class="upload-box" onclick="document.getElementById('image_file').click()"
+            style="height:150px; display:flex; justify-content:center; align-items:center;">
             <img id="cover-preview" src="" alt="">
             <div id="cover-placeholder">
-                <span class="upload-icon">🖼️</span>
-                <span class="upload-hint">Uploader une image</span>
+              <span class="upload-icon">🖼️</span>
+              <span class="upload-hint">Uploader une image</span>
             </div>
           </div>
           <input type="file" id="image_file" accept="image/*" style="display:none;" onchange="previewCoverFile(this)">
-          
+
           <div style="text-align:center; margin: 10px 0; font-size:0.8rem; color:#999;">— OU —</div>
-          
-          <input type="url" id="image_url" class="sidebar-input" placeholder="https://..." oninput="previewCoverUrl(this.value)">
+
+          <input type="url" id="image_url" class="sidebar-input" placeholder="https://..."
+            oninput="previewCoverUrl(this.value)">
         </div>
 
-      <h3 class="panel-title">CHAPITRAGE</h3>
-      <div id="chapters-container" style="margin-bottom:15px;"></div>
-      <button type="button" class="btn-add-chapter" onclick="addChapterRow()" style="width:100%; padding:8px; cursor:pointer;">+ Ajouter un chapitre</button>
+        <h3 class="panel-title">CHAPITRAGE</h3>
+        <div id="chapters-container" style="margin-bottom:15px;"></div>
+        <button type="button" class="btn-add-chapter" onclick="addChapterRow()"
+          style="width:100%; padding:8px; cursor:pointer;">+ Ajouter un chapitre</button>
 
         <h3 class="panel-title">DÉTAILS</h3>
-        
+
         <div class="field-group">
           <select id="category" class="sidebar-input">
-            <option>Politique</option><option>Social</option><option>Économie</option><option>Culture</option><option>Géopolitique</option>
+            <option>Politique</option>
+            <option>Social</option>
+            <option>Économie</option>
+            <option>Culture</option>
+            <option>Géopolitique</option>
           </select>
         </div>
 
@@ -90,99 +103,101 @@
     </aside>
   </form>
 
+  <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script>
     (async function checkAccess() {
-        const user = await SolitiquoAPI.getProfile();
-        if (!user || (user.role !== 'admin' && user.role !== 'writer')) {
-            window.location.href = 'auth.html';
-        }
+      const user = await SolitiquoAPI.getProfile();
+      if (!user || (user.role !== 'admin' && user.role !== 'writer')) {
+        window.location.href = 'auth.html';
+      }
     })();
 
-    function format(cmd, val=null) { document.execCommand(cmd, false, val); }
+    function format(cmd, val = null) { document.execCommand(cmd, false, val); }
 
     function addChapterRow(time = '00:00', title = '') {
-    const div = document.createElement('div');
-    div.className = 'chapter-item';
-    div.innerHTML = `
+      const div = document.createElement('div');
+      div.className = 'chapter-item';
+      div.innerHTML = `
         <input type="text" class="sidebar-input chap-time" value="${time}" placeholder="00:00">
         <input type="text" class="sidebar-input chap-title" value="${title}" placeholder="Titre">
         <button type="button" class="chap-del" onclick="this.parentElement.remove()">×</button>
     `;
-    document.getElementById('chapters-container').appendChild(div);
-}
-// Initialisation
-addChapterRow('00:00', 'Intro');
+      document.getElementById('chapters-container').appendChild(div);
+    }
+    // Initialisation
+    addChapterRow('00:00', 'Intro');
 
     function showFileName(input, displayId) {
-        if(input.files[0]) document.getElementById(displayId).textContent = input.files[0].name;
+      if (input.files[0]) document.getElementById(displayId).textContent = input.files[0].name;
     }
 
     function previewCoverFile(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.getElementById('cover-preview');
-                img.src = e.target.result; img.style.display = 'block';
-                document.getElementById('cover-placeholder').style.display = 'none';
-            }
-            reader.readAsDataURL(input.files[0]);
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const img = document.getElementById('cover-preview');
+          img.src = e.target.result; img.style.display = 'block';
+          document.getElementById('cover-placeholder').style.display = 'none';
         }
+        reader.readAsDataURL(input.files[0]);
+      }
     }
 
     function previewCoverUrl(url) {
-        if(url) {
-            const img = document.getElementById('cover-preview');
-            img.src = url; img.style.display = 'block';
-            document.getElementById('cover-placeholder').style.display = 'none';
-            document.getElementById('image_file').value = '';
-        }
+      if (url) {
+        const img = document.getElementById('cover-preview');
+        img.src = url; img.style.display = 'block';
+        document.getElementById('cover-placeholder').style.display = 'none';
+        document.getElementById('image_file').value = '';
+      }
     }
 
     document.getElementById('podcastForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = document.querySelector('.btn-publish');
-        const msg = document.getElementById('status-msg');
-        
-        btn.textContent = 'Envoi en cours...';
-        btn.disabled = true;
-        msg.textContent = '';
+      e.preventDefault();
+      const btn = document.querySelector('.btn-publish');
+      const msg = document.getElementById('status-msg');
+
+      btn.textContent = 'Envoi en cours...';
+      btn.disabled = true;
+      msg.textContent = '';
 
       const chapters = [];
-document.querySelectorAll('.chapter-item').forEach(row => {
-    chapters.push({
-        time: row.querySelector('.chap-time').value,
-        title: row.querySelector('.chap-title').value
-    });
-});
-        const formData = new FormData();
-        formData.append('title', document.getElementById('title').value);
-        formData.append('description', document.getElementById('description').value);
-        formData.append('transcript', document.getElementById('transcript-editor').innerHTML);
-        formData.append('category', document.getElementById('category').value);
-        formData.append('author_id', 1);
-        
-        formData.append('audio_file', document.getElementById('audio_file').files[0]);
-        formData.append('chapters', JSON.stringify(chapters)); // Ajout du JSON
-        const imgFile = document.getElementById('image_file').files[0];
-        const imgUrl = document.getElementById('image_url').value;
-        
-        if(imgFile) formData.append('image_file', imgFile);
-        else if(imgUrl) formData.append('image_url', imgUrl); // Attention: Backend doit gérer ce champ (optionnel)
+      document.querySelectorAll('.chapter-item').forEach(row => {
+        chapters.push({
+          time: row.querySelector('.chap-time').value,
+          title: row.querySelector('.chap-title').value
+        });
+      });
+      const formData = new FormData();
+      formData.append('title', document.getElementById('title').value);
+      formData.append('description', document.getElementById('description').value);
+      formData.append('transcript', document.getElementById('transcript-editor').innerHTML);
+      formData.append('category', document.getElementById('category').value);
+      formData.append('author_id', 1);
 
-        try {
-            const res = await fetch('http://localhost:5000/api/podcasts', { method: 'POST', body: formData });
-            const json = await res.json();
+      formData.append('audio_file', document.getElementById('audio_file').files[0]);
+      formData.append('chapters', JSON.stringify(chapters)); // Ajout du JSON
+      const imgFile = document.getElementById('image_file').files[0];
+      const imgUrl = document.getElementById('image_url').value;
 
-            if(json.success) {
-                msg.style.color = 'green'; msg.textContent = '✅ Podcast publié !';
-                setTimeout(() => window.location.href = 'podcasts.html', 1500);
-            } else { throw new Error(json.error); }
-        } catch (err) {
-            msg.style.color = 'red'; msg.textContent = 'Erreur: ' + err.message;
-            btn.textContent = 'Mettre en ligne'; btn.disabled = false;
-        }
+      if (imgFile) formData.append('image_file', imgFile);
+      else if (imgUrl) formData.append('image_url', imgUrl); // Attention: Backend doit gérer ce champ (optionnel)
+
+      try {
+        const res = await fetch('http://localhost:5000/api/podcasts', { method: 'POST', body: formData });
+        const json = await res.json();
+
+        if (json.success) {
+          msg.style.color = 'green'; msg.textContent = '✅ Podcast publié !';
+          setTimeout(() => window.location.href = 'podcasts.html', 1500);
+        } else { throw new Error(json.error); }
+      } catch (err) {
+        msg.style.color = 'red'; msg.textContent = 'Erreur: ' + err.message;
+        btn.textContent = 'Mettre en ligne'; btn.disabled = false;
+      }
     });
   </script>
 </body>
+
 </html>
