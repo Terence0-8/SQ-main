@@ -63,13 +63,23 @@ router.post('/track', async (req, res) => {
             });
         }
 
-        // S'assurer que la ligne analytics existe (upsert sans contrainte)
-        await pool.query(`
+        // Upsert sans ON CONFLICT (fonctionne sans contrainte unique)
+        // 1. Essayer d'insérer si n'existe pas
+        const insertResult = await pool.query(`
             INSERT INTO article_analytics (article_id, ${column}, updated_at) 
-            VALUES ($1, 1, NOW())
-            ON CONFLICT (article_id) DO UPDATE 
-            SET ${column} = article_analytics.${column} + 1, updated_at = NOW()
+            SELECT $1, 1, NOW()
+            WHERE NOT EXISTS (SELECT 1 FROM article_analytics WHERE article_id = $1)
+            RETURNING article_id
         `, [article_id]);
+
+        // 2. Si pas inséré (existe déjà), on update
+        if (insertResult.rowCount === 0) {
+            await pool.query(`
+                UPDATE article_analytics 
+                SET ${column} = ${column} + 1, updated_at = NOW()
+                WHERE article_id = $1
+            `, [article_id]);
+        }
 
         res.json({ success: true });
 
