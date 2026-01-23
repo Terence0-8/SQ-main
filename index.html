@@ -10,10 +10,27 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,400&family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet" />
 
+  <!-- ✅ Version CSP-compliant : pas de inline handlers -->
   <script>
-    function handleImgError(img) {
-      img.onerror = null;
-      img.src = 'https://placehold.co/600x400/eee/999?text=Solitiquo';
+    // Gestion globale des erreurs d'images
+    document.addEventListener('DOMContentLoaded', () => {
+      // Attacher les gestionnaires aux images existantes
+      document.querySelectorAll('img').forEach(img => {
+        img.addEventListener('error', function () {
+          this.onerror = null; // Éviter les boucles infinies
+          this.src = 'https://placehold.co/600x400/eee/999?text=Solitiquo';
+        });
+      });
+    });
+
+    // Pour les images ajoutées dynamiquement
+    function attachImageErrorHandlers(container) {
+      container.querySelectorAll('img').forEach(img => {
+        img.addEventListener('error', function () {
+          this.onerror = null;
+          this.src = 'https://placehold.co/600x400/eee/999?text=Solitiquo';
+        });
+      });
     }
   </script>
 
@@ -111,8 +128,7 @@
     <div class="pod-bg-icon">🎙️</div>
 
     <div class="pod-thumb-container">
-      <img src="https://placehold.co/400x400" class="pod-thumb" alt="Podcast" id="index-pod-img"
-        onerror="handleImgError(this)">
+      <img src="https://placehold.co/400x400" class="pod-thumb" alt="Podcast" id="index-pod-img">
     </div>
 
     <div class="pod-info">
@@ -136,9 +152,13 @@
       <span>Écouter</span>
     </a>
 
-    <div class="scroll-circle">
-      <div class="scroll-arrow"></div>
-    </div>
+    <!-- APRÈS (sans onclick) -->
+    <div class="scroll-wrapper">
+      <div class="scroll-indicator" id="scrollIndicator">
+        <div class="scroll-circle">
+          <div class="scroll-arrow"></div>
+        </div>
+      </div>
     </div>
     </div>
   </section>
@@ -172,7 +192,7 @@
     <div class="footer-grid">
       <div class="footer-col">
         <div style="display:flex; gap:10px; align-items:center; margin-bottom:1.5rem;">
-          <img src="logo.svg" class="footer-logo" alt="S" onerror="handleImgError(this)">
+          <img src="logo.svg" class="footer-logo" alt="S">
           <span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
         </div>
         <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le média de référence pour l'analyse politique et
@@ -199,7 +219,6 @@
     <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
   </footer>
 
-  <script src="js/config.js"></script>
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script>
@@ -255,6 +274,15 @@
       if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
+    // Attacher l'événement proprement (sans onclick inline)
+    document.addEventListener('DOMContentLoaded', () => {
+      const scrollIndicator = document.getElementById('scrollIndicator');
+      if (scrollIndicator) {
+        scrollIndicator.addEventListener('click', scrollToContent);
+      }
+    });
+
+
     // --- CHARGEMENT DES ARTICLES (C'est ici qu'on corrige les liens) ---
     document.addEventListener('DOMContentLoaded', async () => {
       try {
@@ -273,7 +301,7 @@
           document.getElementById('hero-dynamic').innerHTML = `
             <section class="grand-hero-section">
               <a href="${linkUne}" style="position:absolute; inset:0; z-index:2;"></a>
-              <img src="${uneImg}" class="hero-bg-img" style="object-position: top center;" onerror="handleImgError(this)">
+              <img src="${uneImg}" class="hero-bg-img" style="object-position: top center;">
               <div class="hero-overlay">
                 <span class="hero-tag">À LA UNE • ${une.category}</span>
                 <h1 class="hero-title-main">${une.title}</h1>
@@ -282,6 +310,9 @@
               </div>
             </section>
           `;
+          // Attacher les handlers d'erreur après injection
+          attachImageErrorHandlers(document.getElementById('hero-dynamic'));
+
 
           // 2. MAGAZINE LIST (Articles 1 à 4)
           const mainList = articles.slice(1, 5);
@@ -292,7 +323,7 @@
             <article class="article-row">
               <div style="overflow:hidden; border-radius:4px; height:220px;">
                 <a href="${linkArt}">
-                  <img src="${art.image_url}" class="art-img" onerror="handleImgError(this)">
+                  <img src="${art.image_url}" class="art-img">
                 </a>
               </div>
               <div class="art-info">
@@ -306,6 +337,10 @@
             </article>
           `}).join('');
 
+          // Attacher les handlers d'erreur après injection
+          attachImageErrorHandlers(document.getElementById('magazine-feed'));
+
+
           // 3. SIDEBAR DISCOVERY (Articles 5 à 8) - Fix #14: utiliser discover-grid
           const discoList = articles.slice(5, 9);
           const discoverGrid = document.getElementById('discover-grid');
@@ -314,7 +349,7 @@
               const linkDisco = `article.html?id=${art.id}`;
               return `
               <a href="${linkDisco}" class="disco-card">
-                <img src="${art.image_url}" class="disco-img" onerror="handleImgError(this)">
+                <img src="${art.image_url}" class="disco-img">
                 <h4 class="disco-title">${art.title}</h4>
                 <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
               </a>
@@ -327,32 +362,73 @@
       loadHomePoll();
     });
 
+    // Attacher les handlers d'erreur après injection
+    attachImageErrorHandlers(document.getElementById('discover-grid'));
+
     // --- SONDAGE ---
     async function loadHomePoll() {
       const container = document.getElementById('home-poll-card');
+      if (!container) return;
+
       try {
         const res = await fetch(API_URL + '/polls/active/Politique');
         const data = await res.json();
-        if (!data.success) { container.innerHTML = '<p>Aucun sondage.</p>'; return; }
+
+        // ✅ Vérifications robustes
+        if (!data.success || !data.poll) {
+          container.innerHTML = '<p style="text-align:center;color:#999;">Aucun sondage actif.</p>';
+          return;
+        }
+
         const { poll, options, hasVoted } = data;
 
-        if (hasVoted) {
-          const total = options.reduce((a, b) => a + b.votes_count, 0);
-          const max = Math.max(...options.map(o => o.votes_count));
-          const html = options.map(opt => {
-            const pct = total === 0 ? 0 : Math.round((opt.votes_count / total) * 100);
-            const col = (opt.votes_count === max) ? '#C82823' : '#ddd';
-            return `<div style="margin-bottom:8px;">
-                <div style="font-size:0.8rem; display:flex; justify-content:space-between;"><span>${opt.label}</span><span>${pct}%</span></div>
-                <div style="height:4px; background:#eee; margin-top:2px;"><div style="width:${pct}%; background:${col}; height:100%;"></div></div>
-             </div>`;
-          }).join('');
-          container.innerHTML = `<p class="poll-q">${poll.question}</p>${html}<div style="text-align:center; font-size:0.7rem; color:#aaa; margin-top:10px;">Merci de votre vote</div>`;
-        } else {
-          container.innerHTML = `<p class="poll-q">${poll.question}</p><a href="politique.html?poll=${poll.id}" style="display:block; background:var(--primary-dark); color:white; text-align:center; padding:10px; border-radius:4px; text-decoration:none; font-weight:600; font-size:0.9rem;">Voter</a>`;
+        // ✅ Vérifier que options existe et est un tableau
+        if (!options || !Array.isArray(options) || options.length === 0) {
+          container.innerHTML = '<p style="text-align:center;color:#999;">Sondage en préparation...</p>';
+          return;
         }
-      } catch (e) { console.error(e); }
+
+        if (hasVoted) {
+          const total = options.reduce((sum, opt) => sum + (opt.votes_count || 0), 0);
+          const max = Math.max(...options.map(o => o.votes_count || 0));
+
+          const html = options.map(opt => {
+            const pct = total === 0 ? 0 : Math.round(((opt.votes_count || 0) / total) * 100);
+            const col = (opt.votes_count === max) ? '#C82823' : '#ddd';
+            return `
+          <div style="margin-bottom:8px;">
+            <div style="font-size:0.8rem; display:flex; justify-content:space-between;">
+              <span>${opt.label || 'Option'}</span>
+              <span>${pct}%</span>
+            </div>
+            <div style="height:4px; background:#eee; margin-top:2px;">
+              <div style="width:${pct}%; background:${col}; height:100%;"></div>
+            </div>
+          </div>
+        `;
+          }).join('');
+
+          container.innerHTML = `
+        <p class="poll-q">${poll.question}</p>
+        ${html}
+        <div style="text-align:center; font-size:0.7rem; color:#aaa; margin-top:10px;">Merci de votre vote</div>
+      `;
+        } else {
+          container.innerHTML = `
+        <p class="poll-q">${poll.question}</p>
+        <a href="politique.html?poll=${poll.id}" 
+           style="display:block; background:var(--primary-dark); color:white; text-align:center; 
+                  padding:10px; border-radius:4px; text-decoration:none; font-weight:600; font-size:0.9rem;">
+          Voter
+        </a>
+      `;
+        }
+      } catch (e) {
+        console.error('Erreur chargement sondage:', e);
+        container.innerHTML = '<p style="text-align:center;color:#999;">Chargement...</p>';
+      }
     }
+
   </script>
   <script>
     // Charge le dernier podcast pour l'Index

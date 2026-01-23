@@ -50,9 +50,11 @@ app.use(helmet({
       ],
       frameSrc: [
         "'self'",
-        "https://www.youtube.com", // Embed YouTube
-        "https://www.facebook.com" // Embed Facebook
+        "https://www.youtube.com",          // ✅ YouTube classique
+        "https://www.youtube-nocookie.com", // ✅ AJOUTER CETTE LIGNE
+        "https://www.facebook.com"          // Facebook embed
       ]
+
     }
   },
   crossOriginEmbedderPolicy: false, // Pour permettre embed YouTube/Facebook

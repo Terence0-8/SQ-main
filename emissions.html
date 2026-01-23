@@ -202,10 +202,11 @@
                 <div class="cinema-container">
                     <div class="video-player-wrap">
                         <iframe 
-                            src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" 
+                            src="https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&origin=${window.location.origin}&enablejsapi=1" 
                             frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen>
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" 
+                            allowfullscreen
+                            loading="lazy">
                         </iframe>
                     </div>
                     <div class="tv-info">
@@ -272,6 +273,20 @@
       }
     });
   </script>
+
+  <script>
+    // 🛡️ Désactiver tous les Service Workers actifs
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        registrations.forEach(registration => {
+          registration.unregister().then(() => {
+            console.log('Service Worker désactivé:', registration.scope);
+          });
+        });
+      });
+    }
+  </script>
+
 </body>
 
 </html>
