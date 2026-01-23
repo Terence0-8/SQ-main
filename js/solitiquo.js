@@ -62,17 +62,22 @@ document.addEventListener('DOMContentLoaded', () => {
       searchContainer.classList.remove('active');
     });
   }
-});
-// Note: Plus besoin de gérer "Entrée" ou le clic "Loupe" en JS, 
-// le <form> HTML s'en occupe nativement.
 
-document.addEventListener('DOMContentLoaded', () => {
+  // ============================================================
+  // 3. GESTION BANNIÈRE COOKIES
+  // ============================================================
   // Vérifier si le consentement a déjà été donné
   if (!localStorage.getItem('cookieConsent')) {
     createCookieBanner();
   }
 });
 
+// Note: Plus besoin de gérer "Entrée" ou le clic "Loupe" en JS, 
+// le <form> HTML s'en occupe nativement.
+
+// ============================================================
+// FONCTIONS BANNIÈRE COOKIES
+// ============================================================
 function createCookieBanner() {
   // 1. Création du HTML
   const banner = document.createElement('div');

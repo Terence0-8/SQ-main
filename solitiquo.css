@@ -17989,7 +17989,7 @@ body#page-success {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
   border-radius: 20px;
   padding: 25px;
-  z-index: 10000;
+  z-index: 20000;
   display: flex;
   flex-direction: column;
   gap: 15px;
