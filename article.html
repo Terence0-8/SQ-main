@@ -280,8 +280,8 @@
           // --- GESTION DU PAYWALL ---
           const contentDiv = document.getElementById('art-content');
 
-          // Vérification des droits (Abonné, Admin ou Rédacteur)
-          const canRead = user && (user.role === 'subscriber' || user.role === 'admin' || user.role === 'writer');
+          // 🔥 CORRECTION ICI : Vérification avec is_subscriber au lieu de role
+          const canRead = user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer');
 
           if (article.is_premium && !canRead) {
             // MODE FLOU (Non-abonné sur article payant)
