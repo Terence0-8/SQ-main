@@ -259,4 +259,51 @@ router.post('/simulate-payment', isAuthenticated, async (req, res) => {
   }
 });
 
+// ==========================================
+// 5. RÉSILIATION D'ABONNEMENT
+// ==========================================
+router.post('/cancel', isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+
+    // 1. Mettre à jour l'utilisateur : retirer le statut abonné
+    await pool.query(
+      `UPDATE users 
+       SET is_subscriber = FALSE,
+           subscription_end_date = NOW(),
+           updated_at = NOW()
+       WHERE id = $1`,
+      [userId]
+    );
+
+    // 2. Mettre à jour la session immédiatement
+    if (req.session && req.session.user) {
+      req.session.user.is_subscriber = false;
+
+      req.session.save((err) => {
+        if (err) {
+          console.error('Erreur sauvegarde session:', err);
+          return res.status(500).json({ success: false, error: "Erreur session" });
+        }
+
+        console.log(`❌ Abonnement résilié pour l'user ${userId}`);
+
+        res.json({
+          success: true,
+          message: "Votre abonnement a été résilié avec succès."
+        });
+      });
+    } else {
+      res.json({
+        success: true,
+        message: "Votre abonnement a été résilié avec succès."
+      });
+    }
+
+  } catch (err) {
+    console.error('Erreur résiliation:', err);
+    res.status(500).json({ success: false, error: "Erreur serveur" });
+  }
+});
+
 module.exports = router;
