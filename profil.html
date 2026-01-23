@@ -202,11 +202,11 @@
     // 🔥 FONCTIONS GLOBALES POUR LA MODALE (accessible depuis onclick)
     const modal = document.getElementById('cancelModal');
 
-    window.openCancelModal = function() {
+    window.openCancelModal = function () {
       modal.classList.add('active');
     }
 
-    window.closeCancelModal = function() {
+    window.closeCancelModal = function () {
       modal.classList.remove('active');
     }
 
@@ -216,7 +216,7 @@
     });
 
     // Fonction réelle de résiliation
-    window.confirmCancelAction = async function() {
+    window.confirmCancelAction = async function () {
       const btn = document.getElementById('btn-confirm-cancel');
       const originalText = btn.textContent;
       btn.textContent = "Traitement en cours...";
@@ -282,24 +282,24 @@
       else if (user.is_subscriber) {
         statusBox.className = "status-box status-active";
         statusText.innerHTML = "✅ ACTIF (PREMIUM)";
-        
+
         // Affichage des dates si disponibles
         let dateInfo = '';
         if (user.subscription_end_date) {
           const endDate = new Date(user.subscription_end_date);
-          const formattedDate = endDate.toLocaleDateString('fr-FR', { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
+          const formattedDate = endDate.toLocaleDateString('fr-FR', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
           });
           dateInfo = `<p style="font-size:0.9rem; color:#666; margin-top:10px;">Votre abonnement est valide jusqu'au <strong>${formattedDate}</strong>.</p>`;
         }
-        
+
         actionArea.innerHTML = `
                 <h3>Profitez de votre lecture</h3>
                 <p>Vous avez accès à l'intégralité des articles et enquêtes sans publicité. Merci de votre soutien.</p>
                 ${dateInfo}
-                <button onclick="window.openCancelModal()" class="btn-action btn-cancel">Résilier mon abonnement</button>
+                <button class="btn-action btn-cancel">Résilier mon abonnement</button>
             `;
       }
       // Cas Gratuit
@@ -312,6 +312,23 @@
                 <a href="abonnement.html" class="btn-action btn-upgrade">Découvrir les offres</a>
             `;
       }
+
+      // 🔥 IMPORTANT : Event listener APRES injection du HTML dynamique
+      // On utilise setTimeout pour s'assurer que le DOM est bien mis à jour
+      setTimeout(() => {
+        const cancelBtn = document.querySelector('.btn-cancel');
+        if (cancelBtn) {
+          console.log('✅ Bouton résiliation trouvé, ajout listener');
+          cancelBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🔥 CLICK DÉTECTÉ !');
+            window.openCancelModal();
+          });
+        } else {
+          console.log('⚠️ Pas de bouton résiliation (utilisateur non abonné)');
+        }
+      }, 100);
     });
 
     // Bouton déconnexion
