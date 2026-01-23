@@ -261,6 +261,48 @@ app.use(session({
 }));
 
 // =============================================================================
+// MIDDLEWARE DE SYNCHRONISATION & SÉCURITÉ (Anti-Ban & Update Role)
+// =============================================================================
+app.use(async (req, res, next) => {
+  // On n'intervient que si une session utilisateur existe
+  if (req.session && req.session.user && req.session.user.id) {
+    try {
+      // 1. Vérification "Flash" en base de données
+      const result = await pool.query(
+        'SELECT is_active, is_subscriber, role FROM users WHERE id = $1',
+        [req.session.user.id]
+      );
+
+      // Cas A : L'utilisateur n'existe plus ou est banni
+      if (result.rows.length === 0 || !result.rows[0].is_active) {
+        return req.session.destroy((err) => {
+          if (req.xhr || req.headers.accept && req.headers.accept.indexOf('json') > -1) {
+            // Si c'est un appel API (ex: bouton ban)
+            return res.status(403).json({ success: false, error: "Compte suspendu." });
+          }
+          // Si c'est une navigation normale
+          res.redirect('/auth.html?error=banned');
+        });
+      }
+
+      // Cas B : Tout va bien -> On met à jour la session avec les infos fraîches
+      // C'est ça qui active tes droits Premium immédiatement après paiement !
+      req.session.user.is_active = result.rows[0].is_active;
+      req.session.user.is_subscriber = result.rows[0].is_subscriber;
+      req.session.user.role = result.rows[0].role;
+
+      // On sauvegarde explicitement si quelque chose a changé (optionnel mais sûr)
+      req.session.save();
+
+    } catch (err) {
+      console.error("Erreur sync session:", err.message);
+      // En cas d'erreur DB, on laisse passer pour ne pas bloquer le site, 
+      // ou on bloque par sécurité selon ta politique. Ici on log juste.
+    }
+  }
+  next();
+});
+// =============================================================================
 // MIDDLEWARE: SYNCHRONISATION SESSION ET BANNISSEMENT EN TEMPS RÉEL
 // =============================================================================
 app.use(async (req, res, next) => {
