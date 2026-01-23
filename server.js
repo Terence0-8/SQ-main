@@ -303,42 +303,6 @@ app.use(async (req, res, next) => {
   next();
 });
 // =============================================================================
-// MIDDLEWARE: SYNCHRONISATION SESSION ET BANNISSEMENT EN TEMPS RÉEL
-// =============================================================================
-app.use(async (req, res, next) => {
-  // Ne vérifier que si l'utilisateur a une session active
-  if (req.session && req.session.user && req.session.user.id) {
-    try {
-      const { rows } = await pool.query(
-        'SELECT is_active, is_subscriber, role FROM users WHERE id = $1',
-        [req.session.user.id]
-      );
-
-      if (rows.length === 0 || !rows[0].is_active) {
-        // Utilisateur banni ou supprimé : destruction de la session
-        return req.session.destroy((err) => {
-          if (err) console.error('Erreur destruction session:', err);
-          res.status(403).json({
-            success: false,
-            error: 'Votre compte a été suspendu. Veuillez contacter l\'administration.',
-            banned: true
-          });
-        });
-      }
-
-      // Synchroniser les données de session avec la BDD (pour accès premium immédiat)
-      req.session.user.is_subscriber = rows[0].is_subscriber;
-      req.session.user.role = rows[0].role;
-
-    } catch (err) {
-      console.error('Erreur middleware session sync:', err);
-      // En cas d'erreur DB, on laisse passer pour ne pas bloquer tout le site
-    }
-  }
-  next();
-})
-
-
 // =============================================================================
 // 4. PROTECTION CSRF
 // =============================================================================
