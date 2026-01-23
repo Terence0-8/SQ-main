@@ -226,6 +226,12 @@ router.post('/simulate-payment', isAuthenticated, async (req, res) => {
       [userId]
     );
 
+    // 4. MISE À JOUR SESSION IMMÉDIATE (pour accès premium instantané)
+    req.session.user.is_subscriber = true;
+    req.session.save((err) => {
+      if (err) console.error('Erreur sauvegarde session:', err);
+    });
+
     console.log(`🚀 Abonnement SIMULÉ activé pour l'user ${userId}`);
 
     // On renvoie une URL de succès fictive
