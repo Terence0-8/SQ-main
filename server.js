@@ -8,11 +8,12 @@ const path = require('path');
 const fs = require('fs');
 const pool = require('./backend/config/database');
 const rateLimit = require('express-rate-limit');
+const slugResolver = require('./backend/middleware/slugResolver');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const isProduction = process.env.NODE_ENV === 'production';
-const BASE_URL = 'https://solitiquo.com'; // URL de production anticipée
+const BASE_URL = isProduction ? 'https://solitiquo.com' : `http://localhost:${PORT}`;
 
 // =============================================================================
 // 1. SÉCURITÉ HEADERS HTTP - HELMET.JS
@@ -55,7 +56,7 @@ app.use(helmet({
         "https://www.youtube.com",
         "https://www.youtube-nocookie.com",
         "https://www.facebook.com",
-        "https://w.soundcloud.com" // Ajout potentiel pour podcasts externes
+        "https://w.soundcloud.com"
       ]
     }
   },
@@ -79,158 +80,6 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
-
-// =============================================================================
-// ⚡ SEO & SSR - INJECTION DYNAMIQUE (ARTICLES, PODCASTS, ÉMISSIONS)
-// =============================================================================
-
-// Fonction utilitaire pour injecter les balises
-const injectMetaTags = (html, data) => {
-  const title = `${data.title} — Solitiquo`;
-  const description = (data.description || "Le média de référence au Cameroun.").replace(/"/g, '&quot;');
-  const image = data.image || `${BASE_URL}/social-share.jpg`;
-  const url = data.url;
-
-  const metaTags = `
-    <title>${title}</title>
-    <meta name="description" content="${description}" />
-    <link rel="canonical" href="${url}" />
-    
-    <meta property="og:type" content="article" />
-    <meta property="og:url" content="${url}" />
-    <meta property="og:title" content="${title}" />
-    <meta property="og:description" content="${description}" />
-    <meta property="og:image" content="${image}" />
-
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="${url}" />
-    <meta property="twitter:title" content="${title}" />
-    <meta property="twitter:description" content="${description}" />
-    <meta property="twitter:image" content="${image}" />
-  `;
-
-  return html
-    .replace(/<title>.*?<\/title>/i, '')
-    .replace('</head>', `${metaTags}</head>`);
-};
-
-// --- A. Route SITEMAP XML (Global) ---
-app.get('/sitemap.xml', async (req, res) => {
-  try {
-    const staticPages = ['index.html', 'politique.html', 'social.html', 'partis-politiques.html', 'podcasts.html', 'emissions.html', 'auth.html', 'abonnement.html'];
-
-    // Récupération parallèle des contenus
-    const [articles, podcasts, emissions] = await Promise.all([
-      pool.query("SELECT id, updated_at FROM articles WHERE status = 'published' ORDER BY updated_at DESC"),
-      pool.query("SELECT id, updated_at FROM podcasts WHERE status = 'published' ORDER BY updated_at DESC"),
-      pool.query("SELECT id, updated_at FROM emissions WHERE status = 'published' ORDER BY updated_at DESC")
-    ]);
-
-    let xml = '<?xml version="1.0" encoding="UTF-8"?>';
-    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
-
-    // Pages statiques
-    staticPages.forEach(page => {
-      xml += `<url><loc>${BASE_URL}/${page}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>`;
-    });
-
-    // Articles
-    articles.rows.forEach(item => {
-      xml += `<url><loc>${BASE_URL}/article.html?id=${item.id}</loc><lastmod>${new Date(item.updated_at).toISOString()}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>`;
-    });
-
-    // Podcasts
-    podcasts.rows.forEach(item => {
-      xml += `<url><loc>${BASE_URL}/podcast.html?id=${item.id}</loc><lastmod>${new Date(item.updated_at).toISOString()}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>`;
-    });
-
-    // Émissions
-    emissions.rows.forEach(item => {
-      xml += `<url><loc>${BASE_URL}/emission.html?id=${item.id}</loc><lastmod>${new Date(item.updated_at).toISOString()}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>`;
-    });
-
-    xml += '</urlset>';
-    res.header('Content-Type', 'application/xml');
-    res.send(xml);
-
-  } catch (err) {
-    console.error('❌ Sitemap Error:', err);
-    res.status(500).end();
-  }
-});
-
-// --- B. Intercepteur ARTICLES ---
-app.get('/article.html', async (req, res, next) => {
-  if (!req.query.id) return next();
-  try {
-    const { rows } = await pool.query("SELECT title, excerpt, featured_image FROM articles WHERE id = $1", [req.query.id]);
-    if (rows.length === 0) return next();
-
-    fs.readFile(path.join(__dirname, 'article.html'), 'utf8', (err, html) => {
-      if (err) return next();
-      const finalHtml = injectMetaTags(html, {
-        title: rows[0].title,
-        description: rows[0].excerpt,
-        image: rows[0].featured_image,
-        url: `${BASE_URL}/article.html?id=${req.query.id}`
-      });
-      res.send(finalHtml);
-    });
-  } catch (err) { next(); }
-});
-
-// --- C. Intercepteur PODCASTS ---
-app.get('/podcast.html', async (req, res, next) => {
-  if (!req.query.id) return next();
-  try {
-    const { rows } = await pool.query("SELECT title, description, cover_image FROM podcasts WHERE id = $1", [req.query.id]);
-    if (rows.length === 0) return next();
-
-    fs.readFile(path.join(__dirname, 'podcast.html'), 'utf8', (err, html) => {
-      if (err) return next();
-      const finalHtml = injectMetaTags(html, {
-        title: rows[0].title,
-        description: rows[0].description,
-        image: rows[0].cover_image,
-        url: `${BASE_URL}/podcast.html?id=${req.query.id}`
-      });
-      res.send(finalHtml);
-    });
-  } catch (err) { next(); }
-});
-
-// --- D. Intercepteur ÉMISSIONS ---
-app.get('/emission.html', async (req, res, next) => {
-  if (!req.query.id) return next(); // Attention: le fichier s'appelle peut-être emissions.html (pluriel) ou emission.html (singulier) ? Vérifie le nom.
-  // Basé sur tes fichiers uploadés, tu as 'emissions.html' (liste) mais pas de 'emission.html' (détail) clair dans la liste ?
-  // Je suppose ici que tu vas créer une page de détail 'emission.html' ou 'video.html'.
-  // Si tu utilises une modal sur la page liste, le SEO ne marchera pas pareil.
-  // ASSUMPTION: Tu as ou auras une page de détail.
-
-  try {
-    const { rows } = await pool.query("SELECT title, description, thumbnail_url FROM emissions WHERE id = $1", [req.query.id]);
-    if (rows.length === 0) return next();
-
-    // Note: Vérifie si le fichier est emission.html ou video.html
-    const templatePath = path.join(__dirname, 'emissions.html');
-
-    fs.readFile(templatePath, 'utf8', (err, html) => {
-      if (err) return next();
-      const finalHtml = injectMetaTags(html, {
-        title: rows[0].title,
-        description: rows[0].description,
-        image: rows[0].thumbnail_url,
-        url: `${BASE_URL}/emissions.html?id=${req.query.id}` // Lien vers la liste filtrée si pas de page détail
-      });
-      res.send(finalHtml);
-    });
-  } catch (err) { next(); }
-});
-
-
-// Servir les fichiers statiques (HTML, CSS, JS) - Doit être APRÈS les intercepteurs
-app.use(express.static(__dirname));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // =============================================================================
 // 3. RATE LIMITING & SESSIONS
@@ -264,45 +113,34 @@ app.use(session({
 // MIDDLEWARE DE SYNCHRONISATION & SÉCURITÉ (Anti-Ban & Update Role)
 // =============================================================================
 app.use(async (req, res, next) => {
-  // On n'intervient que si une session utilisateur existe
   if (req.session && req.session.user && req.session.user.id) {
     try {
-      // 1. Vérification "Flash" en base de données
       const result = await pool.query(
         'SELECT is_active, is_subscriber, role FROM users WHERE id = $1',
         [req.session.user.id]
       );
 
-      // Cas A : L'utilisateur n'existe plus ou est banni
       if (result.rows.length === 0 || !result.rows[0].is_active) {
         return req.session.destroy((err) => {
           if (req.xhr || req.headers.accept && req.headers.accept.indexOf('json') > -1) {
-            // Si c'est un appel API (ex: bouton ban)
             return res.status(403).json({ success: false, error: "Compte suspendu." });
           }
-          // Si c'est une navigation normale
           res.redirect('/auth.html?error=banned');
         });
       }
 
-      // Cas B : Tout va bien -> On met à jour la session avec les infos fraîches
-      // C'est ça qui active tes droits Premium immédiatement après paiement !
       req.session.user.is_active = result.rows[0].is_active;
       req.session.user.is_subscriber = result.rows[0].is_subscriber;
       req.session.user.role = result.rows[0].role;
-
-      // On sauvegarde explicitement si quelque chose a changé (optionnel mais sûr)
       req.session.save();
 
     } catch (err) {
       console.error("Erreur sync session:", err.message);
-      // En cas d'erreur DB, on laisse passer pour ne pas bloquer le site, 
-      // ou on bloque par sécurité selon ta politique. Ici on log juste.
     }
   }
   next();
 });
-// =============================================================================
+
 // =============================================================================
 // 4. PROTECTION CSRF
 // =============================================================================
@@ -333,18 +171,317 @@ const verifyCsrf = (req, res, next) => {
 app.use('/api/admin', verifyCsrf);
 
 // =============================================================================
+// ✅ SEO ENGINE - URLs SEO-FRIENDLY
+// =============================================================================
+
+// Fonction utilitaire pour injecter les balises meta
+const injectMetaTags = (html, data) => {
+  const title = `${data.title} — Solitiquo`;
+  const description = (data.description || "Le média de référence au Cameroun.").replace(/"/g, '&quot;');
+  const image = data.image || `${BASE_URL}/social-share.jpg`;
+  const url = data.url;
+
+  const metaTags = `
+    <title>${title}</title>
+    <meta name="description" content="${description}" />
+    <link rel="canonical" href="${url}" />
+    
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="${url}" />
+    <meta property="og:title" content="${title}" />
+    <meta property="og:description" content="${description}" />
+    <meta property="og:image" content="${image}" />
+
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="${url}" />
+    <meta property="twitter:title" content="${title}" />
+    <meta property="twitter:description" content="${description}" />
+    <meta property="twitter:image" content="${image}" />
+  `;
+
+  return html
+    .replace(/<title>.*?<\/title>/i, '')
+    .replace('</head>', `${metaTags}</head>`);
+};
+
+// ==========================================
+// ✅ REDIRECTIONS 301 (Anciennes URLs → Nouvelles)
+// ==========================================
+
+app.get('/article.html', async (req, res) => {
+  const { id } = req.query;
+  
+  if (!id) {
+    return res.redirect(301, '/fr/politique');
+  }
+
+  try {
+    const result = await pool.query(
+      'SELECT slug, language, category FROM articles WHERE id = $1 AND status = $2',
+      [id, 'published']
+    );
+
+    if (result.rows.length === 0) {
+      return res.redirect(301, '/fr/politique');
+    }
+
+    const { slug, language, category } = result.rows[0];
+    
+    const categoryMap = {
+      'Politique': 'politique',
+      'Social': 'social',
+      'Économie': 'economie',
+      'Culture': 'culture',
+      'International': 'international',
+      'Dossiers': 'dossiers'
+    };
+
+    const urlCategory = categoryMap[category] || 'politique';
+    const newUrl = `/${language}/${urlCategory}/${slug}`;
+
+    console.log(`♻️ Redirection 301: /article.html?id=${id} → ${newUrl}`);
+    res.redirect(301, newUrl);
+  } catch (err) {
+    console.error('❌ Erreur redirection article:', err);
+    res.redirect(301, '/fr/politique');
+  }
+});
+
+app.get('/podcast.html', async (req, res) => {
+  const { id } = req.query;
+  
+  if (!id) {
+    return res.redirect(301, '/fr/podcasts');
+  }
+
+  try {
+    const result = await pool.query(
+      'SELECT slug FROM podcasts WHERE id = $1 AND status = $2',
+      [id, 'published']
+    );
+
+    if (result.rows.length === 0) {
+      return res.redirect(301, '/fr/podcasts');
+    }
+
+    const newUrl = `/fr/podcasts/${result.rows[0].slug}`;
+    console.log(`♻️ Redirection 301: /podcast.html?id=${id} → ${newUrl}`);
+    res.redirect(301, newUrl);
+  } catch (err) {
+    res.redirect(301, '/fr/podcasts');
+  }
+});
+
+app.get('/emissions.html', async (req, res) => {
+  const { id } = req.query;
+  
+  if (!id) {
+    return res.redirect(301, '/fr/emissions');
+  }
+
+  try {
+    const result = await pool.query(
+      'SELECT slug FROM emissions WHERE id = $1 AND status = $2',
+      [id, 'published']
+    );
+
+    if (result.rows.length === 0) {
+      return res.redirect(301, '/fr/emissions');
+    }
+
+    const newUrl = `/fr/emissions/${result.rows[0].slug}`;
+    console.log(`♻️ Redirection 301: /emissions.html?id=${id} → ${newUrl}`);
+    res.redirect(301, newUrl);
+  } catch (err) {
+    res.redirect(301, '/fr/emissions');
+  }
+});
+
+app.get('/partis.html', async (req, res) => {
+  const { id } = req.query;
+  
+  if (!id) {
+    return res.redirect(301, '/fr/partis');
+  }
+
+  try {
+    const result = await pool.query(
+      'SELECT slug FROM parties WHERE id = $1',
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.redirect(301, '/fr/partis');
+    }
+
+    const newUrl = `/fr/partis/${result.rows[0].slug}`;
+    console.log(`♻️ Redirection 301: /partis.html?id=${id} → ${newUrl}`);
+    res.redirect(301, newUrl);
+  } catch (err) {
+    res.redirect(301, '/fr/partis');
+  }
+});
+
+// ==========================================
+// ✅ ROUTING SEO-FRIENDLY DYNAMIQUE
+// ==========================================
+
+// Appliquer le middleware de résolution de slug
+app.use(slugResolver);
+
+// Route générique pour tous les contenus SEO
+app.get('/:lang(fr|en)/:category/:slug(*)', async (req, res, next) => {
+  // Si le slug n'a pas été résolu, passer au gestionnaire 404
+  if (!req.resolvedContent) {
+    return next();
+  }
+
+  const { type, id, lang } = req.resolvedContent;
+
+  try {
+    let templateFile, data;
+
+    // Sélectionner le template et récupérer les données
+    switch (type) {
+      case 'article':
+        templateFile = 'article.html';
+        const articleRes = await pool.query(
+          'SELECT title, excerpt, featured_image FROM articles WHERE id = $1',
+          [id]
+        );
+        if (articleRes.rows.length === 0) return next();
+        data = articleRes.rows[0];
+        break;
+
+      case 'podcast':
+        templateFile = 'podcast.html';
+        const podcastRes = await pool.query(
+          'SELECT title, description, cover_image FROM podcasts WHERE id = $1',
+          [id]
+        );
+        if (podcastRes.rows.length === 0) return next();
+        data = podcastRes.rows[0];
+        break;
+
+      case 'emission':
+        templateFile = 'emissions.html';
+        const emissionRes = await pool.query(
+          'SELECT title, description, thumbnail_url FROM emissions WHERE id = $1',
+          [id]
+        );
+        if (emissionRes.rows.length === 0) return next();
+        data = emissionRes.rows[0];
+        break;
+
+      case 'party':
+        templateFile = 'partis.html';
+        const partyRes = await pool.query(
+          'SELECT name, description, logo_url FROM parties WHERE id = $1',
+          [id]
+        );
+        if (partyRes.rows.length === 0) return next();
+        data = { title: partyRes.rows[0].name, excerpt: partyRes.rows[0].description, featured_image: partyRes.rows[0].logo_url };
+        break;
+
+      default:
+        return next();
+    }
+
+    // Lire le template HTML
+    fs.readFile(path.join(__dirname, templateFile), 'utf8', (err, html) => {
+      if (err) return next();
+
+      // Injection des meta tags SEO
+      const finalHtml = injectMetaTags(html, {
+        title: data.title,
+        description: data.excerpt || data.description,
+        image: data.featured_image || data.cover_image || data.thumbnail_url || data.logo_url,
+        url: `${BASE_URL}${req.path}`
+      });
+
+      res.send(finalHtml);
+    });
+
+  } catch (err) {
+    console.error('❌ Erreur rendu contenu SEO:', err);
+    next(err);
+  }
+});
+
+// ==========================================
+// SITEMAP XML (URLs SEO-FRIENDLY)
+// ==========================================
+app.get('/sitemap.xml', async (req, res) => {
+  try {
+    const staticPages = ['index.html', 'politique.html', 'social.html', 'partis-politiques.html', 'podcasts.html', 'emissions.html', 'auth.html', 'abonnement.html'];
+
+    // Récupération parallèle des contenus
+    const [articles, podcasts, emissions] = await Promise.all([
+      pool.query("SELECT slug, language, category, updated_at FROM articles WHERE status = 'published' ORDER BY updated_at DESC"),
+      pool.query("SELECT slug, updated_at FROM podcasts WHERE status = 'published' ORDER BY updated_at DESC"),
+      pool.query("SELECT slug, updated_at FROM emissions WHERE status = 'published' ORDER BY updated_at DESC")
+    ]);
+
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>';
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+
+    // Pages statiques
+    staticPages.forEach(page => {
+      xml += `<url><loc>${BASE_URL}/${page}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>`;
+    });
+
+    // Articles (URLs SEO)
+    const categoryMap = {
+      'Politique': 'politique',
+      'Social': 'social',
+      'Économie': 'economie',
+      'Culture': 'culture',
+      'International': 'international',
+      'Dossiers': 'dossiers'
+    };
+
+    articles.rows.forEach(item => {
+      const urlCategory = categoryMap[item.category] || 'politique';
+      xml += `<url><loc>${BASE_URL}/${item.language}/${urlCategory}/${item.slug}</loc><lastmod>${new Date(item.updated_at).toISOString()}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>`;
+    });
+
+    // Podcasts (URLs SEO)
+    podcasts.rows.forEach(item => {
+      xml += `<url><loc>${BASE_URL}/fr/podcasts/${item.slug}</loc><lastmod>${new Date(item.updated_at).toISOString()}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>`;
+    });
+
+    // Émissions (URLs SEO)
+    emissions.rows.forEach(item => {
+      xml += `<url><loc>${BASE_URL}/fr/emissions/${item.slug}</loc><lastmod>${new Date(item.updated_at).toISOString()}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>`;
+    });
+
+    xml += '</urlset>';
+    res.header('Content-Type', 'application/xml');
+    res.send(xml);
+
+  } catch (err) {
+    console.error('❌ Sitemap Error:', err);
+    res.status(500).end();
+  }
+});
+
+// Servir les fichiers statiques (HTML, CSS, JS) - Doit être APRÈS les routes dynamiques
+app.use(express.static(__dirname));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// =============================================================================
 // 5. ROUTES API
 // =============================================================================
 try {
   app.use('/api/articles', require('./backend/routes/articles'));
-  app.use('/api/language', require('./backend/routes/language')); // Language preference management
+  app.use('/api/language', require('./backend/routes/language'));
   app.use('/api/polls', require('./backend/routes/polls'));
   app.use('/api/comments', require('./backend/routes/comments'));
   app.use('/api/auth', require('./backend/routes/auth'));
-  app.use('/api/podcasts', require('./backend/routes/podcasts')); // Déjà là, parfait
+  app.use('/api/podcasts', require('./backend/routes/podcasts'));
   app.use('/api/admin', require('./backend/routes/admin'));
   app.use('/api/analytics', require('./backend/routes/analytics'));
-  app.use('/api/emissions', require('./backend/routes/emissions')); // Déjà là, parfait
+  app.use('/api/emissions', require('./backend/routes/emissions'));
   app.use('/api/contact', require('./backend/routes/contact'));
   app.use('/api/search', require('./backend/routes/search'));
   app.use('/api/subscriptions', require('./backend/routes/subscriptions'));
@@ -361,7 +498,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'Server Running',
     environment: isProduction ? 'production' : 'development',
-    seo_engine: 'Active (Articles, Podcasts, Emissions)'
+    seo_engine: 'Active (SEO-Friendly URLs)'
   });
 });
 
@@ -378,7 +515,8 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`\n🚀 Serveur Solitiquo (FULL) lancé sur http://localhost:${PORT}`);
-  console.log(`🌍 SEO Engine: Prêt pour ${BASE_URL}`);
-  console.log(`🛡️  Mode : ${isProduction ? 'PRODUCTION' : 'DEVELOPPEMENT'}`);
+  console.log(`\n🚀 Serveur Solitiquo (FULL) lancé sur ${BASE_URL}`);
+  console.log(`🌍 SEO Engine: URLs SEO-Friendly actives (/fr/politique/slug)`);
+  console.log(`🔒 Mode : ${isProduction ? 'PRODUCTION' : 'DEVELOPPEMENT'}`);
+  console.log(`♻️  Redirections 301: Anciennes URLs → Nouvelles URLs`);
 });
