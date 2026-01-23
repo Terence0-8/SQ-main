@@ -94,7 +94,7 @@
         <div class="avatar-circle" id="user-initial">?</div>
         <div class="user-name" id="user-name">Chargement...</div>
         <div class="user-email" id="user-email">...</div>
-        <button class="btn-logout" onclick="SolitiquoAPI.logout()">Se déconnecter</button>
+        <button id="btn-logout" class="btn-logout">Se déconnecter</button>
       </aside>
 
       <section class="sub-card">
@@ -297,6 +297,23 @@
         btn.disabled = false;
       }
     }
+
+    document.getElementById('btn-logout').addEventListener('click', async (e) => {
+      e.preventDefault();
+      try {
+        // 1. On appelle le serveur pour détruire la session proprement
+        await fetch('/api/auth/logout', { method: 'POST' });
+
+        // 2. On nettoie le localStorage (si tu stockes des infos user ici)
+        localStorage.removeItem('user_data');
+
+        // 3. Retour à l'accueil
+        window.location.href = 'index.html';
+      } catch (err) {
+        // Force la redirection même si erreur serveur
+        window.location.href = 'index.html';
+      }
+    });
   </script>
 </body>
 
