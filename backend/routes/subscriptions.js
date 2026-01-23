@@ -229,16 +229,29 @@ router.post('/simulate-payment', isAuthenticated, async (req, res) => {
     // 4. MISE À JOUR SESSION IMMÉDIATE (pour accès premium instantané)
     if (req.session && req.session.user) {
       req.session.user.is_subscriber = true;
-      req.session.save(); // Force l'écriture immédiate
+
+      // On attend que la session soit réellement sauvegardée avant de répondre
+      req.session.save((err) => {
+        if (err) {
+          console.error('Erreur sauvegarde session:', err);
+          return res.status(500).json({ success: false, error: "Erreur session" });
+        }
+
+        console.log(`🚀 Abonnement SIMULÉ activé pour l'user ${userId}`);
+
+        // On renvoie une URL de succès fictive
+        res.json({
+          success: true,
+          payment_url: `${BASE_URL}/paiement-success.html?transaction_id=${transactionId}&mock=true`
+        });
+      });
+    } else {
+      // Pas de session active (cas anormal)
+      res.json({
+        success: true,
+        payment_url: `${BASE_URL}/paiement-success.html?transaction_id=${transactionId}&mock=true`
+      });
     }
-
-    console.log(`🚀 Abonnement SIMULÉ activé pour l'user ${userId}`);
-
-    // On renvoie une URL de succès fictive
-    res.json({
-      success: true,
-      payment_url: `${BASE_URL}/paiement-success.html?transaction_id=${transactionId}&mock=true`
-    });
 
   } catch (err) {
     console.error(err);

@@ -63,20 +63,13 @@ router.post('/track', async (req, res) => {
             });
         }
 
-        // S'assurer que la ligne analytics existe
-        await pool.query(
-            'INSERT INTO article_analytics (article_id) VALUES ($1) ON CONFLICT (article_id) DO NOTHING',
-            [article_id]
-        );
-
-        // Mise à jour sécurisée avec requête préparée
-        const query = `
-      UPDATE article_analytics 
-      SET ${column} = ${column} + 1, updated_at = NOW()
-      WHERE article_id = $1
-    `;
-
-        await pool.query(query, [article_id]);
+        // S'assurer que la ligne analytics existe (upsert sans contrainte)
+        await pool.query(`
+            INSERT INTO article_analytics (article_id, ${column}, updated_at) 
+            VALUES ($1, 1, NOW())
+            ON CONFLICT (article_id) DO UPDATE 
+            SET ${column} = article_analytics.${column} + 1, updated_at = NOW()
+        `, [article_id]);
 
         res.json({ success: true });
 
