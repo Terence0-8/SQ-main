@@ -6,6 +6,7 @@ const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
 const Joi = require('joi');
 const { isWriter } = require('../middleware/auth');
+const { createUniqueSlug } = require('../utils/slugify');
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -26,10 +27,9 @@ const articleSchema = Joi.object({
       'any.required': 'Le titre est requis'
     }),
 
-  slug: Joi.string().pattern(/^[a-z0-9-]+$/).max(500).required()
+  slug: Joi.string().pattern(/^[a-z0-9-]+$/).max(500).optional()
     .messages({
-      'string.pattern.base': 'Le slug ne doit contenir que des lettres minuscules, chiffres et tirets',
-      'any.required': 'Le slug est requis'
+      'string.pattern.base': 'Le slug ne doit contenir que des lettres minuscules, chiffres et tirets'
     }),
 
   content: Joi.string().min(50).required()
@@ -108,7 +108,73 @@ router.get('/', async (req, res) => {
 });
 
 // ==========================================
-// 2. LECTURE ARTICLE UNIQUE
+// 1b. LECTURE ARTICLE PAR SLUG (SEO)
+// ==========================================
+router.get('/by-slug/:slug', async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const { lang } = req.query;
+
+    const targetLang = lang || 'fr';
+
+    const query = `
+      SELECT 
+        a.id,
+        a.title,
+        a.slug,
+        a.content,
+        a.excerpt,
+        a.category,
+        a.status,
+        a.is_premium,
+        a.language,
+        a.tags,
+        a.views_count,
+        a.featured_image AS image_url,
+        a.published_at,
+        a.created_at,
+        a.updated_at,
+        a.author_id,
+        u.username as author_name
+      FROM articles a
+      LEFT JOIN users u ON a.author_id = u.id
+      WHERE a.slug = $1 AND a.language = $2
+    `;
+
+    const { rows } = await pool.query(query, [slug, targetLang]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Article introuvable' });
+    }
+
+    const article = rows[0];
+
+    // Vérification droits accès
+    const user = req.session && req.session.user ? req.session.user : null;
+    const isAdmin = user && (user.role === 'admin' || user.role === 'writer');
+
+    if (article.status !== 'published' && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        error: "Cet article n'est pas encore public."
+      });
+    }
+
+    // Incrémenter les vues (seulement pour articles publiés)
+    if (article.status === 'published') {
+      await pool.query('UPDATE articles SET views_count = views_count + 1 WHERE id = $1', [article.id]);
+    }
+
+    res.json({ success: true, article: article });
+
+  } catch (err) {
+    console.error('❌ Erreur lecture article par slug:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
+// ==========================================
+// 2. LECTURE ARTICLE UNIQUE PAR ID
 // ==========================================
 router.get('/:id', async (req, res) => {
   try {
@@ -178,7 +244,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // ==========================================
-// 3. CRÉATION ARTICLE
+// 3. CRÉATION ARTICLE (SLUG AUTO)
 // ==========================================
 router.post('/', isWriter, upload.single('image_file'), async (req, res) => {
   try {
@@ -193,6 +259,21 @@ router.post('/', isWriter, upload.single('image_file'), async (req, res) => {
     }
 
     let { title, slug, content, excerpt, category, author_id, lang, image_url, tags } = value;
+
+    // ✅ GÉNÉRATION AUTOMATIQUE DU SLUG
+    if (!slug) {
+      slug = await createUniqueSlug(title, 'articles');
+      console.log(`✅ Slug généré automatiquement: ${slug}`);
+    } else {
+      // Vérifier unicité du slug fourni
+      const existing = await pool.query('SELECT id FROM articles WHERE slug = $1', [slug]);
+      if (existing.rows.length > 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Ce slug existe déjà, veuillez en choisir un autre'
+        });
+      }
+    }
 
     // Parsing tags
     let tagsArray = [];
@@ -230,12 +311,14 @@ router.post('/', isWriter, upload.single('image_file'), async (req, res) => {
       finalImageUrl = 'https://via.placeholder.com/800x400';
     }
 
+    const targetLang = lang || 'fr';
+
     // Insertion en base (statut 'draft' par défaut)
     const query = `
       INSERT INTO articles 
       (title, slug, content, excerpt, category, author_id, language, featured_image, tags, status, published_at, created_at, updated_at)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'draft', NULL, NOW(), NOW())
-      RETURNING id, title, slug, status
+      RETURNING id, title, slug, status, language, category
     `;
 
     const values = [
@@ -245,17 +328,31 @@ router.post('/', isWriter, upload.single('image_file'), async (req, res) => {
       excerpt || '',
       category,
       author_id || req.session.user.id,
-      lang || 'fr',
+      targetLang,
       finalImageUrl,
       tagsArray
     ];
 
     const { rows } = await pool.query(query, values);
 
+    // ✅ RETOURNER LA NOUVELLE URL SEO
+    const categoryMap = {
+      'Politique': 'politique',
+      'Social': 'social',
+      'Économie': 'economie',
+      'Culture': 'culture',
+      'International': 'international',
+      'Dossiers': 'dossiers'
+    };
+
+    const urlCategory = categoryMap[rows[0].category] || 'politique';
+    const seoUrl = `/${rows[0].language}/${urlCategory}/${rows[0].slug}`;
+
     res.json({
       success: true,
       message: 'Article créé en mode brouillon',
-      article: rows[0]
+      article: rows[0],
+      url: seoUrl
     });
 
   } catch (err) {
@@ -274,7 +371,7 @@ router.post('/', isWriter, upload.single('image_file'), async (req, res) => {
 });
 
 // ==========================================
-// 4. MODIFICATION ARTICLE
+// 4. MODIFICATION ARTICLE (RÉGÉNÉRATION SLUG SI TITRE CHANGE)
 // ==========================================
 router.put('/:id', isWriter, upload.single('image_file'), async (req, res) => {
   try {
@@ -283,6 +380,13 @@ router.put('/:id', isWriter, upload.single('image_file'), async (req, res) => {
     // Validation ID
     if (isNaN(id)) {
       return res.status(400).json({ success: false, error: 'ID invalide' });
+    }
+
+    // Récupérer l'article actuel
+    const currentArticle = await pool.query('SELECT title, slug FROM articles WHERE id = $1', [id]);
+    
+    if (currentArticle.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Article introuvable' });
     }
 
     // Validation des données
@@ -296,6 +400,14 @@ router.put('/:id', isWriter, upload.single('image_file'), async (req, res) => {
     }
 
     let { title, slug, content, excerpt, category, image_url, tags } = value;
+
+    // ✅ RÉGÉNÉRER LE SLUG SI LE TITRE CHANGE
+    if (title !== currentArticle.rows[0].title && !slug) {
+      slug = await createUniqueSlug(title, 'articles', id);
+      console.log(`✅ Slug régénéré automatiquement: ${slug}`);
+    } else if (!slug) {
+      slug = currentArticle.rows[0].slug; // Garder l'ancien slug
+    }
 
     // Parsing tags
     let tagsArray = [];
