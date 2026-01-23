@@ -29,7 +29,19 @@
             ID Transaction : <span id="transId">...</span>
         </div>
 
-        <a href="index.html" class="btn-home">Retour à l'accueil</a>
+        <!-- Message de synchronisation -->
+        <div id="syncMessage" style="margin: 20px 0; padding: 15px; background: #f0f9ff; border-radius: 8px; color: #0369a1; display: none;">
+            <strong>🔄 Synchronisation en cours...</strong><br>
+            <small>Activation de votre accès premium</small>
+        </div>
+
+        <div id="syncSuccess" style="margin: 20px 0; padding: 15px; background: #f0fdf4; border-radius: 8px; color: #15803d; display: none;">
+            <strong>✅ Accès Premium activé !</strong><br>
+            <small>Redirection vers votre profil...</small>
+        </div>
+
+        <a href="profil.html" class="btn-home" id="btnProfil">Voir mon profil</a>
+        <a href="index.html" class="btn-home" style="margin-top: 10px; background: #6b7280;">Retour à l'accueil</a>
     </div>
 
     <script src="js/config.js"></script>
@@ -38,41 +50,75 @@
         // 1. Afficher l'ID de transaction
         const params = new URLSearchParams(window.location.search);
         const transactionId = params.get('transaction_id');
+        const isMock = params.get('mock') === 'true';
 
         if (transactionId) {
             document.getElementById('transId').textContent = transactionId;
 
-            // 2. Vérification de sécurité (Double Check)
-            SolitiquoAPI.fetchWithAuth(`/subscriptions/check-status`, {
-                method: 'POST',
-                body: JSON.stringify({ transaction_id: transactionId })
-            }).then(res => {
-                if (!res.success) {
-                    console.warn("Le paiement est encore en cours de validation côté serveur.");
-                }
-            }).catch(err => console.error("Erreur vérification:", err));
-
-            // 3. SYNCHRONISATION IMMÉDIATE DU STATUT ABONNÉ
-            // Récupérer les données utilisateur fraîches depuis le serveur
-            fetch(`${window.API_URL}/auth/me`, { credentials: 'include' })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success && data.user) {
-                        // Mise à jour du localStorage si utilisé par l'app
-                        localStorage.setItem('user', JSON.stringify(data.user));
-
-                        console.log('✅ Statut abonné synchronisé:', data.user.is_subscriber);
-
-                        // Optionnel : afficher un message visuel
-                        if (data.user.is_subscriber) {
-                            console.log('🎉 Accès Premium activé !');
-                        }
+            // 2. Vérification de sécurité (Double Check) - Uniquement si pas en mode mock
+            if (!isMock) {
+                SolitiquoAPI.fetchWithAuth(`/subscriptions/check-status`, {
+                    method: 'POST',
+                    body: JSON.stringify({ transaction_id: transactionId })
+                }).then(res => {
+                    if (!res.success) {
+                        console.warn("Le paiement est encore en cours de validation côté serveur.");
                     }
-                })
-                .catch(err => console.error('Erreur sync abonné:', err));
+                }).catch(err => console.error("Erreur vérification:", err));
+            }
+
+            // 3. 🔥 SYNCHRONISATION IMMDIATE DU STATUT ABONNÉ
+            // On utilise le nouvel endpoint /auth/refresh-user
+            document.getElementById('syncMessage').style.display = 'block';
+
+            fetch(`${window.API_URL}/auth/refresh-user`, { 
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.user) {
+                    console.log('✅ Statut abonné synchronisé:', data.user.is_subscriber);
+
+                    // Mise à jour du localStorage pour compatibilité avec le reste de l'app
+                    localStorage.setItem('user', JSON.stringify(data.user));
+
+                    // Masquer le message de synchro, afficher le succès
+                    document.getElementById('syncMessage').style.display = 'none';
+                    document.getElementById('syncSuccess').style.display = 'block';
+
+                    // Vérifier que l'utilisateur est bien abonné
+                    if (data.user.is_subscriber) {
+                        console.log('🎉 Accès Premium activé !');
+                        
+                        // Redirection automatique vers le profil après 3 secondes
+                        setTimeout(() => {
+                            window.location.href = 'profil.html';
+                        }, 3000);
+                    } else {
+                        console.warn('⚠️ Statut abonné non activé - Vérifier la logique backend');
+                        document.getElementById('syncSuccess').innerHTML = '<strong>⚠️ Activation en attente</strong><br><small>Veuillez contacter le support si le problème persiste.</small>';
+                        document.getElementById('syncSuccess').style.background = '#fef3c7';
+                        document.getElementById('syncSuccess').style.color = '#92400e';
+                    }
+                } else {
+                    console.error('Erreur récupération données utilisateur:', data);
+                    document.getElementById('syncMessage').style.display = 'none';
+                }
+            })
+            .catch(err => {
+                console.error('Erreur sync abonné:', err);
+                document.getElementById('syncMessage').innerHTML = '<strong>⚠️ Erreur de synchronisation</strong><br><small>Veuillez rafraîchir la page</small>';
+                document.getElementById('syncMessage').style.background = '#fef2f2';
+                document.getElementById('syncMessage').style.color = '#991b1b';
+            });
 
         } else {
             document.getElementById('transId').textContent = "Inconnu";
+            console.warn('Aucun ID de transaction trouvé dans l\'URL');
         }
     </script>
 </body>
