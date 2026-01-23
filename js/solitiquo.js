@@ -79,48 +79,64 @@ document.addEventListener('DOMContentLoaded', () => {
 // FONCTIONS BANNIÈRE COOKIES
 // ============================================================
 function createCookieBanner() {
-  // 1. Création du HTML
+  // 1. Créer l'overlay de fond
+  const overlay = document.createElement('div');
+  overlay.className = 'cookie-overlay';
+  overlay.id = 'cookieOverlay';
+
+  // 2. Création du HTML de la bannière
   const banner = document.createElement('div');
   banner.className = 'cookie-banner';
   banner.innerHTML = `
         <div class="cookie-content">
-            <h4>🍪 Respect de votre vie privée</h4>
+            <h4>🍪 Choix sur les cookies</h4>
             <p>
-                Nous utilisons des cookies pour sécuriser votre connexion et analyser notre audience. 
-                Aucune donnée n'est revendue à des tiers.
-                <a href="politique-confidentialite.html" class="cookie-link">En savoir plus</a>.
+                Nous utilisons des cookies essentiels pour sécuriser votre connexion et des cookies analytiques 
+                pour améliorer notre site. Aucune donnée n'est revendue à des tiers.
+                <br><br>
+                <a href="politique-confidentialite.html" class="cookie-link">Consulter notre politique de confidentialité</a>
             </p>
         </div>
         <div class="cookie-actions">
-            <button class="btn-cookie btn-refuse" id="btn-cookie-refuse">Continuer sans accepter</button>
-            <button class="btn-cookie btn-accept" id="btn-cookie-accept">Accepter et fermer</button>
+            <button class="btn-cookie btn-refuse" id="btn-cookie-refuse">Cookies essentiels uniquement</button>
+            <button class="btn-cookie btn-accept" id="btn-cookie-accept">Tout accepter</button>
         </div>
     `;
 
+  // 3. Ajouter overlay puis bannière au DOM
+  document.body.appendChild(overlay);
   document.body.appendChild(banner);
 
-  // 2. Animation d'entrée (petit délai pour l'effet)
-  setTimeout(() => banner.classList.add('show'), 500);
+  // 4. Animation d'entrée (petit délai pour l'effet)
+  setTimeout(() => {
+    overlay.classList.add('show');
+    banner.classList.add('show');
+  }, 300);
 
-  // 3. Gestion des clics
+  // 5. Gestion des clics
   document.getElementById('btn-cookie-accept').addEventListener('click', () => {
     saveConsent('accepted');
-    hideBanner(banner);
+    hideBanner(banner, overlay);
   });
 
   document.getElementById('btn-cookie-refuse').addEventListener('click', () => {
     saveConsent('refused');
-    hideBanner(banner);
+    hideBanner(banner, overlay);
   });
 }
 
 function saveConsent(status) {
   localStorage.setItem('cookieConsent', status);
   localStorage.setItem('cookieConsentDate', new Date().toISOString());
+  console.log(`📊 Consentement cookies: ${status}`);
   // Ici, on pourrait activer/désactiver Google Analytics selon le statut
 }
 
-function hideBanner(banner) {
+function hideBanner(banner, overlay) {
   banner.classList.remove('show');
-  setTimeout(() => banner.remove(), 500); // Supprimer du DOM après l'anim
+  overlay.classList.remove('show');
+  setTimeout(() => {
+    banner.remove();
+    overlay.remove();
+  }, 400); // Supprimer du DOM après l'animation
 }
