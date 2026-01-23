@@ -119,7 +119,14 @@
         }
 
         // B. Initialiser transaction backend
-        const res = await fetch(`${window.API_URL}/subscriptions/init-payment`, {
+        // CHOIX DU MODE : Mettre 'true' pour tester sans CinetPay, 'false' pour la vraie vie
+        const DEV_MODE = true;
+
+        const endpoint = DEV_MODE
+          ? `${window.API_URL}/subscriptions/simulate-payment`
+          : `${window.API_URL}/subscriptions/init-payment`;
+
+        const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ plan: plan }),

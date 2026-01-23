@@ -190,4 +190,54 @@ router.post('/check-status', isAuthenticated, async (req, res) => {
   }
 });
 
+// ==========================================
+// 4. MODE DÉVELOPPEUR : SIMULATEUR DE PAIEMENT
+// (À utiliser UNIQUEMENT si pas de clés API)
+// ==========================================
+router.post('/simulate-payment', isAuthenticated, async (req, res) => {
+  // Sécurité : On refuse si on est en Production pour ne pas offrir d'abos gratuits
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(403).json({ success: false, error: "Interdit en production" });
+  }
+
+  const userId = req.session.user.id;
+  const { plan } = req.body;
+  const transactionId = `MOCK-${Date.now()}-${userId}`;
+
+  try {
+    // 1. Calculer la durée comme si c'était vrai
+    const interval = plan === 'yearly' ? '1 year' : '1 month';
+
+    // 2. Créer la fausse transaction 'ACCEPTED'
+    await pool.query(
+      `INSERT INTO subscriptions (user_id, plan, amount, transaction_id, status, payment_method, starts_at, ends_at)
+         VALUES ($1, $2, $3, $4, 'active', 'SIMULATOR', NOW(), NOW() + INTERVAL '${interval}')`,
+      [userId, plan, (plan === 'yearly' ? 20000 : 2000), transactionId]
+    );
+
+    // 3. Activer l'utilisateur
+    await pool.query(
+      `UPDATE users 
+         SET is_subscriber = TRUE, 
+             subscription_start_date = NOW(),
+             subscription_end_date = NOW() + INTERVAL '${interval}',
+             updated_at = NOW()
+         WHERE id = $1`,
+      [userId]
+    );
+
+    console.log(`🚀 Abonnement SIMULÉ activé pour l'user ${userId}`);
+
+    // On renvoie une URL de succès fictive
+    res.json({
+      success: true,
+      payment_url: `${BASE_URL}/paiement-success.html?transaction_id=${transactionId}&mock=true`
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, error: "Erreur simulateur" });
+  }
+});
+
 module.exports = router;
