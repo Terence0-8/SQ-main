@@ -486,20 +486,31 @@ router.get('/parties', isAdmin, async (req, res) => {
 });
 
 // ==========================================
-// 9. GESTION UTILISATEURS (MANQUANT)
+// 9. GESTION UTILISATEURS
+// ⚡ AMÉLIORATION: Ajout des dates d'abonnement
 // ==========================================
 router.get('/users', isAdmin, async (req, res) => {
   try {
-    // On récupère tout sauf les mots de passe
+    // 🔥 On récupère maintenant les dates d'abonnement
     const query = `
-      SELECT id, username, email, role, is_active, is_subscriber, created_at 
+      SELECT 
+        id, 
+        username, 
+        email, 
+        role, 
+        is_active, 
+        is_subscriber,
+        subscription_start_date,
+        subscription_end_date,
+        created_at 
       FROM users 
-      ORDER BY created_at DESC LIMIT 100
+      ORDER BY created_at DESC 
+      LIMIT 100
     `;
     const result = await pool.query(query);
     res.json({ success: true, data: result.rows });
   } catch (err) {
-    console.error(err);
+    console.error('❌ Erreur liste utilisateurs:', err);
     res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 });
@@ -516,6 +527,7 @@ router.put('/users/:id/toggle-ban', isAdmin, async (req, res) => {
     const result = await pool.query(query, [id]);
     res.json({ success: true, is_active: result.rows[0].is_active });
   } catch (err) {
+    console.error('❌ Erreur toggle ban:', err);
     res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 });
