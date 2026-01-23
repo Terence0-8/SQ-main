@@ -10,24 +10,32 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap"
     rel="stylesheet" />
 
-
+  <script>
+    function handleImgError(img) {
+      img.onerror = null;
+      img.src = 'https://placehold.co/600x400/eee/999?text=Solitiquo';
+    }
+  </script>
 </head>
 
 <body id="page-abonnement">
 
   <header class="premium-header">
     <div class="ph-left">
-      <div class="burger-container"><button class="burger-btn" id="burgerBtn"
-          style="background:none;border:none;cursor:pointer;"><svg width="24" height="24" viewBox="0 0 24 24"
-            fill="none" stroke="#333" stroke-width="2">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg></button></div>
-      <a href="index.html" class="ph-brand"><img src="logo.svg" alt="S">
-        <div class="brand-sep"></div><span class="brand-text">Solitiquo</span>
+      <div class="burger-container">
+        <button class="burger-btn" id="burgerBtn">
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+        </button>
+      </div>
+      <a href="index.html" class="ph-brand">
+        <img src="logo.svg" alt="S" onerror="this.style.display='none'">
+        <div class="brand-sep"></div>
+        <span class="brand-text">Solitiquo</span>
       </a>
     </div>
+
     <div class="ph-center">
       <nav class="ph-nav">
         <a href="politique.html" class="ph-link">Politique</a>
@@ -37,9 +45,61 @@
         <a href="podcasts.html" class="ph-link">Podcasts</a>
       </nav>
     </div>
-    <div class="ph-right"><a href="auth.html" class="ph-btn-auth">S'identifier</a></div>
+
+    <div class="ph-right">
+      <div class="search-stack">
+        <div class="search-row" style="display:flex; align-items:center; cursor:pointer;">
+          <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
+            </svg>
+          </button>
+          <span class="search-label" id="searchLabel"
+            style="font-size:0.9rem; font-weight:600; margin-left:8px;">Rechercher</span>
+        </div>
+
+        <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
+          <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput"
+            autocomplete="off" required />
+          <button class="search-submit" type="submit" aria-label="Lancer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </form>
+      </div>
+      <a href="auth.html" class="ph-btn-auth">S'identifier</a>
+    </div>
   </header>
 
+  <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+  <nav id="mobileNav" class="mobile-nav-sidebar">
+    <div class="mobile-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img src="logo.svg" class="mobile-logo" style="height:30px;filter:brightness(0) invert(1);" alt="S"
+          onerror="this.style.display='none'">
+        <span style="font-family:'Playfair Display';font-weight:700;font-size:1.5rem;">Solitiquo</span>
+      </div>
+      <button id="mobileNavClose" style="background:none;border:none;color:white;font-size:2rem;">×</button>
+    </div>
+    <ul style="list-style:none;padding:0;margin-top:2rem;">
+      <li style="margin-bottom:1.5rem;"><a href="index.html"
+          style="color:#888;font-size:1.6rem;text-decoration:none;font-family:'Playfair Display';">Accueil</a></li>
+      <li style="margin-bottom:1.5rem;"><a href="politique.html"
+          style="color:white;font-size:1.6rem;text-decoration:none;font-family:'Playfair Display';">Politique</a></li>
+      <li style="margin-bottom:1.5rem;"><a href="social.html"
+          style="color:white;font-size:1.6rem;text-decoration:none;font-family:'Playfair Display';">Social</a></li>
+      <li style="margin-bottom:1.5rem;"><a href="partis-politiques.html"
+          style="color:white;font-size:1.6rem;text-decoration:none;font-family:'Playfair Display';">Partis</a></li>
+      <li style="margin-bottom:1.5rem;"><a href="emissions.html"
+          style="color:white;font-size:1.6rem;text-decoration:none;font-family:'Playfair Display';">Émissions</a></li>
+      <li style="margin-bottom:1.5rem;"><a href="podcasts.html"
+          style="color:white;font-size:1.6rem;text-decoration:none;font-family:'Playfair Display';">Podcasts</a></li>
+      <li style="margin-top:2rem; border-top:1px solid #333; padding-top:2rem;"><a href="auth.html"
+          style="color:white;font-size:1.2rem;text-decoration:none;font-family:'Inter';">👤 S'identifier</a></li>
+    </ul>
+  </nav>
 
   <section class="sub-hero">
     <h1 class="sub-title">Soutenez une information libre</h1>
@@ -73,7 +133,7 @@
         <li><span class="check-icon">✓</span> Commentaires prioritaires</li>
         <li><span class="check-icon">✓</span> Newsletter exclusive</li>
       </ul>
-      <button onclick="subscribe('monthly')" class="btn-sub primary">Je m'abonne</button>
+      <button id="btn-sub-monthly" class="btn-sub primary">Je m'abonne</button>
     </div>
 
     <div class="price-card">
@@ -85,77 +145,112 @@
         <li><span class="check-icon">✓</span> Badge "Soutien" sur le profil</li>
         <li><span class="check-icon">✓</span> Invitations aux événements</li>
       </ul>
-      <button onclick="subscribe('yearly')" class="btn-sub secondary">Choisir l'annuel</button>
+      <button id="btn-sub-yearly" class="btn-sub secondary">Choisir l'annuel</button>
     </div>
 
   </main>
 
   <footer class="premium-footer">
     <div class="footer-grid">
-      <div class="footer-col"><img src="logo.svg"
-          style="height:35px; filter:brightness(0) invert(1); margin-bottom:1rem;">
+      <div class="footer-col">
+        <div style="display:flex; gap:10px; align-items:center; margin-bottom:1.5rem;">
+          <img src="logo.svg" class="footer-logo" alt="S" onerror="handleImgError(this)">
+          <span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
+        </div>
         <p style="font-size:0.9rem; opacity:0.7;">Le média de référence.</p>
       </div>
       <div class="footer-col">
-        <h4>Rubriques</h4><a href="politique.html" class="footer-link">Politique</a><a href="social.html"
-          class="footer-link">Social</a>
+        <h4>Rubriques</h4>
+        <a href="politique.html" class="footer-link">Politique</a>
+        <a href="social.html" class="footer-link">Social</a>
       </div>
       <div class="footer-col">
-        <h4>Légal</h4><a href="mentions-legales.html" class="footer-link">Mentions</a><a
-          href="conditions-utilisation.html" class="footer-link">CGU</a>
+        <h4>Légal</h4>
+        <a href="mentions-legales.html" class="footer-link">Mentions</a>
+        <a href="conditions-utilisation.html" class="footer-link">CGU</a>
       </div>
       <div class="footer-col">
-        <h4>Contact</h4><a href="contact.html" class="footer-link">Nous écrire</a>
+        <h4>Contact</h4>
+        <a href="contact.html" class="footer-link">Nous écrire</a>
       </div>
     </div>
   </footer>
 
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
-  <script src="solitiquo.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+
+      // 1. Initialisation UI (Header connecté etc.)
       SolitiquoAPI.initUserInterface();
-    });
 
-    async function subscribe(plan) {
-      const user = await SolitiquoAPI.getProfile();
+      // 2. Logique d'abonnement (Remplace onclick)
+      async function handleSubscribe(plan) {
+        try {
+          const user = await SolitiquoAPI.getProfile();
 
-      if (!user) {
-        // Si pas connecté -> Login
-        sessionStorage.setItem('wantsToSubscribe', plan);
-        window.location.href = 'auth.html';
-        return;
+          if (!user) {
+            // Si pas connecté -> Stocker l'intention et rediriger vers auth
+            sessionStorage.setItem('wantsToSubscribe', plan);
+            window.location.href = 'auth.html';
+            return;
+          }
+
+          // Si connecté -> Direction la caisse
+          window.location.href = `paiement.html?plan=${plan}`;
+        } catch (e) {
+          console.error("Erreur profil:", e);
+          window.location.href = 'auth.html'; // Fallback
+        }
       }
 
-      // Si connecté -> Direction la caisse
-      window.location.href = `paiement.html?plan=${plan}`;
-    }
+      // Attacher les événements aux boutons
+      const btnMonthly = document.getElementById('btn-sub-monthly');
+      const btnYearly = document.getElementById('btn-sub-yearly');
 
-    // --- RECHERCHE (Correction Clic sur le texte + Loupe) ---
-    const searchBtn = document.getElementById('searchBtn');
-    const searchLabel = document.getElementById('searchLabel'); // On cible le texte
-    const searchContainer = document.getElementById('searchContainer');
-    const searchInput = document.getElementById('searchInput');
+      if (btnMonthly) btnMonthly.addEventListener('click', () => handleSubscribe('monthly'));
+      if (btnYearly) btnYearly.addEventListener('click', () => handleSubscribe('yearly'));
 
-    // Fonction pour ouvrir/fermer
-    function toggleSearch(e) {
-      e.stopPropagation();
-      searchContainer.classList.toggle('active');
-      if (searchContainer.classList.contains('active')) {
-        setTimeout(() => searchInput.focus(), 100);
+
+      // 3. Menu Mobile (Standard)
+      const burger = document.getElementById('burgerBtn');
+      const mobileNav = document.getElementById('mobileNav');
+      const mobileClose = document.getElementById('mobileNavClose');
+      const overlay = document.getElementById('mobileNavOverlay');
+
+      function toggleMenu(show) {
+        if (show) { mobileNav.classList.add('nav-open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        else { mobileNav.classList.remove('nav-open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
       }
-    }
+      if (burger) burger.addEventListener('click', () => toggleMenu(true));
+      if (mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
+      if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
 
-    // On active le clic sur le bouton ET sur le texte
-    if (searchBtn) searchBtn.addEventListener('click', toggleSearch);
-    if (searchLabel) searchLabel.addEventListener('click', toggleSearch);
 
-    // Fermeture au clic dehors
-    document.addEventListener('click', (e) => {
-      if (!searchContainer.contains(e.target) && !searchBtn.contains(e.target) && !searchLabel.contains(e.target)) {
-        searchContainer.classList.remove('active');
+      // 4. Recherche (Standard)
+      const searchBtn = document.getElementById('searchBtn');
+      const searchLabel = document.getElementById('searchLabel');
+      const searchContainer = document.getElementById('searchContainer');
+      const searchInput = document.getElementById('searchInput');
+
+      function toggleSearch(e) {
+        e.stopPropagation();
+        searchContainer.classList.toggle('active');
+        if (searchContainer.classList.contains('active')) {
+          setTimeout(() => searchInput.focus(), 100);
+        }
       }
+      if (searchBtn) searchBtn.addEventListener('click', toggleSearch);
+      if (searchLabel) searchLabel.addEventListener('click', toggleSearch);
+
+      document.addEventListener('click', (e) => {
+        if (searchContainer && searchContainer.classList.contains('active')) {
+          if (!searchContainer.contains(e.target) && !searchBtn.contains(e.target) && (!searchLabel || !searchLabel.contains(e.target))) {
+            searchContainer.classList.remove('active');
+          }
+        }
+      });
+
     });
   </script>
 </body>

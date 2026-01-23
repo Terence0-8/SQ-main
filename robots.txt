@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin.html
+Disallow: /editeur-article.html
+Disallow: /editeur-parti.html
+Disallow: /editeur-emission.html
+Disallow: /editeur-podcast.html
+Disallow: /auth.html
+
+Sitemap: https://solitiquo.com/sitemap.xml

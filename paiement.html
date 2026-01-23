@@ -9,8 +9,6 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap"
     rel="stylesheet" />
-
-
 </head>
 
 <body id="page-paiement">
@@ -22,124 +20,127 @@
   <div class="checkout-container">
 
     <div class="payment-box">
-      <h1>Finaliser la commande</h1>
+      <h1 style="margin-bottom: 0.5rem;">Sécuriser votre abonnement</h1>
+      <p style="color:#666; margin-bottom: 2rem;">Accédez à l'intégralité de nos analyses.</p>
 
-      <form id="paymentForm">
-        <div class="form-group">
-          <label class="form-label">Titulaire de la carte</label>
-          <input type="text" class="form-input" placeholder="M. Jean Dupont" required>
-        </div>
+      <div class="secure-badge">
+        🔒 Paiement sécurisé par <strong>CinetPay</strong>
+      </div>
 
-        <div class="form-group">
-          <label class="form-label">Numéro de carte</label>
-          <input type="text" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19" required>
-        </div>
+      <div style="display:flex; gap:10px; margin-bottom:2rem; justify-content:center; opacity:0.8;">
+        <img src="https://cinetpay.com/img/logos/om.png" height="30" alt="Orange Money">
+        <img src="https://cinetpay.com/img/logos/momo.png" height="30" alt="MTN Mobile Money">
+        <img src="https://cinetpay.com/img/logos/visa.png" height="30" alt="Visa">
+      </div>
 
-        <div class="row-fields">
-          <div class="form-group">
-            <label class="form-label">Expiration</label>
-            <input type="text" class="form-input" placeholder="MM / AA" maxlength="5" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">CVC</label>
-            <input type="text" class="form-input" placeholder="123" maxlength="3" required>
-          </div>
-        </div>
+      <div id="errorMsg" style="color:red; font-size:0.9rem; text-align:center; display:none; margin-bottom:1rem;">
+      </div>
 
-        <button type="submit" class="btn-pay" id="payBtn">
-          <span>🔒 Payer maintenant</span>
-        </button>
+      <button id="payBtn" class="btn-pay" style="background: #00AA55;">
+        Payer <span id="btnAmount">...</span>
+      </button>
 
-        <p style="text-align:center; font-size:0.8rem; color:#999; margin-top:15px;">
-          Paiement sécurisé (Simulation). Aucune somme ne sera débitée.
-        </p>
-      </form>
+      <p style="text-align:center; font-size:0.8rem; color:#999; margin-top:15px;">
+        En cliquant, vous serez redirigé vers le guichet sécurisé.
+        Aucune donnée bancaire n'est stockée par Solitiquo.
+      </p>
     </div>
 
     <div class="summary-box">
       <div class="summary-title">Récapitulatif</div>
 
       <div class="summary-row">
-        <span id="planName">Abonnement...</span>
+        <span id="planName">Chargement...</span>
         <span id="planPrice">...</span>
       </div>
       <div class="summary-row" style="color:#666; font-size:0.85rem;">
-        <span>Taxes incluses</span>
+        <span>Taxes & Frais</span>
         <span>0 FCFA</span>
       </div>
 
+      <hr style="border:0; border-top:1px solid #eee; margin:1rem 0;">
+
       <div class="summary-total">
-        <span>Total</span>
+        <span>Total à payer</span>
         <span id="totalPrice">...</span>
+      </div>
+
+      <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-top:20px; font-size:0.85rem; color:#555;">
+        <strong>Inclus dans votre offre :</strong>
+        <ul style="padding-left:20px; margin-top:5px; margin-bottom:0;">
+          <li>Articles illimités</li>
+          <li>Podcasts exclusifs</li>
+          <li>Accès aux archives</li>
+        </ul>
       </div>
     </div>
 
   </div>
 
-  <div class="success-overlay" id="successScreen">
-    <div class="check-icon">✓</div>
-    <h2 style="font-family:'Playfair Display'; font-size:2.5rem; color:#37463D; margin-bottom:10px;">Félicitations !
-    </h2>
-    <p style="color:#666; font-size:1.2rem; margin-bottom:2rem;">Vous êtes désormais membre Premium.</p>
-    <a href="index.html"
-      style="background:#37463D; color:white; padding:12px 30px; border-radius:30px; text-decoration:none; font-weight:700;">Retour
-      à l'accueil</a>
-  </div>
-
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script>
-    // 1. Récupérer le plan choisi dans l'URL
+    // 1. Initialisation
     const params = new URLSearchParams(window.location.search);
     const plan = params.get('plan') || 'monthly';
+    const errorMsg = document.getElementById('errorMsg');
 
-    // 2. Afficher les infos
     const planNameEl = document.getElementById('planName');
     const planPriceEl = document.getElementById('planPrice');
     const totalPriceEl = document.getElementById('totalPrice');
+    const btnAmountEl = document.getElementById('btnAmount');
 
+    // 2. Affichage dynamique
     if (plan === 'monthly') {
       planNameEl.textContent = "Offre Mensuelle";
-      planPriceEl.textContent = "2000 FCFA";
-      totalPriceEl.textContent = "2000 FCFA";
+      planPriceEl.textContent = "2 000 FCFA";
+      totalPriceEl.textContent = "2 000 FCFA";
+      btnAmountEl.textContent = "2 000 FCFA";
     } else {
       planNameEl.textContent = "Offre Annuelle";
-      planPriceEl.textContent = "20.000 FCFA";
-      totalPriceEl.textContent = "20.000 FCFA";
+      planPriceEl.textContent = "20 000 FCFA";
+      totalPriceEl.textContent = "20 000 FCFA";
+      btnAmountEl.textContent = "20 000 FCFA";
     }
 
-    // 3. Gérer le paiement
-    document.getElementById('paymentForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-
+    // 3. Déclenchement Paiement
+    document.getElementById('payBtn').addEventListener('click', async () => {
       const btn = document.getElementById('payBtn');
-      btn.innerHTML = `<span class="loader"></span> Traitement...`;
+      btn.innerHTML = `<span class="loader"></span> Connexion CinetPay...`;
       btn.disabled = true;
+      errorMsg.style.display = 'none';
 
       try {
-        // Appel réel au backend pour valider l'upgrade
-        const res = await fetch(`${window.API_URL}/subscriptions/upgrade`, {
+        // A. Vérifier connexion
+        const user = await SolitiquoAPI.getProfile();
+        if (!user) {
+          window.location.href = `auth.html?redirect=paiement.html?plan=${plan}`;
+          return;
+        }
+
+        // B. Initialiser transaction backend
+        const res = await fetch(`${window.API_URL}/subscriptions/init-payment`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ plan: plan }),
-          credentials: 'include' // CRUCIAL
+          credentials: 'include'
         });
+
         const json = await res.json();
 
-        if (json.success) {
-          // Succès !
-          setTimeout(() => {
-            document.getElementById('successScreen').style.display = 'flex';
-          }, 1500); // Petit délai pour faire "vrai"
+        if (json.success && json.payment_url) {
+          // C. Redirection vers CinetPay
+          window.location.href = json.payment_url;
         } else {
-          alert("Erreur : " + json.error);
-          btn.innerHTML = "🔒 Payer maintenant";
-          btn.disabled = false;
+          throw new Error(json.error || "Erreur inconnue");
         }
+
       } catch (err) {
         console.error(err);
-        alert("Erreur de connexion au serveur.");
+        btn.innerHTML = `Réessayer`;
         btn.disabled = false;
+        errorMsg.textContent = "Erreur : " + (err.message || "Impossible de joindre le service de paiement.");
+        errorMsg.style.display = 'block';
       }
     });
   </script>

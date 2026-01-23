@@ -10,7 +10,6 @@
         rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </head>
 
 <body id="page-admin">
@@ -21,19 +20,21 @@
             <span>Solitiquo</span>
         </a>
         <nav class="nav-menu">
-            <div class="nav-item active" onclick="switchView('dashboard')">📊 Vue d'ensemble</div>
-            <div class="nav-item" onclick="switchView('articles')">📝 Articles <span id="badge-art-pending"
+            <div class="nav-item active" data-view="dashboard">📊 Vue d'ensemble</div>
+            <div class="nav-item" data-view="articles">📝 Articles <span id="badge-art-pending"
                     class="badge badge-pending" style="display:none; margin-left:auto; font-size:0.6rem;">0</span></div>
-            <div class="nav-item" onclick="switchView('podcasts')">🎙️ Podcasts</div>
-            <div class="nav-item" onclick="switchView('emissions')">📺 Émissions</div>
-            <div class="nav-item" onclick="switchView('parties')">🏛️ Partis</div>
-            <div class="nav-item" onclick="switchView('polls')">📊 Sondages</div>
-            <div class="nav-item" onclick="switchView('moderation')">🛡️ Modération <span id="badge-mod"
-                    class="badge badge-draft" style="display:none; margin-left:auto;">0</span></div>
-            <div class="nav-item" style="margin-top:auto;" onclick="window.location.href='index.html'">🏠 Retour Site
-            </div>
-            <div class="nav-item" style="color:#ef4444;" onclick="SolitiquoAPI.logout()">🚪 Déconnexion
-            </div>
+            <div class="nav-item" data-view="podcasts">🎙️ Podcasts</div>
+            <div class="nav-item" data-view="emissions">📺 Émissions</div>
+            <div class="nav-item" data-view="parties">🏛️ Partis</div>
+            <div class="nav-item" data-view="polls">📊 Sondages</div>
+            <div class="nav-item" data-view="moderation">🛡️ Modération <span id="badge-mod" class="badge badge-draft"
+                    style="display:none; margin-left:auto;">0</span></div>
+            <div class="nav-item" data-view="users">👥 Utilisateurs</div>
+
+            <div class="nav-spacer" style="margin-top:auto;"></div>
+
+            <div class="nav-item" id="btn-home">🏠 Retour Site</div>
+            <div class="nav-item" id="btn-logout" style="color:#ef4444;">🚪 Déconnexion</div>
         </nav>
     </aside>
 
@@ -163,426 +164,494 @@
                 </div>
             </div>
 
+            <div id="view-users" class="view-section">
+                <div class="table-card">
+                    <div
+                        style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+                        <h3>Base Utilisateurs</h3>
+                        <input type="text" id="search-users" placeholder="Rechercher un email..."
+                            style="padding:5px; border:1px solid #ddd; border-radius:4px;">
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Utilisateur</th>
+                                <th>Email</th>
+                                <th>Rôle</th>
+                                <th>Statut</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="list-users"></tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
     </main>
-
-
 
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
     <script>
-        // --- 1. INITIALISATION ---
         document.addEventListener('DOMContentLoaded', async () => {
+
+            // 1. VERIFICATION AUTH & INIT
+            // -----------------------------------------------------
             const user = await SolitiquoAPI.getProfile();
-            // Vérification Admin
             if (!user || (user.role !== 'admin' && user.role !== 'writer')) {
                 window.location.href = 'auth.html';
                 return;
             }
             loadAllData();
-        });
 
-        // --- 2. FONCTIONS GLOBALES (Navigation) ---
-        function switchView(viewName) {
-            // 1. Menu Actif
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            // On cherche le nav-item qui contient le texte ou le onclick correspondant
-            const items = document.querySelectorAll('.nav-item');
-            items.forEach(item => {
-                if (item.textContent.toLowerCase().includes(viewName) || (item.getAttribute('onclick') && item.getAttribute('onclick').includes(viewName)))
-                    item.classList.add('active');
+            // 2. GESTION NAVIGATION (Sidebar)
+            // -----------------------------------------------------
+            document.querySelectorAll('.nav-item[data-view]').forEach(item => {
+                item.addEventListener('click', () => {
+                    switchView(item.dataset.view);
+                });
             });
 
-            // 2. Section Active (Affichage du contenu)
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            const activeSection = document.getElementById(`view-${viewName}`);
-            if (activeSection) activeSection.classList.add('active');
+            document.getElementById('btn-home').addEventListener('click', () => window.location.href = 'index.html');
+            document.getElementById('btn-logout').addEventListener('click', () => SolitiquoAPI.logout());
 
-            // 3. Header et Boutons d'action
-            const header = document.getElementById('page-header');
-            const actions = document.getElementById('header-actions');
-            actions.innerHTML = ""; // Reset boutons
 
-            if (viewName === 'articles') {
-                header.textContent = "Gestion des Articles";
-                actions.innerHTML = `<a href="editeur-article.html" class="action-btn"><span>+</span> Nouvel Article</a>`;
-            } else if (viewName === 'podcasts') {
-                header.textContent = "Gestion des Podcasts";
-                actions.innerHTML = `<a href="editeur-podcast.html" class="action-btn"><span>+</span> Nouveau Podcast</a>`;
-            } else if (viewName === 'emissions') {
-                header.textContent = "Gestion des Émissions";
-                actions.innerHTML = `<a href="editeur-emission.html" class="action-btn"><span>+</span> Nouvelle Émission</a>`;
-            } else if (viewName === 'parties') {
-                header.textContent = "Répertoire des Partis";
-                // Ce bouton appelle openNewPartyModal()
-                actions.innerHTML = `<button onclick="openNewPartyModal()" class="action-btn"><span>+</span> Nouveau Parti</button>`;
-                loadParties(); // On charge les données spécifiquement
-            } else if (viewName === 'polls') {
-                header.textContent = "Historique des Sondages";
-                actions.innerHTML = `<button onclick="openNewPollModal()" class="action-btn"><span>+</span> Sondage Hebdo</button>`;
-                loadPolls();
-            } else {
-                header.textContent = "Vue d'ensemble";
+            // 3. DELEGATION D'EVENEMENTS (Pour les boutons dynamiques)
+            // -----------------------------------------------------
+            // C'est ici que la magie opère : un seul écouteur pour tous les boutons générés
+            document.body.addEventListener('click', async (e) => {
+
+                // A. Boutons simples (data-action)
+                const btn = e.target.closest('[data-action]');
+                if (!btn) return;
+
+                const action = btn.dataset.action;
+                const id = btn.dataset.id;
+                const type = btn.dataset.type;
+
+                // --- ACTIONS GÉNÉRIQUES ---
+                if (action === 'new-party') openNewPartyModal();
+                if (action === 'new-poll') openNewPollModal();
+
+                // --- ACTIONS SUR ÉLÉMENTS ---
+                if (action === 'delete') await deleteItem(type, id);
+                if (action === 'toggle-premium') await togglePremium(type, id, btn.dataset.isprem === 'true');
+                if (action === 'approve-art') await workflow(id, 'approve');
+                if (action === 'set-featured') await setFeatured(id);
+
+                // --- SONDAGES ---
+                if (action === 'toggle-poll') await togglePollStatus(id, btn.dataset.active === 'true');
+                if (action === 'edit-poll') await editPoll(id);
+
+                // --- MODERATION ---
+                if (action === 'mod-approve') await modComment(id, 'approve');
+                if (action === 'mod-delete') await modComment(id, 'delete');
+
+                if (action === 'ban-user') await toggleBanUser(id);
+            });
+
+
+            // 4. FONCTIONS METIERS
+            // -----------------------------------------------------
+            function switchView(viewName) {
+                // 1. GESTION UI (inchangé)
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                const activeNav = document.querySelector(`.nav-item[data-view="${viewName}"]`);
+                if (activeNav) activeNav.classList.add('active');
+
+                document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+                const activeSection = document.getElementById(`view-${viewName}`);
+                if (activeSection) activeSection.classList.add('active');
+
+                // 2. GESTION HEADER & ACTIONS
+                const header = document.getElementById('page-header');
+                const actions = document.getElementById('header-actions');
+                actions.innerHTML = "";
+
+                // --- LE BLOC DE LOGIQUE ---
+                if (viewName === 'articles') {
+                    header.textContent = "Gestion des Articles";
+                    actions.innerHTML = `<a href="editeur-article.html" class="action-btn"><span>+</span> Nouvel Article</a>`;
+                } else if (viewName === 'podcasts') {
+                    header.textContent = "Gestion des Podcasts";
+                    actions.innerHTML = `<a href="editeur-podcast.html" class="action-btn"><span>+</span> Nouveau Podcast</a>`;
+                } else if (viewName === 'emissions') {
+                    header.textContent = "Gestion des Émissions";
+                    actions.innerHTML = `<a href="editeur-emission.html" class="action-btn"><span>+</span> Nouvelle Émission</a>`;
+                } else if (viewName === 'parties') {
+                    header.textContent = "Répertoire des Partis";
+                    actions.innerHTML = `<button class="action-btn" data-action="new-party"><span>+</span> Nouveau Parti</button>`;
+                    loadParties();
+                } else if (viewName === 'polls') {
+                    header.textContent = "Historique des Sondages";
+                    actions.innerHTML = `<button class="action-btn" data-action="new-poll"><span>+</span> Sondage Hebdo</button>`;
+                    loadPolls();
+
+                    // 👇👇 C'EST ICI QU'IL MANQUAIT LE BRANCHEMENT 👇👇
+                } else if (viewName === 'users') {
+                    header.textContent = "Gestion des Utilisateurs";
+                    // Pas de bouton d'action, juste le chargement
+                    loadUsers();
+                }
+                // 👆👆 FIN DE L'AJOUT 👆👆
+
+                else {
+                    header.textContent = "Vue d'ensemble";
+                    // Optionnel : recharger les stats si on revient sur le dashboard
+                    // loadAllData(); 
+                }
             }
-        }
 
-        // --- 3. CHARGEMENT DES DONNÉES ---
-        async function loadAllData() {
-            try {
-                // Articles
-                const res = await fetch(API_URL + '/admin/content/articles');
-                const json = await res.json();
-                renderArticles(json.data || []);
+            async function loadAllData() {
+                try {
+                    // 1. CHARGER LES STATS GLOBALES (C'était l'oubli)
+                    const resStats = await fetch(API_URL + '/admin/stats');
+                    const jsonStats = await resStats.json();
 
-                // Badge brouillons
-                const drafts = (json.data || []).filter(a => a.status === 'draft').length;
-                const badge = document.getElementById('badge-art-pending');
-                if (drafts > 0) { badge.style.display = 'inline-flex'; badge.textContent = drafts; }
-                else badge.style.display = 'none';
+                    if (jsonStats.success) {
+                        // Assure-toi d'avoir des balises avec ces IDs dans ton HTML dashboard
+                        // Ex: <h3 id="stat-articles">0</h3>
+                        updateStat('stat-articles', jsonStats.stats.articles);
+                        updateStat('stat-users', jsonStats.stats.users);
+                        updateStat('stat-subs', jsonStats.stats.subscribers);
+                        updateStat('stat-comments', jsonStats.stats.pendingComments);
+                    }
 
-                loadOtherContent(); // Charge le reste (podcasts, emissions, etc.)
-            } catch (e) { console.error("Erreur articles", e); }
-        }
+                    // 2. CHARGER LES ARTICLES
+                    const res = await fetch(API_URL + '/admin/content/articles');
+                    const json = await res.json();
+                    renderArticles(json.data || []);
 
-        async function loadOtherContent() {
-            try {
-                // Podcasts & Emissions
-                const resP = await fetch(API_URL + '/podcasts');
-                renderPodcasts((await resP.json()).data || []);
+                    // Badge brouillons
+                    const drafts = (json.data || []).filter(a => a.status === 'draft').length;
+                    const badge = document.getElementById('badge-art-pending');
+                    if (drafts > 0) { badge.style.display = 'inline-flex'; badge.textContent = drafts; }
+                    else badge.style.display = 'none';
 
-                const resE = await fetch(API_URL + '/emissions');
-                renderEmissions((await resE.json()).data || []);
+                    loadOtherContent();
+                } catch (e) { console.error("Erreur chargement", e); }
+            }
 
-                // Modération
-                const resM = await fetch(API_URL + '/admin/comments/pending');
-                const jsonM = await resM.json();
+            // Petite fonction utilitaire pour éviter les erreurs si l'élément n'existe pas encore
+            function updateStat(id, value) {
+                const el = document.getElementById(id);
+                if (el) el.innerText = value;
+            }
+
+            async function loadOtherContent() {
+                try {
+                    // Podcasts
+                    const resP = await fetch(API_URL + '/podcasts');
+                    renderPodcasts((await resP.json()).data || []);
+                    // Emissions
+                    const resE = await fetch(API_URL + '/emissions');
+                    renderEmissions((await resE.json()).data || []);
+                    // Moderation
+                    const resM = await fetch(API_URL + '/admin/comments/pending');
+                    const jsonM = await resM.json();
+                    renderModeration(jsonM.data || []);
+                } catch (e) { console.error(e); }
+            }
+
+            // ... (Fonctions renderArticles, renderPodcasts, etc. adaptées avec data-attributes) ...
+
+            function renderArticles(data) {
+                const tbody = document.getElementById('list-articles');
+                if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Vide</td></tr>'; return; }
+
+                tbody.innerHTML = data.map(art => {
+                    const isPrem = (art.is_premium === true);
+                    const statusBadge = art.status === 'draft' ? '<span class="badge badge-draft">Brouillon</span>' : '<span class="badge badge-pub">Publié</span>';
+                    const premStyle = isPrem ? 'color:#b91c1c; background:#fef2f2; border-color:#fecaca;' : 'color:#64748b; background:#f1f5f9; border-color:#e2e8f0;';
+
+                    return `
+                    <tr>
+                        <td>
+                            <div class="title-row">
+                                <img src="${art.image_url || 'https://placehold.co/50'}" class="mini-thumb">
+                                <div><div style="font-weight:700;">${art.title}</div><div style="font-size:0.8rem; color:#64748b;">${art.category}</div></div>
+                            </div>
+                        </td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <button class="btn-sm" style="${premStyle}" data-action="toggle-premium" data-type="article" data-id="${art.id}" data-isprem="${isPrem}">
+                                ${isPrem ? '🔒 Premium' : '🔓 Gratuit'}
+                            </button>
+                        </td>
+                        <td>
+                            ${art.status === 'draft' ? `<button class="btn-valid" data-action="approve-art" data-id="${art.id}">Publier</button>` : '-'}
+                        </td>
+                        <td>${art.views_count || 0} vues</td>
+                        <td style="text-align:right;">
+                            <a href="article.html?id=${art.id}" target="_blank" class="btn-icon-sm">👁️</a>
+                            <a href="editeur-article.html?id=${art.id}" class="btn-icon-sm">✏️</a>
+                            <button class="btn-icon-sm del" data-action="delete" data-type="article" data-id="${art.id}">🗑️</button>
+                        </td>
+                    </tr>`;
+                }).join('');
+            }
+
+            function renderPodcasts(data) {
+                const tbody = document.getElementById('list-podcasts');
+                tbody.innerHTML = data.map(p => `
+                <tr>
+                    <td><div class="title-row"><img src="${p.image_url}" class="mini-thumb"><div><strong>${p.title}</strong></div></div></td>
+                    <td>${p.category}</td>
+                    <td>${new Date(p.created_at).toLocaleDateString()}</td>
+                    <td style="text-align:right;">
+                        <button class="btn-icon-sm" data-action="set-featured" data-id="${p.id}" style="color:#EAB308;">⭐</button>
+                        <a href="editeur-podcast.html?id=${p.id}" class="btn-icon-sm">✏️</a>
+                        <button class="btn-icon-sm del" data-action="delete" data-type="podcast" data-id="${p.id}">🗑️</button>
+                    </td>
+                </tr>`).join('');
+            }
+
+            function renderEmissions(data) {
+                const tbody = document.getElementById('list-emissions');
+                tbody.innerHTML = data.map(e => `
+                <tr>
+                    <td><strong>${e.title}</strong></td>
+                    <td>${e.category}</td>
+                    <td>${new Date(e.published_at).toLocaleDateString()}</td>
+                    <td style="text-align:right;">
+                        <a href="editeur-emission.html?id=${e.id}" class="btn-icon-sm">✏️</a>
+                        <button class="btn-icon-sm del" data-action="delete" data-type="emission" data-id="${e.id}">🗑️</button>
+                    </td>
+                </tr>`).join('');
+            }
+
+            function renderModeration(data) {
                 const tbody = document.getElementById('list-moderation');
-                if (jsonM.data && jsonM.data.length > 0) {
-                    document.getElementById('badge-mod').style.display = 'inline-flex';
-                    document.getElementById('badge-mod').textContent = jsonM.data.length;
-                    tbody.innerHTML = jsonM.data.map(c => `
+                const badge = document.getElementById('badge-mod');
+                if (data.length > 0) {
+                    badge.style.display = 'inline-flex'; badge.textContent = data.length;
+                    tbody.innerHTML = data.map(c => `
                     <tr>
                         <td><strong>${c.username}</strong></td>
                         <td style="color:#444;">${c.content}</td>
-                        <td style="color:#b91c1c; font-weight:bold;">${c.flag_reason}</td>
+                        <td style="color:#b91c1c;">${c.flag_reason}</td>
                         <td style="text-align:right;">
-                            <button class="btn-valid" onclick="modComment(${c.id}, 'approve')">✔</button>
-                            <button class="btn-reject" onclick="modComment(${c.id}, 'delete')">✖</button>
+                            <button class="btn-valid" data-action="mod-approve" data-id="${c.id}">✔</button>
+                            <button class="btn-reject" data-action="mod-delete" data-id="${c.id}">✖</button>
                         </td>
                     </tr>`).join('');
-                } else { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;padding:2rem;">Aucun signalement.</td></tr>'; }
-
-            } catch (e) { console.error(e); }
-        }
-
-        // --- RENDUS HTML (Listes) ---
-        function renderArticles(data) {
-            const tbody = document.getElementById('list-articles');
-            if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:3rem; color:#999;">Aucun article.</td></tr>'; return; }
-
-            tbody.innerHTML = data.map(art => {
-                let statusBadge = art.status === 'draft' ? `<span class="badge badge-draft">Brouillon</span>` : `<span class="badge badge-pub">Publié</span>`;
-                const isPrem = (art.is_premium === true);
-                const premClass = isPrem ? 'color:#b91c1c; background:#fef2f2; border-color:#fecaca;' : 'color:#64748b; background:#f1f5f9; border-color:#e2e8f0;';
-                const premLabel = isPrem ? '🔒 Premium' : '🔓 Gratuit';
-
-                let validationBtns = `<span style="color:#ccc;">-</span>`;
-                if (art.status === 'draft') {
-                    validationBtns = `<button class="btn-valid" onclick="workflow(${art.id}, 'approve')" title="Publier">Publier</button>`;
+                } else {
+                    badge.style.display = 'none';
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Aucun signalement.</td></tr>';
                 }
-
-                // AJOUT IMAGE ICI
-                return `
-            <tr>
-                <td>
-                    <div class="title-row">
-                        <img src="${art.image_url || 'https://placehold.co/50'}" class="mini-thumb" onerror="this.src='https://placehold.co/50'">
-                        <div>
-                            <div style="font-weight:700; color:#0f172a; font-size:0.95rem;">${art.title}</div>
-                            <div style="font-size:0.8rem; color:#64748b; margin-top:2px;">${art.category} • ${art.author_name || 'Rédaction'}</div>
-                        </div>
-                    </div>
-                </td>
-                <td>${statusBadge}</td>
-                <td>
-                    <button onclick="togglePremium('article', ${art.id}, ${isPrem})" style="border:1px solid; border-radius:6px; padding:4px 10px; font-weight:700; font-size:0.75rem; cursor:pointer; ${premClass}">
-                        ${premLabel}
-                    </button>
-                </td>
-                <td>${validationBtns}</td>
-                <td><span style="font-weight:700;">${art.views_count || 0}</span> <span style="font-size:0.8rem; color:#999;">vues</span></td>
-                <td style="text-align:right;">
-                    <div class="row-actions">
-                        <a href="article.html?id=${art.id}" target="_blank" class="btn-icon-sm" title="Voir">👁️</a>
-                        <a href="editeur-article.html?id=${art.id}" class="btn-icon-sm" title="Modifier">✏️</a>
-                        <button onclick="deleteItem('article', ${art.id})" class="btn-icon-sm del" title="Supprimer">🗑️</button>
-                    </div>
-                </td>
-            </tr>`;
-            }).join('');
-        }
-
-        function renderEmissions(data) {
-            const tbody = document.getElementById('list-emissions');
-            if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Vide</td></tr>'; return; }
-            tbody.innerHTML = data.map(e => `
-            <tr>
-                <td style="font-weight:600;">${e.title}</td>
-                <td><span class="badge" style="background:#eee;">${e.category}</span></td>
-                <td>${new Date(e.published_at).toLocaleDateString()}</td>
-                <td style="text-align:right;">
-                    <div class="row-actions">
-                        <a href="emissions.html" target="_blank" class="btn-icon-sm" title="Voir la liste">📺</a>
-                        <a href="editeur-emission.html?id=${e.id}" class="btn-icon-sm" title="Modifier">✏️</a>
-                        <button onclick="deleteItem('emission', ${e.id})" class="btn-icon-sm del">🗑️</button>
-                    </div>
-                </td>
-            </tr>`).join('');
-        }
-
-        function renderPodcasts(data) {
-            const tbody = document.getElementById('list-podcasts');
-            if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Vide</td></tr>'; return; }
-
-            tbody.innerHTML = data.map(p => {
-                // Affichage d'un petit badge si le podcast est à la une
-                let featBadge = '';
-                if (p.featured_scope === 'politique') featBadge = '<span class="badge" style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0;">⭐ Une Pol.</span>';
-                if (p.featured_scope === 'social') featBadge = '<span class="badge" style="background:#fef9c3; color:#854d0e; border:1px solid #fde047;">⭐ Une Soc.</span>';
-
-                return `
-            <tr>
-                <td>
-                    <div class="title-row">
-                        <img src="${p.image_url || 'https://placehold.co/50'}" class="mini-thumb" onerror="this.src='https://placehold.co/50'">
-                        <div>
-                            <div style="font-weight:600;">${p.title}</div>
-                            ${featBadge}
-                        </div>
-                    </div>
-                </td>
-                <td><span class="badge" style="background:#eee;">${p.category}</span></td>
-                <td>${new Date(p.created_at).toLocaleDateString()}</td>
-                <td style="text-align:right;">
-                    <div class="row-actions">
-                        <button onclick="setFeatured(${p.id})" class="btn-icon-sm" title="Mettre à la une" style="color:#EAB308;">⭐</button>
-                        <a href="podcasts.html" target="_blank" class="btn-icon-sm" title="Voir">🎧</a>
-                        <a href="editeur-podcast.html?id=${p.id}" class="btn-icon-sm" title="Modifier">✏️</a>
-                        <button onclick="deleteItem('podcast', ${p.id})" class="btn-icon-sm del">🗑️</button>
-                    </div>
-                </td>
-            </tr>`;
-            }).join('');
-        }
-
-        // Nouvelle fonction pour choisir la page
-        async function setFeatured(id) {
-            const { value: scope } = await Swal.fire({
-                title: 'Mettre ce podcast à la une ?',
-                input: 'radio',
-                inputOptions: {
-                    'politique': 'Page Politique',
-                    'social': 'Page Social',
-                    'none': 'Retirer de la une'
-                },
-                inputValidator: (value) => {
-                    if (!value) return 'Vous devez choisir une option'
-                }
-            });
-
-            if (scope) {
-                await fetch(`${API_URL}/admin/podcasts/${id}/feature`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ scope }),
-                    credentials: 'include'
-                });
-                const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-                Toast.fire({ icon: 'success', title: 'Mis à jour !' });
-                loadOtherContent(); // Recharger la liste pour voir le badge
-            }
-        }
-
-        // --- SONDAGES ---
-        // Variable globale pour stocker les sondages chargés (évite le bug des apostrophes)
-        let globalPollsData = [];
-
-        // --- SONDAGES (Correction Bug Graphique + Layout) ---
-        async function loadPolls() {
-            const tbody = document.getElementById('list-polls');
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Chargement...</td></tr>';
-
-            try {
-                const res = await fetch(API_URL + '/admin/polls/stats');
-                if (!res.ok) throw new Error(`Erreur Serveur (${res.status})`);
-
-                const json = await res.json();
-
-                // 1. On sauvegarde les données proprement
-                globalPollsData = json.data || [];
-
-                renderPolls(globalPollsData);
-
-            } catch (e) {
-                console.error(e);
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Erreur lors du chargement des sondages.</td></tr>';
-            }
-        }
-
-        function renderPolls(data) {
-            const tbody = document.getElementById('list-polls');
-            if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Aucun sondage trouvé.</td></tr>';
-                return;
             }
 
-            // On vide le tbody
-            tbody.innerHTML = '';
+            // FONCTION DE CHARGEMENT POUR LES SONDAGES & PARTIS
+            // (Ces fonctions doivent être accessibles par le scope)
 
-            data.forEach((p, index) => {
-                // p.options est une chaîne JSON, on la parse
-                let opts = [];
-                try { opts = JSON.parse(p.options); } catch (e) { }
-
-                // Calculs stats pour l'affichage (optionnel, ici on affiche juste les résultats bruts)
-                let resultsHtml = '';
-                if (opts.length > 0) {
-                    resultsHtml = '<div style="display:flex; flex-direction:column; gap:4px; font-size:0.8rem;">';
-                    opts.forEach(o => {
-                        resultsHtml += `<div><strong>${o.text}:</strong> ${o.votes} votes</div>`;
-                    });
-                    resultsHtml += '</div>';
-                }
-
-                const isActive = p.is_active ? '<span class="badge badge-pub">Actif</span>' : '<span class="badge badge-draft">Fermé</span>';
-
-                // --- CORRECTION ESCAPE ---
-                // On n'injecte PAS l'objet entier dans le HTML. On passe juste l'ID.
-                // Au moment du click, la fonction ira chercher l'objet dans globalPollsData.
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-            <td>
-                <strong>${p.question}</strong>
-                <div style="font-size:0.75rem; color:#888;">ID: ${p.id}</div>
-            </td>
-            <td>${isActive}</td>
-            <td>${p.total_votes}</td>
-            <td>${resultsHtml}</td>
-            <td style="text-align:right;">
-                <div class="row-actions">
-                    <button class="btn-icon-sm" onclick="togglePollStatus(${p.id}, ${p.is_active ? 'false' : 'true'})" title="${p.is_active ? 'Fermer' : 'Ouvrir'}">⏯</button>
-                    <button class="btn-icon-sm" onclick="editPoll(${p.id})" title="Modifier">✏️</button>
-                    <button class="btn-icon-sm del" onclick="deleteItem('poll', ${p.id})" title="Supprimer">🗑️</button>
-                </div>
-            </td>
-        `;
-                tbody.appendChild(tr);
-            });
-        }
-
-
-        // --- MODALES ACTIONS (Sondages) ---
-        function togglePollStatus(id, newStatus) {
-            // Appel API pour changer le statut
-            fetch(`${API_URL}/admin/polls/${id}/status`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ is_active: newStatus }),
-                credentials: 'include'
-            }).then(() => loadPolls());
-        }
-
-        async function openNewPollModal() {
-            const { value: formValues } = await Swal.fire({
-                title: 'Nouveau Sondage',
-                html:
-                    '<input id="swal-q" class="swal2-input" placeholder="Question">' +
-                    '<textarea id="swal-opts" class="swal2-textarea" placeholder="Options (une par ligne)"></textarea>',
-                focusConfirm: false,
-                preConfirm: () => {
-                    return [
-                        document.getElementById('swal-q').value,
-                        document.getElementById('swal-opts').value
-                    ]
-                }
-            });
-
-            if (formValues) {
-                const [question, optionsRaw] = formValues;
-                const options = optionsRaw.split('\n').filter(o => o.trim() !== '');
-
-                await fetch(API_URL + '/admin/polls', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ question, options }),
-                    credentials: 'include'
-                });
-                loadPolls();
-            }
-        }
-
-        // --- ÉDITION SONDAGE (FIX) ---
-        async function editPoll(id) {
-            // A. Retrouver l'objet dans la variable globale via son ID
-            const poll = globalPollsData.find(p => p.id === id);
-            if (!poll) {
-                Swal.fire('Erreur', 'Sondage introuvable.', 'error');
-                return;
-            }
-
-            // B. Préparation des options (JSON -> String avec sauts de lignes)
-            let optsString = "";
-            try {
-                const opts = JSON.parse(poll.options); // [{text:"Oui", votes:0}, ...]
-                optsString = opts.map(o => o.text).join('\n');
-            } catch (e) { }
-
-            // C. Affichage de la modale pré-remplie
-            const { value: formValues } = await Swal.fire({
-                title: 'Modifier le Sondage',
-                html:
-                    `<input id="swal-edit-q" class="swal2-input" placeholder="Question" value="${poll.question.replace(/"/g, '&quot;')}">` +
-                    `<textarea id="swal-edit-opts" class="swal2-textarea" placeholder="Options (une par ligne)">${optsString}</textarea>` +
-                    `<div style="font-size:0.8rem; color:red; margin-top:10px;">Attention : Modifier les options réinitialise les votes à 0.</div>`,
-                focusConfirm: false,
-                showCancelButton: true,
-                preConfirm: () => {
-                    return [
-                        document.getElementById('swal-edit-q').value,
-                        document.getElementById('swal-edit-opts').value
-                    ]
-                }
-            });
-
-            // D. Sauvegarde
-            if (formValues) {
-                const [question, optionsRaw] = formValues;
-                const options = optionsRaw.split('\n').map(o => o.trim()).filter(o => o !== '');
-
-                // Appel PUT
+            window.loadParties = async function () {
+                const tbody = document.getElementById('list-parties');
                 try {
-                    const res = await fetch(`${API_URL}/admin/polls/${id}`, {
-                        method: 'PUT',
+                    const res = await fetch(API_URL + '/parties');
+                    const json = await res.json();
+                    tbody.innerHTML = (json.data || []).map(p => `
+                    <tr>
+                        <td><img src="${p.logo_url}" class="mini-thumb"></td>
+                        <td><strong>${p.acronym}</strong> - ${p.name}</td>
+                        <td>${p.orientation}</td>
+                        <td style="text-align:right;">
+                            <a href="editeur-parti.html?id=${p.id}" class="btn-icon-sm">✏️</a>
+                            <button class="btn-icon-sm del" data-action="delete" data-type="party" data-id="${p.id}">🗑️</button>
+                        </td>
+                    </tr>`).join('');
+                } catch (e) { tbody.innerHTML = '<tr><td colspan="4">Erreur</td></tr>'; }
+            }
+
+            window.loadPolls = async function () {
+                const tbody = document.getElementById('list-polls');
+                try {
+                    const res = await fetch(API_URL + '/admin/polls/stats');
+                    const json = await res.json();
+                    // Stockage global pour édition
+                    window._pollsData = json.data || [];
+
+                    tbody.innerHTML = window._pollsData.map(p => {
+                        let opts = []; try { opts = JSON.parse(p.options); } catch (e) { }
+                        const results = opts.map(o => `<div>${o.text}: <strong>${o.votes}</strong></div>`).join('');
+                        const activeBadge = p.is_active ? '<span class="badge badge-pub">Actif</span>' : '<span class="badge badge-draft">Fermé</span>';
+
+                        return `
+                         <tr>
+                            <td><strong>${p.question}</strong></td>
+                            <td>${activeBadge}</td>
+                            <td>${p.total_votes}</td>
+                            <td style="font-size:0.8rem;">${results}</td>
+                            <td style="text-align:right;">
+                                <button class="btn-icon-sm" data-action="toggle-poll" data-id="${p.id}" data-active="${p.is_active}">⏯</button>
+                                <button class="btn-icon-sm" data-action="edit-poll" data-id="${p.id}">✏️</button>
+                                <button class="btn-icon-sm del" data-action="delete" data-type="poll" data-id="${p.id}">🗑️</button>
+                            </td>
+                         </tr>`;
+                    }).join('');
+                } catch (e) { tbody.innerHTML = '<tr><td colspan="5">Erreur</td></tr>'; }
+            }
+
+            // --- ACTIONS UNITAIRES ---
+            async function deleteItem(type, id) {
+                if (!confirm("Supprimer définitivement ?")) return;
+                try {
+                    let endpoint = type === 'party' ? `/parties/${id}` : `/${type}s/${id}`; // convention pluriel
+                    if (type === 'article') endpoint = `/articles/${id}`;
+                    if (type === 'poll') endpoint = `/admin/polls/${id}`;
+
+                    await fetch(API_URL + endpoint, { method: 'DELETE', credentials: 'include' });
+                    // Refresh current view
+                    if (type === 'article') loadAllData();
+                    else if (type === 'party') loadParties();
+                    else if (type === 'poll') loadPolls();
+                    else loadOtherContent();
+                } catch (e) { alert("Erreur suppression"); }
+            }
+
+            async function togglePremium(type, id, currentStatus) {
+                // Logique simplifiée pour l'exemple
+                alert("Fonctionnalité Premium toggle à implémenter côté API pour " + id);
+            }
+
+            async function workflow(id, action) {
+                if (action === 'approve') {
+                    await fetch(`${API_URL}/admin/articles/${id}/publish`, { method: 'PUT', credentials: 'include' });
+                    loadAllData();
+                }
+            }
+
+            async function modComment(id, action) {
+                const endpoint = action === 'approve' ? 'approve' : 'delete';
+                await fetch(`${API_URL}/admin/comments/${id}/${endpoint}`, { method: 'POST', credentials: 'include' });
+                loadOtherContent();
+            }
+
+            // --- MODALES ---
+            window.openNewPartyModal = () => window.location.href = 'editeur-parti.html';
+
+            window.openNewPollModal = async () => {
+                const { value: formValues } = await Swal.fire({
+                    title: 'Nouveau Sondage',
+                    html: '<input id="swal-q" class="swal2-input" placeholder="Question"><textarea id="swal-opts" class="swal2-textarea" placeholder="Options (une par ligne)"></textarea>',
+                    focusConfirm: false,
+                    preConfirm: () => [document.getElementById('swal-q').value, document.getElementById('swal-opts').value]
+                });
+                if (formValues) {
+                    const [question, optsRaw] = formValues;
+                    const options = optsRaw.split('\n').filter(o => o.trim() !== '');
+                    await fetch(API_URL + '/admin/polls', {
+                        method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ question, options }), // Le backend gère la logique de réinitialisation si options change
+                        body: JSON.stringify({ question, options }),
                         credentials: 'include'
                     });
+                    loadPolls();
+                }
+            };
 
-                    if (res.ok) {
-                        Swal.fire('Succès', 'Sondage modifié.', 'success');
-                        loadPolls();
-                    } else {
-                        Swal.fire('Erreur', 'Impossible de modifier.', 'error');
-                    }
-                } catch (e) { console.error(e); }
+            window.editPoll = async (id) => {
+                // Logique édition
+                const p = window._pollsData.find(x => x.id == id);
+                if (!p) return;
+                let optsText = "";
+                try { optsText = JSON.parse(p.options).map(o => o.text).join('\n'); } catch (e) { }
+
+                const { value: formValues } = await Swal.fire({
+                    title: 'Modifier Sondage',
+                    html: `<input id="swal-q" class="swal2-input" value="${p.question}"><textarea id="swal-opts" class="swal2-textarea">${optsText}</textarea>`,
+                    focusConfirm: false,
+                    preConfirm: () => [document.getElementById('swal-q').value, document.getElementById('swal-opts').value]
+                });
+
+                if (formValues) {
+                    const [question, optsRaw] = formValues;
+                    const options = optsRaw.split('\n').filter(o => o.trim() !== '');
+                    await fetch(`${API_URL}/admin/polls/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ question, options }),
+                        credentials: 'include'
+                    });
+                    loadPolls();
+                }
             }
+        });
+
+        // AJOUTER DANS switchView :
+        // else if (viewName === 'users') { header.textContent = "Gestion des Utilisateurs"; loadUsers(); }
+
+        // AJOUTER DANS LES FONCTIONS :
+        window.loadUsers = async function () {
+            const tbody = document.getElementById('list-users');
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Chargement...</td></tr>';
+            try {
+                const res = await fetch(API_URL + '/admin/users'); // Route à créer
+                const json = await res.json();
+
+                tbody.innerHTML = (json.data || []).map(u => {
+                    const roleBadge = u.role === 'admin' ? '<span class="badge badge-pub">Admin</span>' :
+                        (u.is_subscriber ? '<span class="badge" style="background:#dbeafe; color:#1e40af;">Abonné</span>' : 'Lecteur');
+                    const statusStyle = u.is_active ? 'color:green;' : 'color:red; font-weight:bold;';
+                    const statusText = u.is_active ? 'Actif' : 'Banni';
+
+                    return `
+            <tr>
+                <td><strong>${u.username}</strong></td>
+                <td>${u.email}</td>
+                <td>${roleBadge}</td>
+                <td style="${statusStyle}">${statusText}</td>
+                <td style="text-align:right;">
+                    ${u.role !== 'admin' ? `
+                    <button class="btn-icon-sm" data-action="ban-user" data-id="${u.id}" style="color:${u.is_active ? '#ef4444' : '#22c55e'};" title="${u.is_active ? 'Bannir' : 'Débannir'}">
+                        ${u.is_active ? '🚫' : '✅'}
+                    </button>` : ''}
+                </td>
+            </tr>`;
+                }).join('');
+            } catch (e) { tbody.innerHTML = '<tr><td colspan="5">Erreur chargement</td></tr>'; }
         }
 
-        // --- MODALE PARTI (NOUVEAU) ---
-        async function openNewPartyModal() {
-            // On redirige vers l'éditeur de parti (plus simple que de tout faire en modal)
-            window.location.href = 'editeur-parti.html';
+        // AJOUTER DANS L'ÉCOUTEUR D'ÉVÉNEMENTS (document.body.addEventListener) :
+        // if (action === 'ban-user') await toggleBanUser(id);
+
+        // LA FONCTION D'ACTION :
+        async function toggleBanUser(id) {
+            if (!confirm("Changer le statut de cet utilisateur ?")) return;
+
+            try {
+                const response = await fetch(`${API_URL}/admin/users/${id}/toggle-ban`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                // On vérifie si c'est un problème HTTP (ex: 403 Forbidden ou 500 Error)
+                if (!response.ok) {
+                    const text = await response.text();
+                    console.error("Erreur serveur:", text);
+                    alert("Erreur serveur: " + response.status + " " + response.statusText);
+                    return;
+                }
+
+                const json = await response.json();
+
+                if (json.success) {
+                    // Succès ! On recharge la liste
+                    loadUsers();
+
+                    // Petit message visuel
+                    const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                    Toast.fire({ icon: 'success', title: 'Statut mis à jour !' });
+                } else {
+                    // Le serveur a dit "Non" (ex: on ne peut pas se bannir soi-même)
+                    alert("Impossible de modifier : " + json.error);
+                }
+            } catch (e) {
+                console.error("Erreur technique:", e);
+                alert("Erreur de connexion (voir la console F12)");
+            }
         }
     </script>
 </body>

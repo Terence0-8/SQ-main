@@ -61,7 +61,7 @@ const articleSchema = Joi.object({
 // ==========================================
 router.get('/', async (req, res) => {
   try {
-    const { category } = req.query;
+    const { category, lang } = req.query;
 
     let query = `
       SELECT 
@@ -88,6 +88,13 @@ router.get('/', async (req, res) => {
       params.push(category);
       // La syntaxe $1 = ANY(tags) vérifie si le mot clé est dans le tableau de tags
       query += ` AND (a.category = $1 OR $1 = ANY(a.tags))`;
+    }
+
+
+    // Filtrage par langue (fr/en)
+    if (lang) {
+      params.push(lang);
+      query += ` AND a.language = $${params.length}`;
     }
 
     query += ` ORDER BY a.published_at DESC`;

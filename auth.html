@@ -16,19 +16,18 @@
       img.src = 'https://placehold.co/600x400/eee/999?text=Solitiquo';
     }
   </script>
-
-
 </head>
 
 <body id="page-auth">
-  <a href="javascript:history.length > 1 ? history.back() : window.location.href='index.html'" class="floating-back-btn"
-    aria-label="Retour page précédente">
+
+  <a href="#" id="backBtn" class="floating-back-btn" aria-label="Retour page précédente">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
       stroke-linecap="round" stroke-linejoin="round">
       <path d="M19 12H5M12 19l-7-7 7-7" />
     </svg>
     <span>Retour</span>
   </a>
+
   <header class="premium-header">
     <div class="ph-left">
       <div class="burger-container"><button class="burger-btn" id="burgerBtn">
@@ -37,7 +36,7 @@
           <div class="burger-line"></div>
         </button></div>
       <a href="index.html" class="ph-brand">
-        <img src="logo.svg" alt="S">
+        <img src="logo.svg" alt="S" onerror="this.style.display='none'">
         <div class="brand-sep"></div>
         <span class="brand-text">Solitiquo</span>
       </a>
@@ -54,29 +53,25 @@
     <div class="ph-right" style="justify-content: flex-end; gap: 20px;">
       <div class="search-stack">
         <div class="search-row" style="display:flex; align-items:center; cursor:pointer;">
-          <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <button class="search-btn" id="searchBtn" type="button"><svg width="20" height="20" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="11" cy="11" r="8" />
               <path d="M21 21l-4.35-4.35" />
-            </svg>
-          </button>
+            </svg></button>
           <span class="search-label" id="searchLabel"
             style="font-size:0.9rem; font-weight:600; margin-left:8px;">Rechercher</span>
         </div>
-
         <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
           <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput"
             autocomplete="off" required />
-          <button class="search-submit" type="submit" aria-label="Lancer">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <button class="search-submit" type="submit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
               <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </button>
+            </svg></button>
         </form>
       </div>
     </div>
   </header>
-
 
   <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
   <nav id="mobileNav" class="mobile-nav-sidebar">
@@ -97,16 +92,14 @@
   </nav>
 
   <div class="auth-page-wrapper">
-
     <div class="auth-card">
 
       <div class="auth-tabs">
-        <div class="auth-tab active" onclick="switchTab('login')">Connexion</div>
-        <div class="auth-tab" onclick="switchTab('register')">Inscription</div>
+        <div class="auth-tab active" id="tab-login-btn">Connexion</div>
+        <div class="auth-tab" id="tab-register-btn">Inscription</div>
       </div>
 
       <div class="auth-content">
-
         <div class="auth-title-group">
           <h1 class="auth-title" id="formTitle">Bienvenue</h1>
           <p class="auth-subtitle" id="formSubtitle">Accédez à votre espace membre premium.</p>
@@ -125,8 +118,7 @@
             <label>Mot de passe</label>
             <div class="password-wrapper">
               <input type="password" id="loginPwd" class="form-input" required placeholder="••••••••">
-              <button type="button" class="btn-toggle-pass" onclick="togglePassword('loginPwd', this)"
-                aria-label="Afficher le mot de passe">
+              <button type="button" id="toggle-login-pwd" class="btn-toggle-pass" aria-label="Afficher le mot de passe">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                   stroke-linecap="round" stroke-linejoin="round">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -156,8 +148,7 @@
             <label>Mot de passe</label>
             <div class="password-wrapper">
               <input type="password" id="regPwd" class="form-input" required placeholder="Minimum 6 caractères">
-              <button type="button" class="btn-toggle-pass" onclick="togglePassword('regPwd', this)"
-                aria-label="Afficher le mot de passe">
+              <button type="button" id="toggle-reg-pwd" class="btn-toggle-pass" aria-label="Afficher le mot de passe">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                   stroke-linecap="round" stroke-linejoin="round">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -184,18 +175,11 @@
           <img src="logo.svg" class="footer-logo" alt="S">
           <span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
         </div>
-        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le média de référence pour l'analyse politique et
-          sociale.</p>
-      </div>
-      <div class="footer-col">
-        <h4>Rubriques</h4>
-        <a href="politique.html" class="footer-link">Politique</a>
-        <a href="social.html" class="footer-link">Social</a>
-        <a href="partis-politiques.html" class="footer-link">Partis</a>
+        <p style="font-size:0.9rem; opacity:0.7;">Le média de référence.</p>
       </div>
       <div class="footer-col">
         <h4>Légal</h4>
-        <a href="mentions-legales.html" class="footer-link">Mentions légales</a>
+        <a href="mentions-legales.html" class="footer-link">Mentions</a>
         <a href="conditions-utilisation.html" class="footer-link">CGU</a>
       </div>
       <div class="footer-col">
@@ -208,63 +192,15 @@
 
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
+
   <script>
-    // --- 1. FONCTION UTILITAIRE : GESTION IMAGE (Au cas où) ---
-    // (Déjà présent en haut de ton fichier, mais utile si rappelé ici ou via api.js)
-
-    // --- 2. MENU MOBILE ---
-    const burger = document.getElementById('burgerBtn');
-    const mobileNav = document.getElementById('mobileNav');
-    const mobileClose = document.getElementById('mobileNavClose');
-    const overlay = document.getElementById('mobileNavOverlay');
-
-    function toggleMenu(show) {
-      if (show) {
-        mobileNav.classList.add('nav-open');
-        overlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
-      } else {
-        mobileNav.classList.remove('nav-open');
-        overlay.classList.remove('active');
-        document.body.style.overflow = '';
-      }
-    }
-    if (burger) burger.addEventListener('click', () => toggleMenu(true));
-    if (mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
-    if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
-
-    // --- 3. LOGIQUE RECHERCHE (Restaurée) ---
-    const searchBtn = document.getElementById('searchBtn');
-    const searchLabel = document.getElementById('searchLabel');
-    const searchContainer = document.getElementById('searchContainer');
-    const searchInput = document.getElementById('searchInput');
-
-    function toggleSearch(e) {
-      e.stopPropagation();
-      searchContainer.classList.toggle('active');
-      if (searchContainer.classList.contains('active')) {
-        setTimeout(() => searchInput.focus(), 100);
-      }
-    }
-
-    if (searchBtn) searchBtn.addEventListener('click', toggleSearch);
-    if (searchLabel) searchLabel.addEventListener('click', toggleSearch);
-
-    document.addEventListener('click', (e) => {
-      if (searchContainer && searchContainer.classList.contains('active')) {
-        // On ferme si on clique ailleurs que sur le container, le bouton ou le label
-        if (!searchContainer.contains(e.target) &&
-          !searchBtn.contains(e.target) &&
-          (!searchLabel || !searchLabel.contains(e.target))) {
-          searchContainer.classList.remove('active');
-        }
-      }
-    });
-
-    // --- 4. LOGIQUE AUTHENTIFICATION & MOT DE PASSE (CORRIGÉ) ---
     document.addEventListener('DOMContentLoaded', () => {
-      // A. TABS
-      const tabs = document.querySelectorAll('.auth-tab');
+
+      // ==========================================
+      // 1. LOGIQUE ONGLETS (Connexion / Inscription)
+      // ==========================================
+      const tabLogin = document.getElementById('tab-login-btn');
+      const tabRegister = document.getElementById('tab-register-btn');
       const loginForm = document.getElementById('loginForm');
       const registerForm = document.getElementById('registerForm');
       const title = document.getElementById('formTitle');
@@ -272,44 +208,65 @@
       const msgBox = document.getElementById('message-box');
       const successBox = document.getElementById('success-box');
 
-      // Expose globally
-      window.switchTab = function (mode) {
+      function switchTab(mode) {
+        // Reset messages
         if (msgBox) msgBox.style.display = 'none';
         if (successBox) successBox.style.display = 'none';
 
         if (mode === 'login') {
-          if (loginForm) loginForm.style.display = 'block';
-          if (registerForm) registerForm.style.display = 'none';
-          if (tabs.length > 0) { tabs[0].classList.add('active'); tabs[1].classList.remove('active'); }
-          if (title) title.textContent = "Bienvenue";
-          if (subtitle) subtitle.textContent = "Accédez à votre espace membre premium.";
+          loginForm.style.display = 'block';
+          registerForm.style.display = 'none';
+          tabLogin.classList.add('active');
+          tabRegister.classList.remove('active');
+          title.textContent = "Bienvenue";
+          subtitle.textContent = "Accédez à votre espace membre premium.";
         } else {
-          if (loginForm) loginForm.style.display = 'none';
-          if (registerForm) registerForm.style.display = 'block';
-          if (tabs.length > 0) { tabs[0].classList.remove('active'); tabs[1].classList.add('active'); }
-          if (title) title.textContent = "Rejoignez-nous";
-          if (subtitle) subtitle.textContent = "Créez un compte pour participer aux débats.";
+          loginForm.style.display = 'none';
+          registerForm.style.display = 'block';
+          tabLogin.classList.remove('active');
+          tabRegister.classList.add('active');
+          title.textContent = "Rejoignez-nous";
+          subtitle.textContent = "Créez un compte pour participer aux débats.";
         }
-      };
+      }
 
-      // B. PASSWORD TOGGLE
-      window.togglePassword = function (inputId, btn) {
+      // Attacher les événements au clic
+      if (tabLogin) tabLogin.addEventListener('click', () => switchTab('login'));
+      if (tabRegister) tabRegister.addEventListener('click', () => switchTab('register'));
+
+      // ==========================================
+      // 2. LOGIQUE MOT DE PASSE (Afficher/Masquer)
+      // ==========================================
+      function togglePassword(inputId, btnId) {
         const input = document.getElementById(inputId);
+        const btn = document.getElementById(btnId);
+        if (!input || !btn) return;
         const iconSvg = btn.querySelector('svg');
-        if (!input) return;
 
         if (input.type === "password") {
           input.type = "text";
+          // Icone oeil barré
           if (iconSvg) iconSvg.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
           btn.setAttribute('aria-label', "Masquer le mot de passe");
         } else {
           input.type = "password";
+          // Icone oeil normal
           if (iconSvg) iconSvg.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
           btn.setAttribute('aria-label', "Afficher le mot de passe");
         }
-      };
+      }
 
-      // C. SUMBMIT HANDLERS
+      const toggleLogin = document.getElementById('toggle-login-pwd');
+      const toggleReg = document.getElementById('toggle-reg-pwd');
+
+      if (toggleLogin) toggleLogin.addEventListener('click', () => togglePassword('loginPwd', 'toggle-login-pwd'));
+      if (toggleReg) toggleReg.addEventListener('click', () => togglePassword('regPwd', 'toggle-reg-pwd'));
+
+      // ==========================================
+      // 3. SOUMISSION DES FORMULAIRES
+      // ==========================================
+
+      // CONNEXION
       if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
           e.preventDefault();
@@ -318,18 +275,28 @@
           const btn = loginForm.querySelector('button[type="submit"]');
 
           btn.textContent = "Connexion..."; btn.disabled = true;
-          const result = await SolitiquoAPI.login({ email: identifier, password }); // email can be pseudo
 
-          if (result.success) {
-            window.location.href = 'index.html';
-          } else {
-            msgBox.textContent = result.error || "Identifiants incorrects.";
+          try {
+            const result = await SolitiquoAPI.login({ email: identifier, password });
+            if (result.success) {
+              const params = new URLSearchParams(window.location.search);
+              const redirect = params.get('redirect') || 'index.html';
+              window.location.href = redirect;
+            } else {
+              msgBox.textContent = result.error || "Identifiants incorrects.";
+              msgBox.style.display = 'block';
+              btn.textContent = "Se connecter"; btn.disabled = false;
+            }
+          } catch (err) {
+            console.error(err);
+            msgBox.textContent = "Erreur de connexion serveur.";
             msgBox.style.display = 'block';
             btn.textContent = "Se connecter"; btn.disabled = false;
           }
         });
       }
 
+      // INSCRIPTION
       if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
           e.preventDefault();
@@ -339,19 +306,79 @@
           const btn = registerForm.querySelector('button[type="submit"]');
 
           btn.textContent = "Création..."; btn.disabled = true;
-          const result = await SolitiquoAPI.register({ username, email, password });
 
-          if (result.success) {
-            successBox.textContent = "Compte créé ! Redirection...";
-            successBox.style.display = 'block'; msgBox.style.display = 'none';
-            registerForm.reset();
-            setTimeout(() => { window.location.href = 'index.html'; }, 1500);
-          } else {
-            msgBox.textContent = result.error; msgBox.style.display = 'block';
+          try {
+            const result = await SolitiquoAPI.register({ username, email, password });
+            if (result.success) {
+              successBox.textContent = "Compte créé ! Redirection...";
+              successBox.style.display = 'block'; msgBox.style.display = 'none';
+              registerForm.reset();
+              setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+            } else {
+              msgBox.textContent = result.error; msgBox.style.display = 'block';
+              btn.textContent = "Créer mon compte"; btn.disabled = false;
+            }
+          } catch (err) {
+            console.error(err);
+            msgBox.textContent = "Erreur lors de l'inscription.";
+            msgBox.style.display = 'block';
             btn.textContent = "Créer mon compte"; btn.disabled = false;
           }
         });
       }
+
+      // ==========================================
+      // 4. AUTRES FONCTIONNALITÉS (Menu, Recherche, Retour)
+      // ==========================================
+
+      const backBtn = document.getElementById('backBtn');
+      if (backBtn) {
+        backBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          if (document.referrer && document.referrer.indexOf(window.location.host) !== -1) {
+            history.back();
+          } else {
+            window.location.href = 'index.html';
+          }
+        });
+      }
+
+      const burger = document.getElementById('burgerBtn');
+      const mobileNav = document.getElementById('mobileNav');
+      const mobileClose = document.getElementById('mobileNavClose');
+      const overlay = document.getElementById('mobileNavOverlay');
+
+      function toggleMenu(show) {
+        if (show) { mobileNav.classList.add('nav-open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        else { mobileNav.classList.remove('nav-open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+      }
+      if (burger) burger.addEventListener('click', () => toggleMenu(true));
+      if (mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
+      if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
+
+      const searchBtn = document.getElementById('searchBtn');
+      const searchLabel = document.getElementById('searchLabel');
+      const searchContainer = document.getElementById('searchContainer');
+      const searchInput = document.getElementById('searchInput');
+
+      function toggleSearch(e) {
+        e.stopPropagation();
+        searchContainer.classList.toggle('active');
+        if (searchContainer.classList.contains('active')) {
+          setTimeout(() => searchInput.focus(), 100);
+        }
+      }
+      if (searchBtn) searchBtn.addEventListener('click', toggleSearch);
+      if (searchLabel) searchLabel.addEventListener('click', toggleSearch);
+
+      document.addEventListener('click', (e) => {
+        if (searchContainer && searchContainer.classList.contains('active')) {
+          if (!searchContainer.contains(e.target) && !searchBtn.contains(e.target) && (!searchLabel || !searchLabel.contains(e.target))) {
+            searchContainer.classList.remove('active');
+          }
+        }
+      });
+
     });
   </script>
 </body>

@@ -309,7 +309,34 @@ router.post('/comments/:id/:action', isAdmin, async (req, res) => {
 // ==========================================
 // 7. GESTION SONDAGES
 // ==========================================
-router.get('/polls', isAdmin, async (req, res) => {
+// À insérer dans la section GESTION SONDAGES de admin.js
+router.put('/polls/:id', isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { question, options } = req.body; // Options arrive en tableau de strings ["Oui", "Non"]
+
+    // Reformatage pour le JSONB : on garde les votes existants si possible, sinon 0
+    // Note: C'est complexe de mapper les anciens votes aux nouvelles options.
+    // Simplification : On reset les votes si on change les options, ou on met 0.
+    const optionsJson = options.map(text => ({ text, votes: 0 }));
+
+    const query = `
+      UPDATE polls 
+      SET question = $1, options = $2, updated_at = NOW() 
+      WHERE id = $3 
+      RETURNING id
+    `;
+    await pool.query(query, [question, JSON.stringify(optionsJson), id]);
+
+    res.json({ success: true, message: "Sondage mis à jour (Votes réinitialisés)" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
+
+router.get('/polls/stats', isAdmin, async (req, res) => {
   try {
     const query = `
       SELECT 
@@ -454,6 +481,41 @@ router.get('/parties', isAdmin, async (req, res) => {
     res.json({ success: true, count: result.rows.length, data: result.rows });
   } catch (err) {
     console.error('❌ Erreur liste partis:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
+// ==========================================
+// 9. GESTION UTILISATEURS (MANQUANT)
+// ==========================================
+router.get('/users', isAdmin, async (req, res) => {
+  try {
+    // On récupère tout sauf les mots de passe
+    const query = `
+      SELECT id, username, email, role, is_active, is_subscriber, created_at 
+      FROM users 
+      ORDER BY created_at DESC LIMIT 100
+    `;
+    const result = await pool.query(query);
+    res.json({ success: true, data: result.rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
+router.put('/users/:id/toggle-ban', isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Empêcher de se bannir soi-même
+    if (parseInt(id) === req.session.user.id) {
+      return res.status(403).json({ success: false, error: "Impossible de se bannir soi-même" });
+    }
+
+    const query = `UPDATE users SET is_active = NOT is_active WHERE id = $1 RETURNING is_active`;
+    const result = await pool.query(query, [id]);
+    res.json({ success: true, is_active: result.rows[0].is_active });
+  } catch (err) {
     res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 });
