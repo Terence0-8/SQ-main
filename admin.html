@@ -42,6 +42,11 @@
     <main class="main-content">
         <header class="top-bar">
             <h1 class="page-title" id="page-header">Vue d'ensemble</h1>
+            <div style="flex:1;"></div>
+            <div class="lang-switch-container" style="margin-right:20px;">
+                <button class="lang-seg-btn active" data-lang="fr">FR</button>
+                <button class="lang-seg-btn" data-lang="en">EN</button>
+            </div>
             <div id="header-actions"></div>
         </header>
 
@@ -286,6 +291,7 @@
         </div>
     </main>
 
+    <script src="js/i18n.js"></script>
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
     <script>
@@ -295,6 +301,7 @@
         let chartTimeline = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
+            await initLanguageSwitcher({ reloadPage: true });
 
             // 1. VERIFICATION AUTH & INIT
             const user = await SolitiquoAPI.getProfile();
@@ -963,7 +970,7 @@
         window.loadUsers = async function () {
             const tbody = document.getElementById('list-users');
             tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Chargement...</td></tr>';
-            
+
             try {
                 const res = await fetch(API_URL + '/admin/users', { credentials: 'include' });
                 const json = await res.json();
@@ -974,10 +981,10 @@
                 }
 
                 tbody.innerHTML = (json.data || []).map(u => {
-                    const roleBadge = u.role === 'admin' 
-                        ? '<span class="badge badge-pub">Admin</span>' 
+                    const roleBadge = u.role === 'admin'
+                        ? '<span class="badge badge-pub">Admin</span>'
                         : (u.role === 'writer' ? '<span class="badge" style="background:#fef3c7; color:#92400e;">Rédacteur</span>' : 'Lecteur');
-                    
+
                     const accountStatusStyle = u.is_active ? 'color:#10b981;' : 'color:#ef4444; font-weight:bold;';
                     const accountStatusText = u.is_active ? 'Actif' : 'Banni';
 
@@ -997,7 +1004,7 @@
 
                         const startDate = u.subscription_start_date ? new Date(u.subscription_start_date).toLocaleDateString('fr-FR') : '?';
                         const endDateFormatted = endDate.toLocaleDateString('fr-FR');
-                        
+
                         subscriptionDates = `
                             <div style="font-size:0.85rem; color:#64748b;">
                                 <div><strong>Début:</strong> ${startDate}</div>
@@ -1025,9 +1032,9 @@
                     </tr>`;
                 }).join('');
 
-            } catch (e) { 
+            } catch (e) {
                 console.error('Erreur loadUsers:', e);
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#ef4444;">Erreur chargement utilisateurs</td></tr>'; 
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#ef4444;">Erreur chargement utilisateurs</td></tr>';
             }
         }
 

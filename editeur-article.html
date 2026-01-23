@@ -15,6 +15,11 @@
 
   <header class="studio-header">
     <div class="logo-area"><img src="logo.svg" alt="S"><span>Studio</span></div>
+    <div style="flex:1;"></div>
+    <div class="lang-switch-container" style="margin-right:20px;">
+      <button class="lang-seg-btn active" data-lang="fr">FR</button>
+      <button class="lang-seg-btn" data-lang="en">EN</button>
+    </div>
     <a href="index.html" class="back-btn">← Retour au site</a>
   </header>
 
@@ -100,10 +105,12 @@
   </form>
 
   <!-- AJOUTER CES 2 LIGNES AVANT </body> -->
+  <script src="js/i18n.js"></script>
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
 
   <script>
+    document.addEventListener('DOMContentLoaded', async () => await initLanguageSwitcher({ reloadPage: true }));
     function format(cmd, val = null) { document.execCommand(cmd, false, val); }
 
     // --- GESTION DES TAGS ---

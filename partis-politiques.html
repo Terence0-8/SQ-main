@@ -45,6 +45,10 @@
       </nav>
     </div>
     <div class="ph-right">
+      <div class="lang-switch-container">
+        <button class="lang-seg-btn active" data-lang="fr">FR</button>
+        <button class="lang-seg-btn" data-lang="en">EN</button>
+      </div>
       <div class="search-stack">
         <div class="search-row" style="display:flex; align-items:center; cursor:pointer;">
           <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
@@ -150,10 +154,12 @@
     <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
   </footer>
 
+  <script src="js/i18n.js"></script>
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initLanguageSwitcher({ reloadPage: true });
       // --- VARIABLES GLOBALES ---
       let allParties = [];
 

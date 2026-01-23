@@ -15,6 +15,11 @@
 
     <header class="studio-header">
         <div class="logo-area"><img src="logo.svg" alt="S"><span>Studio Partis</span></div>
+        <div style="flex:1;"></div>
+        <div class="lang-switch-container" style="margin-right:20px;">
+            <button class="lang-seg-btn active" data-lang="fr">FR</button>
+            <button class="lang-seg-btn" data-lang="en">EN</button>
+        </div>
         <a href="admin.html" class="back-btn">← Retour Dashboard</a>
     </header>
 
@@ -118,10 +123,12 @@
         </aside>
     </form>
 
+    <script src="js/i18n.js"></script>
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
     <script>
         (async function init() {
+            await initLanguageSwitcher({ reloadPage: true });
             // 1. Vérif Auth
             const user = await SolitiquoAPI.getProfile();
             if (!user || (user.role !== 'admin' && user.role !== 'writer')) window.location.href = 'auth.html';

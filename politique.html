@@ -45,6 +45,10 @@
       </nav>
     </div>
     <div class="ph-right" style="justify-content: flex-end; gap: 20px;">
+      <div class="lang-switch-container">
+        <button class="lang-seg-btn active" data-lang="fr">FR</button>
+        <button class="lang-seg-btn" data-lang="en">EN</button>
+      </div>
       <div class="search-stack">
         <div class="search-row">
           <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
@@ -192,6 +196,7 @@
     <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
   </footer>
 
+  <script src="js/i18n.js"></script>
   <script src="js/solitiquo.js"></script>
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
@@ -388,10 +393,16 @@
 
     // --- 4. CHARGEMENT INITIAL (ARTICLES + SONDAGE) ---
     document.addEventListener('DOMContentLoaded', async () => {
+      // Init Language
+      await initLanguageSwitcher({ reloadPage: true });
 
       // A. Chargement Articles
       try {
-        const res = await fetch(`${API_URL}/articles?category=${pageCategory}`);
+        const lang = getLanguage();
+        let catParam = pageCategory;
+        if (lang === 'en' && pageCategory === 'Politique') catParam = 'Politics';
+
+        const res = await fetch(`${API_URL}/articles?category=${catParam}&lang=${lang}`);
         const json = await res.json();
 
         if (json.success && json.data.length > 0) {

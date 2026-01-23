@@ -292,48 +292,17 @@
 
     // --- CHARGEMENT DES ARTICLES ---
     document.addEventListener('DOMContentLoaded', async () => {
-      // 1. Initialiser la langue et l'interface
-      const currentLang = getLanguage();
-      updateInterfaceText(currentLang);
+      // 1. Initialiser le système de langue avec reload d'articles
+      await initLanguageSwitcher({
+        reloadArticles: true,  // Recharge les articles au lieu de recharger la page
+        reloadPage: false
+      });
 
       // 2. Charger les articles dans la langue actuelle
+      const currentLang = getLanguage();
       await loadArticles(currentLang);
 
-      // 3. Gestion du bouton de changement de langue (segmented control)
-      const langButtons = document.querySelectorAll('.lang-seg-btn');
-
-      // Initialiser le bouton actif selon la langue actuelle
-      langButtons.forEach(btn => {
-        const btnLang = btn.getAttribute('data-lang');
-        if (btnLang === currentLang) {
-          btn.classList.add('active');
-        } else {
-          btn.classList.remove('active');
-        }
-      });
-
-      // Ajouter les event listeners
-      langButtons.forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const selectedLang = btn.getAttribute('data-lang');
-
-          // Ne rien faire si on clique sur la langue déjà active
-          if (selectedLang === getLanguage()) return;
-
-          // Mettre à jour les états actifs
-          langButtons.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-
-          // Changer la langue
-          setLanguage(selectedLang);
-          updateInterfaceText(selectedLang);
-          await loadArticles(selectedLang);
-
-          console.log(`🌍 Site switché vers ${selectedLang.toUpperCase()}`);
-        });
-      });
-
-      // Chargement Sondage
+      // 3. Chargement Sondage
       loadHomePoll();
     });
 

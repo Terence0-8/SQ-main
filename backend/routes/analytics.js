@@ -33,7 +33,7 @@ router.get('/overview', isAdmin, async (req, res) => {
     `);
 
     // 3. Taux de conversion abonnement
-    const conversionRate = usersStats.total_users > 0 
+    const conversionRate = usersStats.total_users > 0
       ? ((usersStats.total_subscribers / usersStats.total_users) * 100).toFixed(2)
       : 0;
 
@@ -77,7 +77,7 @@ router.get('/overview', isAdmin, async (req, res) => {
  */
 router.get('/reading-progress', isAdmin, async (req, res) => {
   try {
-    const stats = await db.get(`
+    const result = await db.query(`
       SELECT 
         SUM(reads_start) as total_starts,
         SUM(reads_25) as total_25,
@@ -87,10 +87,11 @@ router.get('/reading-progress', isAdmin, async (req, res) => {
       FROM articles
       WHERE status = 'published'
     `);
+    const stats = result.rows[0];
 
     // Calcul des taux d'abandon
     const totalStarts = stats.total_starts || 1; // Éviter division par 0
-    
+
     res.json({
       success: true,
       data: {
@@ -140,7 +141,7 @@ router.get('/top-articles', isAdmin, async (req, res) => {
       success: true,
       data: topArticles.map(art => ({
         ...art,
-        completionRate: art.views_count > 0 
+        completionRate: art.views_count > 0
           ? ((art.reads_100 / art.views_count) * 100).toFixed(1)
           : 0
       }))

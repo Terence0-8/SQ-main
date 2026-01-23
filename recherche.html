@@ -11,6 +11,7 @@
         rel="stylesheet" />
 
     <script>function handleImgError(i) { i.onerror = null; i.src = 'https://placehold.co/300x200/eee/999?text=Solitiquo'; }</script>
+    <script src="js/i18n.js"></script>
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
 
@@ -41,6 +42,10 @@
             </nav>
         </div>
         <div class="ph-right">
+            <div class="lang-switch-container">
+                <button class="lang-seg-btn active" data-lang="fr">FR</button>
+                <button class="lang-seg-btn" data-lang="en">EN</button>
+            </div>
             <button onclick="loadEverything()"
                 style="background:none; border:none; cursor:pointer; font-weight:600; color:#555;">Tout le
                 catalogue</button>
@@ -122,6 +127,7 @@
         let allData = []; // Stocke tous les résultats pour le filtrage local
 
         document.addEventListener('DOMContentLoaded', async () => {
+            await initLanguageSwitcher({ reloadPage: true });
 
             const params = new URLSearchParams(window.location.search);
             const query = params.get('q');
@@ -162,10 +168,11 @@
 
             try {
                 // On cherche partout en parallèle
+                const lang = getLanguage();
                 const [articlesRes, partiesRes, podcastsRes] = await Promise.all([
-                    fetch(`${API_URL}/articles/search?q=${encodeURIComponent(query)}`),
-                    fetch(`${API_URL}/parties/search?q=${encodeURIComponent(query)}`),
-                    fetch(`${API_URL}/podcasts/search?q=${encodeURIComponent(query)}`)
+                    fetch(`${API_URL}/articles/search?q=${encodeURIComponent(query)}&lang=${lang}`),
+                    fetch(`${API_URL}/parties/search?q=${encodeURIComponent(query)}&lang=${lang}`),
+                    fetch(`${API_URL}/podcasts/search?q=${encodeURIComponent(query)}&lang=${lang}`)
                 ]);
 
                 // On gère les réponses même si certaines 404
@@ -197,10 +204,11 @@
 
             try {
                 // On appelle les 3 endpoints
+                const lang = getLanguage();
                 const [resArt, resPod, resEm] = await Promise.all([
-                    fetch(`${API_URL}/articles`),
-                    fetch(`${API_URL}/podcasts`),
-                    fetch(`${API_URL}/emissions`)
+                    fetch(`${API_URL}/articles?lang=${lang}`),
+                    fetch(`${API_URL}/podcasts?lang=${lang}`),
+                    fetch(`${API_URL}/emissions?lang=${lang}`)
                 ]);
 
                 const [jArt, jPod, jEm] = await Promise.all([resArt.json(), resPod.json(), resEm.json()]);
@@ -230,12 +238,18 @@
                 filtered = filtered.filter(item => item.type === typeFilter);
             }
 
-            // Filtre Thème (Sauf pour Emissions si demandé, mais ici on filtre tout ce qui a une catégorie)
+            // Filtre Thème (Smart Language Handling)
             if (catFilter !== 'all') {
                 filtered = filtered.filter(item => {
-                    // Les émissions n'ont peut-être pas de catégorie stricte, on sécurise
                     if (!item.category) return false;
-                    return item.category === catFilter;
+                    // Mapping simple pour supporter EN/FR
+                    const map = {
+                        'Politique': ['Politique', 'Politics'],
+                        'Social': ['Social'],
+                        'Général': ['Général', 'General']
+                    };
+                    const targets = map[catFilter] || [catFilter];
+                    return targets.includes(item.category);
                 });
             }
 

@@ -15,6 +15,12 @@
 
   <div class="checkout-header">
     <a href="index.html"><img src="logo.svg" alt="Solitiquo" class="checkout-logo"></a>
+    <div style="margin-left:auto; display:flex; align-items:center;">
+      <div class="lang-switch-container">
+        <button class="lang-seg-btn active" data-lang="fr">FR</button>
+        <button class="lang-seg-btn" data-lang="en">EN</button>
+      </div>
+    </div>
   </div>
 
   <div class="checkout-container">
@@ -77,78 +83,83 @@
 
   </div>
 
+  <script src="js/i18n.js"></script>
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script>
-    // 1. Initialisation
-    const params = new URLSearchParams(window.location.search);
-    const plan = params.get('plan') || 'monthly';
-    const errorMsg = document.getElementById('errorMsg');
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initLanguageSwitcher({ reloadPage: true });
 
-    const planNameEl = document.getElementById('planName');
-    const planPriceEl = document.getElementById('planPrice');
-    const totalPriceEl = document.getElementById('totalPrice');
-    const btnAmountEl = document.getElementById('btnAmount');
+      // 1. Initialisation
+      const params = new URLSearchParams(window.location.search);
+      const plan = params.get('plan') || 'monthly';
+      const errorMsg = document.getElementById('errorMsg');
 
-    // 2. Affichage dynamique
-    if (plan === 'monthly') {
-      planNameEl.textContent = "Offre Mensuelle";
-      planPriceEl.textContent = "2 000 FCFA";
-      totalPriceEl.textContent = "2 000 FCFA";
-      btnAmountEl.textContent = "2 000 FCFA";
-    } else {
-      planNameEl.textContent = "Offre Annuelle";
-      planPriceEl.textContent = "20 000 FCFA";
-      totalPriceEl.textContent = "20 000 FCFA";
-      btnAmountEl.textContent = "20 000 FCFA";
-    }
+      const planNameEl = document.getElementById('planName');
+      const planPriceEl = document.getElementById('planPrice');
+      const totalPriceEl = document.getElementById('totalPrice');
+      const btnAmountEl = document.getElementById('btnAmount');
 
-    // 3. Déclenchement Paiement
-    document.getElementById('payBtn').addEventListener('click', async () => {
-      const btn = document.getElementById('payBtn');
-      btn.innerHTML = `<span class="loader"></span> Connexion CinetPay...`;
-      btn.disabled = true;
-      errorMsg.style.display = 'none';
-
-      try {
-        // A. Vérifier connexion
-        const user = await SolitiquoAPI.getProfile();
-        if (!user) {
-          window.location.href = `auth.html?redirect=paiement.html?plan=${plan}`;
-          return;
-        }
-
-        // B. Initialiser transaction backend
-        // CHOIX DU MODE : Mettre 'true' pour tester sans CinetPay, 'false' pour la vraie vie
-        const DEV_MODE = true;
-
-        const endpoint = DEV_MODE
-          ? `${window.API_URL}/subscriptions/simulate-payment`
-          : `${window.API_URL}/subscriptions/init-payment`;
-
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ plan: plan }),
-          credentials: 'include'
-        });
-
-        const json = await res.json();
-
-        if (json.success && json.payment_url) {
-          // C. Redirection vers CinetPay
-          window.location.href = json.payment_url;
-        } else {
-          throw new Error(json.error || "Erreur inconnue");
-        }
-
-      } catch (err) {
-        console.error(err);
-        btn.innerHTML = `Réessayer`;
-        btn.disabled = false;
-        errorMsg.textContent = "Erreur : " + (err.message || "Impossible de joindre le service de paiement.");
-        errorMsg.style.display = 'block';
+      // 2. Affichage dynamique
+      if (plan === 'monthly') {
+        planNameEl.textContent = "Offre Mensuelle";
+        planPriceEl.textContent = "2 000 FCFA";
+        totalPriceEl.textContent = "2 000 FCFA";
+        btnAmountEl.textContent = "2 000 FCFA";
+      } else {
+        planNameEl.textContent = "Offre Annuelle";
+        planPriceEl.textContent = "20 000 FCFA";
+        totalPriceEl.textContent = "20 000 FCFA";
+        btnAmountEl.textContent = "20 000 FCFA";
       }
+
+      // 3. Déclenchement Paiement
+      document.getElementById('payBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('payBtn');
+        btn.innerHTML = `<span class="loader"></span> Connexion CinetPay...`;
+        btn.disabled = true;
+        errorMsg.style.display = 'none';
+
+        try {
+          // A. Vérifier connexion
+          const user = await SolitiquoAPI.getProfile();
+          if (!user) {
+            window.location.href = `auth.html?redirect=paiement.html?plan=${plan}`;
+            return;
+          }
+
+          // B. Initialiser transaction backend
+          // CHOIX DU MODE : Mettre 'true' pour tester sans CinetPay, 'false' pour la vraie vie
+          const DEV_MODE = true;
+
+          const endpoint = DEV_MODE
+            ? `${window.API_URL}/subscriptions/simulate-payment`
+            : `${window.API_URL}/subscriptions/init-payment`;
+
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ plan: plan }),
+            credentials: 'include'
+          });
+
+          const json = await res.json();
+
+          if (json.success && json.payment_url) {
+            // C. Redirection vers CinetPay
+            window.location.href = json.payment_url;
+          } else {
+            throw new Error(json.error || "Erreur inconnue");
+          }
+
+        } catch (err) {
+          console.error(err);
+          btn.innerHTML = `Réessayer`;
+          btn.disabled = false;
+          errorMsg.textContent = "Erreur : " + (err.message || "Impossible de joindre le service de paiement.");
+          errorMsg.style.display = 'block';
+        }
+      });
     });
   </script>
 

@@ -1,19 +1,29 @@
 ﻿<!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Cookies — Solitiquo</title>
   <link rel="stylesheet" href="solitiquo.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet" />
-  
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap"
+    rel="stylesheet" />
+
 </head>
+
 <body id="page-cookies">
 
   <header class="premium-header">
     <div class="ph-left">
-      <div class="burger-container"><button class="burger-btn" id="burgerBtn"><div class="burger-line"></div><div class="burger-line"></div><div class="burger-line"></div></button></div>
-      <a href="index.html" class="ph-brand"><img src="logo.svg" alt="S"><div class="brand-sep"></div><span class="brand-text">Solitiquo</span></a>
+      <div class="burger-container"><button class="burger-btn" id="burgerBtn">
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+        </button></div>
+      <a href="index.html" class="ph-brand"><img src="logo.svg" alt="S">
+        <div class="brand-sep"></div><span class="brand-text">Solitiquo</span>
+      </a>
     </div>
     <div class="ph-center">
       <nav class="ph-nav">
@@ -25,20 +35,31 @@
       </nav>
     </div>
     <div class="ph-right">
-     <div class="search-stack">
-          <div class="search-row" style="display:flex; align-items:center; cursor:pointer;">
-            <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            </button>
-            <span class="search-label" id="searchLabel" style="font-size:0.9rem; font-weight:600; margin-left:8px;">Rechercher</span>
-          </div>
-          
-          <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
-            <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput" autocomplete="off" required />
-            <button class="search-submit" type="submit" aria-label="Lancer">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-          </form>
+      <div class="lang-switch-container">
+        <button class="lang-seg-btn active" data-lang="fr">FR</button>
+        <button class="lang-seg-btn" data-lang="en">EN</button>
+      </div>
+      <div class="search-stack">
+        <div class="search-row" style="display:flex; align-items:center; cursor:pointer;">
+          <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
+            </svg>
+          </button>
+          <span class="search-label" id="searchLabel"
+            style="font-size:0.9rem; font-weight:600; margin-left:8px;">Rechercher</span>
+        </div>
+
+        <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
+          <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput"
+            autocomplete="off" required />
+          <button class="search-submit" type="submit" aria-label="Lancer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </form>
       </div>
       <a href="auth.html" class="ph-btn-auth">S'identifier</a>
     </div>
@@ -54,32 +75,39 @@
 
   <main class="legal-container">
     <div class="legal-card">
-        
-        <nav class="legal-nav">
-            <a href="mentions-legales.html">Mentions Légales</a>
-            <a href="conditions-utilisation.html">CGU</a>
-            <a href="politique-confidentialite.html">Confidentialité</a>
-            <a href="cookies.html" class="active">Cookies</a>
-        </nav>
 
-        <div class="legal-section">
-            <h2>1. Qu'est-ce qu'un cookie ?</h2>
-            <p>Un cookie est un petit fichier texte déposé sur votre terminal (ordinateur, tablette, smartphone) lors de la visite d'un site. Il permet de conserver des données utilisateur afin de faciliter la navigation et de permettre certaines fonctionnalités.</p>
-        </div>
+      <nav class="legal-nav">
+        <a href="mentions-legales.html">Mentions Légales</a>
+        <a href="conditions-utilisation.html">CGU</a>
+        <a href="politique-confidentialite.html">Confidentialité</a>
+        <a href="cookies.html" class="active">Cookies</a>
+      </nav>
 
-        <div class="legal-section">
-            <h2>2. Les cookies que nous utilisons</h2>
-            <ul>
-                <li><strong>Cookies techniques (Essentiels) :</strong> Nécessaires au fonctionnement du site (connexion, sécurité). Ils ne peuvent pas être désactivés.</li>
-                <li><strong>Cookies analytiques :</strong> Nous permettent de connaître l'audience du site et d'améliorer nos contenus (statistiques anonymes).</li>
-                <li><strong>Cookies publicitaires :</strong> Permettent d'afficher des publicités pertinentes pour les utilisateurs non-abonnés.</li>
-            </ul>
-        </div>
+      <div class="legal-section">
+        <h2>1. Qu'est-ce qu'un cookie ?</h2>
+        <p>Un cookie est un petit fichier texte déposé sur votre terminal (ordinateur, tablette, smartphone) lors de la
+          visite d'un site. Il permet de conserver des données utilisateur afin de faciliter la navigation et de
+          permettre certaines fonctionnalités.</p>
+      </div>
 
-        <div class="legal-section">
-            <h2>3. Gestion de vos préférences</h2>
-            <p>Vous pouvez à tout moment configurer votre navigateur pour bloquer ou supprimer les cookies. Cependant, notez que la désactivation des cookies techniques peut empêcher le bon fonctionnement de certaines parties du site, comme la connexion à votre espace membre.</p>
-        </div>
+      <div class="legal-section">
+        <h2>2. Les cookies que nous utilisons</h2>
+        <ul>
+          <li><strong>Cookies techniques (Essentiels) :</strong> Nécessaires au fonctionnement du site (connexion,
+            sécurité). Ils ne peuvent pas être désactivés.</li>
+          <li><strong>Cookies analytiques :</strong> Nous permettent de connaître l'audience du site et d'améliorer nos
+            contenus (statistiques anonymes).</li>
+          <li><strong>Cookies publicitaires :</strong> Permettent d'afficher des publicités pertinentes pour les
+            utilisateurs non-abonnés.</li>
+        </ul>
+      </div>
+
+      <div class="legal-section">
+        <h2>3. Gestion de vos préférences</h2>
+        <p>Vous pouvez à tout moment configurer votre navigateur pour bloquer ou supprimer les cookies. Cependant, notez
+          que la désactivation des cookies techniques peut empêcher le bon fonctionnement de certaines parties du site,
+          comme la connexion à votre espace membre.</p>
+      </div>
 
     </div>
   </main>
@@ -87,31 +115,48 @@
   <footer class="premium-footer">
     <div class="footer-grid">
       <div class="footer-col">
-        <div style="display:flex; gap:10px; align-items:center; margin-bottom:1.5rem;"><img src="logo.svg" class="footer-logo" style="height:35px; filter:brightness(0) invert(1);"><span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span></div>
+        <div style="display:flex; gap:10px; align-items:center; margin-bottom:1.5rem;"><img src="logo.svg"
+            class="footer-logo" style="height:35px; filter:brightness(0) invert(1);"><span
+            style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
+        </div>
         <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le média de référence.</p>
       </div>
-      <div class="footer-col"><h4>Rubriques</h4><a href="politique.html" class="footer-link">Politique</a><a href="social.html" class="footer-link">Social</a></div>
-      <div class="footer-col"><h4>Légal</h4><a href="mentions-legales.html" class="footer-link">Mentions légales</a><a href="conditions-utilisation.html" class="footer-link">CGU</a></div>
-      <div class="footer-col"><h4>Contact</h4><a href="contact.html" class="footer-link">Nous écrire</a><a href="auth.html" class="footer-link">S'identifier</a></div>
+      <div class="footer-col">
+        <h4>Rubriques</h4><a href="politique.html" class="footer-link">Politique</a><a href="social.html"
+          class="footer-link">Social</a>
+      </div>
+      <div class="footer-col">
+        <h4>Légal</h4><a href="mentions-legales.html" class="footer-link">Mentions légales</a><a
+          href="conditions-utilisation.html" class="footer-link">CGU</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4><a href="contact.html" class="footer-link">Nous écrire</a><a href="auth.html"
+          class="footer-link">S'identifier</a>
+      </div>
     </div>
     <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
   </footer>
 
+  <script src="js/i18n.js"></script>
   <script src="js/api.js"></script>
   <script src="solitiquo.js"></script>
-  <script>document.addEventListener('DOMContentLoaded', SolitiquoAPI.initUserInterface);
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      SolitiquoAPI.initUserInterface();
+      await initLanguageSwitcher({ reloadPage: true });
+    });
     // --- NAVIGATION & RECHERCHE ---
     const burger = document.getElementById('burgerBtn');
     const mobileNav = document.getElementById('mobileNav');
     const mobileClose = document.getElementById('mobileNavClose');
     const overlay = document.getElementById('mobileNavOverlay');
     function toggleMenu(show) {
-        if(show) { mobileNav.classList.add('nav-open'); overlay.classList.add('active'); }
-        else { mobileNav.classList.remove('nav-open'); overlay.classList.remove('active'); }
+      if (show) { mobileNav.classList.add('nav-open'); overlay.classList.add('active'); }
+      else { mobileNav.classList.remove('nav-open'); overlay.classList.remove('active'); }
     }
-    if(burger) burger.addEventListener('click', () => toggleMenu(true));
-    if(mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
-    if(overlay) overlay.addEventListener('click', () => toggleMenu(false));
+    if (burger) burger.addEventListener('click', () => toggleMenu(true));
+    if (mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
+    if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
 
     // --- RECHERCHE ---
     const searchBtn = document.getElementById('searchBtn');
@@ -120,25 +165,26 @@
     const searchInput = document.getElementById('searchInput');
 
     function toggleSearch(e) {
-        e.stopPropagation();
-        searchContainer.classList.toggle('active');
-        if(searchContainer.classList.contains('active')) {
-            setTimeout(() => searchInput.focus(), 100);
-        }
+      e.stopPropagation();
+      searchContainer.classList.toggle('active');
+      if (searchContainer.classList.contains('active')) {
+        setTimeout(() => searchInput.focus(), 100);
+      }
     }
 
-    if(searchBtn) searchBtn.addEventListener('click', toggleSearch);
-    if(searchLabel) searchLabel.addEventListener('click', toggleSearch);
+    if (searchBtn) searchBtn.addEventListener('click', toggleSearch);
+    if (searchLabel) searchLabel.addEventListener('click', toggleSearch);
 
     document.addEventListener('click', (e) => {
-        if (searchContainer && searchContainer.classList.contains('active')) {
-            if (!searchContainer.contains(e.target) && 
-                !searchBtn.contains(e.target) && 
-                (!searchLabel || !searchLabel.contains(e.target))) {
-                searchContainer.classList.remove('active');
-            }
+      if (searchContainer && searchContainer.classList.contains('active')) {
+        if (!searchContainer.contains(e.target) &&
+          !searchBtn.contains(e.target) &&
+          (!searchLabel || !searchLabel.contains(e.target))) {
+          searchContainer.classList.remove('active');
         }
+      }
     });
   </script>
 </body>
+
 </html>

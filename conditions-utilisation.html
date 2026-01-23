@@ -1,19 +1,29 @@
 ﻿<!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CGU — Solitiquo</title>
   <link rel="stylesheet" href="solitiquo.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet" />
-  
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap"
+    rel="stylesheet" />
+
 </head>
+
 <body id="page-conditions-utilisation">
 
   <header class="premium-header">
     <div class="ph-left">
-      <div class="burger-container"><button class="burger-btn" id="burgerBtn"><div class="burger-line"></div><div class="burger-line"></div><div class="burger-line"></div></button></div>
-      <a href="index.html" class="ph-brand"><img src="logo.svg" alt="S"><div class="brand-sep"></div><span class="brand-text">Solitiquo</span></a>
+      <div class="burger-container"><button class="burger-btn" id="burgerBtn">
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+        </button></div>
+      <a href="index.html" class="ph-brand"><img src="logo.svg" alt="S">
+        <div class="brand-sep"></div><span class="brand-text">Solitiquo</span>
+      </a>
     </div>
     <div class="ph-center">
       <nav class="ph-nav">
@@ -25,20 +35,31 @@
       </nav>
     </div>
     <div class="ph-right">
-    <div class="search-stack">
-          <div class="search-row" style="display:flex; align-items:center; cursor:pointer;">
-            <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            </button>
-            <span class="search-label" id="searchLabel" style="font-size:0.9rem; font-weight:600; margin-left:8px;">Rechercher</span>
-          </div>
-          
-          <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
-            <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput" autocomplete="off" required />
-            <button class="search-submit" type="submit" aria-label="Lancer">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-          </form>
+      <div class="lang-switch-container">
+        <button class="lang-seg-btn active" data-lang="fr">FR</button>
+        <button class="lang-seg-btn" data-lang="en">EN</button>
+      </div>
+      <div class="search-stack">
+        <div class="search-row" style="display:flex; align-items:center; cursor:pointer;">
+          <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
+            </svg>
+          </button>
+          <span class="search-label" id="searchLabel"
+            style="font-size:0.9rem; font-weight:600; margin-left:8px;">Rechercher</span>
+        </div>
+
+        <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
+          <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput"
+            autocomplete="off" required />
+          <button class="search-submit" type="submit" aria-label="Lancer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </form>
       </div>
       <a href="auth.html" class="ph-btn-auth">S'identifier</a>
     </div>
@@ -53,35 +74,44 @@
 
   <main class="legal-container">
     <div class="legal-card">
-        
-        <nav class="legal-nav">
-            <a href="mentions-legales.html">Mentions Légales</a>
-            <a href="conditions-utilisation.html" class="active">CGU</a>
-            <a href="politique-confidentialite.html">Confidentialité</a>
-            <a href="cookies.html">Cookies</a>
-        </nav>
 
-        <div class="legal-section">
-            <h2>1. Objet</h2>
-            <p>Les présentes Conditions Générales d'Utilisation (CGU) ont pour objet de définir les modalités de mise à disposition des services du site Solitiquo.cm et les conditions d'utilisation du service par l'Utilisateur.</p>
-        </div>
+      <nav class="legal-nav">
+        <a href="mentions-legales.html">Mentions Légales</a>
+        <a href="conditions-utilisation.html" class="active">CGU</a>
+        <a href="politique-confidentialite.html">Confidentialité</a>
+        <a href="cookies.html">Cookies</a>
+      </nav>
 
-        <div class="legal-section">
-            <h2>2. Accès au service</h2>
-            <p>Le Service est accessible gratuitement à tout Utilisateur disposant d'un accès à internet. Tous les coûts afférents à l'accès au Service sont exclusivement à la charge de l'Utilisateur.</p>
-            <p>L'Éditeur se réserve la possibilité d'interrompre, de suspendre momentanément ou de modifier sans préavis l'accès à tout ou partie du Service, afin d'en assurer la maintenance, ou pour toute autre raison, sans que l'interruption n'ouvre droit à aucune obligation ni indemnisation.</p>
-        </div>
+      <div class="legal-section">
+        <h2>1. Objet</h2>
+        <p>Les présentes Conditions Générales d'Utilisation (CGU) ont pour objet de définir les modalités de mise à
+          disposition des services du site Solitiquo.cm et les conditions d'utilisation du service par l'Utilisateur.
+        </p>
+      </div>
 
-        <div class="legal-section">
-            <h2>3. Propriété intellectuelle</h2>
-            <p>Les marques, logos, signes ainsi que tout le contenu du site (textes, images, son...) font l'objet d'une protection par le Code de la propriété intellectuelle et plus particulièrement par le droit d'auteur.</p>
-        </div>
+      <div class="legal-section">
+        <h2>2. Accès au service</h2>
+        <p>Le Service est accessible gratuitement à tout Utilisateur disposant d'un accès à internet. Tous les coûts
+          afférents à l'accès au Service sont exclusivement à la charge de l'Utilisateur.</p>
+        <p>L'Éditeur se réserve la possibilité d'interrompre, de suspendre momentanément ou de modifier sans préavis
+          l'accès à tout ou partie du Service, afin d'en assurer la maintenance, ou pour toute autre raison, sans que
+          l'interruption n'ouvre droit à aucune obligation ni indemnisation.</p>
+      </div>
 
-        <div class="legal-section">
-            <h2>4. Responsabilité de l'utilisateur</h2>
-            <p>L'Utilisateur est responsable des risques liés à l'utilisation de son identifiant de connexion et de son mot de passe. Le site décline toute responsabilité.</p>
-            <p>L'Utilisateur s'engage à tenir des propos respectueux dans les commentaires. Tout message à caractère raciste, injurieux, diffamatoire ou pornographique sera supprimé et pourra entraîner le bannissement du compte.</p>
-        </div>
+      <div class="legal-section">
+        <h2>3. Propriété intellectuelle</h2>
+        <p>Les marques, logos, signes ainsi que tout le contenu du site (textes, images, son...) font l'objet d'une
+          protection par le Code de la propriété intellectuelle et plus particulièrement par le droit d'auteur.</p>
+      </div>
+
+      <div class="legal-section">
+        <h2>4. Responsabilité de l'utilisateur</h2>
+        <p>L'Utilisateur est responsable des risques liés à l'utilisation de son identifiant de connexion et de son mot
+          de passe. Le site décline toute responsabilité.</p>
+        <p>L'Utilisateur s'engage à tenir des propos respectueux dans les commentaires. Tout message à caractère
+          raciste, injurieux, diffamatoire ou pornographique sera supprimé et pourra entraîner le bannissement du
+          compte.</p>
+      </div>
 
     </div>
   </main>
@@ -90,32 +120,47 @@
     <div class="footer-grid">
       <div class="footer-col">
         <div style="display:flex; gap:10px; align-items:center; margin-bottom:1.5rem;">
-            <img src="logo.svg" class="footer-logo" style="height:35px; filter:brightness(0) invert(1);"><span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
+          <img src="logo.svg" class="footer-logo" style="height:35px; filter:brightness(0) invert(1);"><span
+            style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
         </div>
         <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le média de référence.</p>
       </div>
-      <div class="footer-col"><h4>Rubriques</h4><a href="politique.html" class="footer-link">Politique</a><a href="social.html" class="footer-link">Social</a></div>
-      <div class="footer-col"><h4>Légal</h4><a href="mentions-legales.html" class="footer-link">Mentions légales</a><a href="conditions-utilisation.html" class="footer-link">CGU</a></div>
-      <div class="footer-col"><h4>Contact</h4><a href="contact.html" class="footer-link">Nous écrire</a><a href="auth.html" class="footer-link">S'identifier</a></div>
+      <div class="footer-col">
+        <h4>Rubriques</h4><a href="politique.html" class="footer-link">Politique</a><a href="social.html"
+          class="footer-link">Social</a>
+      </div>
+      <div class="footer-col">
+        <h4>Légal</h4><a href="mentions-legales.html" class="footer-link">Mentions légales</a><a
+          href="conditions-utilisation.html" class="footer-link">CGU</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4><a href="contact.html" class="footer-link">Nous écrire</a><a href="auth.html"
+          class="footer-link">S'identifier</a>
+      </div>
     </div>
     <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
   </footer>
 
+  <script src="js/i18n.js"></script>
   <script src="solitiquo.js"></script>
   <script src="js/api.js"></script>
-  <script>document.addEventListener('DOMContentLoaded', SolitiquoAPI.initUserInterface);
-// --- NAVIGATION & RECHERCHE ---
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      SolitiquoAPI.initUserInterface();
+      await initLanguageSwitcher({ reloadPage: true });
+    });
+    // --- NAVIGATION & RECHERCHE ---
     const burger = document.getElementById('burgerBtn');
     const mobileNav = document.getElementById('mobileNav');
     const mobileClose = document.getElementById('mobileNavClose');
     const overlay = document.getElementById('mobileNavOverlay');
     function toggleMenu(show) {
-        if(show) { mobileNav.classList.add('nav-open'); overlay.classList.add('active'); }
-        else { mobileNav.classList.remove('nav-open'); overlay.classList.remove('active'); }
+      if (show) { mobileNav.classList.add('nav-open'); overlay.classList.add('active'); }
+      else { mobileNav.classList.remove('nav-open'); overlay.classList.remove('active'); }
     }
-    if(burger) burger.addEventListener('click', () => toggleMenu(true));
-    if(mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
-    if(overlay) overlay.addEventListener('click', () => toggleMenu(false));
+    if (burger) burger.addEventListener('click', () => toggleMenu(true));
+    if (mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
+    if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
 
     // --- RECHERCHE ---
     const searchBtn = document.getElementById('searchBtn');
@@ -124,25 +169,26 @@
     const searchInput = document.getElementById('searchInput');
 
     function toggleSearch(e) {
-        e.stopPropagation();
-        searchContainer.classList.toggle('active');
-        if(searchContainer.classList.contains('active')) {
-            setTimeout(() => searchInput.focus(), 100);
-        }
+      e.stopPropagation();
+      searchContainer.classList.toggle('active');
+      if (searchContainer.classList.contains('active')) {
+        setTimeout(() => searchInput.focus(), 100);
+      }
     }
 
-    if(searchBtn) searchBtn.addEventListener('click', toggleSearch);
-    if(searchLabel) searchLabel.addEventListener('click', toggleSearch);
+    if (searchBtn) searchBtn.addEventListener('click', toggleSearch);
+    if (searchLabel) searchLabel.addEventListener('click', toggleSearch);
 
     document.addEventListener('click', (e) => {
-        if (searchContainer && searchContainer.classList.contains('active')) {
-            if (!searchContainer.contains(e.target) && 
-                !searchBtn.contains(e.target) && 
-                (!searchLabel || !searchLabel.contains(e.target))) {
-                searchContainer.classList.remove('active');
-            }
+      if (searchContainer && searchContainer.classList.contains('active')) {
+        if (!searchContainer.contains(e.target) &&
+          !searchBtn.contains(e.target) &&
+          (!searchLabel || !searchLabel.contains(e.target))) {
+          searchContainer.classList.remove('active');
         }
+      }
     });
   </script>
 </body>
+
 </html>

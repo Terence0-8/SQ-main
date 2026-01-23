@@ -36,7 +36,13 @@
     <div class="ph-center">
       <nav class="ph-nav"><a href="podcasts.html" class="ph-link active">← Retour aux Podcasts</a></nav>
     </div>
-    <div class="ph-right"><a href="auth.html" class="ph-btn-auth">S'identifier</a></div>
+    <div class="ph-right">
+      <div class="lang-switch-container">
+        <button class="lang-seg-btn active" data-lang="fr">FR</button>
+        <button class="lang-seg-btn" data-lang="en">EN</button>
+      </div>
+      <a href="auth.html" class="ph-btn-auth">S'identifier</a>
+    </div>
   </header>
 
   <div id="loading-container">
@@ -93,11 +99,14 @@
 
   <div id="transcript-data" style="display:none;"></div>
 
+  <script src="js/i18n.js"></script>
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="podcast-player.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
+      await initLanguageSwitcher({ reloadPage: true });
+
       // 1. Récupérer l'ID dans l'URL
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
@@ -110,7 +119,7 @@
       // 3. Appel API pour récupérer les infos du podcast
       try {
         // IMPORTANT : On utilise fetch directement ou via SolitiquoAPI si la méthode existe
-        const res = await fetch(`${window.API_URL}/podcasts/${id}`);
+        const res = await fetch(`${window.API_URL}/podcasts/${id}?lang=${getLanguage()}`);
         const json = await res.json();
 
         if (json.success) {

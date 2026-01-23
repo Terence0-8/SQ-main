@@ -52,6 +52,10 @@
       </nav>
     </div>
     <div class="ph-right" style="justify-content: flex-end; gap: 20px;">
+      <div class="lang-switch-container">
+        <button class="lang-seg-btn active" data-lang="fr">FR</button>
+        <button class="lang-seg-btn" data-lang="en">EN</button>
+      </div>
       <div class="search-stack">
         <div class="search-row" style="display:flex; align-items:center; cursor:pointer;">
           <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
@@ -186,6 +190,7 @@
     <div class="footer-bottom">&copy; 2025 Solitiquo.</div>
   </footer>
 
+  <script src="js/i18n.js"></script>
   <script src="js/solitiquo.js"></script>
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
@@ -239,8 +244,9 @@
       const loadingDiv = document.getElementById('loading-container');
       const mainArticle = document.getElementById('main-article');
 
-      // Init Header Auth
+      // Init Header Auth & Language
       SolitiquoAPI.initUserInterface();
+      await initLanguageSwitcher({ reloadPage: true });
 
       if (!id) { loadingDiv.innerHTML = '<p>Aucun article demandé.</p>'; return; }
 

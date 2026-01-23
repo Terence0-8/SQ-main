@@ -337,6 +337,7 @@ app.use('/api/admin', verifyCsrf);
 // =============================================================================
 try {
   app.use('/api/articles', require('./backend/routes/articles'));
+  app.use('/api/language', require('./backend/routes/language')); // Language preference management
   app.use('/api/polls', require('./backend/routes/polls'));
   app.use('/api/comments', require('./backend/routes/comments'));
   app.use('/api/auth', require('./backend/routes/auth'));
