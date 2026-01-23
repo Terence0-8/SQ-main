@@ -241,7 +241,8 @@
 
                 // --- SONDAGES ---
                 if (action === 'toggle-poll') await togglePollStatus(id, btn.dataset.active === 'true');
-                if (action === 'edit-poll') await editPoll(id);
+                if (action === 'edit-poll') openPollModal(id);
+                if (action === 'visualize-poll') showPollChart(id);
 
                 // --- MODERATION ---
                 if (action === 'mod-approve') await modComment(id, 'approve');
@@ -287,7 +288,7 @@
                     loadParties();
                 } else if (viewName === 'polls') {
                     header.textContent = "Historique des Sondages";
-                    actions.innerHTML = `<button class="action-btn" data-action="new-poll"><span>+</span> Sondage Hebdo</button>`;
+                    actions.innerHTML = `<button class="btn-apple-add" onclick="openPollModal()"><span class="icon-plus">+</span> Nouveau Sondage</button>`;
                     loadPolls();
 
                     // 👇👇 C'EST ICI QU'IL MANQUAIT LE BRANCHEMENT 👇👇
@@ -485,6 +486,7 @@
                             <td>${p.total_votes}</td>
                             <td style="font-size:0.8rem;">${results}</td>
                             <td style="text-align:right;">
+                                <button class="btn-icon-sm" data-action="visualize-poll" data-id="${p.id}" title="Visualiser">📊</button>
                                 <button class="btn-icon-sm" data-action="toggle-poll" data-id="${p.id}" data-active="${p.is_active}">⏯</button>
                                 <button class="btn-icon-sm" data-action="edit-poll" data-id="${p.id}">✏️</button>
                                 <button class="btn-icon-sm del" data-action="delete" data-type="poll" data-id="${p.id}">🗑️</button>
@@ -534,50 +536,253 @@
 
             window.openNewPollModal = async () => {
                 const { value: formValues } = await Swal.fire({
-                    title: 'Nouveau Sondage',
-                    html: '<input id="swal-q" class="swal2-input" placeholder="Question"><textarea id="swal-opts" class="swal2-textarea" placeholder="Options (une par ligne)"></textarea>',
+                    title: '📊 Nouveau Sondage Hebdomadaire',
+                    html: `
+                        <input id="poll-question" class="swal2-input" placeholder="La question..." style="margin-bottom: 15px;">
+                        <textarea id="poll-options" class="swal2-textarea" placeholder="Option 1\nOption 2\nOption 3..." rows="5"></textarea>
+                        <div style="font-size: 0.85rem; color: #666; margin-top: 10px; text-align: left;">
+                            💡 <strong>Astuce :</strong> Une option par ligne
+                        </div>
+                    `,
                     focusConfirm: false,
-                    preConfirm: () => [document.getElementById('swal-q').value, document.getElementById('swal-opts').value]
+                    showCancelButton: true,
+                    confirmButtonText: 'Créer le sondage',
+                    cancelButtonText: 'Annuler',
+                    preConfirm: () => {
+                        const question = document.getElementById('poll-question').value.trim();
+                        const optionsRaw = document.getElementById('poll-options').value;
+
+                        if (!question) {
+                            Swal.showValidationMessage('La question est obligatoire');
+                            return false;
+                        }
+
+                        const options = optionsRaw.split('\n').map(o => o.trim()).filter(o => o !== '');
+
+                        if (options.length < 2) {
+                            Swal.showValidationMessage('Vous devez fournir au moins 2 options');
+                            return false;
+                        }
+
+                        return { question, options };
+                    }
                 });
+
                 if (formValues) {
-                    const [question, optsRaw] = formValues;
-                    const options = optsRaw.split('\n').filter(o => o.trim() !== '');
-                    await fetch(API_URL + '/admin/polls', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ question, options }),
-                        credentials: 'include'
-                    });
-                    loadPolls();
+                    const { question, options } = formValues;
+                    try {
+                        const res = await fetch(API_URL + '/admin/polls', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ question, options }),
+                            credentials: 'include'
+                        });
+
+                        if (res.ok) {
+                            const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                            Toast.fire({ icon: 'success', title: 'Sondage créé avec succès !' });
+                            loadPolls();
+                        } else {
+                            throw new Error('Erreur serveur');
+                        }
+                    } catch (err) {
+                        Swal.fire('Erreur', 'Impossible de créer le sondage', 'error');
+                    }
                 }
             };
 
-            window.editPoll = async (id) => {
-                // Logique édition
-                const p = window._pollsData.find(x => x.id == id);
-                if (!p) return;
-                let optsText = "";
-                try { optsText = JSON.parse(p.options).map(o => o.text).join('\n'); } catch (e) { }
+            // NOUVELLE FONCTION UNIFIÉE : Création / Édition avec Glassmorphism UI
+            window.openPollModal = async (pollId = null) => {
+                const isEdit = pollId !== null;
+                let poll = null;
 
-                const { value: formValues } = await Swal.fire({
-                    title: 'Modifier Sondage',
-                    html: `<input id="swal-q" class="swal2-input" value="${p.question}"><textarea id="swal-opts" class="swal2-textarea">${optsText}</textarea>`,
+                if (isEdit) {
+                    poll = window._pollsData.find(p => p.id == pollId);
+                    if (!poll) return;
+                }
+
+                const { value: result } = await Swal.fire({
+                    title: isEdit ? '✏️ Modifier le Sondage' : '📊 Nouveau Sondage',
+                    customClass: { popup: 'swal2-glass' },
+                    html: `
+                        <div style="text-align: left; margin-bottom: 1.5rem;">
+                            <label class="glass-label">Question du sondage</label>
+                            <input id="poll-question" class="glass-input" placeholder="Ex: Quel est votre avis sur..." value="${isEdit ? poll.question : ''}">
+                        </div>
+                        <div style="text-align: left;">
+                            <label class="glass-label">Options de réponse</label>
+                            <div id="options-container"></div>
+                            <button type="button" class="btn-add-option" id="btn-add-opt" title="Ajouter une option">+</button>
+                        </div>
+                    `,
+                    width: 650,
+                    showCancelButton: true,
+                    confirmButtonText: isEdit ? 'Enregistrer' : 'Créer',
+                    cancelButtonText: 'Annuler',
                     focusConfirm: false,
-                    preConfirm: () => [document.getElementById('swal-q').value, document.getElementById('swal-opts').value]
+                    didOpen: () => {
+                        const container = document.getElementById('options-container');
+                        const addBtn = document.getElementById('btn-add-opt');
+                        let optionCount = 0;
+
+                        function addOption(value = '') {
+                            if (optionCount >= 10) {
+                                const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+                                Toast.fire({ icon: 'warning', title: 'Maximum 10 options' });
+                                return;
+                            }
+                            optionCount++;
+                            const row = document.createElement('div');
+                            row.className = 'option-row';
+                            row.innerHTML = `
+                                <div class="option-number">${optionCount}</div>
+                                <input type="text" class="option-input" placeholder="Option ${optionCount}" value="${value}" data-index="${optionCount}">
+                            `;
+                            container.appendChild(row);
+
+                            setTimeout(() => {
+                                const popup = document.querySelector('.swal2-glass');
+                                if (popup) popup.style.transform = 'scale(1.02)';
+                                setTimeout(() => { if (popup) popup.style.transform = 'scale(1)'; }, 200);
+                            }, 100);
+                        }
+
+                        if (isEdit) {
+                            try {
+                                const existingOpts = typeof poll.options === 'string' ? JSON.parse(poll.options) : poll.options;
+                                existingOpts.forEach(opt => addOption(opt.text));
+                            } catch (e) {
+                                addOption();
+                                addOption();
+                            }
+                        } else {
+                            addOption();
+                            addOption();
+                        }
+
+                        addBtn.onclick = () => addOption();
+                    },
+                    preConfirm: () => {
+                        const question = document.getElementById('poll-question').value.trim();
+                        if (!question) {
+                            Swal.showValidationMessage('❌ La question est obligatoire');
+                            return false;
+                        }
+
+                        const optionInputs = document.querySelectorAll('.option-input');
+                        const options = Array.from(optionInputs)
+                            .map(input => input.value.trim())
+                            .filter(val => val !== '');
+
+                        if (options.length < 2) {
+                            Swal.showValidationMessage('❌ Minimum 2 options requises');
+                            return false;
+                        }
+
+                        return { question, options };
+                    }
                 });
 
-                if (formValues) {
-                    const [question, optsRaw] = formValues;
-                    const options = optsRaw.split('\n').filter(o => o.trim() !== '');
-                    await fetch(`${API_URL}/admin/polls/${id}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ question, options }),
-                        credentials: 'include'
-                    });
-                    loadPolls();
+                if (result) {
+                    const { question, options } = result;
+                    try {
+                        const res = await fetch(isEdit ? `${API_URL}/admin/polls/${pollId}` : `${API_URL}/admin/polls`, {
+                            method: isEdit ? 'PUT' : 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ question, options }),
+                            credentials: 'include'
+                        });
+
+                        if (res.ok) {
+                            const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                            Toast.fire({ icon: 'success', title: isEdit ? '✅ Sondage modifié' : '✅ Sondage créé' });
+                            loadPolls();
+                        } else {
+                            throw new Error('Erreur serveur');
+                        }
+                    } catch (err) {
+                        Swal.fire('Erreur', 'Impossible de sauvegarder le sondage', 'error');
+                    }
                 }
             }
+
+
+            // NOUVELLE FONCTION : Visualisation Chart.js
+            function showPollChart(id) {
+                const poll = window._pollsData.find(p => p.id == id);
+                if (!poll) return;
+
+                let options = [];
+                try {
+                    options = typeof poll.options === 'string' ? JSON.parse(poll.options) : poll.options;
+                } catch (e) {
+                    console.error('Erreur parsing options:', e);
+                    return;
+                }
+
+                const labels = options.map(o => o.text);
+                const data = options.map(o => o.votes);
+                const colors = [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+                    '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+                ];
+
+                Swal.fire({
+                    title: poll.question,
+                    html: `
+                        <div style="margin: 20px 0;">
+                            <canvas id="pollChart" style="max-height: 300px;"></canvas>
+                        </div>
+                        <div style="margin-top: 20px; font-size: 0.9rem; color: #666;">
+                            <strong>Total votes :</strong> ${poll.total_votes}
+                        </div>
+                    `,
+                    width: 600,
+                    showConfirmButton: true,
+                    confirmButtonText: 'Fermer',
+                    didOpen: () => {
+                        const ctx = document.getElementById('pollChart').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    data: data,
+                                    backgroundColor: colors.slice(0, labels.length),
+                                    borderWidth: 2,
+                                    borderColor: '#fff'
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom',
+                                        labels: {
+                                            padding: 15,
+                                            font: { size: 12 }
+                                        }
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function (context) {
+                                                const label = context.label || '';
+                                                const value = context.parsed || 0;
+                                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                                return `${label}: ${value} votes (${percentage}%)`;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+
+
         });
 
         // AJOUTER DANS switchView :
