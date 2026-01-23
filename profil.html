@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -229,13 +229,27 @@
                 <a href="admin.html" class="btn-action btn-upgrade">Accéder au Dashboard</a>
             `;
       }
-      // Cas Abonné
-      else if (user.role === 'subscriber') {
+      // 🔥 CORRECTION ICI : Vérification avec is_subscriber au lieu de role
+      else if (user.is_subscriber) {
         statusBox.className = "status-box status-active";
         statusText.innerHTML = "✅ ACTIF (PREMIUM)";
+        
+        // Affichage des dates si disponibles
+        let dateInfo = '';
+        if (user.subscription_end_date) {
+          const endDate = new Date(user.subscription_end_date);
+          const formattedDate = endDate.toLocaleDateString('fr-FR', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          });
+          dateInfo = `<p style="font-size:0.9rem; color:#666; margin-top:10px;">Votre abonnement est valide jusqu'au <strong>${formattedDate}</strong>.</p>`;
+        }
+        
         actionArea.innerHTML = `
                 <h3>Profitez de votre lecture</h3>
                 <p>Vous avez accès à l'intégralité des articles et enquêtes sans publicité. Merci de votre soutien.</p>
+                ${dateInfo}
                 <button onclick="openCancelModal()" class="btn-action btn-cancel">Résilier mon abonnement</button>
             `;
       }
