@@ -58,15 +58,18 @@
 
     <div class="ph-center">
       <nav class="ph-nav">
-        <a href="politique.html" class="ph-link">Politique</a>
-        <a href="social.html" class="ph-link">Social</a>
-        <a href="partis-politiques.html" class="ph-link">Partis</a>
-        <a href="emissions.html" class="ph-link">Émissions</a>
-        <a href="podcasts.html" class="ph-link">Podcasts</a>
+        <a href="politique.html" class="ph-link" data-i18n="nav_pol">Politique</a>
+        <a href="social.html" class="ph-link" data-i18n="nav_soc">Social</a>
+        <a href="partis-politiques.html" class="ph-link" data-i18n="nav_parties">Partis</a>
+        <a href="emissions.html" class="ph-link" data-i18n="nav_shows">Émissions</a>
+        <a href="podcasts.html" class="ph-link" data-i18n="nav_podcasts">Podcasts</a>
       </nav>
     </div>
 
     <div class="ph-right" style="justify-content: flex-end; gap: 20px;">
+      <button id="langToggleBtn" class="glass-lang-btn" aria-label="Switch language" title="Changer la langue">
+        FR | EN
+      </button>
       <div class="search-stack">
         <div class="search-row">
           <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
@@ -165,14 +168,15 @@
 
   <div class="main-container" id="main-content-anchor">
     <main>
-      <div class="section-label">L'Essentiel de l'info</div>
+      <div class="section-label" data-i18n="section_essentiel">L'Essentiel de l'info</div>
       <div id="magazine-feed">
         <p style="text-align:center; padding:2rem; color:#888;">Chargement...</p>
       </div>
     </main>
 
     <aside>
-      <div class="section-label" style="border-color:var(--primary-dark); color:var(--primary-dark);">L'Observatoire
+      <div class="section-label" data-i18n="section_obs"
+        style="border-color:var(--primary-dark); color:var(--primary-dark);">L'Observatoire
       </div>
       <div id="home-poll-card" class="poll-box">
         <p style="text-align:center; color:#888;">Chargement...</p>
@@ -219,6 +223,7 @@
     <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
   </footer>
 
+  <script src="js/i18n.js"></script>
   <script src="js/solitiquo.js"></script>
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
@@ -284,80 +289,29 @@
     });
 
 
-    // --- CHARGEMENT DES ARTICLES (C'est ici qu'on corrige les liens) ---
+    // --- CHARGEMENT DES ARTICLES ---
     document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        const res = await fetch(API_URL + '/articles');
-        const json = await res.json();
+      // 1. Initialiser la langue et l'interface
+      const currentLang = getLanguage();
+      updateInterfaceText(currentLang);
 
-        if (json.success && json.data.length > 0) {
-          const articles = json.data;
+      // 2. Charger les articles dans la langue actuelle
+      await loadArticles(currentLang);
 
-          // 1. HERO (Article 0)
-          const une = articles[0];
-          // IMPORTANT : On force l'ID dans le lien ci-dessous
-          const linkUne = `article.html?id=${une.id}`;
-          const uneImg = une.image_url || 'https://via.placeholder.com/1600x900';
+      // 3. Gestion du bouton de changement de langue
+      const langBtn = document.getElementById('langToggleBtn');
+      if (langBtn) {
+        langBtn.addEventListener('click', async () => {
+          const current = getLanguage();
+          const newLang = current === 'fr' ? 'en' : 'fr';
 
-          document.getElementById('hero-dynamic').innerHTML = `
-            <section class="grand-hero-section">
-              <a href="${linkUne}" style="position:absolute; inset:0; z-index:2;"></a>
-              <img src="${uneImg}" class="hero-bg-img" style="object-position: top center;">
-              <div class="hero-overlay">
-                <span class="hero-tag">À LA UNE • ${une.category}</span>
-                <h1 class="hero-title-main">${une.title}</h1>
-                <p class="hero-excerpt">${une.excerpt || ''}</p>
+          setLanguage(newLang);
+          updateInterfaceText(newLang);
+          await loadArticles(newLang);
 
-              </div>
-            </section>
-          `;
-          // Attacher les handlers d'erreur après injection
-          attachImageErrorHandlers(document.getElementById('hero-dynamic'));
-
-
-          // 2. MAGAZINE LIST (Articles 1 à 4)
-          const mainList = articles.slice(1, 5);
-          document.getElementById('magazine-feed').innerHTML = mainList.map(art => {
-            // On force la création du lien ici pour être sûr
-            const linkArt = `article.html?id=${art.id}`;
-            return `
-            <article class="article-row">
-              <div style="overflow:hidden; border-radius:4px; height:220px;">
-                <a href="${linkArt}">
-                  <img src="${art.image_url}" class="art-img">
-                </a>
-              </div>
-              <div class="art-info">
-                <span class="art-cat">${art.category}</span>
-                <a href="${linkArt}" style="text-decoration:none;">
-                  <h3 class="art-title">${art.title}</h3>
-                </a>
-                <p class="art-desc">${art.excerpt || art.slug}</p>
-                <div style="font-size:0.8rem; color:#999; margin-top:8px;">${SolitiquoAPI.formatDate(art.published_at)}</div>
-              </div>
-            </article>
-          `}).join('');
-
-          // Attacher les handlers d'erreur après injection
-          attachImageErrorHandlers(document.getElementById('magazine-feed'));
-
-
-          // 3. SIDEBAR DISCOVERY (Articles 5 à 8) - Fix #14: utiliser discover-grid
-          const discoList = articles.slice(5, 9);
-          const discoverGrid = document.getElementById('discover-grid');
-          if (discoverGrid) {
-            discoverGrid.innerHTML = discoList.map(art => {
-              const linkDisco = `article.html?id=${art.id}`;
-              return `
-              <a href="${linkDisco}" class="disco-card">
-                <img src="${art.image_url}" class="disco-img">
-                <h4 class="disco-title">${art.title}</h4>
-                <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
-              </a>
-            `}).join('');
-          }
-        }
-      } catch (e) { console.error(e); }
+          console.log(`🌍 Site switché vers ${newLang.toUpperCase()}`);
+        });
+      }
 
       // Chargement Sondage
       loadHomePoll();

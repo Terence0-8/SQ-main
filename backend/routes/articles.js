@@ -56,12 +56,17 @@ const articleSchema = Joi.object({
   author_id: Joi.number().integer().optional()
 });
 
+
 // ==========================================
-// 1. LECTURE INTELLIGENTE (Multi-rubriques)
+// 1. LECTURE INTELLIGENTE (Multi-rubriques & Langue)
 // ==========================================
 router.get('/', async (req, res) => {
   try {
     const { category, lang } = req.query;
+
+    // 1. Définition de la langue (Défaut: 'fr')
+    // Si le paramètre ?lang= est absent, on force 'fr' pour éviter le contenu mixte
+    const targetLang = (lang === 'en') ? 'en' : 'fr';
 
     let query = `
       SELECT 
@@ -79,28 +84,22 @@ router.get('/', async (req, res) => {
       FROM articles a
       LEFT JOIN users u ON a.author_id = u.id
       WHERE a.status = 'published'
+      AND a.language = $1 
     `;
 
-    const params = [];
+    const params = [targetLang];
 
-    // LOGIQUE CLÉ : On cherche dans la catégorie OU dans les tags
+    // 2. Filtrage par Catégorie ou Tags
     if (category) {
       params.push(category);
-      // La syntaxe $1 = ANY(tags) vérifie si le mot clé est dans le tableau de tags
-      query += ` AND (a.category = $1 OR $1 = ANY(a.tags))`;
-    }
-
-
-    // Filtrage par langue (fr/en)
-    if (lang) {
-      params.push(lang);
-      query += ` AND a.language = $${params.length}`;
+      // $2 sera la catégorie
+      query += ` AND (a.category = $${params.length} OR $${params.length} = ANY(a.tags))`;
     }
 
     query += ` ORDER BY a.published_at DESC`;
 
     const { rows } = await pool.query(query, params);
-    res.json({ success: true, count: rows.length, data: rows });
+    res.json({ success: true, count: rows.length, lang: targetLang, data: rows });
 
   } catch (err) {
     console.error('❌ Erreur SQL articles:', err);
