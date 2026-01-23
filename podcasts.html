@@ -1,22 +1,30 @@
 ﻿<!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Podcasts — Solitiquo</title>
   <link rel="stylesheet" href="solitiquo.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,400&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
-  
-  <script>function handleImgError(i){i.onerror=null;i.src='https://placehold.co/400x400/111/FFF?text=Audio';}</script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,400&family=Nunito:wght@600;700;800&display=swap"
+    rel="stylesheet" />
 
- 
+  <script>function handleImgError(i) { i.onerror = null; i.src = 'https://placehold.co/400x400/111/FFF?text=Audio'; }</script>
+
+
 
 </head>
+
 <body id="page-podcasts">
 
   <header class="premium-header">
     <div class="ph-left">
-      <div class="burger-container"><button class="burger-btn" id="burgerBtn"><div class="burger-line"></div><div class="burger-line"></div><div class="burger-line"></div></button></div>
+      <div class="burger-container"><button class="burger-btn" id="burgerBtn">
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+        </button></div>
       <a href="index.html" class="ph-brand">
         <img src="logo.svg" alt="S">
         <div class="brand-sep"></div>
@@ -34,31 +42,29 @@
     </div>
     <div class="ph-right">
       <div class="search-stack">
-          <div class="search-row">
-            <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            </button>
-            <span class="search-label" id="searchLabel">Rechercher</span>
-          </div>
-          
-          <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
-            
-            <input 
-              type="text" 
-              name="q" 
-              class="search-input" 
-              placeholder="Rechercher..." 
-              id="searchInput" 
-              autocomplete="off"
-              required
-            />
-            
-            <button class="search-submit" type="submit" aria-label="Lancer">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-            
-          </form>
+        <div class="search-row">
+          <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
+            </svg>
+          </button>
+          <span class="search-label" id="searchLabel">Rechercher</span>
         </div>
+
+        <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
+
+          <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput"
+            autocomplete="off" required />
+
+          <button class="search-submit" type="submit" aria-label="Lancer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+
+        </form>
+      </div>
       <a href="auth.html" class="ph-btn-auth">S'identifier</a>
     </div>
   </header>
@@ -80,42 +86,45 @@
       <li class="mobile-link-item"><a href="podcasts.html" class="mobile-link active">Podcasts</a></li>
     </ul>
     <div style="margin-top:auto; padding-top:2rem; border-top:1px solid #333;">
-      <a href="auth.html" style="color:white; text-decoration:none; font-weight:700; display:flex; align-items:center; gap:10px;">S'identifier</a>
+      <a href="auth.html"
+        style="color:white; text-decoration:none; font-weight:700; display:flex; align-items:center; gap:10px;">S'identifier</a>
     </div>
   </nav>
 
   <div id="swup-container">
 
-  <div class="featured-wrapper">
-      
+    <div class="featured-wrapper">
+
       <div id="hero-pod-dynamic"></div>
 
       <div class="highlights-container">
-          <div class="highlights-title">À ne pas manquer</div>
-          <div id="highlights-grid" class="highlights-grid"></div>
+        <div class="highlights-title">À ne pas manquer</div>
+        <div id="highlights-grid" class="highlights-grid"></div>
       </div>
 
       <div class="scroll-indicator" onclick="scrollToContent()">
-          <div class="scroll-circle"><div class="scroll-arrow"></div></div>
+        <div class="scroll-circle">
+          <div class="scroll-arrow"></div>
+        </div>
       </div>
-  </div>
+    </div>
 
-  <section class="grid-section" id="pod-list-anchor">
-    <div class="grid-container">
+    <section class="grid-section" id="pod-list-anchor">
+      <div class="grid-container">
         <h2 class="section-header">Tous les épisodes</h2>
         <div id="podcasts-grid" class="podcasts-grid">
-            <p style="text-align:center; color:#888;">Chargement...</p>
+          <p style="text-align:center; color:#888;">Chargement...</p>
         </div>
-    </div>
-  </section>
-</div>
+      </div>
+    </section>
+  </div>
 
   <footer class="premium-footer">
     <div class="footer-grid">
       <div class="footer-col">
         <div style="display:flex; gap:10px; align-items:center; margin-bottom:1.5rem;">
-            <img src="logo.svg" class="footer-logo" alt="S" onerror="handleImgError(this)">
-            <span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
+          <img src="logo.svg" class="footer-logo" alt="S" onerror="handleImgError(this)">
+          <span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
         </div>
         <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le média de référence.</p>
       </div>
@@ -139,6 +148,7 @@
     <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
   </footer>
 
+  <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script>
     // --- 1. MENU MOBILE & RECHERCHE ---
@@ -148,12 +158,12 @@
     const overlay = document.getElementById('mobileNavOverlay');
 
     function toggleMenu(show) {
-        if(show) { mobileNav.classList.add('nav-open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
-        else { mobileNav.classList.remove('nav-open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+      if (show) { mobileNav.classList.add('nav-open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+      else { mobileNav.classList.remove('nav-open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
     }
-    if(burger) burger.addEventListener('click', () => toggleMenu(true));
-    if(mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
-    if(overlay) overlay.addEventListener('click', () => toggleMenu(false));
+    if (burger) burger.addEventListener('click', () => toggleMenu(true));
+    if (mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
+    if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
 
     // --- LOGIQUE RECHERCHE UNIFIÉE ---
     const searchBtn = document.getElementById('searchBtn');
@@ -162,61 +172,61 @@
     const searchInput = document.getElementById('searchInput');
 
     function toggleSearch(e) {
-        e.stopPropagation();
-        searchContainer.classList.toggle('active');
-        if(searchContainer.classList.contains('active')) {
-            setTimeout(() => searchInput.focus(), 100);
-        }
+      e.stopPropagation();
+      searchContainer.classList.toggle('active');
+      if (searchContainer.classList.contains('active')) {
+        setTimeout(() => searchInput.focus(), 100);
+      }
     }
 
-    if(searchBtn) searchBtn.addEventListener('click', toggleSearch);
-    if(searchLabel) searchLabel.addEventListener('click', toggleSearch);
+    if (searchBtn) searchBtn.addEventListener('click', toggleSearch);
+    if (searchLabel) searchLabel.addEventListener('click', toggleSearch);
 
     document.addEventListener('click', (e) => {
-        if (searchContainer && searchContainer.classList.contains('active')) {
-            // On ferme si on clique ailleurs que sur le container, le bouton ou le label
-            if (!searchContainer.contains(e.target) && 
-                !searchBtn.contains(e.target) && 
-                (!searchLabel || !searchLabel.contains(e.target))) {
-                searchContainer.classList.remove('active');
-            }
+      if (searchContainer && searchContainer.classList.contains('active')) {
+        // On ferme si on clique ailleurs que sur le container, le bouton ou le label
+        if (!searchContainer.contains(e.target) &&
+          !searchBtn.contains(e.target) &&
+          (!searchLabel || !searchLabel.contains(e.target))) {
+          searchContainer.classList.remove('active');
         }
+      }
     });
 
     // Fonction scroll
     window.scrollToContent = () => {
-        const target = document.getElementById('pod-list-anchor');
-        if(target) target.scrollIntoView({behavior: 'smooth'});
+      const target = document.getElementById('pod-list-anchor');
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
     };
 
-   // --- SCROLL ANIMATION ---
+    // --- SCROLL ANIMATION ---
     const initScrollObserver = () => {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if(entry.isIntersecting) {
-                    entry.target.classList.add('is-visible');
-                    observer.unobserve(entry.target); 
-                }
-            });
-        }, { threshold: 0.1 });
-
-        document.querySelectorAll('.hl-card').forEach(card => {
-            observer.observe(card);
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
         });
+      }, { threshold: 0.1 });
+
+      document.querySelectorAll('.hl-card').forEach(card => {
+        observer.observe(card);
+      });
     };
 
     // --- DATA LOAD ---
     document.addEventListener('DOMContentLoaded', async () => {
       try {
         const podcasts = await SolitiquoAPI.getPodcasts();
-        
-        if (podcasts.length > 0) {
-            const une = podcasts[0];              
-            const highlights = podcasts.slice(1, 3); 
-            const list = podcasts.slice(3);       
 
-            // 1. HERO (Sans la flèche, qui est maintenant dehors)
-            document.getElementById('hero-pod-dynamic').innerHTML = `
+        if (podcasts.length > 0) {
+          const une = podcasts[0];
+          const highlights = podcasts.slice(1, 3);
+          const list = podcasts.slice(3);
+
+          // 1. HERO (Sans la flèche, qui est maintenant dehors)
+          document.getElementById('hero-pod-dynamic').innerHTML = `
             <div class="hero-pod-container">
                 <a href="podcast.html?id=${une.id}" class="hero-cover-wrap">
                     <img src="${une.image_url}" class="hero-cover" onerror="handleImgError(this)">
@@ -225,7 +235,7 @@
                 <div class="hero-content-pod">
                     <div class="hero-meta">
                         <span class="tag-highlight">${une.category || 'PODCAST'}</span>
-                        <span>• ${Math.floor(une.duration/60)} MIN</span>
+                        <span>• ${Math.floor(une.duration / 60)} MIN</span>
                         <span>• ${SolitiquoAPI.formatDate(une.created_at)}</span>
                     </div>
                     <h1 class="hero-title">${une.title}</h1>
@@ -238,9 +248,9 @@
                 </div>
             </div>`;
 
-            // 2. HIGHLIGHTS
-            if(highlights.length > 0) {
-                document.getElementById('highlights-grid').innerHTML = highlights.map((pod, index) => `
+          // 2. HIGHLIGHTS
+          if (highlights.length > 0) {
+            document.getElementById('highlights-grid').innerHTML = highlights.map((pod, index) => `
                     <a href="podcast.html?id=${pod.id}" class="hl-card" style="transition-delay: ${index * 0.15}s">
                         <div class="hl-img-wrap">
                             <img src="${pod.image_url}" class="hl-img" onerror="handleImgError(this)">
@@ -250,20 +260,20 @@
                             <h3 class="hl-title">${pod.title}</h3>
                             <div class="hl-meta">
                                 <span>${SolitiquoAPI.formatDate(pod.created_at)}</span>
-                                <span>• ${Math.floor(pod.duration/60)} min</span>
+                                <span>• ${Math.floor(pod.duration / 60)} min</span>
                             </div>
                         </div>
                         <div class="hl-play-icon">▶</div>
                     </a>
                 `).join('');
-                setTimeout(initScrollObserver, 100);
-            } else {
-                document.querySelector('.highlights-container').style.display = 'none';
-            }
+            setTimeout(initScrollObserver, 100);
+          } else {
+            document.querySelector('.highlights-container').style.display = 'none';
+          }
 
-            // 3. GRILLE
-            if(list.length > 0) {
-                document.getElementById('podcasts-grid').innerHTML = list.map(pod => `
+          // 3. GRILLE
+          if (list.length > 0) {
+            document.getElementById('podcasts-grid').innerHTML = list.map(pod => `
                     <a href="podcast.html?id=${pod.id}" class="pod-card">
                         <div class="pc-img-wrap">
                             <img src="${pod.image_url}" class="pc-img" onerror="handleImgError(this)">
@@ -274,21 +284,22 @@
                             <h3 class="pc-title">${pod.title}</h3>
                             <div class="pc-footer">
                                 <span>${SolitiquoAPI.formatDate(pod.created_at)}</span>
-                                <span>${Math.floor(pod.duration/60)} MIN</span>
+                                <span>${Math.floor(pod.duration / 60)} MIN</span>
                             </div>
                         </div>
                     </a>
                 `).join('');
-            } else {
-                document.getElementById('podcasts-grid').innerHTML = ''; 
-            }
+          } else {
+            document.getElementById('podcasts-grid').innerHTML = '';
+          }
 
         } else {
-            document.getElementById('podcasts-grid').innerHTML = '<p>Aucun podcast trouvé.</p>';
+          document.getElementById('podcasts-grid').innerHTML = '<p>Aucun podcast trouvé.</p>';
         }
       } catch (e) { console.error(e); }
     });
 
   </script>
 </body>
+
 </html>

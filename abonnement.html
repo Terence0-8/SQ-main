@@ -1,20 +1,32 @@
 ﻿<!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <title>Abonnement — Solitiquo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="solitiquo.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet" />
-  
-  
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap"
+    rel="stylesheet" />
+
+
 </head>
+
 <body id="page-abonnement">
 
   <header class="premium-header">
     <div class="ph-left">
-      <div class="burger-container"><button class="burger-btn" id="burgerBtn" style="background:none;border:none;cursor:pointer;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button></div>
-      <a href="index.html" class="ph-brand"><img src="logo.svg" alt="S"><div class="brand-sep"></div><span class="brand-text">Solitiquo</span></a>
+      <div class="burger-container"><button class="burger-btn" id="burgerBtn"
+          style="background:none;border:none;cursor:pointer;"><svg width="24" height="24" viewBox="0 0 24 24"
+            fill="none" stroke="#333" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg></button></div>
+      <a href="index.html" class="ph-brand"><img src="logo.svg" alt="S">
+        <div class="brand-sep"></div><span class="brand-text">Solitiquo</span>
+      </a>
     </div>
     <div class="ph-center">
       <nav class="ph-nav">
@@ -31,11 +43,12 @@
 
   <section class="sub-hero">
     <h1 class="sub-title">Soutenez une information libre</h1>
-    <p class="sub-desc">Accédez à nos enquêtes exclusives, profitez d'une lecture sans publicité et participez aux débats réservés à nos abonnés.</p>
+    <p class="sub-desc">Accédez à nos enquêtes exclusives, profitez d'une lecture sans publicité et participez aux
+      débats réservés à nos abonnés.</p>
   </section>
 
   <main class="pricing-container">
-    
+
     <div class="price-card">
       <div class="plan-name">Découverte</div>
       <div class="plan-price">0 <span style="font-size:1.5rem;">FCFA</span></div>
@@ -79,32 +92,44 @@
 
   <footer class="premium-footer">
     <div class="footer-grid">
-      <div class="footer-col"><img src="logo.svg" style="height:35px; filter:brightness(0) invert(1); margin-bottom:1rem;"><p style="font-size:0.9rem; opacity:0.7;">Le média de référence.</p></div>
-      <div class="footer-col"><h4>Rubriques</h4><a href="politique.html" class="footer-link">Politique</a><a href="social.html" class="footer-link">Social</a></div>
-      <div class="footer-col"><h4>Légal</h4><a href="mentions-legales.html" class="footer-link">Mentions</a><a href="conditions-utilisation.html" class="footer-link">CGU</a></div>
-      <div class="footer-col"><h4>Contact</h4><a href="contact.html" class="footer-link">Nous écrire</a></div>
+      <div class="footer-col"><img src="logo.svg"
+          style="height:35px; filter:brightness(0) invert(1); margin-bottom:1rem;">
+        <p style="font-size:0.9rem; opacity:0.7;">Le média de référence.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Rubriques</h4><a href="politique.html" class="footer-link">Politique</a><a href="social.html"
+          class="footer-link">Social</a>
+      </div>
+      <div class="footer-col">
+        <h4>Légal</h4><a href="mentions-legales.html" class="footer-link">Mentions</a><a
+          href="conditions-utilisation.html" class="footer-link">CGU</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4><a href="contact.html" class="footer-link">Nous écrire</a>
+      </div>
     </div>
   </footer>
 
+  <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="solitiquo.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-        SolitiquoAPI.initUserInterface();
+      SolitiquoAPI.initUserInterface();
     });
 
     async function subscribe(plan) {
-        const user = await SolitiquoAPI.getProfile();
-        
-        if(!user) {
-            // Si pas connecté -> Login
-            sessionStorage.setItem('wantsToSubscribe', plan);
-            window.location.href = 'auth.html';
-            return;
-        }
-        
-        // Si connecté -> Direction la caisse
-        window.location.href = `paiement.html?plan=${plan}`;
+      const user = await SolitiquoAPI.getProfile();
+
+      if (!user) {
+        // Si pas connecté -> Login
+        sessionStorage.setItem('wantsToSubscribe', plan);
+        window.location.href = 'auth.html';
+        return;
+      }
+
+      // Si connecté -> Direction la caisse
+      window.location.href = `paiement.html?plan=${plan}`;
     }
 
     // --- RECHERCHE (Correction Clic sur le texte + Loupe) ---
@@ -115,23 +140,24 @@
 
     // Fonction pour ouvrir/fermer
     function toggleSearch(e) {
-        e.stopPropagation(); 
-        searchContainer.classList.toggle('active');
-        if(searchContainer.classList.contains('active')) {
-            setTimeout(() => searchInput.focus(), 100);
-        }
+      e.stopPropagation();
+      searchContainer.classList.toggle('active');
+      if (searchContainer.classList.contains('active')) {
+        setTimeout(() => searchInput.focus(), 100);
+      }
     }
 
     // On active le clic sur le bouton ET sur le texte
-    if(searchBtn) searchBtn.addEventListener('click', toggleSearch);
-    if(searchLabel) searchLabel.addEventListener('click', toggleSearch);
+    if (searchBtn) searchBtn.addEventListener('click', toggleSearch);
+    if (searchLabel) searchLabel.addEventListener('click', toggleSearch);
 
     // Fermeture au clic dehors
     document.addEventListener('click', (e) => {
-        if (!searchContainer.contains(e.target) && !searchBtn.contains(e.target) && !searchLabel.contains(e.target)) {
-            searchContainer.classList.remove('active');
-        }
+      if (!searchContainer.contains(e.target) && !searchBtn.contains(e.target) && !searchLabel.contains(e.target)) {
+        searchContainer.classList.remove('active');
+      }
     });
-  </script> 
+  </script>
 </body>
+
 </html>
