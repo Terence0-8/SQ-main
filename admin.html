@@ -34,7 +34,7 @@
             <div class="nav-spacer" style="margin-top:auto;"></div>
 
             <div class="nav-item" id="btn-home">🏠 Retour Site</div>
-            <div class="nav-item" id="btn-logout" style="color:#ef4444;">🚪 Déconnexion</div>
+            <div class="nav-item" id="btn-logout" style="color:#ef4444;">🚺 Déconnexion</div>
         </nav>
     </aside>
 
@@ -178,7 +178,8 @@
                                 <th>Utilisateur</th>
                                 <th>Email</th>
                                 <th>Rôle</th>
-                                <th>Statut</th>
+                                <th>Statut Abonnement</th>
+                                <th>Dates</th>
                                 <th style="text-align:right;">Actions</th>
                             </tr>
                         </thead>
@@ -782,45 +783,88 @@
                 });
             }
 
-
         });
 
-        // AJOUTER DANS switchView :
-        // else if (viewName === 'users') { header.textContent = "Gestion des Utilisateurs"; loadUsers(); }
-
-        // AJOUTER DANS LES FONCTIONS :
+        // ==========================================
+        // 🔥 FONCTION AMÉLIORÉE : CHARGEMENT UTILISATEURS
+        // ==========================================
         window.loadUsers = async function () {
             const tbody = document.getElementById('list-users');
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Chargement...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Chargement...</td></tr>';
+            
             try {
-                const res = await fetch(API_URL + '/admin/users'); // Route à créer
+                const res = await fetch(API_URL + '/admin/users', { credentials: 'include' });
                 const json = await res.json();
 
+                if (!json.success || !json.data) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Erreur chargement</td></tr>';
+                    return;
+                }
+
                 tbody.innerHTML = (json.data || []).map(u => {
-                    const roleBadge = u.role === 'admin' ? '<span class="badge badge-pub">Admin</span>' :
-                        (u.is_subscriber ? '<span class="badge" style="background:#dbeafe; color:#1e40af;">Abonné</span>' : 'Lecteur');
-                    const statusStyle = u.is_active ? 'color:green;' : 'color:red; font-weight:bold;';
-                    const statusText = u.is_active ? 'Actif' : 'Banni';
+                    // --- BADGE RÔLE ---
+                    const roleBadge = u.role === 'admin' 
+                        ? '<span class="badge badge-pub">Admin</span>' 
+                        : (u.role === 'writer' ? '<span class="badge" style="background:#fef3c7; color:#92400e;">Rédacteur</span>' : 'Lecteur');
+                    
+                    // --- STATUT COMPTE (Actif/Banni) ---
+                    const accountStatusStyle = u.is_active ? 'color:#10b981;' : 'color:#ef4444; font-weight:bold;';
+                    const accountStatusText = u.is_active ? 'Actif' : 'Banni';
+
+                    // --- STATUT ABONNEMENT DÉTAILLÉ ---
+                    let subscriptionBadge = '<span class="badge" style="background:#f1f5f9; color:#64748b;">Gratuit</span>';
+                    let subscriptionDates = '-';
+
+                    if (u.is_subscriber && u.subscription_end_date) {
+                        const endDate = new Date(u.subscription_end_date);
+                        const now = new Date();
+                        const isExpired = endDate < now;
+
+                        if (isExpired) {
+                            // Abonnement expiré
+                            subscriptionBadge = '<span class="badge" style="background:#fef2f2; color:#991b1b;">⚠️ Expiré</span>';
+                        } else {
+                            // Abonnement actif
+                            subscriptionBadge = '<span class="badge" style="background:#dbeafe; color:#1e40af;">🎉 Premium Actif</span>';
+                        }
+
+                        // Formatage des dates
+                        const startDate = u.subscription_start_date ? new Date(u.subscription_start_date).toLocaleDateString('fr-FR') : '?';
+                        const endDateFormatted = endDate.toLocaleDateString('fr-FR');
+                        
+                        subscriptionDates = `
+                            <div style="font-size:0.85rem; color:#64748b;">
+                                <div><strong>Début:</strong> ${startDate}</div>
+                                <div><strong>Fin:</strong> ${endDateFormatted}</div>
+                                ${isExpired ? '<div style="color:#ef4444; margin-top:4px;">⚠️ Abonnement terminé</div>' : ''}
+                            </div>
+                        `;
+                    } else if (u.is_subscriber && !u.subscription_end_date) {
+                        // Cas anormal : is_subscriber = true mais pas de date
+                        subscriptionBadge = '<span class="badge" style="background:#fef3c7; color:#92400e;">⚠️ Données incomplètes</span>';
+                    }
 
                     return `
-            <tr>
-                <td><strong>${u.username}</strong></td>
-                <td>${u.email}</td>
-                <td>${roleBadge}</td>
-                <td style="${statusStyle}">${statusText}</td>
-                <td style="text-align:right;">
-                    ${u.role !== 'admin' ? `
-                    <button class="btn-icon-sm" data-action="ban-user" data-id="${u.id}" data-is-active="${u.is_active}" style="color:${u.is_active ? '#ef4444' : '#22c55e'};" title="${u.is_active ? 'Bannir' : 'Débannir'}">
-    ${u.is_active ? '🚫' : '✅'}
-</button>` : ''}
-                </td>
-            </tr>`;
+                    <tr>
+                        <td><strong>${u.username}</strong></td>
+                        <td style="font-size:0.9rem; color:#64748b;">${u.email}</td>
+                        <td>${roleBadge}</td>
+                        <td>${subscriptionBadge}</td>
+                        <td>${subscriptionDates}</td>
+                        <td style="text-align:right;">
+                            ${u.role !== 'admin' ? `
+                            <button class="btn-icon-sm" data-action="ban-user" data-id="${u.id}" data-is-active="${u.is_active}" style="color:${u.is_active ? '#ef4444' : '#22c55e'};" title="${u.is_active ? 'Bannir' : 'Débannir'}">
+                                ${u.is_active ? '🚫' : '✅'}
+                            </button>` : '<span style="color:#94a3b8; font-size:0.8rem;">-</span>'}
+                        </td>
+                    </tr>`;
                 }).join('');
-            } catch (e) { tbody.innerHTML = '<tr><td colspan="5">Erreur chargement</td></tr>'; }
-        }
 
-        // AJOUTER DANS L'ÉCOUTEUR D'ÉVÉNEMENTS (document.body.addEventListener) :
-        // if (action === 'ban-user') await toggleBanUser(id);
+            } catch (e) { 
+                console.error('Erreur loadUsers:', e);
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#ef4444;">Erreur chargement utilisateurs</td></tr>'; 
+            }
+        }
 
         // LA FONCTION D'ACTION :
         async function toggleBanUser(id, isActive) {
