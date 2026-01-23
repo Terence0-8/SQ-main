@@ -17336,3 +17336,83 @@ a[class*="btn"] {
   font-weight: 700;
   color: #333;
 }
+
+
+/* ===== SUCCESS PAGE (paiement-success.html) ===== */
+body#page-success {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f9f9f9;
+}
+
+.success-logo {
+  height: 50px;
+  margin: 0 auto 2rem;
+  display: block;
+}
+
+.success-card {
+  background: white;
+  padding: 3rem 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  max-width: 420px;
+  width: 90%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  background: #e6f8ef;
+  color: #00aa55;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  margin: 0 auto 1.5rem;
+  font-weight: bold;
+}
+
+.success-card h1 {
+  font-family: 'Playfair Display', serif;
+  color: #1a1a1a;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.success-card p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+
+.success-trans-id {
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.btn-home {
+  display: inline-block;
+  background: #1a1a1a;
+  color: white;
+  padding: 12px 30px;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: 0.3s;
+  font-size: 1rem;
+}
+
+.btn-home:hover {
+  background: #C82823;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(200, 40, 35, 0.3);
+}

@@ -9,74 +9,23 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap"
         rel="stylesheet">
-    <style>
-        .success-container {
-            max-width: 600px;
-            margin: 100px auto;
-            text-align: center;
-            padding: 40px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-        }
-
-        .success-icon {
-            width: 80px;
-            height: 80px;
-            background: #e6f8ef;
-            color: #00aa55;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            margin: 0 auto 20px;
-        }
-
-        h1 {
-            font-family: 'Playfair Display', serif;
-            color: #1a1a1a;
-            margin-bottom: 15px;
-        }
-
-        p {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-
-        .btn-home {
-            display: inline-block;
-            background: #1a1a1a;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: 0.3s;
-        }
-
-        .btn-home:hover {
-            background: #C82823;
-        }
-    </style>
 </head>
 
-<body style="background-color: #f9f9f9;">
+<body id="page-success">
 
-    <div class="checkout-header">
-        <a href="index.html"><img src="logo.svg" alt="Solitiquo" class="checkout-logo"></a>
-    </div>
+    <div class="success-card">
+        <img src="logo.svg" alt="Solitiquo" class="success-logo" onerror="this.style.display='none'">
 
-    <div class="success-container">
         <div class="success-icon">✓</div>
+
         <h1>Abonnement confirmé !</h1>
+
         <p>
             Merci de votre confiance. Votre paiement a été validé avec succès.<br>
             Vous avez désormais un accès illimité à l'ensemble de nos contenus.
         </p>
 
-        <div style="margin-bottom: 30px; font-size: 0.9rem; color: #888;">
+        <div class="success-trans-id">
             ID Transaction : <span id="transId">...</span>
         </div>
 
@@ -86,15 +35,13 @@
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
     <script>
-        // 1. Récupérer l'ID de transaction
         const params = new URLSearchParams(window.location.search);
         const transactionId = params.get('transaction_id');
 
         if (transactionId) {
             document.getElementById('transId').textContent = transactionId;
 
-            // Optionnel : Vérification de sécurité (Double Check)
-            // On peut appeler l'API pour être sûr que le statut est bien 'active'
+            // Vérification de sécurité (Double Check)
             SolitiquoAPI.fetchWithAuth(`/subscriptions/check-status`, {
                 method: 'POST',
                 body: JSON.stringify({ transaction_id: transactionId })
@@ -102,7 +49,7 @@
                 if (!res.success) {
                     console.warn("Le paiement est encore en cours de validation côté serveur.");
                 }
-            });
+            }).catch(err => console.error("Erreur vérification:", err));
         } else {
             document.getElementById('transId').textContent = "Inconnu";
         }
