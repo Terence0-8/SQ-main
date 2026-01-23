@@ -279,7 +279,7 @@ app.get('/api/csrf-token', (req, res) => {
 
 const verifyCsrf = (req, res, next) => {
   if (['GET', 'OPTIONS', 'HEAD'].includes(req.method)) return next();
-  const token = req.headers['x-csrf-token'] || req.body._csrf;
+  const token = req.headers['x-csrf-token'] || (req.body && req.body._csrf);
   if (!isProduction && !token) return next();
   if (isProduction && token !== req.session.csrfToken) {
     return res.status(403).json({ success: false, error: 'Token CSRF invalide' });

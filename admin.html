@@ -247,7 +247,10 @@
                 if (action === 'mod-approve') await modComment(id, 'approve');
                 if (action === 'mod-delete') await modComment(id, 'delete');
 
-                if (action === 'ban-user') await toggleBanUser(id);
+                if (action === 'ban-user') {
+                    const isCurrentlyActive = btn.dataset.isActive === 'true';
+                    await toggleBanUser(id, isCurrentlyActive);
+                }
             });
 
 
@@ -602,9 +605,9 @@
                 <td style="${statusStyle}">${statusText}</td>
                 <td style="text-align:right;">
                     ${u.role !== 'admin' ? `
-                    <button class="btn-icon-sm" data-action="ban-user" data-id="${u.id}" style="color:${u.is_active ? '#ef4444' : '#22c55e'};" title="${u.is_active ? 'Bannir' : 'Débannir'}">
-                        ${u.is_active ? '🚫' : '✅'}
-                    </button>` : ''}
+                    <button class="btn-icon-sm" data-action="ban-user" data-id="${u.id}" data-is-active="${u.is_active}" style="color:${u.is_active ? '#ef4444' : '#22c55e'};" title="${u.is_active ? 'Bannir' : 'Débannir'}">
+    ${u.is_active ? '🚫' : '✅'}
+</button>` : ''}
                 </td>
             </tr>`;
                 }).join('');
@@ -615,44 +618,56 @@
         // if (action === 'ban-user') await toggleBanUser(id);
 
         // LA FONCTION D'ACTION :
-        async function toggleBanUser(id) {
-            if (!confirm("Changer le statut de cet utilisateur ?")) return;
+        async function toggleBanUser(id, isActive) {
+            // 1. Définir les textes selon l'action (Bannir ou Réhabiliter ?)
+            const actionTitre = isActive ? "Bannir cet utilisateur ?" : "Réhabiliter cet utilisateur ?";
+            const actionTexte = isActive
+                ? "Il perdra immédiatement l'accès à son compte."
+                : "Il pourra à nouveau se connecter au site.";
+            const btnColor = isActive ? '#d33' : '#10b981'; // Rouge pour bannir, Vert pour réhabiliter
+            const btnText = isActive ? 'Oui, bannir' : 'Oui, réhabiliter';
+
+            // 2. Afficher la modale adaptée
+            const result = await Swal.fire({
+                title: actionTitre,
+                text: actionTexte,
+                icon: isActive ? 'warning' : 'question',
+                showCancelButton: true,
+                confirmButtonColor: btnColor,
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: btnText,
+                cancelButtonText: 'Annuler'
+            });
+
+            if (!result.isConfirmed) return;
 
             try {
-                const response = await fetch(`${API_URL}/admin/users/${id}/toggle-ban`, {
+                const res = await fetch(`${API_URL}/admin/users/${id}/toggle-ban`, {
                     method: 'PUT',
                     credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    headers: { 'Content-Type': 'application/json' }
                 });
 
-                // On vérifie si c'est un problème HTTP (ex: 403 Forbidden ou 500 Error)
-                if (!response.ok) {
-                    const text = await response.text();
-                    console.error("Erreur serveur:", text);
-                    alert("Erreur serveur: " + response.status + " " + response.statusText);
-                    return;
-                }
+                // Gestion d'erreur robuste (CSRF, etc)
+                if (!res.ok) throw new Error("Erreur serveur");
 
-                const json = await response.json();
-
+                const json = await res.json();
                 if (json.success) {
-                    // Succès ! On recharge la liste
                     loadUsers();
-
-                    // Petit message visuel
                     const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
-                    Toast.fire({ icon: 'success', title: 'Statut mis à jour !' });
+                    // Message de succès adapté aussi !
+                    Toast.fire({
+                        icon: 'success',
+                        title: isActive ? 'Utilisateur banni' : 'Utilisateur réhabilité'
+                    });
                 } else {
-                    // Le serveur a dit "Non" (ex: on ne peut pas se bannir soi-même)
-                    alert("Impossible de modifier : " + json.error);
+                    Swal.fire('Erreur', json.error, 'error');
                 }
             } catch (e) {
-                console.error("Erreur technique:", e);
-                alert("Erreur de connexion (voir la console F12)");
+                Swal.fire('Erreur', 'Impossible de modifier le statut.', 'error');
             }
         }
+
     </script>
 </body>
 
