@@ -118,8 +118,8 @@
       <p class="modal-text">En résiliant maintenant, vous perdrez immédiatement l'accès aux articles d'analyse et aux
         enquêtes exclusives de Solitiquo.</p>
       <div class="modal-actions">
-        <button class="btn-modal-keep" onclick="closeCancelModal()">Je garde mon abonnement</button>
-        <button class="btn-modal-confirm" onclick="confirmCancelAction()">Je confirme la résiliation</button>
+        <button class="btn-modal-keep" id="btn-keep-sub">Je garde mon abonnement</button>
+        <button class="btn-modal-confirm" id="btn-confirm-cancel">Je confirme la résiliation</button>
       </div>
     </div>
   </div>
@@ -198,23 +198,72 @@
         }
       }
     });
+
+    // 🔥 FONCTIONS GLOBALES POUR LA MODALE (accessible depuis onclick)
+    const modal = document.getElementById('cancelModal');
+
+    window.openCancelModal = function() {
+      modal.classList.add('active');
+    }
+
+    window.closeCancelModal = function() {
+      modal.classList.remove('active');
+    }
+
+    // Fermeture si on clique en dehors
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) window.closeCancelModal();
+    });
+
+    // Fonction réelle de résiliation
+    window.confirmCancelAction = async function() {
+      const btn = document.getElementById('btn-confirm-cancel');
+      const originalText = btn.textContent;
+      btn.textContent = "Traitement en cours...";
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`${window.API_URL}/subscriptions/cancel`, {
+          method: 'POST',
+          credentials: 'include'
+        });
+        const json = await res.json();
+
+        if (json.success) {
+          window.closeCancelModal();
+          window.location.reload();
+        } else {
+          alert("❌ Erreur : " + json.error);
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }
+      } catch (e) {
+        alert("❌ Erreur serveur");
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }
+    }
+
+    // Boutons de la modale
+    document.getElementById('btn-keep-sub').addEventListener('click', window.closeCancelModal);
+    document.getElementById('btn-confirm-cancel').addEventListener('click', window.confirmCancelAction);
+
     // Gestion Auth & Profil
     document.addEventListener('DOMContentLoaded', async () => {
 
-
-      // 2. Récupérer infos utilisateur
+      // Récupérer infos utilisateur
       const user = await SolitiquoAPI.getProfile();
       if (!user) {
         window.location.href = 'auth.html';
         return;
       }
 
-      // 3. Remplir carte identité
+      // Remplir carte identité
       document.getElementById('user-name').textContent = user.username;
       document.getElementById('user-email').textContent = user.email;
       document.getElementById('user-initial').textContent = user.username.charAt(0).toUpperCase();
 
-      // 4. Gérer l'affichage abonnement
+      // Gérer l'affichage abonnement
       const statusBox = document.getElementById('subscription-status-box');
       const statusText = document.getElementById('status-text');
       const actionArea = document.getElementById('subscription-actions');
@@ -229,7 +278,7 @@
                 <a href="admin.html" class="btn-action btn-upgrade">Accéder au Dashboard</a>
             `;
       }
-      // 🔥 CORRECTION ICI : Vérification avec is_subscriber au lieu de role
+      // Cas Abonné
       else if (user.is_subscriber) {
         statusBox.className = "status-box status-active";
         statusText.innerHTML = "✅ ACTIF (PREMIUM)";
@@ -250,7 +299,7 @@
                 <h3>Profitez de votre lecture</h3>
                 <p>Vous avez accès à l'intégralité des articles et enquêtes sans publicité. Merci de votre soutien.</p>
                 ${dateInfo}
-                <button onclick="openCancelModal()" class="btn-action btn-cancel">Résilier mon abonnement</button>
+                <button onclick="window.openCancelModal()" class="btn-action btn-cancel">Résilier mon abonnement</button>
             `;
       }
       // Cas Gratuit
@@ -265,66 +314,14 @@
       }
     });
 
-    // --- GESTION DE LA MODALE ---
-    const modal = document.getElementById('cancelModal');
-
-    function openCancelModal() {
-      modal.classList.add('active');
-    }
-
-    function closeCancelModal() {
-      modal.classList.remove('active');
-    }
-
-    // Fermeture si on clique en dehors
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeCancelModal();
-    });
-
-    // Fonction réelle de résiliation
-    async function confirmCancelAction() {
-      // État de chargement visuel
-      const btn = document.querySelector('.btn-modal-confirm');
-      const originalText = btn.textContent;
-      btn.textContent = "Traitement en cours...";
-      btn.disabled = true;
-
-      try {
-        const res = await fetch(`${window.API_URL}/subscriptions/cancel`, {
-          method: 'POST',
-          credentials: 'include'
-        });
-        const json = await res.json();
-
-        if (json.success) {
-          // Fermer et recharger
-          closeCancelModal();
-          window.location.reload();
-        } else {
-          alert("Erreur : " + json.error);
-          btn.textContent = originalText;
-          btn.disabled = false;
-        }
-      } catch (e) {
-        alert("Erreur serveur");
-        btn.textContent = originalText;
-        btn.disabled = false;
-      }
-    }
-
+    // Bouton déconnexion
     document.getElementById('btn-logout').addEventListener('click', async (e) => {
       e.preventDefault();
       try {
-        // 1. On appelle le serveur pour détruire la session proprement
         await fetch('/api/auth/logout', { method: 'POST' });
-
-        // 2. On nettoie le localStorage (si tu stockes des infos user ici)
         localStorage.removeItem('user_data');
-
-        // 3. Retour à l'accueil
         window.location.href = 'index.html';
       } catch (err) {
-        // Force la redirection même si erreur serveur
         window.location.href = 'index.html';
       }
     });
