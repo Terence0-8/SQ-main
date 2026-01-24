@@ -11,6 +11,19 @@ const categoryMap = {
     'Dossiers': 'dossiers'
 };
 
+// =============================================
+// REDIRECTION AUTOMATIQUE: URLs avec .html → sans .html
+// =============================================
+router.get(/^\/(fr|en)\/([^/]+)\.html$/, (req, res) => {
+    const lang = req.params[0];
+    const section = req.params[1];
+
+    // Redirection 301 vers URL sans extension
+    const newUrl = `/${lang}/${section}`;
+    console.log(`♻️ Redirection 301: /${lang}/${section}.html → ${newUrl}`);
+    res.redirect(301, newUrl);
+});
+
 // Article Redirect
 router.get('/article.html', async (req, res) => {
     const { id } = req.query;
@@ -77,5 +90,6 @@ router.get('/partis.html', async (req, res) => {
         res.redirect(301, '/fr/partis');
     }
 });
+
 
 module.exports = router;
