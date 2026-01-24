@@ -8,7 +8,7 @@
   // URL de l'API selon l'environnement
   const API_BASE_URL = isLocal
     ? 'http://localhost:5000/api'            // Développement local
-    : 'https://api.solitiquo.com/api';       // Production (à modifier plus tard)
+    : '/api';                  // Production (chemin relatif)
 
   // Variable globale accessible partout
   window.API_URL = API_BASE_URL;
