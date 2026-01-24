@@ -46,7 +46,12 @@ app.use(helmet({
       connectSrc: [
         "'self'",
         "https://res.cloudinary.com",
-        ...(isProduction ? [] : ["http://localhost:*", "ws://localhost:*"])
+        ...(isProduction ? [] : [
+          "http://localhost:*",
+          "ws://localhost:*",
+          "http://localhost:5000",
+          "ws://localhost:5000"
+        ])
       ],
       mediaSrc: [
         "'self'",
