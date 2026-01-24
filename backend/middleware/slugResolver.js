@@ -11,8 +11,8 @@ const slugResolver = async (req, res, next) => {
   if (req.path.startsWith('/api/')) return next();
 
   // Exclure les fichiers statiques (avec extensions)
-  const hasFileExtension = /\.[a-zA-Z0-9]+$/.test(req.path);
-  if (hasFileExtension) return next();
+  // Fichiers statiques déjà gérés par express.static, double check ici pour sécutité
+  if (req.path.includes('.')) return next();
 
   const pathSegments = req.path.split('/').filter(Boolean);
 

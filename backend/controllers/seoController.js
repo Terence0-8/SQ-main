@@ -99,7 +99,10 @@ exports.handleSeoRoute = async (req, res, next) => {
         // Read Template and Inject Meta
         const templatePath = path.resolve(__dirname, '../../', templateFile); // Adjust path relative to controller
         fs.readFile(templatePath, 'utf8', (err, html) => {
-            if (err) return next();
+            if (err) {
+                console.error(`❌ Template manquant: ${templatePath}`);
+                return next();
+            }
 
             const finalHtml = injectMetaTags(html, {
                 title: data.title,

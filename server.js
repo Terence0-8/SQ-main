@@ -17,7 +17,13 @@ const isProduction = process.env.NODE_ENV === 'production';
 const BASE_URL = isProduction ? 'https://solitiquo.com' : `http://localhost:${PORT}`;
 
 // =============================================================================
-// 1. SÉCURITÉ & MIDDLEWARES
+// 1. FICHIERS STATIQUES (Optimisation: Servir avant tout traitement)
+// =============================================================================
+app.use(express.static(__dirname));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// =============================================================================
+// 2. SÉCURITÉ & MIDDLEWARES
 // =============================================================================
 app.use(helmet({
   contentSecurityPolicy: isProduction ? {
@@ -36,14 +42,13 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-
 const corsOptions = {
   origin: isProduction ? (process.env.ALLOWED_ORIGINS || '').split(',') : true,
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token']
 };
 app.use(cors(corsOptions));
-app.use(express.json()); // AJOUTÉ: Parsing JSON body
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -74,9 +79,9 @@ app.use(session({
   }
 }));
 
-// Synchro Session (Anti-Ban)
+// Synchro Session (Anti-Ban & Robustesse)
 app.use(async (req, res, next) => {
-  if (req.session && req.session.user && req.session.user.id) {
+  if (req.session?.user?.id) { // Robustesse : Optional chaining
     try {
       const result = await pool.query('SELECT is_active, is_subscriber, role FROM users WHERE id = $1', [req.session.user.id]);
       if (result.rows.length === 0 || !result.rows[0].is_active) {
@@ -99,6 +104,7 @@ app.use(async (req, res, next) => {
 // CSRF Protection
 const crypto = require('crypto');
 app.use((req, res, next) => {
+  if (!req.session) return next(); // Safety check
   if (!req.session.csrfToken) {
     req.session.csrfToken = crypto.randomBytes(32).toString('hex');
   }
@@ -106,13 +112,13 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/api/csrf-token', (req, res) => res.json({ csrfToken: req.session.csrfToken }));
+app.get('/api/csrf-token', (req, res) => res.json({ csrfToken: req.session?.csrfToken }));
 
 const verifyCsrf = (req, res, next) => {
   if (['GET', 'OPTIONS', 'HEAD'].includes(req.method)) return next();
   const token = req.headers['x-csrf-token'] || (req.body && req.body._csrf);
   if (!isProduction && !token) return next();
-  if (isProduction && token !== req.session.csrfToken) {
+  if (isProduction && token !== req.session?.csrfToken) {
     return res.status(403).json({ success: false, error: 'Token CSRF invalide' });
   }
   next();
@@ -120,7 +126,7 @@ const verifyCsrf = (req, res, next) => {
 app.use('/api/admin', verifyCsrf);
 
 // =============================================================================
-// 2. ROUTING & CONTROLLERS
+// 3. ROUTING & CONTROLLERS
 // =============================================================================
 
 // Redirections Legacy (301)
@@ -142,14 +148,6 @@ apiRoutes.forEach(route => {
 
 // Sitemap XML
 app.get('/sitemap.xml', async (req, res) => {
-  // Sitemap logic could also be extracted, but keeping minimal here for now or moving to controller if requested.
-  // Given the prompt asked specifically for SEO controller extraction of meta tags and switch logic, sitemap might stay or be simplified.
-  // For now, I will keep the existing logic to avoid breaking it, but ideally it should be in a controller too.
-  // To respect the prompt "minimaliste : imports, middlewares..., montage des routes API..., montage du routeur Legacy, et appel du contrôleur SEO", I should probably keep sitemap here or move it.
-  // Let's keep it here for now to ensure functionality is preserved as it wasn't explicitly asked to move sitemap.
-  // Actually, to make it truly clean, I'll assume sitemap is part of "Global" or leave it. 
-  // Wait, the prompt said "Déplace toute la logique d'injection de balises META et les requêtes DB (switch case article/podcast/etc) qui sont actuellement dans server.js vers ce contrôleur."
-  // It didn't mention sitemap. I'll paste the sitemap logic back in to be safe.
   try {
     const staticPages = ['index.html', 'politique.html', 'social.html', 'partis-politiques.html', 'podcasts.html', 'emissions.html', 'auth.html', 'abonnement.html'];
     const [articles, podcasts, emissions] = await Promise.all([
@@ -177,9 +175,7 @@ app.get('/sitemap.xml', async (req, res) => {
   }
 });
 
-// Static Files
-app.use(express.static(__dirname));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Note: Static files moved to top
 
 // SEO Friendly Routing (Front-Controller for SEO)
 app.use(slugResolver); // 1. Resolve Slug
@@ -189,11 +185,13 @@ app.get(/^\/(fr|en)\/([^/]+)\/(?!.*\.(css|js|png|jpg|jpeg|gif|ico|svg|json)$)(.+
 app.get(/^\/(fr|en)\/?$/, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get(/^\/(fr|en)\/([^/]+)$/, (req, res, next) => {
   const map = {
+    'politique': 'politique.html',
+    'social': 'social.html',
     'emissions': 'emissions.html',
     'podcasts': 'podcasts.html',
     'partis': 'partis-politiques.html',
     'parties': 'partis-politiques.html',
-    'partis-politiques': 'partis-politiques.html', // ← AJOUTER cette ligne
+    'partis-politiques': 'partis-politiques.html',
     'admin': 'admin.html'
   };
   if (map[req.params[1]]) return res.sendFile(path.join(__dirname, map[req.params[1]]));
@@ -212,6 +210,6 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`\n🚀 Serveur Solitiquo (MODULAR) lancé sur ${BASE_URL}`);
+  console.log(`\n🚀 Serveur Solitiquo (OPTIMIZED) lancé sur ${BASE_URL}`);
   console.log(`🔒 Mode : ${isProduction ? 'PRODUCTION' : 'DEVELOPPEMENT'}`);
 });
