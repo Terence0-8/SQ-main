@@ -45,7 +45,8 @@ app.use(helmet({
       ],
       connectSrc: [
         "'self'",
-        "https://res.cloudinary.com"
+        "https://res.cloudinary.com",
+        "*"
       ],
       mediaSrc: [
         "'self'",
@@ -76,6 +77,10 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token']
 };
 app.use(cors(corsOptions));
+
+// ✅ STATIC FILES FIRST (No DB/Session overhead)
+app.use(express.static(__dirname));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -208,9 +213,11 @@ const injectMetaTags = (html, data) => {
 // ✅ REDIRECTIONS 301 (Anciennes URLs → Nouvelles)
 // ==========================================
 
+
+
 app.get('/article.html', async (req, res) => {
   const { id } = req.query;
-  
+
   if (!id) {
     return res.redirect(301, '/fr/politique');
   }
@@ -226,7 +233,7 @@ app.get('/article.html', async (req, res) => {
     }
 
     const { slug, language, category } = result.rows[0];
-    
+
     const categoryMap = {
       'Politique': 'politique',
       'Social': 'social',
@@ -249,7 +256,7 @@ app.get('/article.html', async (req, res) => {
 
 app.get('/podcast.html', async (req, res) => {
   const { id } = req.query;
-  
+
   if (!id) {
     return res.redirect(301, '/fr/podcasts');
   }
@@ -274,7 +281,7 @@ app.get('/podcast.html', async (req, res) => {
 
 app.get('/emissions.html', async (req, res) => {
   const { id } = req.query;
-  
+
   if (!id) {
     return res.redirect(301, '/fr/emissions');
   }
@@ -299,7 +306,7 @@ app.get('/emissions.html', async (req, res) => {
 
 app.get('/partis.html', async (req, res) => {
   const { id } = req.query;
-  
+
   if (!id) {
     return res.redirect(301, '/fr/partis');
   }
@@ -326,11 +333,44 @@ app.get('/partis.html', async (req, res) => {
 // ✅ ROUTING SEO-FRIENDLY DYNAMIQUE
 // ==========================================
 
+// ==========================================
+// ✅ ROOT LANGUAGE ROUTES (e.g. /fr, /en)
+// ==========================================
+app.get(/^\/(fr|en)\/?$/, (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get(/^\/(fr|en)\/([^/]+)$/, (req, res, next) => {
+  const lang = req.params[0];
+  const category = req.params[1];
+
+  // Mapping categories -> files
+  const categoryFiles = {
+    'emissions': 'emissions.html',
+    'podcasts': 'podcasts.html',
+    'partis': 'partis-politiques.html', // Corrigé pour pointer vers le bon fichier
+    'parties': 'partis-politiques.html',
+    'admin': 'admin.html'
+  };
+
+
+  const file = categoryFiles[category];
+  if (file) {
+    return res.sendFile(path.join(__dirname, file));
+  }
+
+  // Si c'est une catégorie d'articles (politique, etc.), on renvoie index.html?category=...
+  // Ou on laisse passer vers la 404 si pas géré
+  // Pour l'instant, on laisse passer pour voir si c'est capturé autre part ou 404
+  next();
+});
+
 // Appliquer le middleware de résolution de slug
 app.use(slugResolver);
 
-// Route générique pour tous les contenus SEO
-app.get('/:lang(fr|en)/:category/:slug(*)', async (req, res, next) => {
+// Route générique pour tous les contenus SEO (Regex pour éviter les erreurs de parsing Express 5)
+// Exclut les fichiers statiques .css, .js, .png, etc.
+app.get(/^\/(fr|en)\/([^/]+)\/(?!.*\.(css|js|png|jpg|jpeg|gif|ico|svg|json)$)(.+)$/, async (req, res, next) => {
   // Si le slug n'a pas été résolu, passer au gestionnaire 404
   if (!req.resolvedContent) {
     return next();

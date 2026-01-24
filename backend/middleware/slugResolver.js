@@ -7,8 +7,15 @@ const path = require('path');
  * Exemple: /fr/politique/reforme-electorale → { id: 5, type: 'article', lang: 'fr' }
  */
 const slugResolver = async (req, res, next) => {
+  // Exclure les requêtes API
+  if (req.path.startsWith('/api/')) return next();
+
+  // Exclure les fichiers statiques (avec extensions)
+  const hasFileExtension = /\.[a-zA-Z0-9]+$/.test(req.path);
+  if (hasFileExtension) return next();
+
   const pathSegments = req.path.split('/').filter(Boolean);
-  
+
   // Format attendu : /[lang]/[category]/[slug]
   if (pathSegments.length < 3) {
     return next(); // Pas une URL de contenu, passer au suivant
@@ -32,12 +39,12 @@ const slugResolver = async (req, res, next) => {
       'culture': { table: 'articles', type: 'article', category: 'Culture' },
       'international': { table: 'articles', type: 'article', category: 'International' },
       'dossiers': { table: 'articles', type: 'article', category: 'Dossiers' },
-      
+
       // Articles (anglais)
       'politics': { table: 'articles', type: 'article', category: 'Politique' },
       'society': { table: 'articles', type: 'article', category: 'Social' },
       'economy': { table: 'articles', type: 'article', category: 'Économie' },
-      
+
       // Autres contenus
       'podcasts': { table: 'podcasts', type: 'podcast' },
       'emissions': { table: 'emissions', type: 'emission' },
@@ -80,7 +87,8 @@ const slugResolver = async (req, res, next) => {
 
     if (result.rows.length === 0) {
       // Slug introuvable → 404
-      return res.status(404).sendFile(path.join(__dirname, '../../page-404.html'));
+      // Slug introuvable → passer au prochain handler (qui gérera le 404)
+      return next();
     }
 
     // Stocker les infos résolues dans req pour utilisation ultérieure
