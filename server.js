@@ -46,7 +46,7 @@ app.use(helmet({
       connectSrc: [
         "'self'",
         "https://res.cloudinary.com",
-        "*"
+        ...(isProduction ? [] : ["http://localhost:*", "ws://localhost:*"])
       ],
       mediaSrc: [
         "'self'",
@@ -78,12 +78,6 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// ✅ STATIC FILES FIRST (No DB/Session overhead)
-app.use(express.static(__dirname));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
 // =============================================================================
@@ -328,6 +322,12 @@ app.get('/partis.html', async (req, res) => {
     res.redirect(301, '/fr/partis');
   }
 });
+
+// ==========================================
+// ✅ STATIC FILES (Après les redirects pour ne pas les masquer)
+// ==========================================
+app.use(express.static(__dirname));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ==========================================
 // ✅ ROUTING SEO-FRIENDLY DYNAMIQUE
