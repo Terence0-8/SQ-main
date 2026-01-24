@@ -20,30 +20,22 @@ const BASE_URL = isProduction ? 'https://solitiquo.com' : `http://localhost:${PO
 // 1. SÉCURITÉ & MIDDLEWARES
 // =============================================================================
 app.use(helmet({
-  contentSecurityPolicy: {
+  contentSecurityPolicy: isProduction ? {
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
-      connectSrc: [
-        "'self'",
-        "https://res.cloudinary.com",
-        ...(isProduction ? [] : [
-          "http://localhost:*",
-          "ws://localhost:*",
-          "http://localhost:5000",
-          "ws://localhost:5000"
-        ])
-      ],
+      connectSrc: ["'self'", "https://res.cloudinary.com"],
       mediaSrc: ["'self'", "https://res.cloudinary.com"],
       frameSrc: ["'self'", "https://www.youtube.com", "https://www.youtube-nocookie.com", "https://www.facebook.com", "https://w.soundcloud.com"]
     }
-  },
+  } : false,
   crossOriginEmbedderPolicy: false,
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
+
 
 const corsOptions = {
   origin: isProduction ? (process.env.ALLOWED_ORIGINS || '').split(',') : true,
@@ -196,7 +188,14 @@ app.get(/^\/(fr|en)\/([^/]+)\/(?!.*\.(css|js|png|jpg|jpeg|gif|ico|svg|json)$)(.+
 // SPA Fallback (Language Roots)
 app.get(/^\/(fr|en)\/?$/, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get(/^\/(fr|en)\/([^/]+)$/, (req, res, next) => {
-  const map = { 'emissions': 'emissions.html', 'podcasts': 'podcasts.html', 'partis': 'partis-politiques.html', 'parties': 'partis-politiques.html', 'admin': 'admin.html' };
+  const map = {
+    'emissions': 'emissions.html',
+    'podcasts': 'podcasts.html',
+    'partis': 'partis-politiques.html',
+    'parties': 'partis-politiques.html',
+    'partis-politiques': 'partis-politiques.html', // ← AJOUTER cette ligne
+    'admin': 'admin.html'
+  };
   if (map[req.params[1]]) return res.sendFile(path.join(__dirname, map[req.params[1]]));
   next();
 });
