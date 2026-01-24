@@ -21,6 +21,8 @@ const BASE_URL = isProduction ? 'https://solitiquo.com' : `http://localhost:${PO
 // =============================================================================
 app.use(express.static(__dirname));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Correction: Servir les fichiers statiques aussi pour /fr/... et /en/...
+app.use(['/fr', '/en'], express.static(__dirname));
 
 // =============================================================================
 // 2. SÉCURITÉ & MIDDLEWARES
@@ -183,7 +185,14 @@ app.get(/^\/(fr|en)\/([^/]+)\/(?!.*\.(css|js|png|jpg|jpeg|gif|ico|svg|json)$)(.+
 
 // SPA Fallback (Language Roots)
 app.get(/^\/(fr|en)\/?$/, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-app.get(/^\/(fr|en)\/([^/]+)$/, (req, res, next) => {
+app.get(/^\/(fr|en)\/([^/]+)\/?$/, (req, res, next) => {
+  console.log(`🔍 Routing check: /${req.params[0]}/${req.params[1]}`);
+
+  // Redirection propre: /fr/index -> /fr
+  if (req.params[1] === 'index') {
+    return res.redirect(`/${req.params[0]}`);
+  }
+
   const map = {
     'politique': 'politique.html',
     'social': 'social.html',
