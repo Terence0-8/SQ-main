@@ -18116,3 +18116,30 @@ body#page-success {
     font-size: 0.75rem;
   }
 }
+/* Badges de langue (langue-badge.js) */
+.language-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.language-badge:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.language-badge .flag {
+  font-size: 1rem;
+  line-height: 1;
+}
