@@ -399,12 +399,21 @@
       // A. Chargement Articles
       try {
         const lang = getLanguage();
-        // 🔥 FIX: On garde "Politique" comme catégorie (stockée en français en BDD)
-        const res = await fetch(`${API_URL}/articles?category=Politique&lang=${lang}`);
+        
+        // 🔥 FIX: Charger TOUS les articles sans filtre catégorie
+        const res = await fetch(`${API_URL}/articles?lang=${lang}`);
         const json = await res.json();
 
         if (json.success && json.data.length > 0) {
-          const articles = json.data;
+          // 🔥 Filtrer côté client pour ne garder que "Politique"
+          const allArticles = json.data;
+          const articles = allArticles.filter(art => art.category === 'Politique');
+
+          if (articles.length === 0) {
+            document.getElementById('magazine-feed').innerHTML = '<p style="text-align:center; color:#888; padding:2rem;">Aucun article politique disponible pour le moment.</p>';
+            return;
+          }
+
           const une = articles[0];
           const linkUne = `article.html?id=${une.id}`;
           const uneImg = une.image_url || 'https://via.placeholder.com/1600x900';
