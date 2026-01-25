@@ -353,7 +353,6 @@
           const badge = document.getElementById('art-category-badge');
           badge.textContent = article.category;
           if (article.is_premium) {
-            // REMPLACEMENT ICI : Utilisation de l'image avec une taille d'émoji
             badge.innerHTML += ' <img src="GOLD.png" alt="Premium" style="height: 1.2em; vertical-align: middle; margin-left: 5px;">';
             badge.style.backgroundColor = "#222";
           }
@@ -377,7 +376,6 @@
           // --- GESTION DU PAYWALL ---
           const contentDiv = document.getElementById('art-content');
 
-          // 🔥 CORRECTION ICI : Vérification avec is_subscriber au lieu de role
           const canRead = user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer');
 
           if (article.is_premium && !canRead) {
@@ -413,7 +411,6 @@
           document.getElementById('art-readtime').textContent = Math.ceil(words / 200);
 
           // --- BOUTON MODIFIER (ADMIN) ---
-          // On réutilise la variable 'user' définie plus haut (plus de conflit !)
           if (user && (user.role === 'admin' || user.role === 'writer')) {
             const editLink = document.createElement('a');
             editLink.href = `editeur-article.html?id=${article.id}`;
@@ -435,21 +432,23 @@
       }
     });
 
-    // --- 2b. INITIALISATION BOUTON DE TRADUCTION ---
+    // --- 2b. INITIALISATION BOUTON DE TRADUCTION (TEXTES DANS LA LANGUE CIBLE) ---
     async function initTranslationButton(article) {
       const translationZone = document.getElementById('translation-zone');
       const currentLang = article.language; // 'fr' ou 'en'
       const targetLang = currentLang === 'fr' ? 'en' : 'fr';
 
-      // 🔥 TEXTES INVERSÉS selon la langue de l'article
+      // 🔥 CORRECTION: Textes affichés dans la langue CIBLE
+      // Si l'article est FR, le bouton dit "Translate to English"
+      // Si l'article est EN, le bouton dit "Traduire en français"
       const texts = {
-        fr: {
+        fr: { // Article français → Afficher bouton EN ANGLAIS
           btnTranslate: 'Translate to English',
           btnTranslating: 'Translating...',
           noticePrefix: 'This article is available in English',
           noticeLink: 'Read English version'
         },
-        en: {
+        en: { // Article anglais → Afficher bouton EN FRANÇAIS
           btnTranslate: 'Traduire en français',
           btnTranslating: 'Traduction en cours...',
           noticePrefix: 'Cet article est disponible en français',
@@ -465,7 +464,7 @@
         const data = await res.json();
 
         if (data.has_translation) {
-          // Traduction existe déjà → Banniere glassmorphism
+          // Traduction existe déjà → Bannière glassmorphism
           const translation = data.translation;
           translationZone.innerHTML = `
             <div class="translation-notice">
