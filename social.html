@@ -388,21 +388,34 @@
       // Init Language
       await initLanguageSwitcher({ reloadPage: true });
 
-      // A. Chargement Articles (Catégorie Social)
+      // A. Chargement Articles (Catégorie Social) - SANS FILTRE LANGUE
       try {
         const lang = getLanguage();
         let catParam = pageCategory;
-        if (lang === 'en' && pageCategory === 'Politique') catParam = 'Politics';
 
-        const res = await fetch(`${API_URL}/articles?category=${catParam}&lang=${lang}`);
+        // 🔥 CORRECTION : On retire le filtre langue
+        const res = await fetch(`${API_URL}/articles?category=${catParam}`);
         const json = await res.json();
 
         if (json.success && json.data.length > 0) {
-          const articles = json.data;
+          let articles = json.data;
+
+          // 🛡️ TRI INTELLIGENT : Articles dans la langue active en premier
+          articles.sort((a, b) => {
+            if (a.language === lang && b.language !== lang) return -1;
+            if (a.language !== lang && b.language === lang) return 1;
+            return 0;
+          });
+
           const une = articles[0];
-          // Lien vers l'article (on garde article.html, le contenu sera dynamique)
           const linkUne = `article.html?id=${une.id}`;
           const uneImg = une.image_url || 'https://via.placeholder.com/1600x900';
+
+          // 🏷️ Badge langue pour la Une
+          let langBadgeUne = '';
+          if (une.language !== lang) {
+            langBadgeUne = une.language === 'fr' ? '🇫🇷' : '🇬🇧';
+          }
 
           // Injection de la "Une"
           document.getElementById('hero-dynamic').innerHTML = `
@@ -412,7 +425,7 @@
               <div class="hero-overlay">
                 <div class="hero-tags-wrap">
                     <span class="hero-badge-une">À LA UNE</span>
-                    <span class="hero-badge-cat">${une.category}</span>
+                    <span class="hero-badge-cat">${une.category} ${langBadgeUne}</span>
                 </div>
                 <h1 class="hero-title-main">${une.title}</h1>
                 <p class="hero-excerpt">${une.excerpt || ''}</p>
@@ -420,31 +433,42 @@
             </section>
           `;
 
-          // Injection de la liste principale
+          // Injection de la liste principale avec badges langue
           const mainList = articles.slice(1, 4);
-          document.getElementById('magazine-feed').innerHTML = mainList.map(art => `
-            <article class="article-magazine">
-              <img src="${art.image_url}" class="mag-img" onerror="handleImgError(this)">
-              <div class="mag-content">
-                <a href="article.html?id=${art.id}" style="text-decoration:none;"><h3>${art.title}</h3></a>
-                <p class="mag-excerpt">${art.excerpt || art.slug}</p>
-                <small style="color:#888; font-size:0.85rem;">${SolitiquoAPI.formatDate(art.published_at)}</small>
-              </div>
-            </article>
-          `).join('');
+          document.getElementById('magazine-feed').innerHTML = mainList.map(art => {
+            let langBadge = '';
+            if (art.language !== lang) {
+              langBadge = art.language === 'fr' ? ' 🇫🇷' : ' 🇬🇧';
+            }
+            return `
+              <article class="article-magazine">
+                <img src="${art.image_url}" class="mag-img" onerror="handleImgError(this)">
+                <div class="mag-content">
+                  <a href="article.html?id=${art.id}" style="text-decoration:none;"><h3>${art.title}${langBadge}</h3></a>
+                  <p class="mag-excerpt">${art.excerpt || art.slug}</p>
+                  <small style="color:#888; font-size:0.85rem;">${SolitiquoAPI.formatDate(art.published_at)}</small>
+                </div>
+              </article>
+            `;
+          }).join('');
 
-          // Injection de la grille "Découvrir"
-          // Injection de la grille "Découvrir" (Fix: Slice 5-13 + Fallback)
+          // Injection de la grille "Découvrir" avec badges langue
           const discoverArticles = articles.slice(5, 13);
           const discoverGrid = document.getElementById('discover-grid');
           if (discoverGrid && discoverArticles.length > 0) {
-            discoverGrid.innerHTML = discoverArticles.map(art => `
+            discoverGrid.innerHTML = discoverArticles.map(art => {
+              let langBadge = '';
+              if (art.language !== lang) {
+                langBadge = art.language === 'fr' ? ' 🇫🇷' : ' 🇬🇧';
+              }
+              return `
                 <a href="article.html?id=${art.id}" class="disco-card">
-                <img src="${art.image_url}" class="disco-img" onerror="handleImgError(this)">
-                <h4 class="disco-title">${art.title}</h4>
-                <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
+                  <img src="${art.image_url}" class="disco-img" onerror="handleImgError(this)">
+                  <h4 class="disco-title">${art.title}${langBadge}</h4>
+                  <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
                 </a>
-            `).join('');
+              `;
+            }).join('');
           } else if (discoverGrid) {
             discoverGrid.innerHTML = '<p style="text-align:center;color:#999;">Plus d\'articles bientôt.</p>';
           }
