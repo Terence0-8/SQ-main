@@ -11,27 +11,31 @@
     rel="stylesheet" />
 
   <style>
-    /* Styles pour le bouton de traduction */
+    /* 🌍 Styles glassmorphism pour les éléments de traduction */
     .translate-btn {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 10px 20px;
-      border-radius: 25px;
-      border: none;
+      gap: 10px;
+      background: rgba(55, 70, 61, 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1.5px solid rgba(55, 70, 61, 0.3);
+      color: #37463D;
+      padding: 12px 24px;
+      border-radius: 12px;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       cursor: pointer;
       transition: all 0.3s ease;
-      margin: 1rem 0;
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      margin: 1.5rem 0;
+      box-shadow: 0 4px 20px rgba(55, 70, 61, 0.1);
     }
 
     .translate-btn:hover {
+      background: rgba(55, 70, 61, 0.25);
+      border-color: rgba(55, 70, 61, 0.5);
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 6px 25px rgba(55, 70, 61, 0.15);
     }
 
     .translate-btn:disabled {
@@ -42,10 +46,10 @@
 
     .translate-btn .spinner {
       display: inline-block;
-      width: 14px;
-      height: 14px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-top-color: white;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(55, 70, 61, 0.3);
+      border-top-color: #37463D;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
@@ -55,23 +59,38 @@
     }
 
     .translation-notice {
-      background: #f0f4ff;
-      border-left: 4px solid #667eea;
-      padding: 15px 20px;
-      border-radius: 8px;
+      background: rgba(55, 70, 61, 0.08);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1.5px solid rgba(55, 70, 61, 0.2);
+      border-radius: 14px;
+      padding: 18px 24px;
       margin: 1.5rem 0;
       font-size: 0.95rem;
-      color: #333;
+      color: #37463D;
+      line-height: 1.6;
+      box-shadow: 0 4px 20px rgba(55, 70, 61, 0.08);
     }
 
     .translation-notice a {
-      color: #667eea;
-      font-weight: 600;
+      color: #C82823;
+      font-weight: 700;
       text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      transition: all 0.2s ease;
     }
 
     .translation-notice a:hover {
-      text-decoration: underline;
+      color: #9a1f1b;
+      transform: translateX(3px);
+    }
+
+    .translation-notice a::after {
+      content: '→';
+      font-size: 1.2em;
     }
   </style>
 
@@ -421,7 +440,24 @@
       const translationZone = document.getElementById('translation-zone');
       const currentLang = article.language; // 'fr' ou 'en'
       const targetLang = currentLang === 'fr' ? 'en' : 'fr';
-      const targetLangLabel = targetLang === 'fr' ? 'français' : 'anglais';
+
+      // 🔥 TEXTES INVERSÉS selon la langue de l'article
+      const texts = {
+        fr: {
+          btnTranslate: 'Translate to English',
+          btnTranslating: 'Translating...',
+          noticePrefix: 'This article is available in English',
+          noticeLink: 'Read English version'
+        },
+        en: {
+          btnTranslate: 'Traduire en français',
+          btnTranslating: 'Traduction en cours...',
+          noticePrefix: 'Cet article est disponible en français',
+          noticeLink: 'Lire la version française'
+        }
+      };
+
+      const t = texts[currentLang];
 
       try {
         // Vérifier si une traduction existe déjà
@@ -429,21 +465,21 @@
         const data = await res.json();
 
         if (data.has_translation) {
-          // Traduction existe déjà → Bouton de redirection
+          // Traduction existe déjà → Banniere glassmorphism
           const translation = data.translation;
           translationZone.innerHTML = `
             <div class="translation-notice">
-              🌍 Cet article est disponible en ${translation.language === 'fr' ? 'français' : 'anglais'}
+              🌍 ${t.noticePrefix}
               <br>
-              <a href="article.html?id=${translation.id}">Lire la version ${translation.language === 'fr' ? 'française' : 'anglaise'} →</a>
+              <a href="article.html?id=${translation.id}">${t.noticeLink}</a>
             </div>
           `;
         } else {
-          // Aucune traduction → Bouton de création
+          // Aucune traduction → Bouton glassmorphism
           translationZone.innerHTML = `
             <button id="translateBtn" class="translate-btn">
               <span>🌍</span>
-              <span>Traduire en ${targetLangLabel}</span>
+              <span>${t.btnTranslate}</span>
             </button>
           `;
 
@@ -451,7 +487,7 @@
           document.getElementById('translateBtn').addEventListener('click', async () => {
             const btn = document.getElementById('translateBtn');
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> <span>Traduction en cours...</span>';
+            btn.innerHTML = `<span class="spinner"></span> <span>${t.btnTranslating}</span>`;
 
             try {
               const translateRes = await fetch(`${window.API_URL}/articles/${article.id}/translate`, {
@@ -467,15 +503,15 @@
                 // Redirection vers la traduction créée
                 window.location.href = `article.html?id=${result.translation.id}`;
               } else {
-                alert(`Erreur: ${result.error}`);
+                alert(`Error: ${result.error}`);
                 btn.disabled = false;
-                btn.innerHTML = `<span>🌍</span> <span>Traduire en ${targetLangLabel}</span>`;
+                btn.innerHTML = `<span>🌍</span> <span>${t.btnTranslate}</span>`;
               }
             } catch (err) {
               console.error('Erreur traduction:', err);
-              alert('Erreur lors de la traduction. Vérifiez que DeepL est configuré.');
+              alert('Translation error. Please check that DeepL is configured.');
               btn.disabled = false;
-              btn.innerHTML = `<span>🌍</span> <span>Traduire en ${targetLangLabel}</span>`;
+              btn.innerHTML = `<span>🌍</span> <span>${t.btnTranslate}</span>`;
             }
           });
         }
