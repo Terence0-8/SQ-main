@@ -86,7 +86,6 @@ const slugResolver = async (req, res, next) => {
     const result = await pool.query(query, values);
 
     if (result.rows.length === 0) {
-      // Slug introuvable → 404
       // Slug introuvable → passer au prochain handler (qui gérera le 404)
       return next();
     }
