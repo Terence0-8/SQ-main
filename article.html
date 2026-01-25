@@ -10,6 +10,71 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,400&family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet" />
 
+  <style>
+    /* Styles pour le bouton de traduction */
+    .translate-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      border: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 1rem 0;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .translate-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .translate-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .translate-btn .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .translation-notice {
+      background: #f0f4ff;
+      border-left: 4px solid #667eea;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin: 1.5rem 0;
+      font-size: 0.95rem;
+      color: #333;
+    }
+
+    .translation-notice a {
+      color: #667eea;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .translation-notice a:hover {
+      text-decoration: underline;
+    }
+  </style>
+
   <script>
     function handleImgError(img) {
       img.onerror = null;
@@ -116,6 +181,9 @@
     </div>
 
     <h1 class="article-title" id="art-title"></h1>
+
+    <!-- ZONE DE TRADUCTION (ajouté ici) -->
+    <div id="translation-zone" style="text-align:center;"></div>
 
     <div class="author-line">
       <strong>Par</strong> <span id="art-author"></span>
@@ -284,6 +352,9 @@
             document.getElementById('art-figure').style.display = 'none';
           }
 
+          // --- 🌍 BOUTON DE TRADUCTION ---
+          await initTranslationButton(article);
+
           // --- GESTION DU PAYWALL ---
           const contentDiv = document.getElementById('art-content');
 
@@ -344,6 +415,74 @@
         loadingDiv.innerHTML = '<p>Erreur de chargement.</p>';
       }
     });
+
+    // --- 2b. INITIALISATION BOUTON DE TRADUCTION ---
+    async function initTranslationButton(article) {
+      const translationZone = document.getElementById('translation-zone');
+      const currentLang = article.language; // 'fr' ou 'en'
+      const targetLang = currentLang === 'fr' ? 'en' : 'fr';
+      const targetLangLabel = targetLang === 'fr' ? 'français' : 'anglais';
+
+      try {
+        // Vérifier si une traduction existe déjà
+        const res = await fetch(`${window.API_URL}/articles/${article.id}/translation`);
+        const data = await res.json();
+
+        if (data.has_translation) {
+          // Traduction existe déjà → Bouton de redirection
+          const translation = data.translation;
+          translationZone.innerHTML = `
+            <div class="translation-notice">
+              🌍 Cet article est disponible en ${translation.language === 'fr' ? 'français' : 'anglais'}
+              <br>
+              <a href="article.html?id=${translation.id}">Lire la version ${translation.language === 'fr' ? 'française' : 'anglaise'} →</a>
+            </div>
+          `;
+        } else {
+          // Aucune traduction → Bouton de création
+          translationZone.innerHTML = `
+            <button id="translateBtn" class="translate-btn">
+              <span>🌍</span>
+              <span>Traduire en ${targetLangLabel}</span>
+            </button>
+          `;
+
+          // Attacher l'événement de traduction
+          document.getElementById('translateBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('translateBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> <span>Traduction en cours...</span>';
+
+            try {
+              const translateRes = await fetch(`${window.API_URL}/articles/${article.id}/translate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ targetLang })
+              });
+
+              const result = await translateRes.json();
+
+              if (result.success) {
+                // Redirection vers la traduction créée
+                window.location.href = `article.html?id=${result.translation.id}`;
+              } else {
+                alert(`Erreur: ${result.error}`);
+                btn.disabled = false;
+                btn.innerHTML = `<span>🌍</span> <span>Traduire en ${targetLangLabel}</span>`;
+              }
+            } catch (err) {
+              console.error('Erreur traduction:', err);
+              alert('Erreur lors de la traduction. Vérifiez que DeepL est configuré.');
+              btn.disabled = false;
+              btn.innerHTML = `<span>🌍</span> <span>Traduire en ${targetLangLabel}</span>`;
+            }
+          });
+        }
+      } catch (err) {
+        console.error('Erreur chargement traduction:', err);
+      }
+    }
 
     // --- 3. BARRE DE PROGRESSION ---
     window.addEventListener('scroll', () => {
