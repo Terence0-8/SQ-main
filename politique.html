@@ -399,10 +399,8 @@
       // A. Chargement Articles
       try {
         const lang = getLanguage();
-        let catParam = pageCategory;
-        if (lang === 'en' && pageCategory === 'Politique') catParam = 'Politics';
-
-        const res = await fetch(`${API_URL}/articles?category=${catParam}&lang=${lang}`);
+        // 🔥 FIX: On garde "Politique" comme catégorie (stockée en français en BDD)
+        const res = await fetch(`${API_URL}/articles?category=Politique&lang=${lang}`);
         const json = await res.json();
 
         if (json.success && json.data.length > 0) {
@@ -410,6 +408,11 @@
           const une = articles[0];
           const linkUne = `article.html?id=${une.id}`;
           const uneImg = une.image_url || 'https://via.placeholder.com/1600x900';
+
+          // 🌍 Badge langue si article pas dans langue active
+          const langBadge = une.language !== lang 
+            ? `<span class="hero-lang-badge">🇫🇷 ${une.language.toUpperCase()}</span>` 
+            : '';
 
           document.getElementById('hero-dynamic').innerHTML = `
             <section class="grand-hero-section">
@@ -419,6 +422,7 @@
                 <div class="hero-tags-wrap">
                     <span class="hero-badge-une">À LA UNE</span>
                     <span class="hero-badge-cat">${une.category}</span>
+                    ${langBadge}
                 </div>
                 <h1 class="hero-title-main">${une.title}</h1>
                 <p class="hero-excerpt">${une.excerpt || ''}</p>
@@ -427,16 +431,21 @@
           `;
 
           const mainList = articles.slice(1, 4);
-          document.getElementById('magazine-feed').innerHTML = mainList.map(art => `
+          document.getElementById('magazine-feed').innerHTML = mainList.map(art => {
+            const langBadgeSmall = art.language !== lang 
+              ? `<span style="background:#37463D; color:white; padding:2px 6px; border-radius:3px; font-size:0.65rem; margin-left:8px;">🇫🇷 ${art.language.toUpperCase()}</span>` 
+              : '';
+            
+            return `
             <article class="article-magazine">
               <img src="${art.image_url}" class="mag-img" onerror="handleImgError(this)">
               <div class="mag-content">
-                <a href="article.html?id=${art.id}" style="text-decoration:none;"><h3>${art.title}</h3></a>
+                <a href="article.html?id=${art.id}" style="text-decoration:none;"><h3>${art.title} ${langBadgeSmall}</h3></a>
                 <p class="mag-excerpt">${art.excerpt || art.slug}</p>
                 <small style="color:#888; font-size:0.85rem;">${SolitiquoAPI.formatDate(art.published_at)}</small>
               </div>
             </article>
-          `).join('');
+          `}).join('');
 
           // Injection de la grille "Découvrir" (Fix: Slice 5-13 + Fallback)
           const discoverArticles = articles.slice(5, 13);
@@ -452,20 +461,24 @@
           } else if (discoverGrid) {
             discoverGrid.innerHTML = '<p style="text-align:center;color:#999;">Plus d\'articles bientôt.</p>';
           }
+        } else {
+          document.getElementById('magazine-feed').innerHTML = '<p style="text-align:center; color:#888; padding:2rem;">Aucun article disponible pour le moment.</p>';
         }
-      } catch (e) { console.error(e); }
+      } catch (e) { 
+        console.error(e); 
+        document.getElementById('magazine-feed').innerHTML = '<p style="text-align:center; color:#C82823; padding:2rem;">Erreur de chargement des articles.</p>';
+      }
 
       // B. Chargement Podcast
       try {
-        const resPod = await fetch(`${API_URL}/podcasts/featured/${pageCategory.toLowerCase()}`);
+        const resPod = await fetch(`${API_URL}/podcasts/featured/politique`);
         const jsonPod = await resPod.json();
         if (jsonPod.success && jsonPod.data) {
           const pod = jsonPod.data;
-          const prefix = pageCategory === 'Social' ? 'soc' : 'pol';
-          const img = document.getElementById(`${prefix}-pod-img`);
-          const title = document.getElementById(`${prefix}-pod-title`);
-          const cat = document.getElementById(`${prefix}-pod-cat`);
-          const link = document.getElementById(`${prefix}-pod-link`);
+          const img = document.getElementById('pol-pod-img');
+          const title = document.getElementById('pol-pod-title');
+          const cat = document.getElementById('pol-pod-cat');
+          const link = document.getElementById('pol-pod-link');
 
           if (img) img.src = pod.image_url || 'https://placehold.co/400x300';
           if (title) title.textContent = pod.title;
