@@ -400,12 +400,12 @@
       try {
         const lang = getLanguage();
         
-        // 🔥 FIX: Charger TOUS les articles sans filtre catégorie
+        // 🔥 FIX: Charger TOUS les articles sans filtre langue (priorité = afficher contenu)
         const res = await fetch(`${API_URL}/articles?lang=${lang}`);
         const json = await res.json();
 
         if (json.success && json.data.length > 0) {
-          // 🔥 Filtrer côté client pour ne garder que "Politique"
+          // 🔥 Filtrer uniquement par catégorie "Politique"
           const allArticles = json.data;
           const articles = allArticles.filter(art => art.category === 'Politique');
 
@@ -413,6 +413,13 @@
             document.getElementById('magazine-feed').innerHTML = '<p style="text-align:center; color:#888; padding:2rem;">Aucun article politique disponible pour le moment.</p>';
             return;
           }
+
+          // 🌍 Tri intelligent: articles dans la langue active en premier
+          articles.sort((a, b) => {
+            if (a.language === lang && b.language !== lang) return -1;
+            if (a.language !== lang && b.language === lang) return 1;
+            return 0;
+          });
 
           const une = articles[0];
           const linkUne = `article.html?id=${une.id}`;
