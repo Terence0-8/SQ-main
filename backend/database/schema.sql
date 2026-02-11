@@ -217,6 +217,39 @@ CREATE INDEX IF NOT EXISTS idx_analytics_date ON article_analytics(date DESC);
 -- On la documente juste ici pour référence
 
 -- ============================================
+-- 12. TABLE TRANSLATIONS (Cache DeepL)
+-- ============================================
+CREATE TABLE IF NOT EXISTS translations (
+  id SERIAL PRIMARY KEY,
+  source_text_hash VARCHAR(64) UNIQUE NOT NULL,
+  source_text TEXT NOT NULL,
+  source_lang VARCHAR(5) NOT NULL,
+  target_lang VARCHAR(5) NOT NULL,
+  translated_text TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  CONSTRAINT unique_translation UNIQUE (source_text_hash, source_lang, target_lang)
+);
+
+-- Index pour accélérer les recherches de cache
+CREATE INDEX IF NOT EXISTS idx_translations_hash ON translations(source_text_hash);
+CREATE INDEX IF NOT EXISTS idx_translations_langs ON translations(source_lang, target_lang);
+CREATE INDEX IF NOT EXISTS idx_translations_created ON translations(created_at DESC);
+
+-- ============================================
+-- 13. TABLE DEEPL_USAGE (Suivi consommation API)
+-- ============================================
+CREATE TABLE IF NOT EXISTS deepl_usage (
+  id SERIAL PRIMARY KEY,
+  month DATE UNIQUE NOT NULL,
+  characters_used INTEGER DEFAULT 0,
+  api_calls INTEGER DEFAULT 0,
+  last_updated TIMESTAMP DEFAULT NOW()
+);
+
+-- Index pour suivre l'usage mensuel
+CREATE INDEX IF NOT EXISTS idx_deepl_usage_month ON deepl_usage(month DESC);
+
+-- ============================================
 -- FONCTIONS & TRIGGERS
 -- ============================================
 
