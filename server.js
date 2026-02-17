@@ -137,7 +137,7 @@ app.use(legacyRedirects);
 // Routes API
 const apiRoutes = [
   'articles', 'language', 'polls', 'comments', 'auth', 'podcasts',
-  'admin', 'analytics', 'emissions', 'contact', 'search', 'subscriptions', 'parties'
+  'admin', 'analytics', 'emissions', 'contact', 'search', 'subscriptions', 'parties', 'translate'
 ];
 
 apiRoutes.forEach(route => {

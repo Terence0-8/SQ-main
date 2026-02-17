@@ -7,7 +7,7 @@ const fs = require('fs');
 const Joi = require('joi');
 const { isWriter } = require('../middleware/auth');
 const { createUniqueSlug } = require('../utils/slugify');
-const translationService = require('../utils/translationService');
+const translationService = require('../services/translationService');
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -117,11 +117,11 @@ router.get('/', async (req, res) => {
     params.push(targetLang);
 
     const { rows } = await pool.query(query, params);
-    res.json({ 
-      success: true, 
-      count: rows.length, 
-      preferredLang: targetLang, 
-      data: rows 
+    res.json({
+      success: true,
+      count: rows.length,
+      preferredLang: targetLang,
+      data: rows
     });
 
   } catch (err) {
@@ -280,53 +280,6 @@ router.get('/:id', async (req, res) => {
 });
 
 // ==========================================
-// 2b. RÉCUPÉRER LA TRADUCTION D'UN ARTICLE
-// ==========================================
-router.get('/:id/translation', async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    if (isNaN(id)) {
-      return res.status(400).json({ success: false, error: 'ID invalide' });
-    }
-
-    const query = `
-      SELECT 
-        t.id,
-        t.title,
-        t.slug,
-        t.language,
-        t.translation_method,
-        t.category,
-        t.featured_image as image_url
-      FROM articles a
-      LEFT JOIN articles t ON (a.translation_id = t.id OR t.translation_id = a.id)
-      WHERE a.id = $1 AND t.id IS NOT NULL
-    `;
-
-    const { rows } = await pool.query(query, [id]);
-
-    if (rows.length === 0) {
-      return res.json({ 
-        success: true, 
-        has_translation: false, 
-        message: 'Aucune traduction disponible' 
-      });
-    }
-
-    res.json({ 
-      success: true, 
-      has_translation: true, 
-      translation: rows[0] 
-    });
-
-  } catch (err) {
-    console.error('❌ Erreur récupération traduction:', err);
-    res.status(500).json({ success: false, error: 'Erreur serveur' });
-  }
-});
-
-// ==========================================
 // 3. CRÉATION ARTICLE (SLUG AUTO)
 // ==========================================
 router.post('/', isWriter, upload.single('image_file'), async (req, res) => {
@@ -456,117 +409,8 @@ router.post('/', isWriter, upload.single('image_file'), async (req, res) => {
 
 // ==========================================
 // 3b. TRADUIRE UN ARTICLE AVEC IA (DeepL)
+// MOVED TO /api/translate/article/:id
 // ==========================================
-router.post('/:id/translate', isWriter, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { targetLang } = req.body; // 'fr' ou 'en'
-
-    if (isNaN(id)) {
-      return res.status(400).json({ success: false, error: 'ID invalide' });
-    }
-
-    if (!targetLang || !['fr', 'en'].includes(targetLang)) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Langue cible invalide (fr ou en requis)' 
-      });
-    }
-
-    // Vérifier que DeepL est configuré
-    if (!translationService.isConfigured()) {
-      return res.status(503).json({
-        success: false,
-        error: 'Service de traduction non configuré. Ajoutez DEEPL_API_KEY dans .env'
-      });
-    }
-
-    // Récupérer l'article source
-    const articleQuery = await pool.query(
-      'SELECT * FROM articles WHERE id = $1',
-      [id]
-    );
-
-    if (articleQuery.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Article introuvable' });
-    }
-
-    const sourceArticle = articleQuery.rows[0];
-
-    // Vérifier qu'on ne traduit pas vers la même langue
-    if (sourceArticle.language === targetLang) {
-      return res.status(400).json({
-        success: false,
-        error: `L'article est déjà en ${targetLang}`
-      });
-    }
-
-    // Vérifier si une traduction existe déjà
-    const existingTranslation = await pool.query(
-      'SELECT id FROM articles WHERE translation_id = $1 OR (id = $2 AND translation_id IS NOT NULL)',
-      [id, sourceArticle.translation_id]
-    );
-
-    if (existingTranslation.rows.length > 0) {
-      return res.status(409).json({
-        success: false,
-        error: 'Une traduction existe déjà pour cet article',
-        existing_id: existingTranslation.rows[0].id
-      });
-    }
-
-    console.log(`🌍 Démarrage traduction article ${id} vers ${targetLang}...`);
-
-    // Traduire avec DeepL
-    const translated = await translationService.translateArticle(sourceArticle, targetLang);
-
-    // Générer un slug unique pour la traduction
-    const translatedSlug = await createUniqueSlug(translated.title, 'articles');
-
-    // Insérer la traduction en BDD
-    const insertQuery = `
-      INSERT INTO articles 
-      (title, slug, content, excerpt, category, author_id, language, featured_image, tags, 
-       translation_id, translation_method, status, is_premium, published_at, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'ai', $11, $12, $13, NOW(), NOW())
-      RETURNING id, title, slug, language, translation_method
-    `;
-
-    const insertValues = [
-      translated.title,
-      translatedSlug,
-      translated.content,
-      translated.excerpt,
-      sourceArticle.category,
-      sourceArticle.author_id,
-      targetLang,
-      sourceArticle.featured_image, // On garde la même image
-      sourceArticle.tags, // On garde les mêmes tags
-      id, // Lien vers l'article source
-      sourceArticle.status, // Même statut que l'original
-      sourceArticle.is_premium,
-      sourceArticle.published_at
-    ];
-
-    const { rows } = await pool.query(insertQuery, insertValues);
-
-    console.log(`✅ Traduction créée avec succès (ID: ${rows[0].id})`);
-
-    res.json({
-      success: true,
-      message: `Article traduit en ${targetLang} avec succès`,
-      translation: rows[0],
-      source_id: id
-    });
-
-  } catch (err) {
-    console.error('❌ Erreur traduction article:', err);
-    res.status(500).json({ 
-      success: false, 
-      error: err.message || 'Erreur lors de la traduction' 
-    });
-  }
-});
 
 // ==========================================
 // 4. MODIFICATION ARTICLE (RÉGÉNÉRATION SLUG SI TITRE CHANGE)
@@ -582,7 +426,7 @@ router.put('/:id', isWriter, upload.single('image_file'), async (req, res) => {
 
     // Récupérer l'article actuel
     const currentArticle = await pool.query('SELECT title, slug FROM articles WHERE id = $1', [id]);
-    
+
     if (currentArticle.rows.length === 0) {
       return res.status(404).json({ success: false, error: 'Article introuvable' });
     }

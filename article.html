@@ -55,7 +55,9 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     .translation-notice {
@@ -432,39 +434,36 @@
       }
     });
 
-    // --- 2b. INITIALISATION BOUTON DE TRADUCTION (TEXTES DANS LA LANGUE CIBLE) ---
+    // --- 2b. INITIALISATION BOUTON DE TRADUCTION (AVEC CERCLE DE PROGRESSION) ---
     async function initTranslationButton(article) {
       const translationZone = document.getElementById('translation-zone');
       const currentLang = article.language; // 'fr' ou 'en'
       const targetLang = currentLang === 'fr' ? 'en' : 'fr';
 
-      // 🔥 CORRECTION: Textes affichés dans la langue CIBLE
-      // Si l'article est FR, le bouton dit "Translate to English"
-      // Si l'article est EN, le bouton dit "Traduire en français"
       const texts = {
-        fr: { // Article français → Afficher bouton EN ANGLAIS
+        fr: {
           btnTranslate: 'Translate to English',
-          btnTranslating: 'Translating...',
           noticePrefix: 'This article is available in English',
-          noticeLink: 'Read English version'
+          noticeLink: 'Read English version',
+          progressLabel: 'Connecting to translation service...'
         },
-        en: { // Article anglais → Afficher bouton EN FRANÇAIS
+        en: {
           btnTranslate: 'Traduire en français',
-          btnTranslating: 'Traduction en cours...',
           noticePrefix: 'Cet article est disponible en français',
-          noticeLink: 'Lire la version française'
+          noticeLink: 'Lire la version française',
+          progressLabel: 'Connexion au service...'
         }
       };
 
       const t = texts[currentLang];
 
       try {
-        // Vérifier si une traduction existe déjà
-        const res = await fetch(`${window.API_URL}/articles/${article.id}/translation`);
+        // Nouveau endpoint pour vérifier la traduction
+        const res = await fetch(`${window.API_URL}/translate/article/${article.id}?lang=${targetLang}`);
         const data = await res.json();
 
         if (data.has_translation) {
-          // Traduction existe déjà → Bannière glassmorphism
+          // Traduction existe déjà
           const translation = data.translation;
           translationZone.innerHTML = `
             <div class="translation-notice">
@@ -474,43 +473,94 @@
             </div>
           `;
         } else {
-          // Aucune traduction → Bouton glassmorphism
+          // Aucune traduction -> Afficher le bouton + Container caché pour le progress circle
           translationZone.innerHTML = `
             <button id="translateBtn" class="translate-btn">
               <span>🌍</span>
               <span>${t.btnTranslate}</span>
             </button>
+            
+            <div id="progress-container" class="progress-container hidden" style="display:none;">
+              <svg class="progress-ring" width="120" height="120">
+                <circle class="progress-ring__circle-bg" stroke="#e0e0e0" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
+                <circle class="progress-ring__circle" id="progress-circle" stroke="#37463D" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
+                <text id="progress-text" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#37463D">0%</text>
+              </svg>
+              <p id="progress-label" style="margin-top:15px; font-weight:600; color:#37463D;">${t.progressLabel}</p>
+            </div>
           `;
 
-          // Attacher l'événement de traduction
+          // Logique du cercle
+          const circle = document.getElementById('progress-circle');
+          const radius = circle.r.baseVal.value;
+          const circumference = radius * 2 * Math.PI;
+
+          circle.style.strokeDasharray = `${circumference} ${circumference}`;
+          circle.style.strokeDashoffset = circumference;
+
+          function setProgress(percent) {
+            const offset = circumference - percent / 100 * circumference;
+            circle.style.strokeDashoffset = offset;
+            document.getElementById('progress-text').textContent = `${percent}%`;
+          }
+
           document.getElementById('translateBtn').addEventListener('click', async () => {
             const btn = document.getElementById('translateBtn');
-            btn.disabled = true;
-            btn.innerHTML = `<span class="spinner"></span> <span>${t.btnTranslating}</span>`;
+            const progressContainer = document.getElementById('progress-container');
+            const label = document.getElementById('progress-label');
 
+            // 1. Masquer bouton, afficher loader
+            btn.style.display = 'none';
+            progressContainer.style.display = 'flex';
+
+            // Animation simulée (0 -> 30% -> 80%)
+            setProgress(10);
+
+            // Démarrer la requête API
             try {
-              const translateRes = await fetch(`${window.API_URL}/articles/${article.id}/translate`, {
+              // Simulation étape 1 (Connexion)
+              setTimeout(() => setProgress(30), 300);
+
+              const translatePromise = fetch(`${window.API_URL}/translate/article/${article.id}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({ targetLang })
               });
 
+              // Simulation étape 2 (Traduction en cours)
+              const simInterval = setInterval(() => {
+                const current = parseInt(document.getElementById('progress-text').textContent);
+                if (current < 80) {
+                  setProgress(current + Math.floor(Math.random() * 5));
+                  if (current > 30) label.textContent = (targetLang === 'fr') ? "Traduction en cours..." : "Translating...";
+                }
+              }, 200);
+
+              const translateRes = await translatePromise;
               const result = await translateRes.json();
 
+              clearInterval(simInterval);
+
               if (result.success) {
-                // Redirection vers la traduction créée
-                window.location.href = `article.html?id=${result.translation.id}`;
+                // Étape 3 (Finalisation)
+                setProgress(100);
+                label.textContent = (targetLang === 'fr') ? "Finalisation..." : "Finalizing...";
+
+                setTimeout(() => {
+                  window.location.href = `article.html?id=${result.translation.id}`;
+                }, 500);
+
               } else {
                 alert(`Error: ${result.error}`);
-                btn.disabled = false;
-                btn.innerHTML = `<span>🌍</span> <span>${t.btnTranslate}</span>`;
+                progressContainer.style.display = 'none';
+                btn.style.display = 'inline-flex';
               }
+
             } catch (err) {
               console.error('Erreur traduction:', err);
-              alert('Translation error. Please check that DeepL is configured.');
-              btn.disabled = false;
-              btn.innerHTML = `<span>🌍</span> <span>${t.btnTranslate}</span>`;
+              alert('Translation service error.');
+              progressContainer.style.display = 'none';
+              btn.style.display = 'inline-flex';
             }
           });
         }
