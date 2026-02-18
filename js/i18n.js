@@ -446,9 +446,12 @@ async function setLanguage(lang) {
     const data = await response.json();
     if (data.success) {
       console.log(`✅ Langue synchronisée avec le serveur: ${lang}`);
+    } else {
+      console.warn('⚠️ Le serveur n\'a pas pu sauvegarder la préférence');
     }
   } catch (error) {
     console.warn('⚠️ Impossible de synchroniser avec le serveur (mode hors ligne)');
+    // Pas grave : localStorage suffit pour la persistance locale
   }
 }
 
@@ -458,13 +461,14 @@ async function setLanguage(lang) {
  * @returns {Promise<string>} La langue préférée ('fr' ou 'en')
  */
 async function loadLanguagePreference() {
-  // Si localStorage existe déjà, l'utiliser (plus rapide)
+  // 🔥 PRIORITÉ 1 : localStorage (source de vérité côté client)
   const cachedLang = localStorage.getItem('siteLanguage');
   if (cachedLang) {
+    console.log(`✅ Langue chargée depuis localStorage: ${cachedLang}`);
     return cachedLang;
   }
 
-  // Sinon, charger depuis le backend
+  // PRIORITÉ 2 : Backend (seulement si localStorage vide)
   try {
     const response = await fetch(API_URL + '/language/preference', {
       credentials: 'include'
@@ -480,7 +484,7 @@ async function loadLanguagePreference() {
     console.warn('⚠️ Impossible de charger la préférence depuis le serveur');
   }
 
-  // Fallback: français par défaut
+  // PRIORITÉ 3 : Fallback français
   return 'fr';
 }
 
