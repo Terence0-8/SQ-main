@@ -6,6 +6,7 @@ const cloudinary = require('../config/cloudinary');
 const fs = require('fs');
 const Joi = require('joi');
 const { isWriter } = require('../middleware/auth');
+const { sanitizeText, sanitizeHTML } = require('../middleware/sanitize');
 
 const upload = multer({ dest: 'uploads/' });
 
@@ -245,13 +246,18 @@ router.post('/', isWriter, cpUpload, async (req, res) => {
       RETURNING id, title
     `;
 
+    // ✅ SANITISATION XSS
+    const safeTitle = sanitizeText(title);
+    const safeDescription = description ? sanitizeHTML(description) : '';
+    const safeCategory = category ? sanitizeText(category) : 'Général';
+
     const values = [
-      title,
-      description || '',
+      safeTitle,
+      safeDescription,
       audioUrl,
       finalImageUrl,
       duration,
-      category || 'Général',
+      safeCategory,
       author_id || req.session.user.id
     ];
 
@@ -339,6 +345,11 @@ router.put('/:id', isWriter, cpUpload, async (req, res) => {
       finalImageUrl = cover_image;
     }
 
+    // ✅ SANITISATION XSS
+    const safeTitle = sanitizeText(title);
+    const safeDescription = description ? sanitizeHTML(description) : '';
+    const safeCategory = category ? sanitizeText(category) : 'Général';
+
     // Mise à jour
     let query, values;
 
@@ -350,7 +361,7 @@ router.put('/:id', isWriter, cpUpload, async (req, res) => {
         WHERE id=$7 
         RETURNING id, title
       `;
-      values = [title, description, audioUrl, finalImageUrl, duration, category, id];
+      values = [safeTitle, safeDescription, audioUrl, finalImageUrl, duration, safeCategory, id];
     } else {
       // Sinon on garde la durée existante
       query = `
@@ -359,7 +370,7 @@ router.put('/:id', isWriter, cpUpload, async (req, res) => {
         WHERE id=$5 
         RETURNING id, title
       `;
-      values = [title, description, finalImageUrl, category, id];
+      values = [safeTitle, safeDescription, finalImageUrl, safeCategory, id];
     }
 
     const { rows } = await pool.query(query, values);

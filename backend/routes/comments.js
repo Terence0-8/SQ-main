@@ -3,6 +3,8 @@ const router = express.Router();
 const pool = require('../config/database');
 const Joi = require('joi');
 const { isAuthenticated } = require('../middleware/auth');
+const { sanitizeText } = require('../middleware/sanitize');
+
 
 // ==========================================
 // LISTE DE MOTS BANNIS (FR + EN)
@@ -158,6 +160,9 @@ router.post('/', isAuthenticated, async (req, res) => {
       console.log(`🚨 Commentaire flaggé - Utilisateur ${user_id} - Mot détecté: ${bannedCheck.word}`);
     }
 
+    // ✅ SANITISATION XSS — strip tout HTML du commentaire
+    const safeContent = sanitizeText(content);
+
     // Insertion en base
     const insertQuery = `
       INSERT INTO comments (article_id, user_id, content, is_approved, created_at)
@@ -168,7 +173,7 @@ router.post('/', isAuthenticated, async (req, res) => {
     const { rows } = await pool.query(insertQuery, [
       article_id,
       user_id,
-      content,
+      safeContent,
       is_approved
     ]);
 
@@ -286,9 +291,12 @@ router.put('/:id', isAuthenticated, async (req, res) => {
       message = 'Votre commentaire modifié sera vérifié par un modérateur avant publication.';
     }
 
+    // ✅ SANITISATION XSS — strip tout HTML du commentaire modifié
+    const safeContent = sanitizeText(content);
+
     await pool.query(
       'UPDATE comments SET content = $1, is_approved = $2, updated_at = NOW() WHERE id = $3',
-      [content, is_approved, id]
+      [safeContent, is_approved, id]
     );
 
     res.json({

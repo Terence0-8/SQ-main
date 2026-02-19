@@ -3,6 +3,8 @@ const router = express.Router();
 const pool = require('../config/database');
 const Joi = require('joi');
 const { isAdmin, isWriter } = require('../middleware/auth');
+const { sanitizeText, sanitizeArray } = require('../middleware/sanitize');
+
 
 // ==========================================
 // VALIDATION SCHEMAS
@@ -318,7 +320,10 @@ router.put('/polls/:id', isAdmin, async (req, res) => {
     // Reformatage pour le JSONB : on garde les votes existants si possible, sinon 0
     // Note: C'est complexe de mapper les anciens votes aux nouvelles options.
     // Simplification : On reset les votes si on change les options, ou on met 0.
-    const optionsJson = options.map(text => ({ text, votes: 0 }));
+    // ✅ SANITISATION XSS
+    const safeQuestion = sanitizeText(question);
+    const safeOptions = sanitizeArray(options);
+    const optionsJson = safeOptions.map(text => ({ text, votes: 0 }));
 
     const query = `
       UPDATE polls 
@@ -326,7 +331,7 @@ router.put('/polls/:id', isAdmin, async (req, res) => {
       WHERE id = $3 
       RETURNING id
     `;
-    await pool.query(query, [question, JSON.stringify(optionsJson), id]);
+    await pool.query(query, [safeQuestion, JSON.stringify(optionsJson), id]);
 
     res.json({ success: true, message: "Sondage mis à jour (Votes réinitialisés)" });
   } catch (err) {
@@ -372,8 +377,12 @@ router.post('/polls', isAdmin, async (req, res) => {
 
     const { question, options, ends_at } = value;
 
+    // ✅ SANITISATION XSS
+    const safeQuestion = sanitizeText(question);
+    const safeOptions = sanitizeArray(options);
+
     // Formater les options en JSONB
-    const optionsJson = options.map(text => ({ text, votes: 0 }));
+    const optionsJson = safeOptions.map(text => ({ text, votes: 0 }));
 
     const query = `
       INSERT INTO polls (question, options, created_by, is_active, ends_at, created_at)
@@ -382,7 +391,7 @@ router.post('/polls', isAdmin, async (req, res) => {
     `;
 
     const result = await pool.query(query, [
-      question,
+      safeQuestion,
       JSON.stringify(optionsJson),
       req.session.user.id,
       ends_at || null

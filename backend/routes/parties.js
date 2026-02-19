@@ -6,6 +6,8 @@ const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
 const Joi = require('joi');
 const { isAdmin } = require('../middleware/auth');
+const { sanitizeText, sanitizeHTML } = require('../middleware/sanitize');
+
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -166,16 +168,23 @@ router.post('/', isAdmin, upload.single('logo_file'), async (req, res) => {
       RETURNING id, name, acronym
     `;
 
+        // ✅ SANITISATION XSS
+        name = sanitizeText(name);
+        description = description ? sanitizeHTML(description) : null;
+        program_summary = program_summary ? sanitizeHTML(program_summary) : null;
+        leader_name = leader_name ? sanitizeText(leader_name) : null;
+        ideology = ideology ? sanitizeText(ideology) : null;
+
         const values = [
             name,
             acronym || null,
             finalLogoUrl || null,
             color || null,
             founded_year || null,
-            leader_name || null,
-            ideology || null,
-            description || null,
-            program_summary || null,
+            leader_name,
+            ideology,
+            description,
+            program_summary,
             website_url || null,
             social_twitter || null,
             social_facebook || null,
@@ -257,6 +266,13 @@ router.put('/:id', isAdmin, upload.single('logo_file'), async (req, res) => {
                 console.error("❌ Erreur Cloudinary:", e);
             }
         }
+
+        // ✅ SANITISATION XSS
+        name = sanitizeText(name);
+        description = description ? sanitizeHTML(description) : null;
+        program_summary = program_summary ? sanitizeHTML(program_summary) : null;
+        leader_name = leader_name ? sanitizeText(leader_name) : null;
+        ideology = ideology ? sanitizeText(ideology) : null;
 
         let query, values;
 

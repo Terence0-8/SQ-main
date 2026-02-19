@@ -55,11 +55,20 @@ router.post('/', contactLimiter, async (req, res) => {
       });
     }
 
+    const { sanitizeText } = require('../middleware/sanitize');
+
+    // ... (existing code)
+
     const { name, email, subject, message } = value;
+
+    // ✅ SANITISATION XSS
+    const safeName = sanitizeText(name);
+    const safeSubject = subject ? sanitizeText(subject) : 'Contact général';
+    const safeMessage = sanitizeText(message);
 
     await pool.query(
       'INSERT INTO contact_messages (name, email, subject, message, created_at) VALUES ($1, $2, $3, $4, NOW())',
-      [name, email, subject || 'Contact général', message]
+      [safeName, email, safeSubject, safeMessage]
     );
 
     res.json({

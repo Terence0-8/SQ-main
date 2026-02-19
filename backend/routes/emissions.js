@@ -6,6 +6,7 @@ const cloudinary = require('../config/cloudinary');
 const fs = require('fs');
 const Joi = require('joi');
 const { isWriter } = require('../middleware/auth');
+const { sanitizeText, sanitizeHTML } = require('../middleware/sanitize');
 
 const upload = multer({ dest: 'uploads/' });
 
@@ -200,13 +201,18 @@ router.post('/', isWriter, upload.single('image_file'), async (req, res) => {
       RETURNING id, title
     `;
 
+    // ✅ SANITISATION XSS
+    const safeTitle = sanitizeText(title);
+    const safeDescription = description ? sanitizeHTML(description) : '';
+    const safeCategory = category ? sanitizeText(category) : 'Politique';
+
     const values = [
-      title,
-      description || '',
+      safeTitle,
+      safeDescription,
       video_url,
       finalThumbnailUrl,
       duration_seconds || 0,
-      category || 'Politique',
+      safeCategory,
       host_id || req.session.user.id
     ];
 
@@ -289,13 +295,18 @@ router.put('/:id', isWriter, upload.single('image_file'), async (req, res) => {
       RETURNING id, title
     `;
 
+    // ✅ SANITISATION XSS
+    const safeTitle = sanitizeText(title);
+    const safeDescription = description ? sanitizeHTML(description) : '';
+    const safeCategory = category ? sanitizeText(category) : 'Politique';
+
     const values = [
-      title,
-      description,
+      safeTitle,
+      safeDescription,
       video_url,
       finalThumbnailUrl,
       duration_seconds || 0,
-      category,
+      safeCategory,
       id
     ];
 

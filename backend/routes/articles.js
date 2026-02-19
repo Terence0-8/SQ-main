@@ -8,6 +8,8 @@ const Joi = require('joi');
 const { isWriter } = require('../middleware/auth');
 const { createUniqueSlug } = require('../utils/slugify');
 const translationService = require('../services/translationService');
+const { sanitizeHTML, sanitizeText, sanitizeArray } = require('../middleware/sanitize');
+
 
 const upload = multer({ dest: 'uploads/' });
 
@@ -351,11 +353,17 @@ router.post('/', isWriter, upload.single('image_file'), async (req, res) => {
       RETURNING id, title, slug, status, language, category, translation_id
     `;
 
+    // ✅ SANITISATION XSS avant insertion
+    title = sanitizeText(title);
+    content = sanitizeHTML(content);
+    excerpt = excerpt ? sanitizeText(excerpt) : '';
+    if (tagsArray.length) tagsArray = sanitizeArray(tagsArray);
+
     const values = [
       title,
       slug,
       content,
-      excerpt || '',
+      excerpt,
       category,
       author_id || req.session.user.id,
       targetLang,
@@ -473,6 +481,12 @@ router.put('/:id', isWriter, upload.single('image_file'), async (req, res) => {
       }
     }
 
+    // ✅ SANITISATION XSS avant modification
+    title = sanitizeText(title);
+    content = sanitizeHTML(content);
+    excerpt = excerpt ? sanitizeText(excerpt) : '';
+    if (tagsArray.length) tagsArray = sanitizeArray(tagsArray);
+
     let query, values;
 
     // Si nouvelle image, on met tout à jour
@@ -483,7 +497,7 @@ router.put('/:id', isWriter, upload.single('image_file'), async (req, res) => {
         WHERE id=$9 
         RETURNING id, title, slug, status, language
       `;
-      values = [title, slug, content, excerpt || '', category, finalImageUrl, tagsArray, translation_id || null, id];
+      values = [title, slug, content, excerpt, category, finalImageUrl, tagsArray, translation_id || null, id];
     } else {
       // Sinon on garde l'image existante
       query = `
@@ -492,7 +506,7 @@ router.put('/:id', isWriter, upload.single('image_file'), async (req, res) => {
         WHERE id=$8 
         RETURNING id, title, slug, status, language
       `;
-      values = [title, slug, content, excerpt || '', category, tagsArray, translation_id || null, id];
+      values = [title, slug, content, excerpt, category, tagsArray, translation_id || null, id];
     }
 
     const { rows } = await pool.query(query, values);
