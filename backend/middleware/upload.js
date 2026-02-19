@@ -24,7 +24,16 @@ const storage = multer.diskStorage({
         // Préfixe selon le type de fichier
         const prefix = ALLOWED_AUDIO.includes(file.mimetype) ? 'audio-' : 'img-';
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const ext = path.extname(file.originalname).toLowerCase();
+
+        // Fix #SECURITY: Force extension based on MIME type instead of original name
+        const MIME_TO_EXT = {
+            'image/jpeg': '.jpg',
+            'image/png': '.png',
+            'image/webp': '.webp',
+            'audio/mpeg': '.mp3'
+        };
+        const ext = MIME_TO_EXT[file.mimetype] || '.bin'; // Fallback safe
+
         cb(null, prefix + uniqueSuffix + ext);
     }
 });
