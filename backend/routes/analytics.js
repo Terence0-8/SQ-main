@@ -1,20 +1,21 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const db = require('../config/database'); // pool pg
 const { isAdmin } = require('../middleware/auth');
 
 // ╔═══════════════════════════════════════════════════════╗
-// ║  ANALYTICS DASHBOARD ROUTES - PREMIUM EDITION (2026-01-23)  ║
+// ║  ANALYTICS DASHBOARD ROUTES - PREMIUM EDITION (POSTGRESQL FIX)  ║
 // ╚═══════════════════════════════════════════════════════╝
 
 /**
- * GET /api/admin/analytics/overview
+ * GET /api/analytics/overview
  * Statistiques globales de la plateforme
  */
 router.get('/overview', isAdmin, async (req, res) => {
   try {
     // 1. Articles total + vues
-    const articlesStats = await db.get(`
+    // Utilisation de db.query() au lieu de db.get()
+    const articlesRes = await db.query(`
       SELECT 
         COUNT(*) as total_articles,
         SUM(views_count) as total_views,
@@ -22,46 +23,53 @@ router.get('/overview', isAdmin, async (req, res) => {
       FROM articles
       WHERE status = 'published'
     `);
+    const articlesStats = articlesRes.rows[0];
 
     // 2. Utilisateurs
-    const usersStats = await db.get(`
+    // CASE WHEN is_subscriber = true (ou 1) fonctionne en PG si boolean
+    const usersRes = await db.query(`
       SELECT 
         COUNT(*) as total_users,
-        SUM(CASE WHEN is_subscriber = 1 THEN 1 ELSE 0 END) as total_subscribers,
-        SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active_users
+        SUM(CASE WHEN is_subscriber = true THEN 1 ELSE 0 END) as total_subscribers,
+        SUM(CASE WHEN is_active = true THEN 1 ELSE 0 END) as active_users
       FROM users
     `);
+    const usersStats = usersRes.rows[0];
 
     // 3. Taux de conversion abonnement
-    const conversionRate = usersStats.total_users > 0
+    const conversionRate = (usersStats.total_users > 0)
       ? ((usersStats.total_subscribers / usersStats.total_users) * 100).toFixed(2)
       : 0;
 
     // 4. Contenus total
-    const [podcasts, emissions, parties] = await Promise.all([
-      db.get('SELECT COUNT(*) as total FROM podcasts'),
-      db.get('SELECT COUNT(*) as total FROM emissions'),
-      db.get('SELECT COUNT(*) as total FROM parties')
+    const [podcastsRes, emissionsRes, partiesRes] = await Promise.all([
+      db.query('SELECT COUNT(*) as total FROM podcasts'),
+      db.query('SELECT COUNT(*) as total FROM emissions'),
+      db.query('SELECT COUNT(*) as total FROM parties')
     ]);
+
+    const podcasts = podcastsRes.rows[0];
+    const emissions = emissionsRes.rows[0];
+    const parties = partiesRes.rows[0];
 
     res.json({
       success: true,
       data: {
         articles: {
-          total: articlesStats.total_articles || 0,
-          totalViews: articlesStats.total_views || 0,
+          total: parseInt(articlesStats.total_articles || 0),
+          totalViews: parseInt(articlesStats.total_views || 0),
           avgViews: Math.round(articlesStats.avg_views_per_article || 0)
         },
         users: {
-          total: usersStats.total_users || 0,
-          subscribers: usersStats.total_subscribers || 0,
-          active: usersStats.active_users || 0,
+          total: parseInt(usersStats.total_users || 0),
+          subscribers: parseInt(usersStats.total_subscribers || 0),
+          active: parseInt(usersStats.active_users || 0),
           conversionRate: parseFloat(conversionRate)
         },
         content: {
-          podcasts: podcasts.total || 0,
-          emissions: emissions.total || 0,
-          parties: parties.total || 0
+          podcasts: parseInt(podcasts.total || 0),
+          emissions: parseInt(emissions.total || 0),
+          parties: parseInt(parties.total || 0)
         }
       }
     });
@@ -72,11 +80,12 @@ router.get('/overview', isAdmin, async (req, res) => {
 });
 
 /**
- * GET /api/admin/analytics/reading-progress
+ * GET /api/analytics/reading-progress
  * Statistiques de progression de lecture (25%, 50%, 75%, 100%)
  */
 router.get('/reading-progress', isAdmin, async (req, res) => {
   try {
+    // Déjà compatible (db.query utilisé)
     const result = await db.query(`
       SELECT 
         SUM(reads_start) as total_starts,
@@ -90,18 +99,18 @@ router.get('/reading-progress', isAdmin, async (req, res) => {
     const stats = result.rows[0];
 
     // Calcul des taux d'abandon
-    const totalStarts = stats.total_starts || 1; // Éviter division par 0
+    const totalStarts = parseInt(stats.total_starts || 0) || 1; // Éviter division par 0
 
     res.json({
       success: true,
       data: {
         labels: ['Début', '25%', '50%', '75%', '100%'],
         values: [
-          stats.total_starts || 0,
-          stats.total_25 || 0,
-          stats.total_50 || 0,
-          stats.total_75 || 0,
-          stats.total_100 || 0
+          parseInt(stats.total_starts || 0),
+          parseInt(stats.total_25 || 0),
+          parseInt(stats.total_50 || 0),
+          parseInt(stats.total_75 || 0),
+          parseInt(stats.total_100 || 0)
         ],
         rates: {
           retention_25: ((stats.total_25 / totalStarts) * 100).toFixed(1),
@@ -118,12 +127,13 @@ router.get('/reading-progress', isAdmin, async (req, res) => {
 });
 
 /**
- * GET /api/admin/analytics/top-articles
+ * GET /api/analytics/top-articles
  * Top 10 des articles les plus lus
  */
 router.get('/top-articles', isAdmin, async (req, res) => {
   try {
-    const topArticles = await db.all(`
+    // db.all -> db.query
+    const result = await db.query(`
       SELECT 
         id,
         title,
@@ -136,6 +146,7 @@ router.get('/top-articles', isAdmin, async (req, res) => {
       ORDER BY views_count DESC
       LIMIT 10
     `);
+    const topArticles = result.rows;
 
     res.json({
       success: true,
@@ -153,52 +164,68 @@ router.get('/top-articles', isAdmin, async (req, res) => {
 });
 
 /**
- * GET /api/admin/analytics/timeline
+ * GET /api/analytics/timeline
  * Évolution temporelle (7 derniers jours)
  */
 router.get('/timeline', isAdmin, async (req, res) => {
   try {
     // Articles publiés sur les 7 derniers jours
-    const articles = await db.all(`
+    // SQLite: DATE('now', '-7 days') -> PG: CURRENT_DATE - INTERVAL '7 days'
+    // SQLite: DATE(created_at) -> PG: created_at::DATE
+    const articlesRes = await db.query(`
       SELECT 
-        DATE(created_at) as date,
+        created_at::DATE as date,
         COUNT(*) as count
       FROM articles
-      WHERE created_at >= DATE('now', '-7 days')
+      WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
       AND status = 'published'
-      GROUP BY DATE(created_at)
+      GROUP BY created_at::DATE
       ORDER BY date ASC
     `);
+    const articles = articlesRes.rows;
 
     // Nouveaux utilisateurs sur les 7 derniers jours
-    const users = await db.all(`
+    const usersRes = await db.query(`
       SELECT 
-        DATE(created_at) as date,
+        created_at::DATE as date,
         COUNT(*) as count
       FROM users
-      WHERE created_at >= DATE('now', '-7 days')
-      GROUP BY DATE(created_at)
+      WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
+      GROUP BY created_at::DATE
       ORDER BY date ASC
     `);
+    const users = usersRes.rows;
 
-    // Générer les 7 derniers jours (même si aucune donnée)
+    // Générer les 7 derniers jours
     const last7Days = [];
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
-      last7Days.push(date.toISOString().split('T')[0]);
+      last7Days.push(date.toISOString().split('T')[0]); // YYYY-MM-DD
     }
 
     // Mapper les données
-    const articlesData = last7Days.map(date => {
-      const found = articles.find(a => a.date === date);
-      return found ? found.count : 0;
-    });
+    // Attention: PG node renvoie des objets Date pour les colonnes date
 
-    const usersData = last7Days.map(date => {
-      const found = users.find(u => u.date === date);
-      return found ? found.count : 0;
-    });
+    // Fonction helper pour comparer les dates
+    const findCount = (dataArray, targetDateStr) => {
+      const found = dataArray.find(item => {
+        let d = item.date;
+        // Convertir en string YYYY-MM-DD si c'est un objet Date
+        if (d instanceof Date) {
+          d = d.toISOString().split('T')[0];
+        }
+        // Si c'est déjà une string (certains drivers ou config)
+        if (typeof d === 'string' && d.includes('T')) {
+          d = d.split('T')[0];
+        }
+        return d === targetDateStr;
+      });
+      return found ? parseInt(found.count || 0) : 0;
+    };
+
+    const articlesData = last7Days.map(date => findCount(articles, date));
+    const usersData = last7Days.map(date => findCount(users, date));
 
     res.json({
       success: true,
@@ -218,12 +245,12 @@ router.get('/timeline', isAdmin, async (req, res) => {
 });
 
 /**
- * GET /api/admin/analytics/categories
+ * GET /api/analytics/categories
  * Répartition des articles par catégorie
  */
 router.get('/categories', isAdmin, async (req, res) => {
   try {
-    const categories = await db.all(`
+    const result = await db.query(`
       SELECT 
         category,
         COUNT(*) as count,
@@ -233,13 +260,14 @@ router.get('/categories', isAdmin, async (req, res) => {
       GROUP BY category
       ORDER BY count DESC
     `);
+    const categories = result.rows;
 
     res.json({
       success: true,
       data: {
         labels: categories.map(c => c.category),
-        counts: categories.map(c => c.count),
-        views: categories.map(c => c.total_views || 0)
+        counts: categories.map(c => parseInt(c.count || 0)),
+        views: categories.map(c => parseInt(c.total_views || 0))
       }
     });
   } catch (err) {

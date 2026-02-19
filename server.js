@@ -70,7 +70,10 @@ app.use(session({
     tableName: 'session_user_cookies',
     createTableIfMissing: true
   }),
-  secret: process.env.SESSION_SECRET || 'secret_solitiquo_secure',
+  secret: (() => {
+    if (!process.env.SESSION_SECRET) throw new Error('❌ SESSION_SECRET manquant dans .env - Le serveur refuse de démarrer.');
+    return process.env.SESSION_SECRET;
+  })(),
   resave: false,
   saveUninitialized: false,
   cookie: {
