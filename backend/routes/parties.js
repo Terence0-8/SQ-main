@@ -15,7 +15,7 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-const upload = multer({ dest: 'uploads/' });
+const { imageUpload } = require('../middleware/upload');
 
 // ==========================================
 // VALIDATION SCHEMA
@@ -118,7 +118,7 @@ router.get('/:id', async (req, res) => {
 // ==========================================
 // 3. CRÉER UN PARTI (Admin seulement)
 // ==========================================
-router.post('/', isAdmin, upload.single('logo_file'), async (req, res) => {
+router.post('/', isAdmin, imageUpload.single('logo'), async (req, res) => {
     try {
         // Validation
         const { error, value } = partySchema.validate(req.body);
@@ -218,7 +218,7 @@ router.post('/', isAdmin, upload.single('logo_file'), async (req, res) => {
 // ==========================================
 // 4. MODIFIER UN PARTI (Admin seulement)
 // ==========================================
-router.put('/:id', isAdmin, upload.single('logo_file'), async (req, res) => {
+router.put('/:id', isAdmin, imageUpload.single('logo'), async (req, res) => {
     try {
         const { id } = req.params;
 

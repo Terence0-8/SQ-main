@@ -5,9 +5,10 @@
 const multer = require('multer');
 const path = require('path');
 
-// Types MIME autorisés
-const ALLOWED_IMAGES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-const ALLOWED_AUDIO = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg'];
+// Types MIME autorisés (STRICT)
+const ALLOWED_IMAGES = ['image/jpeg', 'image/png', 'image/webp']; // Removed gif as per request? User said "que image/jpeg..." but usually implies standard images. User listed: jpeg, png, webp. I will stick to this list.
+const ALLOWED_AUDIO = ['audio/mpeg']; // User said audio/mpeg. Usually covers mp3.
+
 const ALLOWED_ALL = [...ALLOWED_IMAGES, ...ALLOWED_AUDIO];
 
 // Tailles maximales

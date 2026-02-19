@@ -8,7 +8,7 @@ const Joi = require('joi');
 const { isWriter } = require('../middleware/auth');
 const { sanitizeText, sanitizeHTML } = require('../middleware/sanitize');
 
-const upload = multer({ dest: 'uploads/' });
+const { imageUpload } = require('../middleware/upload');
 
 // ==========================================
 // VALIDATION SCHEMA
@@ -140,7 +140,7 @@ router.get('/:id', async (req, res) => {
 // ==========================================
 // 3. CRÉER UNE ÉMISSION (Admin/Writer)
 // ==========================================
-router.post('/', isWriter, upload.single('image_file'), async (req, res) => {
+router.post('/', isWriter, imageUpload.single('thumbnail'), async (req, res) => {
   try {
     // Validation
     const { error, value } = emissionSchema.validate(req.body);
@@ -233,7 +233,7 @@ router.post('/', isWriter, upload.single('image_file'), async (req, res) => {
 // ==========================================
 // 4. METTRE À JOUR UNE ÉMISSION (Admin/Writer)
 // ==========================================
-router.put('/:id', isWriter, upload.single('image_file'), async (req, res) => {
+router.put('/:id', isWriter, imageUpload.single('thumbnail'), async (req, res) => {
   try {
     const { id } = req.params;
 

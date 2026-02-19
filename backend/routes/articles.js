@@ -11,7 +11,7 @@ const translationService = require('../services/translationService');
 const { sanitizeHTML, sanitizeText, sanitizeArray } = require('../middleware/sanitize');
 
 
-const upload = multer({ dest: 'uploads/' });
+const { imageUpload } = require('../middleware/upload');
 
 // ==========================================
 // VALIDATION SCHEMA
@@ -278,7 +278,7 @@ router.get('/:id', async (req, res) => {
 // ==========================================
 // 3. CRÉATION ARTICLE (SLUG AUTO)
 // ==========================================
-router.post('/', isWriter, upload.single('image_file'), async (req, res) => {
+router.post('/', isWriter, imageUpload.single('image'), async (req, res) => {
   try {
     // Validation des données
     const { error, value } = articleSchema.validate(req.body);
@@ -417,7 +417,7 @@ router.post('/', isWriter, upload.single('image_file'), async (req, res) => {
 // ==========================================
 // 4. MODIFICATION ARTICLE (RÉGÉNÉRATION SLUG SI TITRE CHANGE)
 // ==========================================
-router.put('/:id', isWriter, upload.single('image_file'), async (req, res) => {
+router.put('/:id', isWriter, imageUpload.single('image'), async (req, res) => {
   try {
     const { id } = req.params;
 

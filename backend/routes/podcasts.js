@@ -8,7 +8,7 @@ const Joi = require('joi');
 const { isWriter } = require('../middleware/auth');
 const { sanitizeText, sanitizeHTML } = require('../middleware/sanitize');
 
-const upload = multer({ dest: 'uploads/' });
+const { mixedUpload } = require('../middleware/upload');
 
 // ==========================================
 // VALIDATION SCHEMA
@@ -159,12 +159,10 @@ router.get('/:id', async (req, res) => {
 // ==========================================
 // 3. CRÉER UN PODCAST (Admin/Writer)
 // ==========================================
-const cpUpload = upload.fields([
-  { name: 'audio_file', maxCount: 1 },
-  { name: 'image_file', maxCount: 1 }
-]);
-
-router.post('/', isWriter, cpUpload, async (req, res) => {
+router.post('/', isWriter, mixedUpload.fields([
+  { name: 'cover_image', maxCount: 1 },
+  { name: 'audio_file', maxCount: 1 }
+]), async (req, res) => {
   try {
     // Validation
     const { error, value } = podcastSchema.validate(req.body);
