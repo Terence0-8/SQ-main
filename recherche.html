@@ -3,19 +3,20 @@
 
 <head>
     <meta charset="UTF-8" />
-  <!-- Preconnect to external servers -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preconnect" href="https://res.cloudinary.com" />
-  <link rel="dns-prefetch" href="https://www.youtube.com" />
-  <link rel="dns-prefetch" href="https://img.youtube.com" />
+    <!-- Preconnect to external servers -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://res.cloudinary.com" />
+    <link rel="dns-prefetch" href="https://www.youtube.com" />
+    <link rel="dns-prefetch" href="https://img.youtube.com" />
     <title>Recherche — Solitiquo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="css/shared.css" />
-  <link rel="stylesheet" href="css/pages/recherche.css" />
+    <link rel="stylesheet" href="css/pages/recherche.css" />
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
         rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
     <script>function handleImgError(i) { i.onerror = null; i.src = 'https://placehold.co/300x200/eee/999?text=Solitiquo'; }</script>
     <script src="js/i18n.js"></script>
@@ -275,7 +276,7 @@
                 return;
             }
 
-            list.innerHTML = data.map(item => {
+            list.innerHTML = DOMPurify.sanitize(data.map(item => {
                 let link = '#', badgeClass = '', badgeText = '';
 
                 if (item.type === 'article') { link = `article.html?id=${item.id}`; badgeClass = 'type-article'; badgeText = 'ARTICLE'; }
@@ -298,10 +299,10 @@
                     <div class="res-date">${SolitiquoAPI.formatDate(item.date)}</div>
                 </div>
             </a>`;
-            }).join('');
+            }).join(''));
         }
     </script>
-  <script src="/js/lazyload.js"></script>
+    <script src="/js/lazyload.js"></script>
 </body>
 
 </html>

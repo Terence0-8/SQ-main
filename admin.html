@@ -3,20 +3,21 @@
 
 <head>
     <meta charset="UTF-8" />
-  <!-- Preconnect to external servers -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preconnect" href="https://res.cloudinary.com" />
-  <link rel="dns-prefetch" href="https://www.youtube.com" />
-  <link rel="dns-prefetch" href="https://img.youtube.com" />
+    <!-- Preconnect to external servers -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://res.cloudinary.com" />
+    <link rel="dns-prefetch" href="https://www.youtube.com" />
+    <link rel="dns-prefetch" href="https://img.youtube.com" />
     <title>Console Admin — Solitiquo</title>
     <link rel="stylesheet" href="/css/shared.css" />
-  <link rel="stylesheet" href="/css/pages/admin.css" />
+    <link rel="stylesheet" href="/css/pages/admin.css" />
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
         rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 </head>
 
 <body id="page-admin">
@@ -302,6 +303,13 @@
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
     <script>
+        // Helper pour sécuriser l'injection HTML
+        function safeHTML(html) {
+            return DOMPurify.sanitize(html, {
+                ADD_ATTR: ['target', 'data-action', 'data-id', 'data-type', 'data-isprem', 'data-active', 'data-view', 'data-lang', 'data-index', 'data-is-active']
+            });
+        }
+
         // Variables globales pour les graphiques
         let chartReadingProgress = null;
         let chartCategories = null;
@@ -551,7 +559,7 @@
                     // 6. Top 10 Articles (Tableau)
                     if (topArticles.success && topArticles.data) {
                         const tbody = document.getElementById('list-top-articles');
-                        tbody.innerHTML = topArticles.data.map(art => `
+                        tbody.innerHTML = safeHTML(topArticles.data.map(art => `
                             <tr>
                                 <td><strong>${art.title}</strong></td>
                                 <td><span class="badge" style="background:#f1f5f9; color:#64748b;">${art.category}</span></td>
@@ -566,7 +574,7 @@
                                 </td>
                                 <td style="font-size:0.85rem; color:#64748b;">${new Date(art.created_at).toLocaleDateString('fr-FR')}</td>
                             </tr>
-                        `).join('');
+                        `).join(''));
                     }
 
                 } catch (err) {
@@ -621,7 +629,7 @@
                 const tbody = document.getElementById('list-articles');
                 if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Vide</td></tr>'; return; }
 
-                tbody.innerHTML = data.map(art => {
+                tbody.innerHTML = safeHTML(data.map(art => {
                     const isPrem = (art.is_premium === true);
                     const statusBadge = art.status === 'draft' ? '<span class="badge badge-draft">Brouillon</span>' : '<span class="badge badge-pub">Publié</span>';
                     const premStyle = isPrem ? 'color:#b91c1c; background:#fef2f2; border-color:#fecaca;' : 'color:#64748b; background:#f1f5f9; border-color:#e2e8f0;';
@@ -650,12 +658,12 @@
                             <button class="btn-icon-sm del" data-action="delete" data-type="article" data-id="${art.id}">🗑️</button>
                         </td>
                     </tr>`;
-                }).join('');
+                }).join(''));
             }
 
             function renderPodcasts(data) {
                 const tbody = document.getElementById('list-podcasts');
-                tbody.innerHTML = data.map(p => `
+                tbody.innerHTML = safeHTML(data.map(p => `
                 <tr>
                     <td><div class="title-row"><img src="${p.image_url}" class="mini-thumb" loading="lazy"><div><strong>${p.title}</strong></div></div></td>
                     <td>${p.category}</td>
@@ -665,12 +673,12 @@
                         <a href="editeur-podcast.html?id=${p.id}" class="btn-icon-sm">✏️</a>
                         <button class="btn-icon-sm del" data-action="delete" data-type="podcast" data-id="${p.id}">🗑️</button>
                     </td>
-                </tr>`).join('');
+                </tr>`).join(''));
             }
 
             function renderEmissions(data) {
                 const tbody = document.getElementById('list-emissions');
-                tbody.innerHTML = data.map(e => `
+                tbody.innerHTML = safeHTML(data.map(e => `
                 <tr>
                     <td><strong>${e.title}</strong></td>
                     <td>${e.category}</td>
@@ -679,7 +687,7 @@
                         <a href="editeur-emission.html?id=${e.id}" class="btn-icon-sm">✏️</a>
                         <button class="btn-icon-sm del" data-action="delete" data-type="emission" data-id="${e.id}">🗑️</button>
                     </td>
-                </tr>`).join('');
+                </tr>`).join(''));
             }
 
             function renderModeration(data) {
@@ -687,7 +695,7 @@
                 const badge = document.getElementById('badge-mod');
                 if (data.length > 0) {
                     badge.style.display = 'inline-flex'; badge.textContent = data.length;
-                    tbody.innerHTML = data.map(c => `
+                    tbody.innerHTML = safeHTML(data.map(c => `
                     <tr>
                         <td><strong>${c.username}</strong></td>
                         <td style="color:#444;">${c.content}</td>
@@ -696,7 +704,7 @@
                             <button class="btn-valid" data-action="mod-approve" data-id="${c.id}">✔</button>
                             <button class="btn-reject" data-action="mod-delete" data-id="${c.id}">✖</button>
                         </td>
-                    </tr>`).join('');
+                    </tr>`).join(''));
                 } else {
                     badge.style.display = 'none';
                     tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Aucun signalement.</td></tr>';
@@ -708,7 +716,7 @@
                 try {
                     const res = await fetch(API_URL + '/parties');
                     const json = await res.json();
-                    tbody.innerHTML = (json.data || []).map(p => `
+                    tbody.innerHTML = safeHTML((json.data || []).map(p => `
                     <tr>
                         <td><img src="${p.logo_url}" class="mini-thumb" loading="lazy"></td>
                         <td><strong>${p.acronym}</strong> - ${p.name}</td>
@@ -717,7 +725,7 @@
                             <a href="editeur-parti.html?id=${p.id}" class="btn-icon-sm">✏️</a>
                             <button class="btn-icon-sm del" data-action="delete" data-type="party" data-id="${p.id}">🗑️</button>
                         </td>
-                    </tr>`).join('');
+                    </tr>`).join(''));
                 } catch (e) { tbody.innerHTML = '<tr><td colspan="4">Erreur</td></tr>'; }
             }
 
@@ -728,7 +736,7 @@
                     const json = await res.json();
                     window._pollsData = json.data || [];
 
-                    tbody.innerHTML = window._pollsData.map(p => {
+                    tbody.innerHTML = safeHTML(window._pollsData.map(p => {
                         let opts = []; try { opts = JSON.parse(p.options); } catch (e) { }
                         const results = opts.map(o => `<div>${o.text}: <strong>${o.votes}</strong></div>`).join('');
                         const activeBadge = p.is_active ? '<span class="badge badge-pub">Actif</span>' : '<span class="badge badge-draft">Fermé</span>';
@@ -746,7 +754,7 @@
                                 <button class="btn-icon-sm del" data-action="delete" data-type="poll" data-id="${p.id}">🗑️</button>
                             </td>
                          </tr>`;
-                    }).join('');
+                    }).join(''));
                 } catch (e) { tbody.innerHTML = '<tr><td colspan="5">Erreur</td></tr>'; }
             }
 
@@ -983,11 +991,11 @@
                 const json = await res.json();
 
                 if (!json.success || !json.data) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Erreur chargement</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Erreur chargement utilisateurs</td></tr>';
                     return;
                 }
 
-                tbody.innerHTML = (json.data || []).map(u => {
+                tbody.innerHTML = safeHTML((json.data || []).map(u => {
                     const roleBadge = u.role === 'admin'
                         ? '<span class="badge badge-pub">Admin</span>'
                         : (u.role === 'writer' ? '<span class="badge" style="background:#fef3c7; color:#92400e;">Rédacteur</span>' : 'Lecteur');
@@ -1037,7 +1045,7 @@
                             </button>` : '<span style="color:#94a3b8; font-size:0.8rem;">-</span>'}
                         </td>
                     </tr>`;
-                }).join('');
+                }).join(''));
 
             } catch (e) {
                 console.error('Erreur loadUsers:', e);
@@ -1092,7 +1100,7 @@
         }
 
     </script>
-  <script src="/js/lazyload.js"></script>
+    <script src="/js/lazyload.js"></script>
 </body>
 
 </html>
