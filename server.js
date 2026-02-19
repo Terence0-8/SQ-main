@@ -23,12 +23,26 @@ const BASE_URL = isProduction ? 'https://solitiquo.com' : `http://localhost:${PO
 app.use(compression());
 
 // =============================================================================
-// 2. FICHIERS STATIQUES (Optimisation: Servir avant tout traitement)
+// 2. FICHIERS STATIQUES — Cache HTTP par type de fichier
 // =============================================================================
-app.use(express.static(__dirname));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-// Correction: Servir les fichiers statiques aussi pour /fr/... et /en/...
-app.use(['/fr', '/en'], express.static(__dirname));
+// ETag & Last-Modified activés par défaut (→ réponses 304 Not Modified)
+// HTML : pas de cache (mises à jour immédiates)
+// CSS / JS / polices : cache 7 jours
+// Images : cache 30 jours
+const setStaticCacheHeaders = (res, filePath) => {
+  if (/\.(html?)$/i.test(filePath)) {
+    res.setHeader('Cache-Control', 'no-cache');
+  } else if (/\.(css|js|woff2?|ttf|otf|eot)$/i.test(filePath)) {
+    res.setHeader('Cache-Control', 'public, max-age=604800');   // 7 jours
+  } else if (/\.(png|jpe?g|gif|ico|svg|webp)$/i.test(filePath)) {
+    res.setHeader('Cache-Control', 'public, max-age=2592000');  // 30 jours
+  }
+};
+
+const staticOptions = { setHeaders: setStaticCacheHeaders, etag: true, lastModified: true };
+app.use(express.static(__dirname, staticOptions));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), staticOptions));
+app.use(['/fr', '/en'], express.static(__dirname, staticOptions));
 
 // =============================================================================
 // 2. SÉCURITÉ & MIDDLEWARES
