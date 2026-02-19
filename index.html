@@ -1,30 +1,36 @@
-Ôªø<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
   <meta charset="UTF-8" />
+  <!-- Preconnect to external servers -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://res.cloudinary.com" />
+  <link rel="dns-prefetch" href="https://www.youtube.com" />
+  <link rel="dns-prefetch" href="https://img.youtube.com" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Solitiquo ‚Äî L'Actualit√© Premium</title>
+  <title>Solitiquo ó L'ActualitÈ Premium</title>
   <link rel="stylesheet" href="css/shared.css" />
   <link rel="stylesheet" href="css/pages/index.css" />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,400&family=Nunito:wght@600;700;800&display=swap"
     rel="stylesheet" />
 
-  <!-- ‚úÖ Version CSP-compliant : pas de inline handlers -->
+  <!-- ? Version CSP-compliant : pas de inline handlers -->
   <script>
     // Gestion globale des erreurs d'images
     document.addEventListener('DOMContentLoaded', () => {
       // Attacher les gestionnaires aux images existantes
       document.querySelectorAll('img').forEach(img => {
         img.addEventListener('error', function () {
-          this.onerror = null; // √âviter les boucles infinies
+          this.onerror = null; // …viter les boucles infinies
           this.src = 'https://placehold.co/600x400/eee/999?text=Solitiquo';
         });
       });
     });
 
-    // Pour les images ajout√©es dynamiquement
+    // Pour les images ajoutÈes dynamiquement
     function attachImageErrorHandlers(container) {
       container.querySelectorAll('img').forEach(img => {
         img.addEventListener('error', function () {
@@ -62,7 +68,7 @@
         <a href="politique.html" class="ph-link" data-i18n="nav_pol">Politique</a>
         <a href="social.html" class="ph-link" data-i18n="nav_soc">Social</a>
         <a href="partis-politiques.html" class="ph-link" data-i18n="nav_parties">Partis</a>
-        <a href="emissions.html" class="ph-link" data-i18n="nav_shows">√âmissions</a>
+        <a href="emissions.html" class="ph-link" data-i18n="nav_shows">…missions</a>
         <a href="podcasts.html" class="ph-link" data-i18n="nav_podcasts">Podcasts</a>
       </nav>
     </div>
@@ -107,7 +113,7 @@
         <img src="logo.svg" class="mobile-logo" alt="S">
         <span style="font-family:'Playfair Display';font-weight:700;font-size:1.5rem;">Solitiquo</span>
       </div>
-      <button id="mobileNavClose" class="mobile-close">√ó</button>
+      <button id="mobileNavClose" class="mobile-close">◊</button>
     </div>
     <ul class="mobile-links">
       <li class="mobile-link-item"><a href="index.html" class="mobile-link active">Accueil</a></li>
@@ -119,7 +125,7 @@
     <div style="margin-top:auto; padding-top:2rem; border-top:1px solid #333;">
       <a href="auth.html"
         style="color:white; text-decoration:none; font-weight:700; display:flex; align-items:center; gap:10px;">
-        <span>üë§</span> S'identifier
+        <span>??</span> S'identifier
       </a>
     </div>
   </nav>
@@ -130,7 +136,7 @@
   </div>
 
   <section class="podcast-band">
-    <div class="pod-bg-icon">üéôÔ∏è</div>
+    <div class="pod-bg-icon">???</div>
 
     <div class="pod-thumb-container">
       <img src="https://placehold.co/400x400" class="pod-thumb" alt="Podcast" id="index-pod-img">
@@ -138,7 +144,7 @@
 
     <div class="pod-info">
       <div style="display:flex; align-items:center; margin-bottom:10px;">
-        <span class="pod-tag-small">PODCAST √Ä LA UNE</span>
+        <span class="pod-tag-small">PODCAST ¿ LA UNE</span>
         <div class="sound-wave">
           <div class="bar"></div>
           <div class="bar"></div>
@@ -147,17 +153,17 @@
         </div>
       </div>
       <h3 id="index-pod-title">Chargement du podcast...</h3>
-      <p class="pod-desc" id="index-pod-desc">Le dernier √©pisode disponible sur Solitiquo.</p>
+      <p class="pod-desc" id="index-pod-desc">Le dernier Èpisode disponible sur Solitiquo.</p>
     </div>
 
     <a href="#" class="pod-play-btn" id="index-pod-link" style="text-decoration:none;">
       <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
         <path d="M8 5v14l11-7z" />
       </svg>
-      <span>√âcouter</span>
+      <span>…couter</span>
     </a>
 
-    <!-- APR√àS (sans onclick) -->
+    <!-- APR»S (sans onclick) -->
     <div class="scroll-wrapper">
       <div class="scroll-indicator" id="scrollIndicator">
         <div class="scroll-circle">
@@ -188,7 +194,7 @@
 
   <section class="discover-section">
     <div class="discover-container">
-      <div class="section-label" style="border-color:#ccc; color:#888; margin-bottom:2rem;">√Ä D√©couvrir</div>
+      <div class="section-label" style="border-color:#ccc; color:#888; margin-bottom:2rem;">¿ DÈcouvrir</div>
       <div id="discover-grid" class="discover-grid"></div>
     </div>
   </section>
@@ -201,7 +207,7 @@
           <img src="/logo.svg" class="footer-logo" alt="S">
           <span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
         </div>
-        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le m√©dia de r√©f√©rence pour l'analyse politique et
+        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le mÈdia de rÈfÈrence pour l'analyse politique et
           sociale au Cameroun.</p>
       </div>
       <div class="footer-col">
@@ -211,18 +217,18 @@
         <a href="partis-politiques.html" class="footer-link">Partis</a>
       </div>
       <div class="footer-col">
-        <h4>L√©gal</h4>
-        <a href="mentions-legales.html" class="footer-link">Mentions l√©gales</a>
+        <h4>LÈgal</h4>
+        <a href="mentions-legales.html" class="footer-link">Mentions lÈgales</a>
         <a href="conditions-utilisation.html" class="footer-link">CGU</a>
-        <a href="politique-confidentialite.html" class="footer-link">Confidentialit√©</a>
+        <a href="politique-confidentialite.html" class="footer-link">ConfidentialitÈ</a>
       </div>
       <div class="footer-col">
         <h4>Contact</h4>
-        <a href="contact.html" class="footer-link">Nous √©crire</a>
+        <a href="contact.html" class="footer-link">Nous Ècrire</a>
         <a href="auth.html" class="footer-link">S'identifier</a>
       </div>
     </div>
-    <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits r√©serv√©s.</div>
+    <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits rÈservÈs.</div>
   </footer>
 
   <script src="/js/config.js"></script>
@@ -282,7 +288,7 @@
       if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
-    // Attacher l'√©v√©nement proprement (sans onclick inline)
+    // Attacher l'ÈvÈnement proprement (sans onclick inline)
     document.addEventListener('DOMContentLoaded', () => {
       const scrollIndicator = document.getElementById('scrollIndicator');
       if (scrollIndicator) {
@@ -293,7 +299,7 @@
 
     // --- CHARGEMENT DES ARTICLES ---
     document.addEventListener('DOMContentLoaded', async () => {
-      // 1. Initialiser le syst√®me de langue avec reload d'articles
+      // 1. Initialiser le systËme de langue avec reload d'articles
       await initLanguageSwitcher({
         reloadArticles: true,  // Recharge les articles au lieu de recharger la page
         reloadPage: false
@@ -307,7 +313,7 @@
       loadHomePoll();
     });
 
-    // Attacher les handlers d'erreur apr√®s injection
+    // Attacher les handlers d'erreur aprËs injection
     attachImageErrorHandlers(document.getElementById('discover-grid'));
 
     // --- SONDAGE ---
@@ -319,7 +325,7 @@
         const res = await fetch(API_URL + '/polls/active/Politique');
         const data = await res.json();
 
-        // ‚úÖ V√©rifications robustes
+        // ? VÈrifications robustes
         if (!data.success || !data.poll) {
           container.innerHTML = '<p style="text-align:center;color:#999;">Aucun sondage actif.</p>';
           return;
@@ -327,9 +333,9 @@
 
         const { poll, options, hasVoted } = data;
 
-        // ‚úÖ V√©rifier que options existe et est un tableau
+        // ? VÈrifier que options existe et est un tableau
         if (!options || !Array.isArray(options) || options.length === 0) {
-          container.innerHTML = '<p style="text-align:center;color:#999;">Sondage en pr√©paration...</p>';
+          container.innerHTML = '<p style="text-align:center;color:#999;">Sondage en prÈparation...</p>';
           return;
         }
 
@@ -387,7 +393,7 @@
 
         if (img) img.src = pod.image_url || 'https://placehold.co/400x400';
         if (title) title.textContent = pod.title;
-        if (desc) desc.textContent = pod.description ? (pod.description.substring(0, 100) + '...') : "√âcoutez ce nouvel √©pisode.";
+        if (desc) desc.textContent = pod.description ? (pod.description.substring(0, 100) + '...') : "…coutez ce nouvel Èpisode.";
         if (link) link.href = `podcast.html?id=${pod.id}`;
       };
 

@@ -1,10 +1,16 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
   <meta charset="UTF-8" />
+  <!-- Preconnect to external servers -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://res.cloudinary.com" />
+  <link rel="dns-prefetch" href="https://www.youtube.com" />
+  <link rel="dns-prefetch" href="https://img.youtube.com" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Podcasts â€” Solitiquo</title>
+  <title>Podcasts — Solitiquo</title>
   <link rel="stylesheet" href="/css/shared.css" />
   <link rel="stylesheet" href="/css/pages/podcasts.css" />
   <link
@@ -42,7 +48,7 @@
         <a href="politique.html" class="ph-link">Politique</a>
         <a href="social.html" class="ph-link">Social</a>
         <a href="partis-politiques.html" class="ph-link">Partis</a>
-        <a href="emissions.html" class="ph-link">Ã‰missions</a>
+        <a href="emissions.html" class="ph-link">Émissions</a>
         <a href="podcasts.html" class="ph-link active">Podcasts</a>
       </nav>
     </div>
@@ -86,7 +92,7 @@
         <img src="logo.svg" class="mobile-logo" alt="S">
         <span style="font-family:'Playfair Display';font-weight:700;font-size:1.5rem;">Solitiquo</span>
       </div>
-      <button id="mobileNavClose" class="mobile-close">Ã—</button>
+      <button id="mobileNavClose" class="mobile-close">×</button>
     </div>
     <ul class="mobile-links">
       <li class="mobile-link-item"><a href="index.html" class="mobile-link">Accueil</a></li>
@@ -108,7 +114,7 @@
       <div id="hero-pod-dynamic"></div>
 
       <div class="highlights-container">
-        <div class="highlights-title">Ã€ ne pas manquer</div>
+        <div class="highlights-title">À ne pas manquer</div>
         <div id="highlights-grid" class="highlights-grid"></div>
       </div>
 
@@ -121,7 +127,7 @@
 
     <section class="grid-section" id="pod-list-anchor">
       <div class="grid-container">
-        <h2 class="section-header">Tous les Ã©pisodes</h2>
+        <h2 class="section-header">Tous les épisodes</h2>
         <div id="podcasts-grid" class="podcasts-grid">
           <p style="text-align:center; color:#888;">Chargement...</p>
         </div>
@@ -136,7 +142,7 @@
           <img src="logo.svg" class="footer-logo" alt="S" onerror="handleImgError(this)">
           <span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
         </div>
-        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le mÃ©dia de rÃ©fÃ©rence.</p>
+        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le média de référence.</p>
       </div>
       <div class="footer-col">
         <h4>Rubriques</h4>
@@ -145,17 +151,17 @@
         <a href="partis-politiques.html" class="footer-link">Partis</a>
       </div>
       <div class="footer-col">
-        <h4>LÃ©gal</h4>
-        <a href="mentions-legales.html" class="footer-link">Mentions lÃ©gales</a>
+        <h4>Légal</h4>
+        <a href="mentions-legales.html" class="footer-link">Mentions légales</a>
         <a href="conditions-utilisation.html" class="footer-link">CGU</a>
       </div>
       <div class="footer-col">
         <h4>Contact</h4>
-        <a href="contact.html" class="footer-link">Nous Ã©crire</a>
+        <a href="contact.html" class="footer-link">Nous écrire</a>
         <a href="auth.html" class="footer-link">S'identifier</a>
       </div>
     </div>
-    <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits rÃ©servÃ©s.</div>
+    <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
   </footer>
 
   <script src="js/i18n.js"></script>
@@ -176,7 +182,7 @@
     if (mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
     if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
 
-    // --- LOGIQUE RECHERCHE UNIFIÃ‰E ---
+    // --- LOGIQUE RECHERCHE UNIFIÉE ---
     const searchBtn = document.getElementById('searchBtn');
     const searchLabel = document.getElementById('searchLabel');
     const searchContainer = document.getElementById('searchContainer');
@@ -237,25 +243,25 @@
           const highlights = podcasts.slice(1, 3);
           const list = podcasts.slice(3);
 
-          // 1. HERO (Sans la flÃ¨che, qui est maintenant dehors)
+          // 1. HERO (Sans la flèche, qui est maintenant dehors)
           document.getElementById('hero-pod-dynamic').innerHTML = `
             <div class="hero-pod-container">
                 <a href="podcast.html?id=${une.id}" class="hero-cover-wrap">
                     <img src="${une.image_url}" class="hero-cover" onerror="handleImgError(this)">
-                    <div class="play-overlay"><div class="big-play-btn">â–¶</div></div>
+                    <div class="play-overlay"><div class="big-play-btn">?</div></div>
                 </a>
                 <div class="hero-content-pod">
                     <div class="hero-meta">
                         <span class="tag-highlight">${une.category || 'PODCAST'}</span>
-                        <span>â€¢ ${Math.floor(une.duration / 60)} MIN</span>
-                        <span>â€¢ ${SolitiquoAPI.formatDate(une.created_at)}</span>
+                        <span>• ${Math.floor(une.duration / 60)} MIN</span>
+                        <span>• ${SolitiquoAPI.formatDate(une.created_at)}</span>
                     </div>
                     <h1 class="hero-title">${une.title}</h1>
                     <p class="hero-desc">${une.description || ''}</p>
                     
                     <a href="podcast.html?id=${une.id}" class="btn-listen">
                         <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                        Ã‰couter maintenant
+                        Écouter maintenant
                     </a>
                 </div>
             </div>`;
@@ -272,10 +278,10 @@
                             <h3 class="hl-title">${pod.title}</h3>
                             <div class="hl-meta">
                                 <span>${SolitiquoAPI.formatDate(pod.created_at)}</span>
-                                <span>â€¢ ${Math.floor(pod.duration / 60)} min</span>
+                                <span>• ${Math.floor(pod.duration / 60)} min</span>
                             </div>
                         </div>
-                        <div class="hl-play-icon">â–¶</div>
+                        <div class="hl-play-icon">?</div>
                     </a>
                 `).join('');
             setTimeout(initScrollObserver, 100);
@@ -289,7 +295,7 @@
                     <a href="podcast.html?id=${pod.id}" class="pod-card">
                         <div class="pc-img-wrap">
                             <img src="${pod.image_url}" class="pc-img" onerror="handleImgError(this)">
-                            <div class="pc-overlay"><div class="pc-play-icon">â–¶</div></div>
+                            <div class="pc-overlay"><div class="pc-play-icon">?</div></div>
                         </div>
                         <div class="pc-content">
                             <span class="pc-cat">${pod.category}</span>
@@ -306,7 +312,7 @@
           }
 
         } else {
-          document.getElementById('podcasts-grid').innerHTML = '<p>Aucun podcast trouvÃ©.</p>';
+          document.getElementById('podcasts-grid').innerHTML = '<p>Aucun podcast trouvé.</p>';
         }
       } catch (e) { console.error(e); }
     });

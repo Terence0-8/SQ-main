@@ -3,7 +3,13 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>Console Admin — Solitiquo</title>
+  <!-- Preconnect to external servers -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://res.cloudinary.com" />
+  <link rel="dns-prefetch" href="https://www.youtube.com" />
+  <link rel="dns-prefetch" href="https://img.youtube.com" />
+    <title>Console Admin � Solitiquo</title>
     <link rel="stylesheet" href="/css/shared.css" />
   <link rel="stylesheet" href="/css/pages/admin.css" />
     <link
@@ -21,22 +27,22 @@
             <span>Solitiquo</span>
         </a>
         <nav class="nav-menu">
-            <div class="nav-item active" data-view="dashboard">📊 Vue d'ensemble</div>
-            <div class="nav-item" data-view="analytics">📈 Analytics</div>
-            <div class="nav-item" data-view="articles">📝 Articles <span id="badge-art-pending"
+            <div class="nav-item active" data-view="dashboard">?? Vue d'ensemble</div>
+            <div class="nav-item" data-view="analytics">?? Analytics</div>
+            <div class="nav-item" data-view="articles">?? Articles <span id="badge-art-pending"
                     class="badge badge-pending" style="display:none; margin-left:auto; font-size:0.6rem;">0</span></div>
-            <div class="nav-item" data-view="podcasts">🎙️ Podcasts</div>
-            <div class="nav-item" data-view="emissions">📺 Émissions</div>
-            <div class="nav-item" data-view="parties">🏛️ Partis</div>
-            <div class="nav-item" data-view="polls">📊 Sondages</div>
-            <div class="nav-item" data-view="moderation">🛡️ Modération <span id="badge-mod" class="badge badge-draft"
+            <div class="nav-item" data-view="podcasts">??? Podcasts</div>
+            <div class="nav-item" data-view="emissions">?? �missions</div>
+            <div class="nav-item" data-view="parties">??? Partis</div>
+            <div class="nav-item" data-view="polls">?? Sondages</div>
+            <div class="nav-item" data-view="moderation">??? Mod�ration <span id="badge-mod" class="badge badge-draft"
                     style="display:none; margin-left:auto;">0</span></div>
-            <div class="nav-item" data-view="users">👥 Utilisateurs</div>
+            <div class="nav-item" data-view="users">?? Utilisateurs</div>
 
             <div class="nav-spacer" style="margin-top:auto;"></div>
 
-            <div class="nav-item" id="btn-home">🏠 Retour Site</div>
-            <div class="nav-item" id="btn-logout" style="color:#ef4444;">🚺 Déconnexion</div>
+            <div class="nav-item" id="btn-home">?? Retour Site</div>
+            <div class="nav-item" id="btn-logout" style="color:#ef4444;">?? D�connexion</div>
         </nav>
     </aside>
 
@@ -55,40 +61,40 @@
             <div id="view-dashboard" class="view-section active">
                 <div style="background:white; padding:40px; border-radius:12px; text-align:center;">
                     <h2 style="font-family:'Playfair Display'; margin-bottom:10px;">Bienvenue dans votre Tour de
-                        Contrôle</h2>
-                    <p style="color:#666;">Sélectionnez une rubrique dans le menu pour gérer le contenu.</p>
+                        Contr�le</h2>
+                    <p style="color:#666;">S�lectionnez une rubrique dans le menu pour g�rer le contenu.</p>
                 </div>
             </div>
 
-            <!-- 📈 NOUVELLE SECTION ANALYTICS -->
+            <!-- ?? NOUVELLE SECTION ANALYTICS -->
             <div id="view-analytics" class="view-section">
                 <!-- Statistiques Globales -->
                 <div class="analytics-grid">
                     <div class="stat-card stat-primary">
-                        <div class="stat-icon">📰</div>
+                        <div class="stat-icon">??</div>
                         <div class="stat-content">
-                            <div class="stat-label">Articles Publiés</div>
+                            <div class="stat-label">Articles Publi�s</div>
                             <div class="stat-value" id="stat-total-articles">-</div>
                         </div>
                     </div>
                     <div class="stat-card stat-success">
-                        <div class="stat-icon">👁️</div>
+                        <div class="stat-icon">???</div>
                         <div class="stat-content">
                             <div class="stat-label">Vues Totales</div>
                             <div class="stat-value" id="stat-total-views">-</div>
                         </div>
                     </div>
                     <div class="stat-card stat-warning">
-                        <div class="stat-icon">👥</div>
+                        <div class="stat-icon">??</div>
                         <div class="stat-content">
                             <div class="stat-label">Utilisateurs</div>
                             <div class="stat-value" id="stat-total-users">-</div>
                         </div>
                     </div>
                     <div class="stat-card stat-premium">
-                        <div class="stat-icon">💎</div>
+                        <div class="stat-icon">??</div>
                         <div class="stat-content">
-                            <div class="stat-label">Abonnés Premium</div>
+                            <div class="stat-label">Abonn�s Premium</div>
                             <div class="stat-value" id="stat-total-subs">-</div>
                         </div>
                     </div>
@@ -99,18 +105,18 @@
                     <!-- Progression de Lecture -->
                     <div class="chart-card">
                         <div class="chart-header">
-                            <h3>📊 Progression de Lecture</h3>
-                            <p class="chart-subtitle">Taux de complétion des articles</p>
+                            <h3>?? Progression de Lecture</h3>
+                            <p class="chart-subtitle">Taux de compl�tion des articles</p>
                         </div>
                         <div class="chart-container">
                             <canvas id="chart-reading-progress"></canvas>
                         </div>
                     </div>
 
-                    <!-- Répartition par Catégories -->
+                    <!-- R�partition par Cat�gories -->
                     <div class="chart-card">
                         <div class="chart-header">
-                            <h3>🎯 Répartition par Catégories</h3>
+                            <h3>?? R�partition par Cat�gories</h3>
                             <p class="chart-subtitle">Distribution des articles</p>
                         </div>
                         <div class="chart-container">
@@ -122,7 +128,7 @@
                 <!-- Timeline 7 jours -->
                 <div class="chart-card chart-full">
                     <div class="chart-header">
-                        <h3>📅 Activité des 7 derniers jours</h3>
+                        <h3>?? Activit� des 7 derniers jours</h3>
                         <p class="chart-subtitle">Nouveaux articles et utilisateurs</p>
                     </div>
                     <div class="chart-container">
@@ -133,15 +139,15 @@
                 <!-- Top 10 Articles -->
                 <div class="table-card">
                     <div style="padding:15px; border-bottom:1px solid #eee;">
-                        <h3>🏆 Top 10 Articles les plus consultés</h3>
+                        <h3>?? Top 10 Articles les plus consult�s</h3>
                     </div>
                     <table>
                         <thead>
                             <tr>
                                 <th>Article</th>
-                                <th>Catégorie</th>
+                                <th>Cat�gorie</th>
                                 <th>Vues</th>
-                                <th>Taux Complétion</th>
+                                <th>Taux Compl�tion</th>
                                 <th>Date</th>
                             </tr>
                         </thead>
@@ -161,7 +167,7 @@
                             <tr>
                                 <th style="width:35%;">Article</th>
                                 <th>Statut</th>
-                                <th>Accès</th>
+                                <th>Acc�s</th>
                                 <th>Validation</th>
                                 <th>Analytics</th>
                                 <th style="text-align:right;">Actions</th>
@@ -182,7 +188,7 @@
                         <thead>
                             <tr>
                                 <th>Podcast</th>
-                                <th>Catégorie</th>
+                                <th>Cat�gorie</th>
                                 <th>Date</th>
                                 <th style="text-align:right;">Actions</th>
                             </tr>
@@ -201,8 +207,8 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Émission</th>
-                                <th>Catégorie</th>
+                                <th>�mission</th>
+                                <th>Cat�gorie</th>
                                 <th>Date</th>
                                 <th style="text-align:right;">Actions</th>
                             </tr>
@@ -240,7 +246,7 @@
                                 <th>Question</th>
                                 <th>Statut</th>
                                 <th>Votes Total</th>
-                                <th>Résultats</th>
+                                <th>R�sultats</th>
                                 <th style="text-align:right;">Actions</th>
                             </tr>
                         </thead>
@@ -257,7 +263,7 @@
                                 <th>Auteur</th>
                                 <th>Message</th>
                                 <th>Raison</th>
-                                <th style="text-align:right;">Décision</th>
+                                <th style="text-align:right;">D�cision</th>
                             </tr>
                         </thead>
                         <tbody id="list-moderation"></tbody>
@@ -278,7 +284,7 @@
                             <tr>
                                 <th>Utilisateur</th>
                                 <th>Email</th>
-                                <th>Rôle</th>
+                                <th>R�le</th>
                                 <th>Statut Abonnement</th>
                                 <th>Dates</th>
                                 <th style="text-align:right;">Actions</th>
@@ -375,10 +381,10 @@
                     header.textContent = "Gestion des Podcasts";
                     actions.innerHTML = `<a href="editeur-podcast.html" class="action-btn"><span>+</span> Nouveau Podcast</a>`;
                 } else if (viewName === 'emissions') {
-                    header.textContent = "Gestion des Émissions";
-                    actions.innerHTML = `<a href="editeur-emission.html" class="action-btn"><span>+</span> Nouvelle Émission</a>`;
+                    header.textContent = "Gestion des �missions";
+                    actions.innerHTML = `<a href="editeur-emission.html" class="action-btn"><span>+</span> Nouvelle �mission</a>`;
                 } else if (viewName === 'parties') {
-                    header.textContent = "Répertoire des Partis";
+                    header.textContent = "R�pertoire des Partis";
                     actions.innerHTML = `<button class="action-btn" data-action="new-party"><span>+</span> Nouveau Parti</button>`;
                     loadParties();
                 } else if (viewName === 'polls') {
@@ -394,11 +400,11 @@
             }
 
             // ========================================================
-            // 📈 FONCTION ANALYTICS COMPLÈTE
+            // ?? FONCTION ANALYTICS COMPL�TE
             // ========================================================
             async function loadAnalytics() {
                 try {
-                    // 1. Charger toutes les données en parallèle
+                    // 1. Charger toutes les donn�es en parall�le
                     const [overview, readingProgress, topArticles, timeline, categories] = await Promise.all([
                         fetch(API_URL + '/analytics/overview', { credentials: 'include' }).then(r => r.json()),
                         fetch(API_URL + '/analytics/reading-progress', { credentials: 'include' }).then(r => r.json()),
@@ -407,7 +413,7 @@
                         fetch(API_URL + '/analytics/categories', { credentials: 'include' }).then(r => r.json())
                     ]);
 
-                    // 2. Mettre à jour les statistiques
+                    // 2. Mettre � jour les statistiques
                     if (overview.success) {
                         document.getElementById('stat-total-articles').textContent = overview.data.articles.total.toLocaleString();
                         document.getElementById('stat-total-views').textContent = overview.data.articles.totalViews.toLocaleString();
@@ -466,7 +472,7 @@
                         });
                     }
 
-                    // 4. Graphique Catégories (Donut)
+                    // 4. Graphique Cat�gories (Donut)
                     if (categories.success && categories.data) {
                         const ctx2 = document.getElementById('chart-categories').getContext('2d');
                         if (chartCategories) chartCategories.destroy();
@@ -564,7 +570,7 @@
                     }
 
                 } catch (err) {
-                    console.error('❌ Erreur chargement analytics:', err);
+                    console.error('? Erreur chargement analytics:', err);
                     Swal.fire('Erreur', 'Impossible de charger les analytics', 'error');
                 }
             }
@@ -617,7 +623,7 @@
 
                 tbody.innerHTML = data.map(art => {
                     const isPrem = (art.is_premium === true);
-                    const statusBadge = art.status === 'draft' ? '<span class="badge badge-draft">Brouillon</span>' : '<span class="badge badge-pub">Publié</span>';
+                    const statusBadge = art.status === 'draft' ? '<span class="badge badge-draft">Brouillon</span>' : '<span class="badge badge-pub">Publi�</span>';
                     const premStyle = isPrem ? 'color:#b91c1c; background:#fef2f2; border-color:#fecaca;' : 'color:#64748b; background:#f1f5f9; border-color:#e2e8f0;';
 
                     return `
@@ -631,7 +637,7 @@
                         <td>${statusBadge}</td>
                         <td>
                             <button class="btn-sm" style="${premStyle}" data-action="toggle-premium" data-type="article" data-id="${art.id}" data-isprem="${isPrem}">
-                                ${isPrem ? '🔒 Premium' : '🔓 Gratuit'}
+                                ${isPrem ? '?? Premium' : '?? Gratuit'}
                             </button>
                         </td>
                         <td>
@@ -639,9 +645,9 @@
                         </td>
                         <td>${art.views_count || 0} vues</td>
                         <td style="text-align:right;">
-                            <a href="article.html?id=${art.id}" target="_blank" class="btn-icon-sm">👁️</a>
-                            <a href="editeur-article.html?id=${art.id}" class="btn-icon-sm">✏️</a>
-                            <button class="btn-icon-sm del" data-action="delete" data-type="article" data-id="${art.id}">🗑️</button>
+                            <a href="article.html?id=${art.id}" target="_blank" class="btn-icon-sm">???</a>
+                            <a href="editeur-article.html?id=${art.id}" class="btn-icon-sm">??</a>
+                            <button class="btn-icon-sm del" data-action="delete" data-type="article" data-id="${art.id}">???</button>
                         </td>
                     </tr>`;
                 }).join('');
@@ -655,9 +661,9 @@
                     <td>${p.category}</td>
                     <td>${new Date(p.created_at).toLocaleDateString()}</td>
                     <td style="text-align:right;">
-                        <button class="btn-icon-sm" data-action="set-featured" data-id="${p.id}" style="color:#EAB308;">⭐</button>
-                        <a href="editeur-podcast.html?id=${p.id}" class="btn-icon-sm">✏️</a>
-                        <button class="btn-icon-sm del" data-action="delete" data-type="podcast" data-id="${p.id}">🗑️</button>
+                        <button class="btn-icon-sm" data-action="set-featured" data-id="${p.id}" style="color:#EAB308;">?</button>
+                        <a href="editeur-podcast.html?id=${p.id}" class="btn-icon-sm">??</a>
+                        <button class="btn-icon-sm del" data-action="delete" data-type="podcast" data-id="${p.id}">???</button>
                     </td>
                 </tr>`).join('');
             }
@@ -670,8 +676,8 @@
                     <td>${e.category}</td>
                     <td>${new Date(e.published_at).toLocaleDateString()}</td>
                     <td style="text-align:right;">
-                        <a href="editeur-emission.html?id=${e.id}" class="btn-icon-sm">✏️</a>
-                        <button class="btn-icon-sm del" data-action="delete" data-type="emission" data-id="${e.id}">🗑️</button>
+                        <a href="editeur-emission.html?id=${e.id}" class="btn-icon-sm">??</a>
+                        <button class="btn-icon-sm del" data-action="delete" data-type="emission" data-id="${e.id}">???</button>
                     </td>
                 </tr>`).join('');
             }
@@ -687,8 +693,8 @@
                         <td style="color:#444;">${c.content}</td>
                         <td style="color:#b91c1c;">${c.flag_reason}</td>
                         <td style="text-align:right;">
-                            <button class="btn-valid" data-action="mod-approve" data-id="${c.id}">✔</button>
-                            <button class="btn-reject" data-action="mod-delete" data-id="${c.id}">✖</button>
+                            <button class="btn-valid" data-action="mod-approve" data-id="${c.id}">?</button>
+                            <button class="btn-reject" data-action="mod-delete" data-id="${c.id}">?</button>
                         </td>
                     </tr>`).join('');
                 } else {
@@ -708,8 +714,8 @@
                         <td><strong>${p.acronym}</strong> - ${p.name}</td>
                         <td>${p.orientation}</td>
                         <td style="text-align:right;">
-                            <a href="editeur-parti.html?id=${p.id}" class="btn-icon-sm">✏️</a>
-                            <button class="btn-icon-sm del" data-action="delete" data-type="party" data-id="${p.id}">🗑️</button>
+                            <a href="editeur-parti.html?id=${p.id}" class="btn-icon-sm">??</a>
+                            <button class="btn-icon-sm del" data-action="delete" data-type="party" data-id="${p.id}">???</button>
                         </td>
                     </tr>`).join('');
                 } catch (e) { tbody.innerHTML = '<tr><td colspan="4">Erreur</td></tr>'; }
@@ -725,7 +731,7 @@
                     tbody.innerHTML = window._pollsData.map(p => {
                         let opts = []; try { opts = JSON.parse(p.options); } catch (e) { }
                         const results = opts.map(o => `<div>${o.text}: <strong>${o.votes}</strong></div>`).join('');
-                        const activeBadge = p.is_active ? '<span class="badge badge-pub">Actif</span>' : '<span class="badge badge-draft">Fermé</span>';
+                        const activeBadge = p.is_active ? '<span class="badge badge-pub">Actif</span>' : '<span class="badge badge-draft">Ferm�</span>';
 
                         return `
                          <tr>
@@ -734,10 +740,10 @@
                             <td>${p.total_votes}</td>
                             <td style="font-size:0.8rem;">${results}</td>
                             <td style="text-align:right;">
-                                <button class="btn-icon-sm" data-action="visualize-poll" data-id="${p.id}" title="Visualiser">📊</button>
-                                <button class="btn-icon-sm" data-action="toggle-poll" data-id="${p.id}" data-active="${p.is_active}">⏯</button>
-                                <button class="btn-icon-sm" data-action="edit-poll" data-id="${p.id}">✏️</button>
-                                <button class="btn-icon-sm del" data-action="delete" data-type="poll" data-id="${p.id}">🗑️</button>
+                                <button class="btn-icon-sm" data-action="visualize-poll" data-id="${p.id}" title="Visualiser">??</button>
+                                <button class="btn-icon-sm" data-action="toggle-poll" data-id="${p.id}" data-active="${p.is_active}">?</button>
+                                <button class="btn-icon-sm" data-action="edit-poll" data-id="${p.id}">??</button>
+                                <button class="btn-icon-sm del" data-action="delete" data-type="poll" data-id="${p.id}">???</button>
                             </td>
                          </tr>`;
                     }).join('');
@@ -745,7 +751,7 @@
             }
 
             async function deleteItem(type, id) {
-                if (!confirm("Supprimer définitivement ?")) return;
+                if (!confirm("Supprimer d�finitivement ?")) return;
                 try {
                     let endpoint = type === 'party' ? `/parties/${id}` : `/${type}s/${id}`;
                     if (type === 'article') endpoint = `/articles/${id}`;
@@ -760,7 +766,7 @@
             }
 
             async function togglePremium(type, id, currentStatus) {
-                alert("Fonctionnalité Premium toggle à implémenter côté API pour " + id);
+                alert("Fonctionnalit� Premium toggle � impl�menter c�t� API pour " + id);
             }
 
             async function workflow(id, action) {
@@ -788,7 +794,7 @@
                 }
 
                 const { value: result } = await Swal.fire({
-                    title: isEdit ? '✏️ Modifier le Sondage' : '📊 Nouveau Sondage',
+                    title: isEdit ? '?? Modifier le Sondage' : '?? Nouveau Sondage',
                     customClass: { popup: 'swal2-glass' },
                     html: `
                         <div style="text-align: left; margin-bottom: 1.5rem;">
@@ -796,14 +802,14 @@
                             <input id="poll-question" class="glass-input" placeholder="Ex: Quel est votre avis sur..." value="${isEdit ? poll.question : ''}">
                         </div>
                         <div style="text-align: left;">
-                            <label class="glass-label">Options de réponse</label>
+                            <label class="glass-label">Options de r�ponse</label>
                             <div id="options-container"></div>
                             <button type="button" class="btn-add-option" id="btn-add-opt" title="Ajouter une option">+</button>
                         </div>
                     `,
                     width: 650,
                     showCancelButton: true,
-                    confirmButtonText: isEdit ? 'Enregistrer' : 'Créer',
+                    confirmButtonText: isEdit ? 'Enregistrer' : 'Cr�er',
                     cancelButtonText: 'Annuler',
                     focusConfirm: false,
                     didOpen: () => {
@@ -851,7 +857,7 @@
                     preConfirm: () => {
                         const question = document.getElementById('poll-question').value.trim();
                         if (!question) {
-                            Swal.showValidationMessage('❌ La question est obligatoire');
+                            Swal.showValidationMessage('? La question est obligatoire');
                             return false;
                         }
 
@@ -861,7 +867,7 @@
                             .filter(val => val !== '');
 
                         if (options.length < 2) {
-                            Swal.showValidationMessage('❌ Minimum 2 options requises');
+                            Swal.showValidationMessage('? Minimum 2 options requises');
                             return false;
                         }
 
@@ -881,7 +887,7 @@
 
                         if (res.ok) {
                             const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
-                            Toast.fire({ icon: 'success', title: isEdit ? '✅ Sondage modifié' : '✅ Sondage créé' });
+                            Toast.fire({ icon: 'success', title: isEdit ? '? Sondage modifi�' : '? Sondage cr��' });
                             loadPolls();
                         } else {
                             throw new Error('Erreur serveur');
@@ -984,7 +990,7 @@
                 tbody.innerHTML = (json.data || []).map(u => {
                     const roleBadge = u.role === 'admin'
                         ? '<span class="badge badge-pub">Admin</span>'
-                        : (u.role === 'writer' ? '<span class="badge" style="background:#fef3c7; color:#92400e;">Rédacteur</span>' : 'Lecteur');
+                        : (u.role === 'writer' ? '<span class="badge" style="background:#fef3c7; color:#92400e;">R�dacteur</span>' : 'Lecteur');
 
                     const accountStatusStyle = u.is_active ? 'color:#10b981;' : 'color:#ef4444; font-weight:bold;';
                     const accountStatusText = u.is_active ? 'Actif' : 'Banni';
@@ -998,9 +1004,9 @@
                         const isExpired = endDate < now;
 
                         if (isExpired) {
-                            subscriptionBadge = '<span class="badge" style="background:#fef2f2; color:#991b1b;">⚠️ Expiré</span>';
+                            subscriptionBadge = '<span class="badge" style="background:#fef2f2; color:#991b1b;">?? Expir�</span>';
                         } else {
-                            subscriptionBadge = '<span class="badge" style="background:#dbeafe; color:#1e40af;">🎉 Premium Actif</span>';
+                            subscriptionBadge = '<span class="badge" style="background:#dbeafe; color:#1e40af;">?? Premium Actif</span>';
                         }
 
                         const startDate = u.subscription_start_date ? new Date(u.subscription_start_date).toLocaleDateString('fr-FR') : '?';
@@ -1008,13 +1014,13 @@
 
                         subscriptionDates = `
                             <div style="font-size:0.85rem; color:#64748b;">
-                                <div><strong>Début:</strong> ${startDate}</div>
+                                <div><strong>D�but:</strong> ${startDate}</div>
                                 <div><strong>Fin:</strong> ${endDateFormatted}</div>
-                                ${isExpired ? '<div style="color:#ef4444; margin-top:4px;">⚠️ Abonnement terminé</div>' : ''}
+                                ${isExpired ? '<div style="color:#ef4444; margin-top:4px;">?? Abonnement termin�</div>' : ''}
                             </div>
                         `;
                     } else if (u.is_subscriber && !u.subscription_end_date) {
-                        subscriptionBadge = '<span class="badge" style="background:#fef3c7; color:#92400e;">⚠️ Données incomplètes</span>';
+                        subscriptionBadge = '<span class="badge" style="background:#fef3c7; color:#92400e;">?? Donn�es incompl�tes</span>';
                     }
 
                     return `
@@ -1026,8 +1032,8 @@
                         <td>${subscriptionDates}</td>
                         <td style="text-align:right;">
                             ${u.role !== 'admin' ? `
-                            <button class="btn-icon-sm" data-action="ban-user" data-id="${u.id}" data-is-active="${u.is_active}" style="color:${u.is_active ? '#ef4444' : '#22c55e'};" title="${u.is_active ? 'Bannir' : 'Débannir'}">
-                                ${u.is_active ? '🚫' : '✅'}
+                            <button class="btn-icon-sm" data-action="ban-user" data-id="${u.id}" data-is-active="${u.is_active}" style="color:${u.is_active ? '#ef4444' : '#22c55e'};" title="${u.is_active ? 'Bannir' : 'D�bannir'}">
+                                ${u.is_active ? '??' : '?'}
                             </button>` : '<span style="color:#94a3b8; font-size:0.8rem;">-</span>'}
                         </td>
                     </tr>`;
@@ -1040,12 +1046,12 @@
         }
 
         async function toggleBanUser(id, isActive) {
-            const actionTitre = isActive ? "Bannir cet utilisateur ?" : "Réhabiliter cet utilisateur ?";
+            const actionTitre = isActive ? "Bannir cet utilisateur ?" : "R�habiliter cet utilisateur ?";
             const actionTexte = isActive
-                ? "Il perdra immédiatement l'accès à son compte."
-                : "Il pourra à nouveau se connecter au site.";
+                ? "Il perdra imm�diatement l'acc�s � son compte."
+                : "Il pourra � nouveau se connecter au site.";
             const btnColor = isActive ? '#d33' : '#10b981';
-            const btnText = isActive ? 'Oui, bannir' : 'Oui, réhabiliter';
+            const btnText = isActive ? 'Oui, bannir' : 'Oui, r�habiliter';
 
             const result = await Swal.fire({
                 title: actionTitre,
@@ -1075,7 +1081,7 @@
                     const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
                     Toast.fire({
                         icon: 'success',
-                        title: isActive ? 'Utilisateur banni' : 'Utilisateur réhabilité'
+                        title: isActive ? 'Utilisateur banni' : 'Utilisateur r�habilit�'
                     });
                 } else {
                     Swal.fire('Erreur', json.error, 'error');

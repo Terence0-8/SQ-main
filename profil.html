@@ -3,8 +3,14 @@
 
 <head>
   <meta charset="UTF-8" />
+  <!-- Preconnect to external servers -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://res.cloudinary.com" />
+  <link rel="dns-prefetch" href="https://www.youtube.com" />
+  <link rel="dns-prefetch" href="https://img.youtube.com" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mon Espace â€” Solitiquo</title>
+  <title>Mon Espace — Solitiquo</title>
   <link rel="stylesheet" href="css/shared.css" />
   <link rel="stylesheet" href="css/pages/profil.css" />
   <link
@@ -16,7 +22,7 @@
 
 <body id="page-profil">
   <a href="javascript:history.length > 1 ? history.back() : window.location.href='index.html'" class="floating-back-btn"
-    aria-label="Retour page prÃ©cÃ©dente">
+    aria-label="Retour page précédente">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
       stroke-linecap="round" stroke-linejoin="round">
       <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -41,7 +47,7 @@
         <a href="politique.html" class="ph-link">Politique</a>
         <a href="social.html" class="ph-link">Social</a>
         <a href="partis-politiques.html" class="ph-link">Partis</a>
-        <a href="emissions.html" class="ph-link">Ã‰missions</a>
+        <a href="emissions.html" class="ph-link">Émissions</a>
         <a href="podcasts.html" class="ph-link">Podcasts</a>
       </nav>
     </div>
@@ -61,7 +67,7 @@
         <img src="logo.svg" class="mobile-logo" alt="S">
         <span style="font-family:'Playfair Display';font-weight:700;font-size:1.5rem;">Solitiquo</span>
       </div>
-      <button id="mobileNavClose" class="mobile-close">Ã—</button>
+      <button id="mobileNavClose" class="mobile-close">×</button>
     </div>
     <ul class="mobile-links">
       <li class="mobile-link-item"><a href="index.html" class="mobile-link">Accueil</a></li>
@@ -80,7 +86,7 @@
   <main class="profile-wrapper">
     <div class="profile-header">
       <h1 class="profile-title">Mon Espace</h1>
-      <div class="profile-sub">GÃ©rez vos informations et votre abonnement</div>
+      <div class="profile-sub">Gérez vos informations et votre abonnement</div>
     </div>
 
     <div class="profile-grid">
@@ -88,7 +94,7 @@
         <div class="avatar-circle" id="user-initial">?</div>
         <div class="user-name" id="user-name">Chargement...</div>
         <div class="user-email" id="user-email">...</div>
-        <button id="btn-logout" class="btn-logout">Se dÃ©connecter</button>
+        <button id="btn-logout" class="btn-logout">Se déconnecter</button>
       </aside>
 
       <section class="sub-card">
@@ -107,13 +113,13 @@
 
   <div id="cancelModal" class="modal-overlay">
     <div class="modal-box">
-      <span class="modal-icon">ðŸ‘‹</span>
+      <span class="modal-icon">??</span>
       <h3 class="modal-title">Nous sommes tristes de vous voir partir</h3>
-      <p class="modal-text">En rÃ©siliant maintenant, vous perdrez immÃ©diatement l'accÃ¨s aux articles d'analyse et aux
-        enquÃªtes exclusives de Solitiquo.</p>
+      <p class="modal-text">En résiliant maintenant, vous perdrez immédiatement l'accès aux articles d'analyse et aux
+        enquêtes exclusives de Solitiquo.</p>
       <div class="modal-actions">
         <button class="btn-modal-keep" id="btn-keep-sub">Je garde mon abonnement</button>
-        <button class="btn-modal-confirm" id="btn-confirm-cancel">Je confirme la rÃ©siliation</button>
+        <button class="btn-modal-confirm" id="btn-confirm-cancel">Je confirme la résiliation</button>
       </div>
     </div>
   </div>
@@ -126,7 +132,7 @@
           <img src="logo.svg" class="footer-logo" alt="S" onerror="handleImgError(this)">
           <span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
         </div>
-        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le mÃ©dia de rÃ©fÃ©rence pour l'analyse politique et
+        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le média de référence pour l'analyse politique et
           sociale au Cameroun.</p>
       </div>
       <div class="footer-col">
@@ -136,18 +142,18 @@
         <a href="partis-politiques.html" class="footer-link">Partis</a>
       </div>
       <div class="footer-col">
-        <h4>LÃ©gal</h4>
-        <a href="mentions-legales.html" class="footer-link">Mentions lÃ©gales</a>
+        <h4>Légal</h4>
+        <a href="mentions-legales.html" class="footer-link">Mentions légales</a>
         <a href="conditions-utilisation.html" class="footer-link">CGU</a>
-        <a href="politique-confidentialite.html" class="footer-link">ConfidentialitÃ©</a>
+        <a href="politique-confidentialite.html" class="footer-link">Confidentialité</a>
       </div>
       <div class="footer-col">
         <h4>Contact</h4>
-        <a href="contact.html" class="footer-link">Nous Ã©crire</a>
+        <a href="contact.html" class="footer-link">Nous écrire</a>
         <a href="auth.html" class="footer-link">S'identifier</a>
       </div>
     </div>
-    <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits rÃ©servÃ©s.</div>
+    <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
   </footer>
 
   <script src="js/i18n.js"></script>
@@ -195,7 +201,7 @@
       }
     });
 
-    // ðŸ”¥ FONCTIONS GLOBALES POUR LA MODALE (accessible depuis onclick)
+    // ?? FONCTIONS GLOBALES POUR LA MODALE (accessible depuis onclick)
     const modal = document.getElementById('cancelModal');
 
     window.openCancelModal = function () {
@@ -211,7 +217,7 @@
       if (e.target === modal) window.closeCancelModal();
     });
 
-    // Fonction rÃ©elle de rÃ©siliation
+    // Fonction réelle de résiliation
     window.confirmCancelAction = async function () {
       const btn = document.getElementById('btn-confirm-cancel');
       const originalText = btn.textContent;
@@ -229,12 +235,12 @@
           window.closeCancelModal();
           window.location.reload();
         } else {
-          alert("âŒ Erreur : " + json.error);
+          alert("? Erreur : " + json.error);
           btn.textContent = originalText;
           btn.disabled = false;
         }
       } catch (e) {
-        alert("âŒ Erreur serveur");
+        alert("? Erreur serveur");
         btn.textContent = originalText;
         btn.disabled = false;
       }
@@ -248,19 +254,19 @@
     document.addEventListener('DOMContentLoaded', async () => {
       await initLanguageSwitcher({ reloadPage: true });
 
-      // RÃ©cupÃ©rer infos utilisateur
+      // Récupérer infos utilisateur
       const user = await SolitiquoAPI.getProfile();
       if (!user) {
         window.location.href = 'auth.html';
         return;
       }
 
-      // Remplir carte identitÃ©
+      // Remplir carte identité
       document.getElementById('user-name').textContent = user.username;
       document.getElementById('user-email').textContent = user.email;
       document.getElementById('user-initial').textContent = user.username.charAt(0).toUpperCase();
 
-      // GÃ©rer l'affichage abonnement
+      // Gérer l'affichage abonnement
       const statusBox = document.getElementById('subscription-status-box');
       const statusText = document.getElementById('status-text');
       const actionArea = document.getElementById('subscription-actions');
@@ -268,17 +274,17 @@
       // Cas Admin
       if (user.role === 'admin' || user.role === 'writer') {
         statusBox.className = "status-box status-active";
-        statusText.innerHTML = "âš¡ ADMIN / Ã‰QUIPE";
+        statusText.innerHTML = "? ADMIN / ÉQUIPE";
         actionArea.innerHTML = `
                 <h3>Compte Administrateur</h3>
-                <p>Vous disposez d'un accÃ¨s illimitÃ© Ã  tous les contenus et outils de gestion.</p>
-                <a href="admin.html" class="btn-action btn-upgrade">AccÃ©der au Dashboard</a>
+                <p>Vous disposez d'un accès illimité à tous les contenus et outils de gestion.</p>
+                <a href="admin.html" class="btn-action btn-upgrade">Accéder au Dashboard</a>
             `;
       }
-      // Cas AbonnÃ©
+      // Cas Abonné
       else if (user.is_subscriber) {
         statusBox.className = "status-box status-active";
-        statusText.innerHTML = "âœ… ACTIF (PREMIUM)";
+        statusText.innerHTML = "? ACTIF (PREMIUM)";
 
         // Affichage des dates si disponibles
         let dateInfo = '';
@@ -294,41 +300,41 @@
 
         actionArea.innerHTML = `
                 <h3>Profitez de votre lecture</h3>
-                <p>Vous avez accÃ¨s Ã  l'intÃ©gralitÃ© des articles et enquÃªtes sans publicitÃ©. Merci de votre soutien.</p>
+                <p>Vous avez accès à l'intégralité des articles et enquêtes sans publicité. Merci de votre soutien.</p>
                 ${dateInfo}
-                <button class="btn-action btn-cancel">RÃ©silier mon abonnement</button>
+                <button class="btn-action btn-cancel">Résilier mon abonnement</button>
             `;
       }
       // Cas Gratuit
       else {
         statusBox.className = "status-box status-inactive";
-        statusText.innerHTML = "GRATUIT (LIMITÃ‰)";
+        statusText.innerHTML = "GRATUIT (LIMITÉ)";
         actionArea.innerHTML = `
-                <h3>Passez Ã  la vitesse supÃ©rieure</h3>
-                <p>DÃ©bloquez les articles exclusifs et soutenez notre rÃ©daction indÃ©pendante.</p>
-                <a href="abonnement.html" class="btn-action btn-upgrade">DÃ©couvrir les offres</a>
+                <h3>Passez à la vitesse supérieure</h3>
+                <p>Débloquez les articles exclusifs et soutenez notre rédaction indépendante.</p>
+                <a href="abonnement.html" class="btn-action btn-upgrade">Découvrir les offres</a>
             `;
       }
 
-      // ðŸ”¥ IMPORTANT : Event listener APRES injection du HTML dynamique
-      // On utilise setTimeout pour s'assurer que le DOM est bien mis Ã  jour
+      // ?? IMPORTANT : Event listener APRES injection du HTML dynamique
+      // On utilise setTimeout pour s'assurer que le DOM est bien mis à jour
       setTimeout(() => {
         const cancelBtn = document.querySelector('.btn-cancel');
         if (cancelBtn) {
-          console.log('âœ… Bouton rÃ©siliation trouvÃ©, ajout listener');
+          console.log('? Bouton résiliation trouvé, ajout listener');
           cancelBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log('ðŸ”¥ CLICK DÃ‰TECTÃ‰ !');
+            console.log('?? CLICK DÉTECTÉ !');
             window.openCancelModal();
           });
         } else {
-          console.log('âš ï¸ Pas de bouton rÃ©siliation (utilisateur non abonnÃ©)');
+          console.log('?? Pas de bouton résiliation (utilisateur non abonné)');
         }
       }, 100);
     });
 
-    // Bouton dÃ©connexion
+    // Bouton déconnexion
     document.getElementById('btn-logout').addEventListener('click', async (e) => {
       e.preventDefault();
       try {

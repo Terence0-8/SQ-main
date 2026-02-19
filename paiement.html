@@ -1,9 +1,15 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
   <meta charset="UTF-8" />
-  <title>Paiement sÃ©curisÃ© â€” Solitiquo</title>
+  <!-- Preconnect to external servers -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://res.cloudinary.com" />
+  <link rel="dns-prefetch" href="https://www.youtube.com" />
+  <link rel="dns-prefetch" href="https://img.youtube.com" />
+  <title>Paiement sécurisé — Solitiquo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="css/shared.css" />
   <link rel="stylesheet" href="css/pages/paiement.css" />
@@ -27,11 +33,11 @@
   <div class="checkout-container">
 
     <div class="payment-box">
-      <h1 style="margin-bottom: 0.5rem;">SÃ©curiser votre abonnement</h1>
-      <p style="color:#666; margin-bottom: 2rem;">AccÃ©dez Ã  l'intÃ©gralitÃ© de nos analyses.</p>
+      <h1 style="margin-bottom: 0.5rem;">Sécuriser votre abonnement</h1>
+      <p style="color:#666; margin-bottom: 2rem;">Accédez à l'intégralité de nos analyses.</p>
 
       <div class="secure-badge">
-        ðŸ”’ Paiement sÃ©curisÃ© par <strong>CinetPay</strong>
+        ?? Paiement sécurisé par <strong>CinetPay</strong>
       </div>
 
       <div style="display:flex; gap:10px; margin-bottom:2rem; justify-content:center; opacity:0.8;">
@@ -48,13 +54,13 @@
       </button>
 
       <p style="text-align:center; font-size:0.8rem; color:#999; margin-top:15px;">
-        En cliquant, vous serez redirigÃ© vers le guichet sÃ©curisÃ©.
-        Aucune donnÃ©e bancaire n'est stockÃ©e par Solitiquo.
+        En cliquant, vous serez redirigé vers le guichet sécurisé.
+        Aucune donnée bancaire n'est stockée par Solitiquo.
       </p>
     </div>
 
     <div class="summary-box">
-      <div class="summary-title">RÃ©capitulatif</div>
+      <div class="summary-title">Récapitulatif</div>
 
       <div class="summary-row">
         <span id="planName">Chargement...</span>
@@ -68,16 +74,16 @@
       <hr style="border:0; border-top:1px solid #eee; margin:1rem 0;">
 
       <div class="summary-total">
-        <span>Total Ã  payer</span>
+        <span>Total à payer</span>
         <span id="totalPrice">...</span>
       </div>
 
       <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-top:20px; font-size:0.85rem; color:#555;">
         <strong>Inclus dans votre offre :</strong>
         <ul style="padding-left:20px; margin-top:5px; margin-bottom:0;">
-          <li>Articles illimitÃ©s</li>
+          <li>Articles illimités</li>
           <li>Podcasts exclusifs</li>
-          <li>AccÃ¨s aux archives</li>
+          <li>Accès aux archives</li>
         </ul>
       </div>
     </div>
@@ -114,7 +120,7 @@
         btnAmountEl.textContent = "20 000 FCFA";
       }
 
-      // 3. DÃ©clenchement Paiement
+      // 3. Déclenchement Paiement
       document.getElementById('payBtn').addEventListener('click', async () => {
         const btn = document.getElementById('payBtn');
         btn.innerHTML = `<span class="loader"></span> Connexion CinetPay...`;
@@ -122,7 +128,7 @@
         errorMsg.style.display = 'none';
 
         try {
-          // A. VÃ©rifier connexion
+          // A. Vérifier connexion
           const user = await SolitiquoAPI.getProfile();
           if (!user) {
             window.location.href = `auth.html?redirect=paiement.html?plan=${plan}`;
@@ -155,7 +161,7 @@
 
         } catch (err) {
           console.error(err);
-          btn.innerHTML = `RÃ©essayer`;
+          btn.innerHTML = `Réessayer`;
           btn.disabled = false;
           errorMsg.textContent = "Erreur : " + (err.message || "Impossible de joindre le service de paiement.");
           errorMsg.style.display = 'block';

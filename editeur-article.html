@@ -1,9 +1,15 @@
-Ôªø<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
   <meta charset="UTF-8">
-  <title>Studio ‚Äî Solitiquo</title>
+  <!-- Preconnect to external servers -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://res.cloudinary.com" />
+  <link rel="dns-prefetch" href="https://www.youtube.com" />
+  <link rel="dns-prefetch" href="https://img.youtube.com" />
+  <title>Studio ó Solitiquo</title>
   <link rel="stylesheet" href="css/shared.css" />
   <link rel="stylesheet" href="css/pages/editeur-article.css" />
   <link
@@ -21,7 +27,7 @@
       <button class="lang-seg-btn active" data-lang="fr">FR</button>
       <button class="lang-seg-btn" data-lang="en">EN</button>
     </div>
-    <a href="index.html" class="back-btn">‚Üê Retour au site</a>
+    <a href="index.html" class="back-btn">? Retour au site</a>
   </header>
 
   <form id="articleForm" class="workspace">
@@ -32,17 +38,17 @@
       <div class="tool-separator"></div>
       <button type="button" class="tool-btn" onclick="format('formatBlock', 'h2')">H2</button>
       <button type="button" class="tool-btn" style="font-family:'Playfair Display'; color:#C82823;"
-        onclick="format('formatBlock', 'blockquote')">‚Äú ‚Äù</button>
+        onclick="format('formatBlock', 'blockquote')">ì î</button>
       <div class="tool-separator"></div>
-      <button type="button" class="tool-btn" onclick="format('insertUnorderedList')">‚Ä¢‚Äî</button>
-      <button type="button" class="tool-btn" onclick="format('removeFormat')">‚úï</button>
+      <button type="button" class="tool-btn" onclick="format('insertUnorderedList')">ïó</button>
+      <button type="button" class="tool-btn" onclick="format('removeFormat')">?</button>
     </aside>
 
     <div class="paper-zone">
       <div class="paper-sheet">
         <input type="text" id="title" placeholder="Titre de l'article..." autocomplete="off" required>
         <div id="editor-content" contenteditable="true">
-          <p>√âcrivez votre article ici...</p>
+          <p>…crivez votre article ici...</p>
         </div>
       </div>
     </div>
@@ -53,25 +59,25 @@
         <h3 class="panel-title">Publication</h3>
 
         <div class="field-group">
-          <label>Cat√©gorie</label>
+          <label>CatÈgorie</label>
           <select id="category" class="sidebar-input">
             <option>Politique</option>
             <option>Social</option>
-            <option>√âconomie</option>
+            <option>…conomie</option>
             <option>Partis</option>
           </select>
         </div>
 
         <div class="field-group">
-          <label>Tags / Mots-cl√©s</label>
+          <label>Tags / Mots-clÈs</label>
           <div class="tags-container" id="tags-container">
-            <input type="text" id="tag-input" placeholder="Ajouter + Entr√©e">
+            <input type="text" id="tag-input" placeholder="Ajouter + EntrÈe">
           </div>
-          <small style="color:#999; font-size:0.75rem;">Appuyez sur Entr√©e pour valider un tag.</small>
+          <small style="color:#999; font-size:0.75rem;">Appuyez sur EntrÈe pour valider un tag.</small>
         </div>
 
         <div class="field-group">
-          <label>R√©sum√©</label>
+          <label>RÈsumÈ</label>
           <textarea id="excerpt" rows="4" class="sidebar-input" placeholder="Accroche..."></textarea>
         </div>
 
@@ -79,7 +85,7 @@
         <div class="field-group">
           <div class="img-preview-box" onclick="document.getElementById('image_file').click()">
             <img id="current-image-preview" src="" style="display:none;">
-            <span id="upload-text" class="upload-label">üì∑ Ajouter image</span>
+            <span id="upload-text" class="upload-label">?? Ajouter image</span>
           </div>
           <input type="file" id="image_file" accept="image/*" style="display:none;" onchange="previewImage(this)">
         </div>
@@ -88,7 +94,7 @@
             oninput="updatePreviewFromUrl(this.value)">
         </div>
         <div class="field-group">
-          <input type="text" id="image_caption" class="sidebar-input" placeholder="L√©gende / Cr√©dit">
+          <input type="text" id="image_caption" class="sidebar-input" placeholder="LÈgende / CrÈdit">
         </div>
 
         <h3 class="panel-title">SEO</h3>
@@ -127,7 +133,7 @@
       currentTags.forEach((tag, index) => {
         const chip = document.createElement('div');
         chip.className = 'tag-chip';
-        chip.innerHTML = `${tag} <span class="tag-remove" onclick="removeTag(${index})">√ó</span>`;
+        chip.innerHTML = `${tag} <span class="tag-remove" onclick="removeTag(${index})">◊</span>`;
         tagsContainer.insertBefore(chip, tagInput);
       });
     }
@@ -186,7 +192,7 @@
 
     if (editId) {
       window.isEditing = true;
-      submitBtn.textContent = "Mettre √† jour";
+      submitBtn.textContent = "Mettre ‡ jour";
       loadArticleData(editId);
     }
 
@@ -231,7 +237,7 @@
       formData.append('image_url', document.getElementById('image_url').value);
       formData.append('image_caption', document.getElementById('image_caption').value);
 
-      // Envoi des tags comme cha√Æne JSON
+      // Envoi des tags comme chaÓne JSON
       formData.append('tags', JSON.stringify(currentTags));
 
       formData.append('lang', 'fr');
@@ -251,15 +257,15 @@
 
         if (json.success) {
           statusDiv.style.color = 'green';
-          statusDiv.textContent = window.isEditing ? '‚úÖ Mis √† jour !' : '‚úÖ Publi√© !';
+          statusDiv.textContent = window.isEditing ? '? Mis ‡ jour !' : '? PubliÈ !';
           setTimeout(() => window.location.href = `article.html?id=${json.article.id}`, 1000);
         } else {
           throw new Error(json.error);
         }
       } catch (err) {
         statusDiv.style.color = 'red';
-        statusDiv.textContent = '‚ùå ' + err.message;
-        submitBtn.textContent = window.isEditing ? 'Mettre √† jour' : 'Publier';
+        statusDiv.textContent = '? ' + err.message;
+        submitBtn.textContent = window.isEditing ? 'Mettre ‡ jour' : 'Publier';
         submitBtn.disabled = false;
       }
     });

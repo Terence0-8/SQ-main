@@ -1,10 +1,16 @@
-Ôªø<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
   <meta charset="UTF-8" />
+  <!-- Preconnect to external servers -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://res.cloudinary.com" />
+  <link rel="dns-prefetch" href="https://www.youtube.com" />
+  <link rel="dns-prefetch" href="https://img.youtube.com" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Contact ‚Äî Solitiquo</title>
+  <title>Contact ó Solitiquo</title>
   <link rel="stylesheet" href="css/shared.css" />
   <link rel="stylesheet" href="css/pages/contact.css" />
   <link
@@ -41,7 +47,7 @@
         <a href="politique.html" class="ph-link">Politique</a>
         <a href="social.html" class="ph-link">Social</a>
         <a href="partis-politiques.html" class="ph-link">Partis</a>
-        <a href="emissions.html" class="ph-link">√âmissions</a>
+        <a href="emissions.html" class="ph-link">…missions</a>
         <a href="podcasts.html" class="ph-link">Podcasts</a>
       </nav>
     </div>
@@ -83,7 +89,7 @@
         <img src="logo.svg" class="mobile-logo" alt="S">
         <span style="font-family:'Playfair Display';font-weight:700;font-size:1.5rem;">Solitiquo</span>
       </div>
-      <button id="mobileNavClose" class="mobile-close">√ó</button>
+      <button id="mobileNavClose" class="mobile-close">◊</button>
     </div>
     <ul class="mobile-links">
       <li class="mobile-link-item"><a href="index.html" class="mobile-link">Accueil</a></li>
@@ -99,8 +105,8 @@
   </nav>
 
   <div class="contact-hero">
-    <h1 class="contact-title">Contactez la r√©daction</h1>
-    <p class="contact-sub">Une question, une suggestion ou une information √† partager ? Notre √©quipe est √† votre √©coute.
+    <h1 class="contact-title">Contactez la rÈdaction</h1>
+    <p class="contact-sub">Une question, une suggestion ou une information ‡ partager ? Notre Èquipe est ‡ votre Ècoute.
     </p>
   </div>
 
@@ -108,19 +114,19 @@
 
     <div class="info-box">
       <div class="info-item">
-        <span class="info-label">Email R√©daction</span>
+        <span class="info-label">Email RÈdaction</span>
         <div class="info-val"><a href="mailto:redaction@solitiquo.cm">redaction@solitiquo.cm</a></div>
       </div>
       <div class="info-item">
-        <span class="info-label">Partenariats & Publicit√©</span>
+        <span class="info-label">Partenariats & PublicitÈ</span>
         <div class="info-val"><a href="mailto:pro@solitiquo.cm">pro@solitiquo.cm</a></div>
       </div>
       <div class="info-item">
-        <span class="info-label">Si√®ge Social</span>
+        <span class="info-label">SiËge Social</span>
         <div class="info-val">Douala, Cameroun</div>
       </div>
       <div style="margin-top:4rem; opacity:0.8; font-size:0.9rem; line-height:1.6;">
-        Suivez-nous sur les r√©seaux pour ne rien manquer de l'actualit√© et des exclusivit√©s.
+        Suivez-nous sur les rÈseaux pour ne rien manquer de l'actualitÈ et des exclusivitÈs.
       </div>
     </div>
 
@@ -139,7 +145,7 @@
           <option>Courrier des lecteurs</option>
           <option>Proposition d'article</option>
           <option>Signalement technique</option>
-          <option>Publicit√© / Partenariat</option>
+          <option>PublicitÈ / Partenariat</option>
         </select>
       </div>
       <div class="form-group">
@@ -159,7 +165,7 @@
           <img src="logo.svg" class="footer-logo" alt="S" onerror="handleImgError(this)">
           <span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
         </div>
-        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le m√©dia de r√©f√©rence pour l'analyse politique et
+        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le mÈdia de rÈfÈrence pour l'analyse politique et
           sociale.</p>
       </div>
       <div class="footer-col">
@@ -169,17 +175,17 @@
         <a href="partis-politiques.html" class="footer-link">Partis</a>
       </div>
       <div class="footer-col">
-        <h4>L√©gal</h4>
-        <a href="mentions-legales.html" class="footer-link">Mentions l√©gales</a>
+        <h4>LÈgal</h4>
+        <a href="mentions-legales.html" class="footer-link">Mentions lÈgales</a>
         <a href="conditions-utilisation.html" class="footer-link">CGU</a>
       </div>
       <div class="footer-col">
         <h4>Contact</h4>
-        <a href="contact.html" class="footer-link">Nous √©crire</a>
+        <a href="contact.html" class="footer-link">Nous Ècrire</a>
         <a href="auth.html" class="footer-link">S'identifier</a>
       </div>
     </div>
-    <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits r√©serv√©s.</div>
+    <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits rÈservÈs.</div>
   </footer>
 
   <script src="js/i18n.js"></script>
@@ -200,7 +206,7 @@
     if (mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
     if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
 
-    // --- LOGIQUE RECHERCHE UNIFI√âE ---
+    // --- LOGIQUE RECHERCHE UNIFI…E ---
     const searchBtn = document.getElementById('searchBtn');
     const searchLabel = document.getElementById('searchLabel');
     const searchContainer = document.getElementById('searchContainer');
@@ -258,14 +264,14 @@
         const json = await res.json();
 
         if (json.success) {
-          status.style.color = "green"; status.textContent = "‚úÖ Message envoy√© avec succ√®s !";
+          status.style.color = "green"; status.textContent = "? Message envoyÈ avec succËs !";
           status.style.display = "block";
           document.getElementById('contactForm').reset();
           btn.textContent = "Envoyer le message"; btn.disabled = false;
         } else { throw new Error("Erreur serveur"); }
       } catch (err) {
-        status.style.color = "red"; status.textContent = "‚ùå Erreur d'envoi.";
-        btn.textContent = "R√©essayer"; btn.disabled = false;
+        status.style.color = "red"; status.textContent = "? Erreur d'envoi.";
+        btn.textContent = "RÈessayer"; btn.disabled = false;
         status.style.display = "block";
       }
     });

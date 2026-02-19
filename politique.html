@@ -1,10 +1,16 @@
-Ôªø<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
   <meta charset="UTF-8" />
+  <!-- Preconnect to external servers -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://res.cloudinary.com" />
+  <link rel="dns-prefetch" href="https://www.youtube.com" />
+  <link rel="dns-prefetch" href="https://img.youtube.com" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Politique ‚Äî Solitiquo</title>
+  <title>Politique ó Solitiquo</title>
   <link rel="stylesheet" href="css/shared.css" />
   <link rel="stylesheet" href="css/pages/politique.css" />
   <link
@@ -41,7 +47,7 @@
         <a href="politique.html" class="ph-link active">Politique</a>
         <a href="social.html" class="ph-link">Social</a>
         <a href="partis-politiques.html" class="ph-link">Partis</a>
-        <a href="emissions.html" class="ph-link">√âmissions</a>
+        <a href="emissions.html" class="ph-link">…missions</a>
         <a href="podcasts.html" class="ph-link">Podcasts</a>
       </nav>
     </div>
@@ -85,7 +91,7 @@
         <img src="logo.svg" class="mobile-logo" alt="S">
         <span style="font-family:'Playfair Display';font-weight:700;font-size:1.5rem;">Solitiquo</span>
       </div>
-      <button id="mobileNavClose" class="mobile-close">√ó</button>
+      <button id="mobileNavClose" class="mobile-close">◊</button>
     </div>
     <ul class="mobile-links">
       <li class="mobile-link-item"><a href="index.html" class="mobile-link">Accueil</a></li>
@@ -121,13 +127,13 @@
         </div>
       </div>
 
-      <div class="section-label">Nouveaut√©s</div>
+      <div class="section-label">NouveautÈs</div>
       <div id="magazine-feed">
         <p style="text-align:center; color:#888; padding:2rem;">Chargement...</p>
       </div>
 
       <div class="discover-section">
-        <div class="section-label" style="color:#2c2c2c; border-color:#2c2c2c; margin-top:2rem;">D√©couvrir</div>
+        <div class="section-label" style="color:#2c2c2c; border-color:#2c2c2c; margin-top:2rem;">DÈcouvrir</div>
         <div id="discover-grid" class="discover-grid"></div>
       </div>
 
@@ -139,7 +145,7 @@
         <div class="sidebar-poll-results">
           <div
             style="text-transform:uppercase; font-size:0.7rem; color:#aaa; letter-spacing:1px; margin-bottom:0.8rem;">
-            R√©sultats en direct</div>
+            RÈsultats en direct</div>
           <h4 class="sidebar-poll-title" id="poll-question-sidebar">...</h4>
           <div id="poll-results-sidebar"></div>
           <div style="text-align:center; font-size:0.8rem; color:#aaa; margin-top:10px;">Merci de votre vote</div>
@@ -160,7 +166,7 @@
           <p style="font-size:0.9rem; color:#ccc; line-height:1.5; margin-bottom:15px;">Le podcast politique du moment.
           </p>
           <a href="#" id="pol-pod-link"
-            style="display:inline-block; background:white; color:black; text-decoration:none; padding:8px 20px; border-radius:30px; font-weight:700; cursor:pointer;">√âcouter</a>
+            style="display:inline-block; background:white; color:black; text-decoration:none; padding:8px 20px; border-radius:30px; font-weight:700; cursor:pointer;">…couter</a>
         </div>
       </div>
 
@@ -175,7 +181,7 @@
           <img src="logo.svg" class="footer-logo" alt="S" onerror="handleImgError(this)">
           <span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
         </div>
-        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le m√©dia de r√©f√©rence.</p>
+        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le mÈdia de rÈfÈrence.</p>
       </div>
       <div class="footer-col">
         <h4>Rubriques</h4>
@@ -184,17 +190,17 @@
         <a href="partis-politiques.html" class="footer-link">Partis</a>
       </div>
       <div class="footer-col">
-        <h4>L√©gal</h4>
-        <a href="mentions-legales.html" class="footer-link">Mentions l√©gales</a>
+        <h4>LÈgal</h4>
+        <a href="mentions-legales.html" class="footer-link">Mentions lÈgales</a>
         <a href="conditions-utilisation.html" class="footer-link">CGU</a>
       </div>
       <div class="footer-col">
         <h4>Contact</h4>
-        <a href="contact.html" class="footer-link">Nous √©crire</a>
+        <a href="contact.html" class="footer-link">Nous Ècrire</a>
         <a href="auth.html" class="footer-link">S'identifier</a>
       </div>
     </div>
-    <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits r√©serv√©s.</div>
+    <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits rÈservÈs.</div>
   </footer>
 
   <script src="js/i18n.js"></script>
@@ -203,7 +209,7 @@
   <script src="js/api.js"></script>
   <script>
     // --- 1. GESTIONNAIRE DE CLICS GLOBAL (LA SOLUTION) ---
-    // Cette partie √©coute tous les clics sur la page et r√©agit si c'est un bouton de sondage
+    // Cette partie Ècoute tous les clics sur la page et rÈagit si c'est un bouton de sondage
     document.addEventListener('click', (e) => {
       // A. Clic sur une option de vote
       if (e.target.classList.contains('js-poll-vote')) {
@@ -215,17 +221,17 @@
       // B. Clic sur "Modifier mon vote"
       if (e.target.classList.contains('js-poll-edit')) {
         e.preventDefault();
-        renderSmartPoll(true); // Force le mode √©dition
+        renderSmartPoll(true); // Force le mode Èdition
       }
 
       // C. Clic sur "Annuler"
       if (e.target.classList.contains('js-poll-cancel')) {
         e.preventDefault();
-        renderSmartPoll(false); // Retour aux r√©sultats
+        renderSmartPoll(false); // Retour aux rÈsultats
       }
     });
 
-    // --- 2. DONN√âES & LOGIQUE SONDAGE ---
+    // --- 2. DONN…ES & LOGIQUE SONDAGE ---
     let smartPollData = null;
     const pageCategory = window.location.pathname.includes('social') ? 'Social' : 'Politique';
 
@@ -256,7 +262,7 @@
       const showResults = hasVoted && !forceEdit;
 
       if (showResults) {
-        // --- VUE R√âSULTATS (SIDEBAR) ---
+        // --- VUE R…SULTATS (SIDEBAR) ---
         if (mainArea) mainArea.style.display = 'none';
         if (sidebarArea) {
           sidebarArea.style.display = 'block';
@@ -282,7 +288,7 @@
                     </div>`;
           }).join('');
 
-          // Bouton Modifier (Classe js-poll-edit pour le d√©clencheur)
+          // Bouton Modifier (Classe js-poll-edit pour le dÈclencheur)
           const container = document.createElement('div');
           container.style.textAlign = 'center';
           container.style.marginTop = '15px';
@@ -302,7 +308,7 @@
           mainArea.style.display = 'block';
           document.getElementById('poll-question-main').textContent = poll.question;
 
-          // G√âN√âRATION DES BOUTONS (Notez la classe js-poll-vote et data-index)
+          // G…N…RATION DES BOUTONS (Notez la classe js-poll-vote et data-index)
           document.getElementById('poll-options-main').innerHTML = options.map((opt, index) => `
                     <button class="poll-option-btn js-poll-vote" data-index="${index}">${opt.text}</button>
                 `).join('');
@@ -340,14 +346,14 @@
         const json = await res.json();
 
         if (json.success) {
-          // CAS 1 : Le vote a march√©
+          // CAS 1 : Le vote a marchÈ
           smartPollData.hasVoted = true;
           if (json.options) {
             smartPollData.poll.options = json.options; // Update options inside poll
           }
           renderSmartPoll(false);
         } else {
-          // CAS 2 : Le serveur a refus√©
+          // CAS 2 : Le serveur a refusÈ
           console.warn("Erreur vote:", json.error);
           alert(json.error || "Vote impossible");
           renderSmartPoll(false);
@@ -401,12 +407,12 @@
       try {
         const lang = getLanguage();
         
-        // üî• FIX: Charger TOUS les articles sans filtre langue (priorit√© = afficher contenu)
+        // ?? FIX: Charger TOUS les articles sans filtre langue (prioritÈ = afficher contenu)
         const res = await fetch(`${API_URL}/articles?lang=${lang}`);
         const json = await res.json();
 
         if (json.success && json.data.length > 0) {
-          // üî• Filtrer uniquement par cat√©gorie "Politique"
+          // ?? Filtrer uniquement par catÈgorie "Politique"
           const allArticles = json.data;
           const articles = allArticles.filter(art => art.category === 'Politique');
 
@@ -415,7 +421,7 @@
             return;
           }
 
-          // üåç Tri intelligent: articles dans la langue active en premier
+          // ?? Tri intelligent: articles dans la langue active en premier
           articles.sort((a, b) => {
             if (a.language === lang && b.language !== lang) return -1;
             if (a.language !== lang && b.language === lang) return 1;
@@ -426,9 +432,9 @@
           const linkUne = `article.html?id=${une.id}`;
           const uneImg = une.image_url || 'https://via.placeholder.com/1600x900';
 
-          // üåç Badge langue si article pas dans langue active
+          // ?? Badge langue si article pas dans langue active
           const langBadge = une.language !== lang 
-            ? `<span class="hero-lang-badge">üá´üá∑ ${une.language.toUpperCase()}</span>` 
+            ? `<span class="hero-lang-badge">???? ${une.language.toUpperCase()}</span>` 
             : '';
 
           document.getElementById('hero-dynamic').innerHTML = `
@@ -437,7 +443,7 @@
               <img src="${uneImg}" class="hero-bg-img" onerror="handleImgError(this)">
               <div class="hero-overlay">
                 <div class="hero-tags-wrap">
-                    <span class="hero-badge-une">√Ä LA UNE</span>
+                    <span class="hero-badge-une">¿ LA UNE</span>
                     <span class="hero-badge-cat">${une.category}</span>
                     ${langBadge}
                 </div>
@@ -450,7 +456,7 @@
           const mainList = articles.slice(1, 4);
           document.getElementById('magazine-feed').innerHTML = mainList.map(art => {
             const langBadgeSmall = art.language !== lang 
-              ? `<span style="background:#37463D; color:white; padding:2px 6px; border-radius:3px; font-size:0.65rem; margin-left:8px;">üá´üá∑ ${art.language.toUpperCase()}</span>` 
+              ? `<span style="background:#37463D; color:white; padding:2px 6px; border-radius:3px; font-size:0.65rem; margin-left:8px;">???? ${art.language.toUpperCase()}</span>` 
               : '';
             
             return `
@@ -464,7 +470,7 @@
             </article>
           `}).join('');
 
-          // Injection de la grille "D√©couvrir" (Fix: Slice 5-13 + Fallback)
+          // Injection de la grille "DÈcouvrir" (Fix: Slice 5-13 + Fallback)
           const discoverArticles = articles.slice(5, 13);
           const discoverGrid = document.getElementById('discover-grid');
           if (discoverGrid && discoverArticles.length > 0) {
@@ -476,7 +482,7 @@
                 </a>
             `).join('');
           } else if (discoverGrid) {
-            discoverGrid.innerHTML = '<p style="text-align:center;color:#999;">Plus d\'articles bient√¥t.</p>';
+            discoverGrid.innerHTML = '<p style="text-align:center;color:#999;">Plus d\'articles bientÙt.</p>';
           }
         } else {
           document.getElementById('magazine-feed').innerHTML = '<p style="text-align:center; color:#888; padding:2rem;">Aucun article disponible pour le moment.</p>';

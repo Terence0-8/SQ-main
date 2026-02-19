@@ -1,9 +1,15 @@
-Ôªø<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
     <meta charset="UTF-8">
-    <title>Studio Partis ‚Äî Solitiquo</title>
+  <!-- Preconnect to external servers -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://res.cloudinary.com" />
+  <link rel="dns-prefetch" href="https://www.youtube.com" />
+  <link rel="dns-prefetch" href="https://img.youtube.com" />
+    <title>Studio Partis ó Solitiquo</title>
     <link rel="stylesheet" href="css/shared.css" />
   <link rel="stylesheet" href="css/pages/editeur-parti.css" />
     <link
@@ -21,7 +27,7 @@
             <button class="lang-seg-btn active" data-lang="fr">FR</button>
             <button class="lang-seg-btn" data-lang="en">EN</button>
         </div>
-        <a href="admin.html" class="back-btn">‚Üê Retour Dashboard</a>
+        <a href="admin.html" class="back-btn">? Retour Dashboard</a>
     </header>
 
     <form id="partyForm" class="workspace">
@@ -31,7 +37,7 @@
             <button type="button" class="tool-btn" onclick="format('italic')"><i>I</i></button>
             <div class="tool-separator"></div>
             <button type="button" class="tool-btn" onclick="format('formatBlock', 'h2')">H2</button>
-            <button type="button" class="tool-btn" onclick="format('insertUnorderedList')">‚Ä¢‚Äî</button>
+            <button type="button" class="tool-btn" onclick="format('insertUnorderedList')">ïó</button>
         </aside>
 
         <div class="paper-zone">
@@ -39,7 +45,7 @@
                 <input type="text" id="party-name" placeholder="Nom complet du Parti..." autocomplete="off" required>
                 <input type="text" id="party-acronym" placeholder="ACRONYME (ex: RDPC)" required>
                 <div id="editor-content" contenteditable="true">
-                    <p>Histoire, id√©ologie et fondements...</p>
+                    <p>Histoire, idÈologie et fondements...</p>
                 </div>
             </div>
         </div>
@@ -47,7 +53,7 @@
         <aside class="settings-right">
             <div class="settings-scroll">
 
-                <h3 class="panel-title">Identit√© Visuelle</h3>
+                <h3 class="panel-title">IdentitÈ Visuelle</h3>
                 <div class="field-group">
                     <label>Logo du Parti</label>
                     <div class="mini-upload" onclick="document.getElementById('logo_file').click()">
@@ -74,12 +80,12 @@
                 <h3 class="panel-title">Fiche Technique</h3>
                 <div class="field-group">
                     <label>Nom du Leader</label>
-                    <input type="text" id="leader_name" class="sidebar-input" placeholder="Pr√©nom Nom">
+                    <input type="text" id="leader_name" class="sidebar-input" placeholder="PrÈnom Nom">
                 </div>
                 <div class="field-group">
                     <label>Positionnement</label>
                     <select id="type" class="sidebar-input">
-                        <option value="majorite">Majorit√© Pr√©sidentielle</option>
+                        <option value="majorite">MajoritÈ PrÈsidentielle</option>
                         <option value="opposition">Opposition</option>
                         <option value="historique">Historique / Non-actif</option>
                     </select>
@@ -91,7 +97,7 @@
                             <input type="text" id="creation_date" class="sidebar-input" placeholder="1985">
                         </div>
                         <div>
-                            <label>Si√®ges AN</label>
+                            <label>SiËges AN</label>
                             <input type="number" id="seats" class="sidebar-input" value="0">
                         </div>
                     </div>
@@ -101,13 +107,13 @@
                 <div class="field-group">
                     <label>Podcast du Dossier</label>
                     <input type="text" id="podcast_title" class="sidebar-input"
-                        placeholder="Titre de l'√©pisode (ex: L'histoire du parti)" style="margin-bottom:10px;">
+                        placeholder="Titre de l'Èpisode (ex: L'histoire du parti)" style="margin-bottom:10px;">
 
                     <div class="mini-upload" onclick="document.getElementById('audio_file').click()"
                         style="background:#f8f9fa; border-style:dashed;">
                         <div
                             style="width:40px; height:40px; background:#e2e8f0; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:1.2rem;">
-                            üéôÔ∏è</div>
+                            ???</div>
                         <div>
                             <span class="upload-btn-text" id="audio-label">Uploader l'audio (MP3)...</span>
                         </div>
@@ -130,7 +136,7 @@
     <script>
         (async function init() {
             await initLanguageSwitcher({ reloadPage: true });
-            // 1. V√©rif Auth
+            // 1. VÈrif Auth
             const user = await SolitiquoAPI.getProfile();
             if (!user || (user.role !== 'admin' && user.role !== 'writer')) window.location.href = 'auth.html';
 
@@ -154,8 +160,8 @@
             if (params.get('id')) loadParty(params.get('id'));
         })();
 
-        // ATTENTION: document.execCommand est d√©pr√©ci√© (Fix #15)
-        // TODO: Migrer vers TipTap, Quill ou ProseMirror pour un √©diteur moderne
+        // ATTENTION: document.execCommand est dÈprÈciÈ (Fix #15)
+        // TODO: Migrer vers TipTap, Quill ou ProseMirror pour un Èditeur moderne
         function format(cmd, val = null) { document.execCommand(cmd, false, val); }
 
         function preview(input, imgId) {
@@ -168,7 +174,7 @@
 
         function previewAudio(input) {
             if (input.files && input.files[0]) {
-                document.getElementById('audio-label').textContent = "Fichier s√©lectionn√© : " + input.files[0].name;
+                document.getElementById('audio-label').textContent = "Fichier sÈlectionnÈ : " + input.files[0].name;
                 document.getElementById('audio-label').style.color = "green";
             }
         }
@@ -192,7 +198,7 @@
                 if (p.leader_photo_url) document.getElementById('preview-leader').src = p.leader_photo_url;
                 if (p.podcast_id) {
                     document.getElementById('linked_podcast_id').value = p.podcast_id;
-                    document.getElementById('audio-label').textContent = "‚úÖ Podcast actif (Uploader pour remplacer)";
+                    document.getElementById('audio-label').textContent = "? Podcast actif (Uploader pour remplacer)";
                 }
             }
         }
@@ -216,7 +222,7 @@
             formData.append('creation_date', document.getElementById('creation_date').value);
             formData.append('seats_assembly', document.getElementById('seats').value);
 
-            // Note: On n'ajoute plus 'podcast_id' ici, on le g√®re plus bas avec l'audio
+            // Note: On n'ajoute plus 'podcast_id' ici, on le gËre plus bas avec l'audio
 
             // 2. Gestion intelligente des images
             // LOGO
@@ -265,7 +271,7 @@
                 const json = await res.json();
 
                 if (json.success) {
-                    msg.style.color = "green"; msg.textContent = "‚úÖ Dossier enregistr√© !";
+                    msg.style.color = "green"; msg.textContent = "? Dossier enregistrÈ !";
                     // Redirection vers le dossier public
                     setTimeout(() => window.location.href = `dossier.html?id=${json.id || id}`, 1500);
                 } else throw new Error(json.error);

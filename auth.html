@@ -1,10 +1,16 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
   <meta charset="UTF-8" />
+  <!-- Preconnect to external servers -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://res.cloudinary.com" />
+  <link rel="dns-prefetch" href="https://www.youtube.com" />
+  <link rel="dns-prefetch" href="https://img.youtube.com" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Espace Membre â€” Solitiquo</title>
+  <title>Espace Membre — Solitiquo</title>
   <link rel="stylesheet" href="css/shared.css" />
   <link rel="stylesheet" href="css/pages/auth.css" />
   <link
@@ -21,7 +27,7 @@
 
 <body id="page-auth">
 
-  <a href="#" id="backBtn" class="floating-back-btn" aria-label="Retour page prÃ©cÃ©dente">
+  <a href="#" id="backBtn" class="floating-back-btn" aria-label="Retour page précédente">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
       stroke-linecap="round" stroke-linejoin="round">
       <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -47,7 +53,7 @@
         <a href="politique.html" class="ph-link">Politique</a>
         <a href="social.html" class="ph-link">Social</a>
         <a href="partis-politiques.html" class="ph-link">Partis</a>
-        <a href="emissions.html" class="ph-link">Ã‰missions</a>
+        <a href="emissions.html" class="ph-link">Émissions</a>
         <a href="podcasts.html" class="ph-link">Podcasts</a>
       </nav>
     </div>
@@ -85,7 +91,7 @@
         <img src="logo.svg" class="mobile-logo" style="height:30px;filter:brightness(0) invert(1);" alt="S">
         <span style="font-family:'Playfair Display';font-weight:700;font-size:1.5rem;">Solitiquo</span>
       </div>
-      <button id="mobileNavClose" style="background:none;border:none;color:white;font-size:2rem;">Ã—</button>
+      <button id="mobileNavClose" style="background:none;border:none;color:white;font-size:2rem;">×</button>
     </div>
     <ul style="list-style:none;padding:0;margin-top:2rem;">
       <li style="margin-bottom:1.5rem;"><a href="index.html"
@@ -107,7 +113,7 @@
       <div class="auth-content">
         <div class="auth-title-group">
           <h1 class="auth-title" id="formTitle">Bienvenue</h1>
-          <p class="auth-subtitle" id="formSubtitle">AccÃ©dez Ã  votre espace membre premium.</p>
+          <p class="auth-subtitle" id="formSubtitle">Accédez à votre espace membre premium.</p>
         </div>
 
         <div id="message-box" class="msg-box msg-error"></div>
@@ -122,7 +128,7 @@
           <div class="form-group">
             <label>Mot de passe</label>
             <div class="password-wrapper">
-              <input type="password" id="loginPwd" class="form-input" required placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢">
+              <input type="password" id="loginPwd" class="form-input" required placeholder="••••••••">
               <button type="button" id="toggle-login-pwd" class="btn-toggle-pass" aria-label="Afficher le mot de passe">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                   stroke-linecap="round" stroke-linejoin="round">
@@ -135,7 +141,7 @@
 
           <button type="submit" class="btn-auth-submit">Se connecter</button>
           <div class="auth-footer">
-            <a href="#">Mot de passe oubliÃ© ?</a>
+            <a href="#">Mot de passe oublié ?</a>
           </div>
         </form>
 
@@ -152,7 +158,7 @@
           <div class="form-group">
             <label>Mot de passe</label>
             <div class="password-wrapper">
-              <input type="password" id="regPwd" class="form-input" required placeholder="Minimum 6 caractÃ¨res">
+              <input type="password" id="regPwd" class="form-input" required placeholder="Minimum 6 caractères">
               <button type="button" id="toggle-reg-pwd" class="btn-toggle-pass" aria-label="Afficher le mot de passe">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                   stroke-linecap="round" stroke-linejoin="round">
@@ -163,9 +169,9 @@
             </div>
           </div>
 
-          <button type="submit" class="btn-auth-submit" style="background:#C82823;">CrÃ©er mon compte</button>
+          <button type="submit" class="btn-auth-submit" style="background:#C82823;">Créer mon compte</button>
           <div class="auth-footer">
-            En crÃ©ant un compte, vous acceptez nos <a href="conditions-utilisation.html">CGU</a>.
+            En créant un compte, vous acceptez nos <a href="conditions-utilisation.html">CGU</a>.
           </div>
         </form>
 
@@ -180,19 +186,19 @@
           <img src="logo.svg" class="footer-logo" alt="S">
           <span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
         </div>
-        <p style="font-size:0.9rem; opacity:0.7;">Le mÃ©dia de rÃ©fÃ©rence.</p>
+        <p style="font-size:0.9rem; opacity:0.7;">Le média de référence.</p>
       </div>
       <div class="footer-col">
-        <h4>LÃ©gal</h4>
+        <h4>Légal</h4>
         <a href="mentions-legales.html" class="footer-link">Mentions</a>
         <a href="conditions-utilisation.html" class="footer-link">CGU</a>
       </div>
       <div class="footer-col">
         <h4>Contact</h4>
-        <a href="contact.html" class="footer-link">Nous Ã©crire</a>
+        <a href="contact.html" class="footer-link">Nous écrire</a>
       </div>
     </div>
-    <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits rÃ©servÃ©s.</div>
+    <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
   </footer>
 
   <script src="js/i18n.js"></script>
@@ -227,18 +233,18 @@
           tabLogin.classList.add('active');
           tabRegister.classList.remove('active');
           title.textContent = "Bienvenue";
-          subtitle.textContent = "AccÃ©dez Ã  votre espace membre premium.";
+          subtitle.textContent = "Accédez à votre espace membre premium.";
         } else {
           loginForm.style.display = 'none';
           registerForm.style.display = 'block';
           tabLogin.classList.remove('active');
           tabRegister.classList.add('active');
           title.textContent = "Rejoignez-nous";
-          subtitle.textContent = "CrÃ©ez un compte pour participer aux dÃ©bats.";
+          subtitle.textContent = "Créez un compte pour participer aux débats.";
         }
       }
 
-      // Attacher les Ã©vÃ©nements au clic
+      // Attacher les événements au clic
       if (tabLogin) tabLogin.addEventListener('click', () => switchTab('login'));
       if (tabRegister) tabRegister.addEventListener('click', () => switchTab('register'));
 
@@ -253,7 +259,7 @@
 
         if (input.type === "password") {
           input.type = "text";
-          // Icone oeil barrÃ©
+          // Icone oeil barré
           if (iconSvg) iconSvg.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
           btn.setAttribute('aria-label', "Masquer le mot de passe");
         } else {
@@ -313,30 +319,30 @@
           const password = document.getElementById('regPwd').value;
           const btn = registerForm.querySelector('button[type="submit"]');
 
-          btn.textContent = "CrÃ©ation..."; btn.disabled = true;
+          btn.textContent = "Création..."; btn.disabled = true;
 
           try {
             const result = await SolitiquoAPI.register({ username, email, password });
             if (result.success) {
-              successBox.textContent = "Compte crÃ©Ã© ! Redirection...";
+              successBox.textContent = "Compte créé ! Redirection...";
               successBox.style.display = 'block'; msgBox.style.display = 'none';
               registerForm.reset();
               setTimeout(() => { window.location.href = 'index.html'; }, 1500);
             } else {
               msgBox.textContent = result.error; msgBox.style.display = 'block';
-              btn.textContent = "CrÃ©er mon compte"; btn.disabled = false;
+              btn.textContent = "Créer mon compte"; btn.disabled = false;
             }
           } catch (err) {
             console.error(err);
             msgBox.textContent = "Erreur lors de l'inscription.";
             msgBox.style.display = 'block';
-            btn.textContent = "CrÃ©er mon compte"; btn.disabled = false;
+            btn.textContent = "Créer mon compte"; btn.disabled = false;
           }
         });
       }
 
       // ==========================================
-      // 4. AUTRES FONCTIONNALITÃ‰S (Menu, Recherche, Retour)
+      // 4. AUTRES FONCTIONNALITÉS (Menu, Recherche, Retour)
       // ==========================================
 
       const backBtn = document.getElementById('backBtn');
