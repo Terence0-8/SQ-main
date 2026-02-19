@@ -75,13 +75,41 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Rate Limiting
-const apiLimiter = rateLimit({
+// Rate Limiting Basics
+const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5000,
   message: { success: false, error: 'Trop de requêtes, réessayez dans 15 minutes' },
   standardHeaders: true,
   legacyHeaders: false
 });
+
+// Specific Limiters
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10, // Strict pour login
+  message: { success: false, error: 'Trop de tentatives de connexion, réessayez dans 15 minutes' }
+});
+
+const commentsLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20, // Anti-spam commentaires
+  message: { success: false, error: 'Trop de commentaires, réessayez dans 15 minutes' }
+});
+
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 50, // Protection admin
+  message: { success: false, error: 'Trop de requêtes admin, réessayez dans 15 minutes' }
+});
+
+// Apply Specific Limiters BEFORE global or routes
+app.use('/api/auth/login', loginLimiter);
+app.use('/api/comments', commentsLimiter);
+app.use('/api/admin', adminLimiter);
+
+// Apply Global Limiter
+app.use(globalLimiter);
 
 // Session
 app.use(session({
