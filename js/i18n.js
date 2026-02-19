@@ -561,14 +561,14 @@ async function loadArticles(lang) {
       const uneImg = une.image_url || 'https://via.placeholder.com/1600x900';
 
       // Badge langue si article pas dans langue active
-      const langBadge = une.language !== lang 
-        ? `<span class="lang-badge">🇫🇷 ${t('badge_french_only')}</span>` 
+      const langBadge = une.language !== lang
+        ? `<span class="lang-badge">🇫🇷 ${t('badge_french_only')}</span>`
         : '';
 
       document.getElementById('hero-dynamic').innerHTML = `
         <section class="grand-hero-section">
           <a href="${linkUne}" style="position:absolute; inset:0; z-index:2;"></a>
-          <img src="${uneImg}" class="hero-bg-img" style="object-position: top center;">
+          <img src="${uneImg}" class="hero-bg-img" style="object-position: top center;" loading="lazy">
           <div class="hero-overlay">
             <span class="hero-tag">${t('badge_une')} • ${une.category}</span>
             ${langBadge}
@@ -583,15 +583,15 @@ async function loadArticles(lang) {
       const mainList = articles.slice(1, 5);
       document.getElementById('magazine-feed').innerHTML = mainList.map(art => {
         const linkArt = `article.html?id=${art.id}`;
-        const langBadge = art.language !== lang 
-          ? `<span class="lang-badge-small">🇫🇷</span>` 
+        const langBadge = art.language !== lang
+          ? `<span class="lang-badge-small">🇫🇷</span>`
           : '';
-        
+
         return `
         <article class="article-row">
           <div style="overflow:hidden; border-radius:4px; height:220px;">
             <a href="${linkArt}">
-              <img src="${art.image_url}" class="art-img">
+              <img src="${art.image_url}" class="art-img" loading="lazy">
             </a>
           </div>
           <div class="art-info">
@@ -616,7 +616,7 @@ async function loadArticles(lang) {
           const linkDisco = `article.html?id=${art.id}`;
           return `
           <a href="${linkDisco}" class="disco-card">
-            <img src="${art.image_url}" class="disco-img">
+            <img src="${art.image_url}" class="disco-img" loading="lazy">
             <h4 class="disco-title">${art.title}</h4>
             <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
           </a>

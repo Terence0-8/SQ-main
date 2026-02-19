@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+Ôªø<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://res.cloudinary.com" />
   <link rel="dns-prefetch" href="https://www.youtube.com" />
   <link rel="dns-prefetch" href="https://img.youtube.com" />
-  <title>Studio VidÈo ó Solitiquo</title>
+  <title>Studio Vid√©o ‚Äî Solitiquo</title>
   <link rel="stylesheet" href="css/shared.css" />
   <link rel="stylesheet" href="css/pages/editeur-emission.css" />
   <link
@@ -21,24 +21,24 @@
 <body id="page-editeur-emission">
 
   <header class="studio-header">
-    <div class="logo-area"><img src="logo.svg" alt="S"><span>Studio VidÈo</span></div>
+    <div class="logo-area"><img src="logo.svg" alt="S"><span>Studio Vid√©o</span></div>
     <div style="flex:1;"></div>
     <div class="lang-switch-container" style="margin-right:20px;">
       <button class="lang-seg-btn active" data-lang="fr">FR</button>
       <button class="lang-seg-btn" data-lang="en">EN</button>
     </div>
-    <a href="admin.html" class="back-btn">? Retour Dashboard</a>
+    <a href="admin.html" class="back-btn">‚Üê Retour Dashboard</a>
   </header>
 
   <form id="emissionForm" class="workspace">
 
     <div class="preview-zone">
       <div class="video-preview-card" id="video-container">
-        <div class="video-placeholder">L'aperÁu vidÈo apparaÓtra ici</div>
+        <div class="video-placeholder">L'aper√ßu vid√©o appara√Ætra ici</div>
       </div>
 
       <div class="info-preview">
-        <h1 id="preview-title">Titre de l'Èmission...</h1>
+        <h1 id="preview-title">Titre de l'√©mission...</h1>
         <p id="preview-desc">La description s'affichera ici.</p>
       </div>
     </div>
@@ -56,16 +56,16 @@
         <h3 class="panel-title">INFOS</h3>
         <div class="field-group">
           <label>Titre</label>
-          <input type="text" id="title" class="sidebar-input" placeholder="Titre de l'Èmission" required
+          <input type="text" id="title" class="sidebar-input" placeholder="Titre de l'√©mission" required
             oninput="document.getElementById('preview-title').textContent = this.value || 'Titre...'">
         </div>
 
         <div class="field-group">
-          <label>CatÈgorie</label>
+          <label>Cat√©gorie</label>
           <select id="category" class="sidebar-input">
             <option>Politique</option>
-            <option>SociÈtÈ</option>
-            <option>…conomie</option>
+            <option>Soci√©t√©</option>
+            <option>√âconomie</option>
             <option>Culture</option>
             <option>International</option>
           </select>
@@ -73,18 +73,18 @@
 
         <div class="field-group">
           <label>Description</label>
-          <textarea id="description" class="sidebar-input" placeholder="RÈsumÈ, invitÈs..."
+          <textarea id="description" class="sidebar-input" placeholder="R√©sum√©, invit√©s..."
             oninput="document.getElementById('preview-desc').textContent = this.value || 'Description...'"></textarea>
         </div>
 
         <div class="field-group">
-          <label>DurÈe (Minutes)</label>
+          <label>Dur√©e (Minutes)</label>
           <input type="number" id="duration" class="sidebar-input" placeholder="ex: 45">
         </div>
 
         <h3 class="panel-title">IMAGE (OPTIONNEL)</h3>
         <div class="field-group">
-          <label>Couverture personnalisÈe</label>
+          <label>Couverture personnalis√©e</label>
           <input type="file" id="image_file" accept="image/*" class="sidebar-input">
           <small style="color:#888; font-size:0.75rem;">Si vide, on utilise la miniature YouTube.</small>
         </div>
@@ -102,7 +102,7 @@
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script>
-    // S…CURIT…
+    // S√âCURIT√â
     (async function checkAccess() {
       await initLanguageSwitcher({ reloadPage: true });
       const user = await SolitiquoAPI.getProfile();
@@ -152,15 +152,16 @@
         const json = await res.json();
 
         if (json.success) {
-          msg.style.color = 'green'; msg.textContent = '? …mission publiÈe !';
+          msg.style.color = 'green'; msg.textContent = '‚úÖ √âmission publi√©e !';
           setTimeout(() => window.location.href = 'emissions.html', 1000);
         } else { throw new Error(json.error); }
       } catch (err) {
         msg.style.color = 'red'; msg.textContent = 'Erreur: ' + err.message;
-        btn.textContent = 'RÈessayer'; btn.disabled = false;
+        btn.textContent = 'R√©essayer'; btn.disabled = false;
       }
     });
   </script>
+  <script src="/js/lazyload.js"></script>
 </body>
 
 </html>

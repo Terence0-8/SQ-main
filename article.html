@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+Ôªø<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -10,7 +10,7 @@
   <link rel="dns-prefetch" href="https://www.youtube.com" />
   <link rel="dns-prefetch" href="https://img.youtube.com" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Chargement... ó Solitiquo</title>
+  <title>Chargement... ‚Äî Solitiquo</title>
   <link rel="stylesheet" href="/css/shared.css" />
   <link rel="stylesheet" href="/css/pages/article.css" />
   <link
@@ -18,7 +18,7 @@
     rel="stylesheet" />
 
   <style>
-    /* ?? Styles glassmorphism pour les ÈlÈments de traduction */
+    /* üåç Styles glassmorphism pour les √©l√©ments de traduction */
     .translate-btn {
       display: inline-flex;
       align-items: center;
@@ -98,7 +98,7 @@
     }
 
     .translation-notice a::after {
-      content: '?';
+      content: '‚Üí';
       font-size: 1.2em;
     }
   </style>
@@ -115,7 +115,7 @@
 
 <body id="page-article">
   <a href="javascript:history.length > 1 ? history.back() : window.location.href='index.html'" class="floating-back-btn"
-    aria-label="Retour page prÈcÈdente">
+    aria-label="Retour page pr√©c√©dente">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
       stroke-linecap="round" stroke-linejoin="round">
       <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -140,7 +140,7 @@
         <a href="politique.html" class="ph-link">Politique</a>
         <a href="social.html" class="ph-link">Social</a>
         <a href="partis-politiques.html" class="ph-link">Partis</a>
-        <a href="emissions.html" class="ph-link">…missions</a>
+        <a href="emissions.html" class="ph-link">√âmissions</a>
         <a href="podcasts.html" class="ph-link">Podcasts</a>
       </nav>
     </div>
@@ -182,7 +182,7 @@
         <img src="logo.svg" class="mobile-logo" alt="S">
         <span style="font-family:'Playfair Display';font-weight:700;font-size:1.5rem;">Solitiquo</span>
       </div>
-      <button id="mobileNavClose" class="mobile-close">◊</button>
+      <button id="mobileNavClose" class="mobile-close">√ó</button>
     </div>
     <ul class="mobile-links">
       <li class="mobile-link-item"><a href="index.html" class="mobile-link">Accueil</a></li>
@@ -210,7 +210,7 @@
 
     <h1 class="article-title" id="art-title"></h1>
 
-    <!-- ZONE DE TRADUCTION (ajoutÈ ici) -->
+    <!-- ZONE DE TRADUCTION (ajout√© ici) -->
     <div id="translation-zone" style="text-align:center;"></div>
 
     <div class="author-line">
@@ -222,12 +222,12 @@
     <div class="article-description" id="art-excerpt"></div>
 
     <div class="meta-info-simple">
-      <span class="time-read">?? <span id="art-readtime">...</span> min de lecture</span>
+      <span class="time-read">‚è±Ô∏è <span id="art-readtime">...</span> min de lecture</span>
       <span class="date-publish" id="art-date"></span>
     </div>
 
     <figure class="article-img" id="art-figure">
-      <img id="art-image" src="" alt="Article Image" onerror="handleImgError(this)">
+      <img id="art-image" src="" alt="Article Image" onerror="handleImgError(this)" loading="lazy">
       <figcaption id="art-caption"></figcaption>
     </figure>
 
@@ -239,7 +239,7 @@
         Discussions</h3>
 
       <form id="commentForm" class="comment-box">
-        <textarea id="commentInput" rows="3" class="comment-input" placeholder="Participez au dÈbat..."></textarea>
+        <textarea id="commentInput" rows="3" class="comment-input" placeholder="Participez au d√©bat..."></textarea>
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <div id="commentMsg" style="font-size:0.9rem;"></div>
           <button type="submit" class="btn-comment">Publier</button>
@@ -264,7 +264,7 @@
           <img src="logo.svg" class="footer-logo" alt="S" onerror="handleImgError(this)">
           <span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
         </div>
-        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le mÈdia de rÈfÈrence.</p>
+        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le m√©dia de r√©f√©rence.</p>
       </div>
       <div class="footer-col">
         <h4>Rubriques</h4>
@@ -273,13 +273,13 @@
         <a href="partis-politiques.html" class="footer-link">Partis</a>
       </div>
       <div class="footer-col">
-        <h4>LÈgal</h4>
-        <a href="mentions-legales.html" class="footer-link">Mentions lÈgales</a>
+        <h4>L√©gal</h4>
+        <a href="mentions-legales.html" class="footer-link">Mentions l√©gales</a>
         <a href="conditions-utilisation.html" class="footer-link">CGU</a>
       </div>
       <div class="footer-col">
         <h4>Contact</h4>
-        <a href="contact.html" class="footer-link">Nous Ècrire</a>
+        <a href="contact.html" class="footer-link">Nous √©crire</a>
         <a href="auth.html" class="footer-link">S'identifier</a>
       </div>
     </div>
@@ -305,7 +305,7 @@
     if (mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
     if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
 
-    // --- LOGIQUE RECHERCHE UNIFI…E ---
+    // --- LOGIQUE RECHERCHE UNIFI√âE ---
     const searchBtn = document.getElementById('searchBtn');
     const searchLabel = document.getElementById('searchLabel');
     const searchContainer = document.getElementById('searchContainer');
@@ -344,29 +344,29 @@
       SolitiquoAPI.initUserInterface();
       await initLanguageSwitcher({ reloadPage: true });
 
-      if (!id) { loadingDiv.innerHTML = '<p>Aucun article demandÈ.</p>'; return; }
+      if (!id) { loadingDiv.innerHTML = '<p>Aucun article demand√©.</p>'; return; }
 
       try {
-        // 1. On rÈcupËre l'article
+        // 1. On r√©cup√®re l'article
         const article = await SolitiquoAPI.getArticleById(id);
 
-        // 2. On rÈcupËre l'utilisateur UNE SEULE FOIS ici
+        // 2. On r√©cup√®re l'utilisateur UNE SEULE FOIS ici
         const user = await SolitiquoAPI.getProfile();
 
         if (article) {
           // --- Remplissage des infos de base ---
-          document.title = `${article.title} ó Solitiquo`;
+          document.title = `${article.title} ‚Äî Solitiquo`;
           document.getElementById('art-title').textContent = article.title;
 
-          // Badge CatÈgorie + LOGO GOLD.PNG
+          // Badge Cat√©gorie + LOGO GOLD.PNG
           const badge = document.getElementById('art-category-badge');
           badge.textContent = article.category;
           if (article.is_premium) {
-            badge.innerHTML += ' <img src="GOLD.png" alt="Premium" style="height: 1.2em; vertical-align: middle; margin-left: 5px;">';
+            badge.innerHTML += ' <img src="GOLD.png" alt="Premium" style="height: 1.2em; vertical-align: middle; margin-left: 5px;" loading="lazy">';
             badge.style.backgroundColor = "#222";
           }
 
-          document.getElementById('art-author').textContent = article.author_name || 'La RÈdaction';
+          document.getElementById('art-author').textContent = article.author_name || 'La R√©daction';
           document.getElementById('art-date').textContent = SolitiquoAPI.formatDate(article.published_at);
 
           if (article.excerpt) document.getElementById('art-excerpt').textContent = article.excerpt;
@@ -374,12 +374,12 @@
 
           if (article.image_url) {
             document.getElementById('art-image').src = article.image_url;
-            document.getElementById('art-caption').textContent = article.image_caption || '© Solitiquo';
+            document.getElementById('art-caption').textContent = article.image_caption || '¬© Solitiquo';
           } else {
             document.getElementById('art-figure').style.display = 'none';
           }
 
-          // --- ?? BOUTON DE TRADUCTION ---
+          // --- üåç BOUTON DE TRADUCTION ---
           await initTranslationButton(article);
 
           // --- GESTION DU PAYWALL ---
@@ -388,7 +388,7 @@
           const canRead = user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer');
 
           if (article.is_premium && !canRead) {
-            // MODE FLOU (Non-abonnÈ sur article payant)
+            // MODE FLOU (Non-abonn√© sur article payant)
             const tmpDiv = document.createElement("div");
             tmpDiv.innerHTML = article.content;
             const teaserText = (tmpDiv.textContent || tmpDiv.innerText || "").substring(0, 300);
@@ -404,10 +404,10 @@
                         </div>
                         
                         <div style="background:#f8fbf1; border:1px solid #C5C5A9; padding:3rem; text-align:center; border-radius:12px; margin-top:2rem;">
-                            <h3 style="font-family:'Playfair Display'; font-size:1.8rem; color:#37463D; margin-bottom:1rem;">Lecture rÈservÈe aux abonnÈs</h3>
-                            <p style="color:#666; margin-bottom:2rem;">Soutenez une information indÈpendante et accÈdez ‡ l'intÈgralitÈ de nos contenus.</p>
-                            <a href="abonnement.html" style="display:inline-block; background:#C82823; color:white; padding:12px 30px; border-radius:30px; text-decoration:none; font-weight:700; transition:0.3s;">S'abonner dËs 2000 FCFA</a>
-                            <div style="margin-top:1.5rem; font-size:0.9rem;">DÈj‡ abonnÈ ? <a href="auth.html" style="color:#37463D; font-weight:bold;">Connectez-vous</a></div>
+                            <h3 style="font-family:'Playfair Display'; font-size:1.8rem; color:#37463D; margin-bottom:1rem;">Lecture r√©serv√©e aux abonn√©s</h3>
+                            <p style="color:#666; margin-bottom:2rem;">Soutenez une information ind√©pendante et acc√©dez √† l'int√©gralit√© de nos contenus.</p>
+                            <a href="abonnement.html" style="display:inline-block; background:#C82823; color:white; padding:12px 30px; border-radius:30px; text-decoration:none; font-weight:700; transition:0.3s;">S'abonner d√®s 2000 FCFA</a>
+                            <div style="margin-top:1.5rem; font-size:0.9rem;">D√©j√† abonn√© ? <a href="auth.html" style="color:#37463D; font-weight:bold;">Connectez-vous</a></div>
                         </div>
                     `;
           } else {
@@ -423,7 +423,7 @@
           if (user && (user.role === 'admin' || user.role === 'writer')) {
             const editLink = document.createElement('a');
             editLink.href = `editeur-article.html?id=${article.id}`;
-            editLink.innerHTML = ` <span style="background:#eee; padding:2px 8px; border-radius:4px; font-size:0.7rem; color:#333; text-decoration:none; margin-left: 10px; cursor:pointer;">?? Modifier</span>`;
+            editLink.innerHTML = ` <span style="background:#eee; padding:2px 8px; border-radius:4px; font-size:0.7rem; color:#333; text-decoration:none; margin-left: 10px; cursor:pointer;">‚úèÔ∏è Modifier</span>`;
             document.querySelector('.meta-info-simple').appendChild(editLink);
           }
 
@@ -455,9 +455,9 @@
           progressLabel: 'Connecting to translation service...'
         },
         en: {
-          btnTranslate: 'Traduire en franÁais',
-          noticePrefix: 'Cet article est disponible en franÁais',
-          noticeLink: 'Lire la version franÁaise',
+          btnTranslate: 'Traduire en fran√ßais',
+          noticePrefix: 'Cet article est disponible en fran√ßais',
+          noticeLink: 'Lire la version fran√ßaise',
           progressLabel: 'Connexion au service...'
         }
       };
@@ -465,25 +465,25 @@
       const t = texts[currentLang];
 
       try {
-        // Nouveau endpoint pour vÈrifier la traduction
+        // Nouveau endpoint pour v√©rifier la traduction
         const res = await fetch(`${window.API_URL}/translate/article/${article.id}?lang=${targetLang}`);
         const data = await res.json();
 
         if (data.has_translation) {
-          // Traduction existe dÈj‡
+          // Traduction existe d√©j√†
           const translation = data.translation;
           translationZone.innerHTML = `
             <div class="translation-notice">
-              ?? ${t.noticePrefix}
+              üåç ${t.noticePrefix}
               <br>
               <a href="article.html?id=${translation.id}">${t.noticeLink}</a>
             </div>
           `;
         } else {
-          // Aucune traduction -> Afficher le bouton + Container cachÈ pour le progress circle
+          // Aucune traduction -> Afficher le bouton + Container cach√© pour le progress circle
           translationZone.innerHTML = `
             <button id="translateBtn" class="translate-btn">
-              <span>??</span>
+              <span>üåç</span>
               <span>${t.btnTranslate}</span>
             </button>
             
@@ -520,12 +520,12 @@
             btn.style.display = 'none';
             progressContainer.style.display = 'flex';
 
-            // Animation simulÈe (0 -> 30% -> 80%)
+            // Animation simul√©e (0 -> 30% -> 80%)
             setProgress(10);
 
-            // DÈmarrer la requÍte API
+            // D√©marrer la requ√™te API
             try {
-              // Simulation Ètape 1 (Connexion)
+              // Simulation √©tape 1 (Connexion)
               setTimeout(() => setProgress(30), 300);
 
               const translatePromise = fetch(`${window.API_URL}/translate/article/${article.id}`, {
@@ -534,7 +534,7 @@
                 body: JSON.stringify({ targetLang })
               });
 
-              // Simulation Ètape 2 (Traduction en cours)
+              // Simulation √©tape 2 (Traduction en cours)
               const simInterval = setInterval(() => {
                 const current = parseInt(document.getElementById('progress-text').textContent);
                 if (current < 80) {
@@ -549,7 +549,7 @@
               clearInterval(simInterval);
 
               if (result.success) {
-                // …tape 3 (Finalisation)
+                // √âtape 3 (Finalisation)
                 setProgress(100);
                 label.textContent = (targetLang === 'fr') ? "Finalisation..." : "Finalizing...";
 
@@ -607,20 +607,20 @@
           commentsList.innerHTML = json.comments.map(c => {
             const dateAffichee = new Date(c.created_at).toLocaleString('fr-FR');
             const deleteBtn = isAdmin ?
-              `<button onclick="SolitiquoAPI.deleteComment(${c.id})" style="float:right; color:#C82823; background:none; border:none; font-size:1.2rem; cursor:pointer; opacity:0.6;" title="Supprimer">◊</button>` : '';
+              `<button onclick="SolitiquoAPI.deleteComment(${c.id})" style="float:right; color:#C82823; background:none; border:none; font-size:1.2rem; cursor:pointer; opacity:0.6;" title="Supprimer">√ó</button>` : '';
 
             return `
                     <div id="comment-${c.id}" style="margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px;">
                         ${deleteBtn}
                         <div style="font-weight:bold; color:#37463D; margin-bottom:5px;">
                             ${c.username || 'Lecteur'} 
-                            <span style="font-weight:normal; color:#888; font-size:0.8rem;">ï ${dateAffichee}</span>
+                            <span style="font-weight:normal; color:#888; font-size:0.8rem;">‚Ä¢ ${dateAffichee}</span>
                         </div>
                         <div style="line-height:1.5; color:#444;">${c.content}</div>
                     </div>`;
           }).join('');
         } else {
-          commentsList.innerHTML = '<p style="color:#888; font-style:italic;">Soyez le premier ‡ rÈagir.</p>';
+          commentsList.innerHTML = '<p style="color:#888; font-style:italic;">Soyez le premier √† r√©agir.</p>';
         }
       } catch (e) { }
     }
@@ -635,7 +635,7 @@
 
         const user = await SolitiquoAPI.getProfile();
         if (!user) {
-          if (confirm("Vous devez Ítre connectÈ pour commenter. Se connecter ?")) window.location.href = 'auth.html';
+          if (confirm("Vous devez √™tre connect√© pour commenter. Se connecter ?")) window.location.href = 'auth.html';
           return;
         }
         if (!content.trim()) return;
@@ -650,7 +650,7 @@
           if (json.success) {
             document.getElementById('commentInput').value = '';
             if (json.modere) { msgDiv.style.color = 'orange'; msgDiv.textContent = 'En attente de validation.'; }
-            else { msgDiv.style.color = 'green'; msgDiv.textContent = 'PubliÈ !'; loadComments(articleId); }
+            else { msgDiv.style.color = 'green'; msgDiv.textContent = 'Publi√© !'; loadComments(articleId); }
             setTimeout(() => msgDiv.textContent = '', 3000);
           } else { msgDiv.style.color = 'red'; msgDiv.textContent = 'Erreur.'; }
         } catch (err) { }
@@ -683,6 +683,7 @@
       });
     }
   </script>
+  <script src="/js/lazyload.js"></script>
 </body>
 
 </html>

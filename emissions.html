@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://res.cloudinary.com" />
   <link rel="dns-prefetch" href="https://www.youtube.com" />
   <link rel="dns-prefetch" href="https://img.youtube.com" />
-  <title>Solitiquo TV — Replays & Directs</title>
+  <title>Solitiquo TV â€” Replays & Directs</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="/css/shared.css" />
   <link rel="stylesheet" href="/css/pages/emissions.css" />
@@ -42,7 +42,7 @@
         <a href="politique.html" class="ph-link">Politique</a>
         <a href="social.html" class="ph-link">Social</a>
         <a href="partis-politiques.html" class="ph-link">Partis</a>
-        <a href="emissions.html" class="ph-link active">Émissions</a>
+        <a href="emissions.html" class="ph-link active">Ã‰missions</a>
         <a href="podcasts.html" class="ph-link">Podcasts</a>
       </nav>
     </div>
@@ -89,7 +89,7 @@
         <img src="logo.svg" class="mobile-logo" alt="S">
         <span style="font-family:'Playfair Display';font-weight:700;font-size:1.5rem;">Solitiquo</span>
       </div>
-      <button id="mobileNavClose" class="mobile-close">×</button>
+      <button id="mobileNavClose" class="mobile-close">Ã—</button>
     </div>
     <ul class="mobile-links">
       <li class="mobile-link-item"><a href="index.html" class="mobile-link">Accueil</a></li>
@@ -106,7 +106,7 @@
 
   <div id="tv-hero-dynamic">
     <section class="cinema-hero">
-      <p>Chargement de la chaîne...</p>
+      <p>Chargement de la chaÃ®ne...</p>
     </section>
   </div>
 
@@ -122,7 +122,7 @@
           <img src="logo.svg" class="footer-logo" alt="S" onerror="handleImgError(this)">
           <span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
         </div>
-        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le média de référence.</p>
+        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le mÃ©dia de rÃ©fÃ©rence.</p>
       </div>
       <div class="footer-col">
         <h4>Rubriques</h4>
@@ -131,17 +131,17 @@
         <a href="partis-politiques.html" class="footer-link">Partis</a>
       </div>
       <div class="footer-col">
-        <h4>Légal</h4>
-        <a href="mentions-legales.html" class="footer-link">Mentions légales</a>
+        <h4>LÃ©gal</h4>
+        <a href="mentions-legales.html" class="footer-link">Mentions lÃ©gales</a>
         <a href="conditions-utilisation.html" class="footer-link">CGU</a>
       </div>
       <div class="footer-col">
         <h4>Contact</h4>
-        <a href="contact.html" class="footer-link">Nous écrire</a>
+        <a href="contact.html" class="footer-link">Nous Ã©crire</a>
         <a href="auth.html" class="footer-link">S'identifier</a>
       </div>
     </div>
-    <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
+    <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits rÃ©servÃ©s.</div>
   </footer>
 
   <script src="js/i18n.js"></script>
@@ -162,7 +162,7 @@
     if (mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
     if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
 
-    // --- LOGIQUE RECHERCHE UNIFIÉE ---
+    // --- LOGIQUE RECHERCHE UNIFIÃ‰E ---
     const searchBtn = document.getElementById('searchBtn');
     const searchLabel = document.getElementById('searchLabel');
     const searchContainer = document.getElementById('searchContainer');
@@ -267,18 +267,18 @@
             return `
                     <div class="replay-card" onclick="switchVideo('${ytid}', '${cleanTitle}', '${cleanDesc}', '${vid.category}', '${SolitiquoAPI.formatDate(vid.published_at)}')">
                         <div class="replay-thumb-box">
-                            <img src="${thumb}" class="replay-img" onerror="handleImgError(this)">
-                            <div class="play-icon">?</div>
+                            <img src="${thumb}" class="replay-img" onerror="handleImgError(this)" loading="lazy">
+                            <div class="play-icon">â–¶</div>
                             <div class="vid-duration">${vid.duration || '?'} min</div>
                         </div>
-                        <div class="replay-meta">${SolitiquoAPI.formatDate(vid.published_at)} • ${vid.category}</div>
+                        <div class="replay-meta">${SolitiquoAPI.formatDate(vid.published_at)} â€¢ ${vid.category}</div>
                         <h3 class="replay-title">${vid.title}</h3>
                     </div>
                     `;
           }).join('');
         }
         else {
-          document.getElementById('video-grid').innerHTML = '<p style="text-align:center;color:#999;">Aucune émission disponible.</p>';
+          document.getElementById('video-grid').innerHTML = '<p style="text-align:center;color:#999;">Aucune Ã©mission disponible.</p>';
         }
       } catch (e) {
         console.error('Erreur chargement emissions:', e);
@@ -288,12 +288,12 @@
   </script>
 
   <script>
-    // ??? Désactiver tous les Service Workers actifs
+    // ðŸ›¡ï¸ DÃ©sactiver tous les Service Workers actifs
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(registrations => {
         registrations.forEach(registration => {
           registration.unregister().then(() => {
-            console.log('Service Worker désactivé:', registration.scope);
+            console.log('Service Worker dÃ©sactivÃ©:', registration.scope);
           });
         });
       });
@@ -304,6 +304,7 @@
   <script src="/js/config.js"></script>
   <script src="/js/api.js"></script>
   <script src="/js/solitiquo.js"></script>
+  <script src="/js/lazyload.js"></script>
 </body>
 
 </html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+Ôªø<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://res.cloudinary.com" />
   <link rel="dns-prefetch" href="https://www.youtube.com" />
   <link rel="dns-prefetch" href="https://img.youtube.com" />
-  <title>Studio Podcast ó Solitiquo</title>
+  <title>Studio Podcast ‚Äî Solitiquo</title>
   <link rel="stylesheet" href="css/shared.css" />
   <link rel="stylesheet" href="css/pages/editeur-podcast.css" />
   <link
@@ -27,7 +27,7 @@
       <button class="lang-seg-btn active" data-lang="fr">FR</button>
       <button class="lang-seg-btn" data-lang="en">EN</button>
     </div>
-    <a href="index.html" class="back-btn">? Retour au site</a>
+    <a href="index.html" class="back-btn">‚Üê Retour au site</a>
   </header>
 
   <form id="podcastForm" class="workspace">
@@ -36,20 +36,20 @@
       <button type="button" class="tool-btn" onclick="format('bold')" title="Gras"><b>B</b></button>
       <button type="button" class="tool-btn" onclick="format('italic')" title="Italique"><i>I</i></button>
       <div class="tool-separator"></div>
-      <button type="button" class="tool-btn" onclick="format('removeFormat')" title="Nettoyer">?</button>
+      <button type="button" class="tool-btn" onclick="format('removeFormat')" title="Nettoyer">‚úï</button>
     </aside>
 
     <div class="paper-zone">
       <div class="paper-sheet">
-        <input type="text" id="title" placeholder="Titre de l'Èpisode..." required autocomplete="off">
+        <input type="text" id="title" placeholder="Titre de l'√©pisode..." required autocomplete="off">
 
         <span class="section-label">DESCRIPTION</span>
-        <textarea id="description" rows="3" placeholder="RÈsumÈ de l'Èpisode..."></textarea>
+        <textarea id="description" rows="3" placeholder="R√©sum√© de l'√©pisode..."></textarea>
 
         <span class="section-label">TRANSCRIPTION INTERACTIVE</span>
         <div id="transcript-editor" contenteditable="true">
-          <p>Commencez ‡ Ècrire la transcription...</p>
-          <p><em>Utilisez le bouton ?? ‡ gauche pour insÈrer un timecode.</em></p>
+          <p>Commencez √† √©crire la transcription...</p>
+          <p><em>Utilisez le bouton ‚è±Ô∏è √† gauche pour ins√©rer un timecode.</em></p>
         </div>
       </div>
     </div>
@@ -57,13 +57,13 @@
     <aside class="settings-right">
       <div class="settings-scroll">
 
-        <h3 class="panel-title">M…DIAS</h3>
+        <h3 class="panel-title">M√âDIAS</h3>
 
         <div class="field-group">
           <label style="font-weight:600; font-size:0.85rem; margin-bottom:8px; display:block;">Fichier Audio
             (MP3)</label>
           <div class="upload-box" onclick="document.getElementById('audio_file').click()">
-            <span class="upload-icon">???</span>
+            <span class="upload-icon">üéôÔ∏è</span>
             <span class="upload-hint">Choisir le fichier MP3</span>
             <span id="audio-name" class="file-name"></span>
           </div>
@@ -75,15 +75,15 @@
           <label style="font-weight:600; font-size:0.85rem; margin-bottom:8px; display:block;">Pochette</label>
           <div class="upload-box" onclick="document.getElementById('image_file').click()"
             style="height:150px; display:flex; justify-content:center; align-items:center;">
-            <img id="cover-preview" src="" alt="">
+            <img id="cover-preview" src="" alt="" loading="lazy">
             <div id="cover-placeholder">
-              <span class="upload-icon">???</span>
+              <span class="upload-icon">üñºÔ∏è</span>
               <span class="upload-hint">Uploader une image</span>
             </div>
           </div>
           <input type="file" id="image_file" accept="image/*" style="display:none;" onchange="previewCoverFile(this)">
 
-          <div style="text-align:center; margin: 10px 0; font-size:0.8rem; color:#999;">ó OU ó</div>
+          <div style="text-align:center; margin: 10px 0; font-size:0.8rem; color:#999;">‚Äî OU ‚Äî</div>
 
           <input type="url" id="image_url" class="sidebar-input" placeholder="https://..."
             oninput="previewCoverUrl(this.value)">
@@ -94,15 +94,15 @@
         <button type="button" class="btn-add-chapter" onclick="addChapterRow()"
           style="width:100%; padding:8px; cursor:pointer;">+ Ajouter un chapitre</button>
 
-        <h3 class="panel-title">D…TAILS</h3>
+        <h3 class="panel-title">D√âTAILS</h3>
 
         <div class="field-group">
           <select id="category" class="sidebar-input">
             <option>Politique</option>
             <option>Social</option>
-            <option>…conomie</option>
+            <option>√âconomie</option>
             <option>Culture</option>
-            <option>GÈopolitique</option>
+            <option>G√©opolitique</option>
           </select>
         </div>
 
@@ -135,7 +135,7 @@
       div.innerHTML = `
         <input type="text" class="sidebar-input chap-time" value="${time}" placeholder="00:00">
         <input type="text" class="sidebar-input chap-title" value="${title}" placeholder="Titre">
-        <button type="button" class="chap-del" onclick="this.parentElement.remove()">◊</button>
+        <button type="button" class="chap-del" onclick="this.parentElement.remove()">√ó</button>
     `;
       document.getElementById('chapters-container').appendChild(div);
     }
@@ -196,14 +196,14 @@
       const imgUrl = document.getElementById('image_url').value;
 
       if (imgFile) formData.append('image_file', imgFile);
-      else if (imgUrl) formData.append('image_url', imgUrl); // Attention: Backend doit gÈrer ce champ (optionnel)
+      else if (imgUrl) formData.append('image_url', imgUrl); // Attention: Backend doit g√©rer ce champ (optionnel)
 
       try {
         const res = await fetch(`${window.API_URL}/podcasts`, { method: 'POST', body: formData });
         const json = await res.json();
 
         if (json.success) {
-          msg.style.color = 'green'; msg.textContent = '? Podcast publiÈ !';
+          msg.style.color = 'green'; msg.textContent = '‚úÖ Podcast publi√© !';
           setTimeout(() => window.location.href = 'podcasts.html', 1500);
         } else { throw new Error(json.error); }
       } catch (err) {
@@ -212,6 +212,7 @@
       }
     });
   </script>
+  <script src="/js/lazyload.js"></script>
 </body>
 
 </html>

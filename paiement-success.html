@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+Ôªø<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://res.cloudinary.com" />
   <link rel="dns-prefetch" href="https://www.youtube.com" />
   <link rel="dns-prefetch" href="https://img.youtube.com" />
-    <title>Paiement RÈussi ó Solitiquo</title>
+    <title>Paiement R√©ussi ‚Äî Solitiquo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/shared.css" />
     <link
@@ -22,13 +22,13 @@
     <div class="success-card">
         <img src="logo.svg" alt="Solitiquo" class="success-logo" onerror="this.style.display='none'">
 
-        <div class="success-icon">?</div>
+        <div class="success-icon">‚úì</div>
 
-        <h1>Abonnement confirmÈ !</h1>
+        <h1>Abonnement confirm√© !</h1>
 
         <p>
-            Merci de votre confiance. Votre paiement a ÈtÈ validÈ avec succËs.<br>
-            Vous avez dÈsormais un accËs illimitÈ ‡ l'ensemble de nos contenus.
+            Merci de votre confiance. Votre paiement a √©t√© valid√© avec succ√®s.<br>
+            Vous avez d√©sormais un acc√®s illimit√© √† l'ensemble de nos contenus.
         </p>
 
         <div class="success-trans-id">
@@ -37,17 +37,17 @@
 
         <!-- Message de synchronisation -->
         <div id="syncMessage" style="margin: 20px 0; padding: 15px; background: #f0f9ff; border-radius: 8px; color: #0369a1; display: none;">
-            <strong>?? Synchronisation en cours...</strong><br>
-            <small>Activation de votre accËs premium</small>
+            <strong>üîÑ Synchronisation en cours...</strong><br>
+            <small>Activation de votre acc√®s premium</small>
         </div>
 
         <div id="syncSuccess" style="margin: 20px 0; padding: 15px; background: #f0fdf4; border-radius: 8px; color: #15803d; display: none;">
-            <strong>? AccËs Premium activÈ !</strong><br>
+            <strong>‚úÖ Acc√®s Premium activ√© !</strong><br>
             <small>Redirection vers votre profil...</small>
         </div>
 
         <a href="profil.html" class="btn-home" id="btnProfil">Voir mon profil</a>
-        <a href="index.html" class="btn-home" style="margin-top: 10px; background: #6b7280;">Retour ‡ l'accueil</a>
+        <a href="index.html" class="btn-home" style="margin-top: 10px; background: #6b7280;">Retour √† l'accueil</a>
     </div>
 
     <script src="js/config.js"></script>
@@ -61,19 +61,19 @@
         if (transactionId) {
             document.getElementById('transId').textContent = transactionId;
 
-            // 2. VÈrification de sÈcuritÈ (Double Check) - Uniquement si pas en mode mock
+            // 2. V√©rification de s√©curit√© (Double Check) - Uniquement si pas en mode mock
             if (!isMock) {
                 SolitiquoAPI.fetchWithAuth(`/subscriptions/check-status`, {
                     method: 'POST',
                     body: JSON.stringify({ transaction_id: transactionId })
                 }).then(res => {
                     if (!res.success) {
-                        console.warn("Le paiement est encore en cours de validation cÙtÈ serveur.");
+                        console.warn("Le paiement est encore en cours de validation c√¥t√© serveur.");
                     }
-                }).catch(err => console.error("Erreur vÈrification:", err));
+                }).catch(err => console.error("Erreur v√©rification:", err));
             }
 
-            // 3. ?? SYNCHRONISATION IMMDIATE DU STATUT ABONN…
+            // 3. üî• SYNCHRONISATION IMMDIATE DU STATUT ABONN√â
             // On utilise le nouvel endpoint /auth/refresh-user
             document.getElementById('syncMessage').style.display = 'block';
 
@@ -87,46 +87,47 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success && data.user) {
-                    console.log('? Statut abonnÈ synchronisÈ:', data.user.is_subscriber);
+                    console.log('‚úÖ Statut abonn√© synchronis√©:', data.user.is_subscriber);
 
-                    // Mise ‡ jour du localStorage pour compatibilitÈ avec le reste de l'app
+                    // Mise √† jour du localStorage pour compatibilit√© avec le reste de l'app
                     localStorage.setItem('user', JSON.stringify(data.user));
 
-                    // Masquer le message de synchro, afficher le succËs
+                    // Masquer le message de synchro, afficher le succ√®s
                     document.getElementById('syncMessage').style.display = 'none';
                     document.getElementById('syncSuccess').style.display = 'block';
 
-                    // VÈrifier que l'utilisateur est bien abonnÈ
+                    // V√©rifier que l'utilisateur est bien abonn√©
                     if (data.user.is_subscriber) {
-                        console.log('?? AccËs Premium activÈ !');
+                        console.log('üéâ Acc√®s Premium activ√© !');
                         
-                        // Redirection automatique vers le profil aprËs 3 secondes
+                        // Redirection automatique vers le profil apr√®s 3 secondes
                         setTimeout(() => {
                             window.location.href = 'profil.html';
                         }, 3000);
                     } else {
-                        console.warn('?? Statut abonnÈ non activÈ - VÈrifier la logique backend');
-                        document.getElementById('syncSuccess').innerHTML = '<strong>?? Activation en attente</strong><br><small>Veuillez contacter le support si le problËme persiste.</small>';
+                        console.warn('‚ö†Ô∏è Statut abonn√© non activ√© - V√©rifier la logique backend');
+                        document.getElementById('syncSuccess').innerHTML = '<strong>‚ö†Ô∏è Activation en attente</strong><br><small>Veuillez contacter le support si le probl√®me persiste.</small>';
                         document.getElementById('syncSuccess').style.background = '#fef3c7';
                         document.getElementById('syncSuccess').style.color = '#92400e';
                     }
                 } else {
-                    console.error('Erreur rÈcupÈration donnÈes utilisateur:', data);
+                    console.error('Erreur r√©cup√©ration donn√©es utilisateur:', data);
                     document.getElementById('syncMessage').style.display = 'none';
                 }
             })
             .catch(err => {
-                console.error('Erreur sync abonnÈ:', err);
-                document.getElementById('syncMessage').innerHTML = '<strong>?? Erreur de synchronisation</strong><br><small>Veuillez rafraÓchir la page</small>';
+                console.error('Erreur sync abonn√©:', err);
+                document.getElementById('syncMessage').innerHTML = '<strong>‚ö†Ô∏è Erreur de synchronisation</strong><br><small>Veuillez rafra√Æchir la page</small>';
                 document.getElementById('syncMessage').style.background = '#fef2f2';
                 document.getElementById('syncMessage').style.color = '#991b1b';
             });
 
         } else {
             document.getElementById('transId').textContent = "Inconnu";
-            console.warn('Aucun ID de transaction trouvÈ dans l\'URL');
+            console.warn('Aucun ID de transaction trouv√© dans l\'URL');
         }
     </script>
+  <script src="/js/lazyload.js"></script>
 </body>
 
 </html>

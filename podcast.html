@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+Ôªø<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -10,7 +10,7 @@
   <link rel="dns-prefetch" href="https://www.youtube.com" />
   <link rel="dns-prefetch" href="https://img.youtube.com" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Chargement... ó Podcast Solitiquo</title>
+  <title>Chargement... ‚Äî Podcast Solitiquo</title>
   <link rel="stylesheet" href="/css/shared.css" />
   <link rel="stylesheet" href="/css/pages/podcast.css" />
   <link
@@ -29,7 +29,7 @@
 
 <body id="page-podcast">
   <a href="javascript:history.length > 1 ? history.back() : window.location.href='index.html'" class="floating-back-btn"
-    aria-label="Retour page prÈcÈdente">
+    aria-label="Retour page pr√©c√©dente">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
       stroke-linecap="round" stroke-linejoin="round">
       <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -41,7 +41,7 @@
         <div class="brand-sep"></div><span class="brand-text">Solitiquo</span>
       </a></div>
     <div class="ph-center">
-      <nav class="ph-nav"><a href="podcasts.html" class="ph-link active">? Retour aux Podcasts</a></nav>
+      <nav class="ph-nav"><a href="podcasts.html" class="ph-link active">‚Üê Retour aux Podcasts</a></nav>
     </div>
     <div class="ph-right">
       <div class="lang-switch-container">
@@ -53,7 +53,7 @@
   </header>
 
   <div id="loading-container">
-    <p style="color:#888; font-size:1.2rem;">Chargement de l'Èpisode...</p>
+    <p style="color:#888; font-size:1.2rem;">Chargement de l'√©pisode...</p>
   </div>
 
   <section class="player-section" id="main-content" style="display:none;">
@@ -63,15 +63,15 @@
 
       <div class="info-grid">
         <div>
-          <h3 class="info-title">¿ propos de cet Èpisode</h3>
+          <h3 class="info-title">√Ä propos de cet √©pisode</h3>
           <div id="pod-desc" class="info-text"></div>
         </div>
 
         <div>
-          <h3 class="info-title">DÈtails</h3>
+          <h3 class="info-title">D√©tails</h3>
           <ul class="info-list" style="list-style:none; padding:0; color:#555;">
-            <li><strong>CatÈgorie :</strong> <span id="pod-cat"></span></li>
-            <li><strong>DurÈe :</strong> <span id="pod-duration"></span></li>
+            <li><strong>Cat√©gorie :</strong> <span id="pod-cat"></span></li>
+            <li><strong>Dur√©e :</strong> <span id="pod-duration"></span></li>
             <li><strong>Date :</strong> <span id="pod-date"></span></li>
           </ul>
           <div id="chapters-block" style="display:none; margin-top:30px;">
@@ -88,17 +88,17 @@
     <div class="footer-grid">
       <div class="footer-col">
         <img src="logo.svg" class="footer-logo">
-        <p style="font-size:0.9rem; opacity:0.7;">Le mÈdia de rÈfÈrence.</p>
+        <p style="font-size:0.9rem; opacity:0.7;">Le m√©dia de r√©f√©rence.</p>
       </div>
       <div class="footer-col">
         <h4>Rubriques</h4><a href="politique.html" class="footer-link">Politique</a><a href="social.html"
           class="footer-link">Social</a>
       </div>
       <div class="footer-col">
-        <h4>LÈgal</h4><a href="mentions-legales.html" class="footer-link">Mentions</a>
+        <h4>L√©gal</h4><a href="mentions-legales.html" class="footer-link">Mentions</a>
       </div>
       <div class="footer-col">
-        <h4>Contact</h4><a href="contact.html" class="footer-link">Nous Ècrire</a>
+        <h4>Contact</h4><a href="contact.html" class="footer-link">Nous √©crire</a>
       </div>
     </div>
     <div class="footer-bottom">&copy; 2025 Solitiquo.</div>
@@ -114,26 +114,26 @@
     document.addEventListener('DOMContentLoaded', async () => {
       await initLanguageSwitcher({ reloadPage: true });
 
-      // 1. RÈcupÈrer l'ID dans l'URL
+      // 1. R√©cup√©rer l'ID dans l'URL
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
 
       if (!id) {
-        document.getElementById('loading-container').innerHTML = "<p>Aucun Èpisode demandÈ. <a href='podcasts.html'>Retour ‡ la liste</a></p>";
+        document.getElementById('loading-container').innerHTML = "<p>Aucun √©pisode demand√©. <a href='podcasts.html'>Retour √† la liste</a></p>";
         return;
       }
 
-      // 3. Appel API pour rÈcupÈrer les infos du podcast
+      // 3. Appel API pour r√©cup√©rer les infos du podcast
       try {
-        // IMPORTANT : On utilise fetch directement ou via SolitiquoAPI si la mÈthode existe
+        // IMPORTANT : On utilise fetch directement ou via SolitiquoAPI si la m√©thode existe
         const res = await fetch(`${window.API_URL}/podcasts/${id}?lang=${getLanguage()}`);
         const json = await res.json();
 
         if (json.success) {
           const pod = json.podcast;
 
-          // 4. Remplir la page avec les donnÈes
-          document.title = `${pod.title} ó Solitiquo`;
+          // 4. Remplir la page avec les donn√©es
+          document.title = `${pod.title} ‚Äî Solitiquo`;
           document.getElementById('pod-desc').textContent = pod.description;
           document.getElementById('pod-cat').textContent = pod.category;
           document.getElementById('pod-date').textContent = SolitiquoAPI.formatDate(pod.created_at);
@@ -152,12 +152,12 @@
                 li.style.cssText = "padding:8px 0; border-bottom:1px solid #eee; cursor:pointer; display:flex; gap:10px;";
                 li.innerHTML = `<span style="font-weight:700; color:#C82823;">${chap.time}</span> <span>${chap.title}</span>`;
 
-                // Clic pour se dÈplacer dans l'audio
+                // Clic pour se d√©placer dans l'audio
                 li.onclick = () => {
                   const parts = chap.time.split(':');
                   const seconds = parseInt(parts[0]) * 60 + parseInt(parts[1]);
                   if (window.player) {
-                    window.player.seekTo(seconds); // Suppose que ton player a cette mÈthode
+                    window.player.seekTo(seconds); // Suppose que ton player a cette m√©thode
                     window.player.play();
                   }
                 };
@@ -166,7 +166,7 @@
             }
           }
 
-          // Remplir la transcription cachÈe (pour que le player la lise)
+          // Remplir la transcription cach√©e (pour que le player la lise)
           document.getElementById('transcript-data').innerHTML = pod.transcript || "<p>Pas de transcription disponible.</p>";
 
           // 5. Afficher la zone principale (supprimer le loading)
@@ -187,11 +187,11 @@
             }
           );
         } else {
-          document.getElementById('loading-container').innerHTML = "<p>…pisode introuvable.</p>";
+          document.getElementById('loading-container').innerHTML = "<p>√âpisode introuvable.</p>";
         }
       } catch (e) {
         console.error(e);
-        document.getElementById('loading-container').innerHTML = "<p>Erreur de chargement. VÈrifiez votre connexion.</p>";
+        document.getElementById('loading-container').innerHTML = "<p>Erreur de chargement. V√©rifiez votre connexion.</p>";
       }
     });
   </script>
@@ -200,6 +200,7 @@
   <script src="/js/config.js"></script>
   <script src="/js/api.js"></script>
   <script src="/js/podcast-player.js"></script>
+  <script src="/js/lazyload.js"></script>
 </body>
 
 </html>
