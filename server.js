@@ -6,6 +6,7 @@ const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
+const compression = require('compression');
 const pool = require('./backend/config/database');
 const slugResolver = require('./backend/middleware/slugResolver');
 const seoController = require('./backend/controllers/seoController');
@@ -17,7 +18,12 @@ const isProduction = process.env.NODE_ENV === 'production';
 const BASE_URL = isProduction ? 'https://solitiquo.com' : `http://localhost:${PORT}`;
 
 // =============================================================================
-// 1. FICHIERS STATIQUES (Optimisation: Servir avant tout traitement)
+// 1. COMPRESSION (avant tout le reste pour maximiser l'effet)
+// =============================================================================
+app.use(compression());
+
+// =============================================================================
+// 2. FICHIERS STATIQUES (Optimisation: Servir avant tout traitement)
 // =============================================================================
 app.use(express.static(__dirname));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
