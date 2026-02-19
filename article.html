@@ -643,7 +643,10 @@
 
         try {
           const res = await fetch(`${window.API_URL}/comments`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            method: 'POST', headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': SolitiquoAPI.csrfToken // Protection CSRF
+            },
             body: JSON.stringify({ article_id: articleId, content: content }),
             credentials: 'include'
           });

@@ -330,7 +330,10 @@
       try {
         const res = await fetch(`${API_URL}/polls/vote`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': SolitiquoAPI.csrfToken // Protection CSRF
+          },
           body: JSON.stringify({
             poll_id: pollId,
             option_index: optionIndex

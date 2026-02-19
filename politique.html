@@ -336,7 +336,10 @@
       try {
         const res = await fetch(`${API_URL}/polls/vote`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': SolitiquoAPI.csrfToken // Protection CSRF
+          },
           body: JSON.stringify({
             poll_id: pollId,
             option_index: optionIndex
@@ -406,7 +409,7 @@
       // A. Chargement Articles
       try {
         const lang = getLanguage();
-        
+
         // 🔥 FIX: Charger TOUS les articles sans filtre langue (priorité = afficher contenu)
         const res = await fetch(`${API_URL}/articles?lang=${lang}`);
         const json = await res.json();
@@ -433,8 +436,8 @@
           const uneImg = une.image_url || 'https://via.placeholder.com/1600x900';
 
           // 🌍 Badge langue si article pas dans langue active
-          const langBadge = une.language !== lang 
-            ? `<span class="hero-lang-badge">🇫🇷 ${une.language.toUpperCase()}</span>` 
+          const langBadge = une.language !== lang
+            ? `<span class="hero-lang-badge">🇫🇷 ${une.language.toUpperCase()}</span>`
             : '';
 
           document.getElementById('hero-dynamic').innerHTML = `
@@ -455,10 +458,10 @@
 
           const mainList = articles.slice(1, 4);
           document.getElementById('magazine-feed').innerHTML = mainList.map(art => {
-            const langBadgeSmall = art.language !== lang 
-              ? `<span style="background:#37463D; color:white; padding:2px 6px; border-radius:3px; font-size:0.65rem; margin-left:8px;">🇫🇷 ${art.language.toUpperCase()}</span>` 
+            const langBadgeSmall = art.language !== lang
+              ? `<span style="background:#37463D; color:white; padding:2px 6px; border-radius:3px; font-size:0.65rem; margin-left:8px;">🇫🇷 ${art.language.toUpperCase()}</span>`
               : '';
-            
+
             return `
             <article class="article-magazine">
               <img src="${art.image_url}" class="mag-img" onerror="handleImgError(this)" loading="lazy">
@@ -487,8 +490,8 @@
         } else {
           document.getElementById('magazine-feed').innerHTML = '<p style="text-align:center; color:#888; padding:2rem;">Aucun article disponible pour le moment.</p>';
         }
-      } catch (e) { 
-        console.error(e); 
+      } catch (e) {
+        console.error(e);
         document.getElementById('magazine-feed').innerHTML = '<p style="text-align:center; color:#C82823; padding:2rem;">Erreur de chargement des articles.</p>';
       }
 

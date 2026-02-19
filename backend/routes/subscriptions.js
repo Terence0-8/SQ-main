@@ -5,6 +5,7 @@ const pool = require('../config/database');
 const Joi = require('joi');
 const axios = require('axios');
 const { isAuthenticated } = require('../middleware/auth');
+const { verifyCsrf } = require('../middleware/csrf');
 
 // ==========================================
 // HELPER: VALIDATION PLAN & INTERVALLE
@@ -38,7 +39,7 @@ const BASE_URL = process.env.NODE_ENV === 'production'
 // ==========================================
 // 1. INITIALISER LE PAIEMENT
 // ==========================================
-router.post('/init-payment', isAuthenticated, async (req, res) => {
+router.post('/init-payment', isAuthenticated, verifyCsrf, async (req, res) => {
   try {
     const userId = req.session.user.id;
     const { plan } = req.body;
@@ -174,7 +175,7 @@ router.post('/webhook', async (req, res) => {
 // ==========================================
 // 3. SIMULATEUR (MODE DEV) - SÉCURISÉ
 // ==========================================
-router.post('/simulate-payment', isAuthenticated, async (req, res) => {
+router.post('/simulate-payment', isAuthenticated, verifyCsrf, async (req, res) => {
   if (process.env.NODE_ENV === 'production') {
     return res.status(403).json({ success: false, error: "Interdit en production" });
   }
@@ -239,9 +240,9 @@ router.post('/simulate-payment', isAuthenticated, async (req, res) => {
 });
 
 // ==========================================
-// 4. RÉSILIATION (inchangé, déjà sécurisé)
+// 3. RÉSILIER ABONNEMENT
 // ==========================================
-router.post('/cancel', isAuthenticated, async (req, res) => {
+router.post('/cancel', isAuthenticated, verifyCsrf, async (req, res) => {
   try {
     const userId = req.session.user.id;
 

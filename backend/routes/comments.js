@@ -4,6 +4,7 @@ const pool = require('../config/database');
 const Joi = require('joi');
 const { isAuthenticated } = require('../middleware/auth');
 const { sanitizeText } = require('../middleware/sanitize');
+const { verifyCsrf } = require('../middleware/csrf');
 
 
 // ==========================================
@@ -118,8 +119,8 @@ router.get('/:articleId', async (req, res) => {
 
 // ==========================================
 // 2. POSTER UN COMMENTAIRE (Avec modération auto)
-// ==========================================
-router.post('/', isAuthenticated, async (req, res) => {
+// ==========================================// 1. CRÉER UN COMMENTAIRE
+router.post('/', isAuthenticated, verifyCsrf, async (req, res) => {
   try {
     // Validation
     const { error, value } = commentSchema.validate(req.body);

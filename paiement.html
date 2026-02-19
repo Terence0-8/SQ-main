@@ -145,7 +145,10 @@
 
           const res = await fetch(endpoint, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': SolitiquoAPI.csrfToken // Protection CSRF
+            },
             body: JSON.stringify({ plan: plan }),
             credentials: 'include'
           });
@@ -158,7 +161,6 @@
           } else {
             throw new Error(json.error || "Erreur inconnue");
           }
-
         } catch (err) {
           console.error(err);
           btn.innerHTML = `Réessayer`;

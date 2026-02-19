@@ -33,6 +33,7 @@ const RICH_CONFIG = {
         'sup', 'sub', 'mark', 'small', 'span',
         // Liens et médias
         'a', 'img', 'figure', 'figcaption', 'picture', 'source',
+        'iframe', // Autoriser les iframes pour les embeds (YouTube, etc.)
         // Tableaux
         'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption',
     ],
@@ -42,6 +43,7 @@ const RICH_CONFIG = {
         'class', 'id',                              // style classes
         'colspan', 'rowspan',                       // tableaux
         'cite',                                     // blockquote
+        'allow', 'allowfullscreen', 'frameborder', 'scrolling', // iframes
     ],
     // Interdire javascript: data: vbscript: dans les URLs
     ALLOWED_URI_REGEXP: /^(?:https?|mailto|tel|ftp):/i,

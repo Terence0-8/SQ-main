@@ -69,7 +69,11 @@ const SolitiquoAPI = {
 
   logout: async () => {
     try {
-      await fetch(`${API_URL}/auth/logout`, { method: 'POST', credentials: 'include' });
+      await fetch(`${API_URL}/auth/logout`, {
+        method: 'POST',
+        headers: { 'X-CSRF-Token': SolitiquoAPI.csrfToken },
+        credentials: 'include'
+      });
       localStorage.clear(); // Nettoyage complet du localStorage
       window.location.href = 'index.html';
     } catch (e) { console.error(e); }
@@ -136,6 +140,7 @@ const SolitiquoAPI = {
       // On utilise la route admin existante
       const res = await fetch(`${API_URL}/admin/comments/${commentId}/delete`, {
         method: 'POST',
+        headers: { 'X-CSRF-Token': SolitiquoAPI.csrfToken }, // Ajout du token
         credentials: 'include' // Important pour que le serveur sache que c'est l'admin
       });
       const json = await res.json();
@@ -143,11 +148,29 @@ const SolitiquoAPI = {
         // Supprimer visuellement
         const el = document.getElementById(`comment-${commentId}`);
         if (el) el.remove();
+        alert("Commentaire supprimé !");
       } else {
         alert("Erreur : " + json.error);
       }
     } catch (e) { alert("Erreur serveur"); }
+  },
+
+  // --- CSRF MANAGEMENT ---
+  csrfToken: null,
+  initCsrf: async () => {
+    try {
+      const res = await fetch(`${API_URL}/csrf-token`, { credentials: 'include' });
+      const json = await res.json();
+      if (json.csrfToken) {
+        SolitiquoAPI.csrfToken = json.csrfToken;
+        console.log('🔒 CSRF Token récupéré');
+      }
+    } catch (e) { console.warn('Erreur récupération CSRF:', e); }
   }
 };
 
-document.addEventListener('DOMContentLoaded', SolitiquoAPI.initUserInterface);
+// Initialisation au chargement
+document.addEventListener('DOMContentLoaded', async () => {
+  await SolitiquoAPI.initCsrf(); // D'abord le token
+  await SolitiquoAPI.initUserInterface(); // Ensuite l'UI
+});

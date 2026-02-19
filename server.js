@@ -126,28 +126,13 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// CSRF Protection
-const crypto = require('crypto');
-app.use((req, res, next) => {
-  if (!req.session) return next(); // Safety check
-  if (!req.session.csrfToken) {
-    req.session.csrfToken = crypto.randomBytes(32).toString('hex');
-  }
-  res.locals.csrfToken = req.session.csrfToken;
-  next();
-});
+// 129. CSRF Protection
+const { csrfProtection, verifyCsrf } = require('./backend/middleware/csrf');
+app.use(csrfProtection);
 
 app.get('/api/csrf-token', (req, res) => res.json({ csrfToken: req.session?.csrfToken }));
 
-const verifyCsrf = (req, res, next) => {
-  if (['GET', 'OPTIONS', 'HEAD'].includes(req.method)) return next();
-  const token = req.headers['x-csrf-token'] || (req.body && req.body._csrf);
-  if (!isProduction && !token) return next();
-  if (isProduction && token !== req.session?.csrfToken) {
-    return res.status(403).json({ success: false, error: 'Token CSRF invalide' });
-  }
-  next();
-};
+// Appliquer verifyCsrf sur la route admin existante (et d'autres plus tard via leurs routeurs)
 app.use('/api/admin', verifyCsrf);
 
 // =============================================================================

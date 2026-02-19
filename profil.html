@@ -227,6 +227,7 @@
       try {
         const res = await fetch(`${window.API_URL}/subscriptions/cancel`, {
           method: 'POST',
+          headers: { 'X-CSRF-Token': SolitiquoAPI.csrfToken },
           credentials: 'include'
         });
         const json = await res.json();

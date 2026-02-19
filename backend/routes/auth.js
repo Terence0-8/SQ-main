@@ -3,6 +3,7 @@ const router = express.Router();
 const pool = require('../config/database');
 const bcrypt = require('bcrypt');
 const Joi = require('joi');
+const { verifyCsrf } = require('../middleware/csrf');
 
 // ============================================
 // SCHÉMAS DE VALIDATION JOI
@@ -157,7 +158,7 @@ router.post('/login', async (req, res) => {
 // ============================================
 // 3. DÉCONNEXION (Logout)
 // ============================================
-router.post('/logout', (req, res) => {
+router.post('/logout', verifyCsrf, (req, res) => {
   req.session.destroy((err) => {
     if (err) return res.status(500).json({ success: false, error: "Erreur déconnexion" });
     res.clearCookie('connect.sid');
@@ -196,19 +197,19 @@ router.get('/me', async (req, res) => {
     // Mise à jour de la session avec les données fraîches
     req.session.user = freshUser;
 
-    res.json({ 
-      success: true, 
-      isLoggedIn: true, 
-      user: freshUser 
+    res.json({
+      success: true,
+      isLoggedIn: true,
+      user: freshUser
     });
 
   } catch (err) {
     console.error('Erreur /auth/me:', err);
     // En cas d'erreur BDD, on retourne quand même la session en cache
-    res.json({ 
-      success: true, 
-      isLoggedIn: true, 
-      user: req.session.user 
+    res.json({
+      success: true,
+      isLoggedIn: true,
+      user: req.session.user
     });
   }
 });
@@ -279,7 +280,7 @@ router.post('/refresh-user', async (req, res) => {
 // ============================================
 // 6. MISE À JOUR PROFIL
 // ============================================
-router.put('/update', async (req, res) => {
+router.put('/update', verifyCsrf, async (req, res) => {
   if (!req.session.user) {
     return res.status(401).json({
       success: false,
