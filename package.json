@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "css:minify": "node scripts/minify-css.js",
     "test": "echo \"Tests à configurer\" && exit 0"
   },
   "keywords": [
