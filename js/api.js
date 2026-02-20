@@ -1,5 +1,5 @@
 // URL API dynamique (configurée par config.js ou fallback)
-const API_URL = window.API_URL || (window.location.origin + '/api');
+var API_URL = window.API_URL || (window.location.origin + '/api');
 
 const SolitiquoAPI = {
   // --- ARTICLES ---

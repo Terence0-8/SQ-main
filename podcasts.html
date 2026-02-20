@@ -165,9 +165,7 @@
     <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
   </footer>
 
-  <script src="js/i18n.js"></script>
-  <script src="js/config.js"></script>
-  <script src="js/api.js"></script>
+
   <script>
     // --- 1. MENU MOBILE & RECHERCHE ---
     const burger = document.getElementById('burgerBtn');
@@ -303,7 +301,7 @@
                             <h3 class="pc-title">${pod.title}</h3>
                             <div class="pc-footer">
                                 <span>${SolitiquoAPI.formatDate(pod.created_at)}</span>
-                                <span>${Math.floor(pod.duration / 60)} MIN</span>
+                                <span>${Math.floor((pod.duration_seconds || pod.duration || 0) / 60)} MIN</span>
                             </div>
                         </div>
                     </a>

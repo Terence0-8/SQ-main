@@ -276,7 +276,10 @@ router.post('/', isWriter, mixedUpload.fields([
 // ==========================================
 // 4. METTRE À JOUR UN PODCAST (Admin/Writer)
 // ==========================================
-router.put('/:id', isWriter, cpUpload, async (req, res) => {
+router.put('/:id', isWriter, mixedUpload.fields([
+  { name: 'cover_image', maxCount: 1 },
+  { name: 'audio_file', maxCount: 1 }
+]), async (req, res) => {
   try {
     const { id } = req.params;
 

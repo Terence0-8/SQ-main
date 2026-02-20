@@ -3,7 +3,7 @@
 // Couvre 100% du contenu du site
 // ============================================================
 
-const TRANSLATIONS = {
+var TRANSLATIONS = {
   fr: {
     // ==================== NAVIGATION ====================
     nav_pol: 'Politique',
