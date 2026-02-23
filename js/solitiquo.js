@@ -15,11 +15,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (show) {
       mobileNav.classList.add('nav-open');
       if (overlay) overlay.classList.add('active');
-      document.body.style.overflow = 'hidden';
+      document.body.classList.add('menu-open');
     } else {
       mobileNav.classList.remove('nav-open');
       if (overlay) overlay.classList.remove('active');
-      document.body.style.overflow = '';
+      document.body.classList.remove('menu-open');
     }
   }
 

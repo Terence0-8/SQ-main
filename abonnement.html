@@ -211,8 +211,8 @@
       const overlay = document.getElementById('mobileNavOverlay');
 
       function toggleMenu(show) {
-        if (show) { mobileNav.classList.add('nav-open'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
-        else { mobileNav.classList.remove('nav-open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+        if (show) { mobileNav.classList.add('nav-open'); overlay.classList.add('active'); document.body.classList.add('menu-open'); }
+        else { mobileNav.classList.remove('nav-open'); overlay.classList.remove('active'); document.body.classList.remove('menu-open'); }
       }
       if (burger) burger.addEventListener('click', () => toggleMenu(true));
       if (mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
