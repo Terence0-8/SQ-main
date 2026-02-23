@@ -32,9 +32,10 @@ const SolitiquoAPI = {
   getPodcasts: async () => {
     try {
       const response = await fetch(`${API_URL}/podcasts`);
+      if (!response.ok) throw new Error('Erreur réseau');
       const json = await response.json();
       return json.data || [];
-    } catch (error) { return []; }
+    } catch (error) { console.error("Err podcasts:", error); return []; }
   },
 
   getPodcastById: async (id) => {

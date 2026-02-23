@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+console.log('--- PODCASTS ROUTER LOADED ---'); // DEBUG
 const pool = require('../config/database');
 const multer = require('multer');
 const cloudinary = require('../config/cloudinary');
@@ -34,6 +35,7 @@ const podcastSchema = Joi.object({
 // 1. LISTE DES PODCASTS PUBLIÉS
 // ==========================================
 router.get('/', async (req, res) => {
+  console.log('--- GET /api/podcasts HIT ---'); // DEBUG
   try {
     const { category } = req.query;
 

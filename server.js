@@ -171,6 +171,11 @@ app.use('/api/admin', verifyCsrf);
 app.use(legacyRedirects);
 
 // Routes API
+app.use('/api', (req, res, next) => {
+  console.log(`📡 API Request: ${req.method} ${req.originalUrl}`);
+  next();
+});
+
 const apiRoutes = [
   'articles', 'language', 'polls', 'comments', 'auth', 'podcasts',
   'admin', 'analytics', 'emissions', 'contact', 'search', 'subscriptions', 'parties', 'translate'
