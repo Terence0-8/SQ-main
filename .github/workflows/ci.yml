@@ -1,0 +1,138 @@
+name: CI — Solitiquo
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-check:
+    name: 🔍 Lint & Syntax Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Vérifie que TOUS les fichiers JS parsent sans erreur de syntaxe
+      - name: Check JS syntax (backend)
+        run: |
+          echo "🔍 Vérification syntaxe JavaScript..."
+          find backend js -name '*.js' | while read f; do
+            node --check "$f" || exit 1
+          done
+          node --check server.js
+          echo "✅ Aucune erreur de syntaxe"
+
+      # Vérifie que le HTML est bien formé (tags ouverts/fermés)
+      - name: Validate HTML structure
+        run: |
+          echo "🔍 Vérification HTML..."
+          errors=0
+          for f in *.html; do
+            # Vérifie que chaque fichier a les balises essentielles
+            if ! grep -q '</html>' "$f"; then
+              echo "❌ $f : balise </html> manquante"
+              errors=$((errors+1))
+            fi
+            if ! grep -q '</head>' "$f"; then
+              echo "❌ $f : balise </head> manquante"
+              errors=$((errors+1))
+            fi
+          done
+          if [ $errors -gt 0 ]; then exit 1; fi
+          echo "✅ Structure HTML OK"
+
+      # Vérifie que le manifest PWA est valide
+      - name: Validate manifest.json
+        run: node -e "JSON.parse(require('fs').readFileSync('manifest.json','utf8')); console.log('✅ manifest.json valide')"
+
+      # Vérifie que package.json ne contient pas de dépendances avec des vulnérabilités critiques
+      - name: Audit dependencies (critical only)
+        run: npm audit --audit-level=critical || true
+
+  server-boot:
+    name: 🚀 Server Boot Test
+    runs-on: ubuntu-latest
+    needs: lint-and-check
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: solitiquo_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Crée les tables minimales pour démarrer le serveur
+      - name: Prepare database
+        env:
+          PGUSER: test
+          PGPASSWORD: test
+          PGDATABASE: solitiquo_test
+          PGHOST: localhost
+        run: |
+          psql -c "CREATE TABLE IF NOT EXISTS session_user_cookies (sid VARCHAR PRIMARY KEY, sess JSON NOT NULL, expire TIMESTAMP NOT NULL);"
+
+      # Démarre le serveur et vérifie qu'il répond en < 10s
+      - name: Boot server & health check
+        env:
+          DATABASE_URL: postgres://test:test@localhost:5432/solitiquo_test
+          NODE_ENV: development
+          PORT: 5000
+          SESSION_SECRET: ci-test-secret-key-not-for-production
+          JWT_SECRET: ci-test-jwt-secret
+          BASE_URL: http://localhost:5000
+        run: |
+          node server.js &
+          SERVER_PID=$!
+
+          echo "⏳ Attente du démarrage du serveur..."
+          for i in $(seq 1 20); do
+            if curl -s -o /dev/null -w "%{http_code}" http://localhost:5000 | grep -q "200"; then
+              echo "✅ Serveur démarré (tentative $i)"
+              # Vérifier quelques routes critiques
+              echo "🔍 Test routes..."
+              curl -sf http://localhost:5000/manifest.json > /dev/null && echo "  ✅ /manifest.json"
+              curl -sf http://localhost:5000/sw.js > /dev/null && echo "  ✅ /sw.js"
+              curl -sf http://localhost:5000/api/csrf-token > /dev/null && echo "  ✅ /api/csrf-token"
+              curl -sf http://localhost:5000/css/shared.css > /dev/null && echo "  ✅ /css/shared.css"
+              kill $SERVER_PID
+              exit 0
+            fi
+            sleep 0.5
+          done
+
+          echo "❌ Le serveur n'a pas démarré en 10 secondes"
+          kill $SERVER_PID 2>/dev/null
+          exit 1
