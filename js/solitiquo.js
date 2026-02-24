@@ -3,6 +3,15 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log("Solitiquo JS chargé"); // Pour vérifier dans la console
 
   // ============================================================
+  // 0. SERVICE WORKER (PWA)
+  // ============================================================
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+      .then((reg) => console.log('✅ SW enregistré, scope:', reg.scope))
+      .catch((err) => console.warn('⚠️ SW non enregistré:', err));
+  }
+
+  // ============================================================
   // 1. GESTION DU MENU MOBILE (Burger)
   // ============================================================
   const burger = document.getElementById('burgerMenu');
