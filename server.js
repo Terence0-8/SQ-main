@@ -160,8 +160,26 @@ app.use(csrfProtection);
 
 app.get('/api/csrf-token', (req, res) => res.json({ csrfToken: req.session?.csrfToken }));
 
-// Appliquer verifyCsrf sur la route admin existante (et d'autres plus tard via leurs routeurs)
-app.use('/api/admin', verifyCsrf);
+// Appliquer verifyCsrf sur TOUTES les routes API mutantes (POST/PUT/DELETE/PATCH)
+// Exceptions : login, register (pas de session), webhooks (callbacks externes)
+const csrfExemptPaths = [
+  '/api/auth/login',
+  '/api/auth/register',
+  '/api/subscriptions/webhook',
+  '/api/language/preference'
+];
+
+app.use('/api', (req, res, next) => {
+  // Ignorer les méthodes safe
+  if (['GET', 'OPTIONS', 'HEAD'].includes(req.method)) return next();
+
+  // Ignorer les routes exemptées
+  const fullPath = req.originalUrl.split('?')[0]; // sans query string
+  if (csrfExemptPaths.some(exempt => fullPath === exempt)) return next();
+
+  // Appliquer la vérification CSRF
+  verifyCsrf(req, res, next);
+});
 
 // =============================================================================
 // 3. ROUTING & CONTROLLERS
