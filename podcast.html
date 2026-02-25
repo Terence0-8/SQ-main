@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -13,6 +13,11 @@
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#37463D">
   <meta name="description" content="Écouter le podcast  Solitiquo, le média audio du Cameroun.">
+  <meta property="og:title" content="Solitiquo  L'Actualité Premium" />
+  <meta property="og:description" content="Le média de référence pour l'analyse politique et sociale au Cameroun." />
+  <meta property="og:image" content="https://solitiquo.com/logo.png" />
+  <meta property="og:url" content="https://solitiquo.com" />
+  <meta property="og:type" content="website" />
   <title>Chargement... — Podcast Solitiquo</title>
   <link rel="stylesheet" href="/css/shared.css" />
   <link rel="stylesheet" href="/css/pages/podcast.css" />
@@ -50,7 +55,8 @@
       </div>
       <a href="index.html" class="ph-brand"><img src="logo.svg">
         <div class="brand-sep"></div><span class="brand-text">Solitiquo</span>
-      </a></div>
+      </a>
+    </div>
     <div class="ph-center">
       <nav class="ph-nav"><a href="podcasts.html" class="ph-link active">← Retour aux Podcasts</a></nav>
     </div>
@@ -81,12 +87,17 @@
       <li class="mobile-link-item"><a href="podcasts.html" class="mobile-link active">Podcasts</a></li>
     </ul>
     <div style="margin-top:auto; padding-top:2rem; border-top:1px solid #333;">
-      <a href="recherche.html" class="mobile-link" style="margin-bottom:1rem; display:flex; align-items:center; gap:10px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <a href="recherche.html" class="mobile-link"
+        style="margin-bottom:1rem; display:flex; align-items:center; gap:10px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <path d="M21 21l-4.35-4.35" />
+        </svg>
         Rechercher
       </a>
       <div style="display:flex; gap:8px; margin-bottom:1rem;">
-        <button class="lang-seg-btn active" data-lang="fr" style="color:#fff; border-color:rgba(255,255,255,.3);">FR</button>
+        <button class="lang-seg-btn active" data-lang="fr"
+          style="color:#fff; border-color:rgba(255,255,255,.3);">FR</button>
         <button class="lang-seg-btn" data-lang="en" style="color:#aaa; border-color:rgba(255,255,255,.15);">EN</button>
       </div>
       <a href="auth.html"
@@ -155,6 +166,52 @@
   <script src="js/api.js"></script>
   <script src="podcast-player.js"></script>
   <script>
+    // --- OPEN GRAPH DYNAMIQUE ---
+    function updateOGTags(data, isPodcast = true) {
+      const baseUrl = window.location.origin;
+      const currentUrl = window.location.href;
+
+      const title = data.title;
+      const desc = data.description ? data.description.substring(0, 160) : "Écoutez Solitiquo, le média audio du Cameroun.";
+      const image = data.image_url || `${baseUrl}/logo.png`;
+
+      const tags = {
+        'og:title': title,
+        'og:description': desc,
+        'og:image': image,
+        'og:url': currentUrl,
+        'og:type': isPodcast ? 'music.episode' : 'article'
+      };
+
+      for (const [prop, val] of Object.entries(tags)) {
+        let meta = document.querySelector(`meta[property="${prop}"]`);
+        if (!meta) {
+          meta = document.createElement('meta');
+          meta.setAttribute('property', prop);
+          document.head.appendChild(meta);
+        }
+        meta.setAttribute('content', val);
+      }
+
+      // Update Twitter tags
+      const twitterTags = {
+        'twitter:card': 'summary_large_image',
+        'twitter:title': title,
+        'twitter:description': desc,
+        'twitter:image': image
+      };
+
+      for (const [name, val] of Object.entries(twitterTags)) {
+        let meta = document.querySelector(`meta[name="${name}"]`);
+        if (!meta) {
+          meta = document.createElement('meta');
+          meta.setAttribute('name', name);
+          document.head.appendChild(meta);
+        }
+        meta.setAttribute('content', val);
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       await initLanguageSwitcher({ reloadPage: true });
 
@@ -213,6 +270,9 @@
           // Remplir la transcription cachée (pour que le player la lise)
           document.getElementById('transcript-data').innerHTML = pod.transcript || "<p>Pas de transcription disponible.</p>";
 
+          // --- 📢 OPEN GRAPH DYNAMIQUE ---
+          updateOGTags(pod);
+
           // 5. Afficher la zone principale (supprimer le loading)
           document.getElementById('loading-container').style.display = 'none';
           document.getElementById('main-content').style.display = 'block';
@@ -247,7 +307,7 @@
   <script src="/js/lazyload.js"></script>
   <script>
     // Mobile menu
-    (function() {
+    (function () {
       var burger = document.getElementById('burgerBtn');
       var nav = document.getElementById('mobileNav');
       var close = document.getElementById('mobileNavClose');
@@ -257,9 +317,9 @@
         if (show) { nav.classList.add('nav-open'); overlay.classList.add('active'); document.body.classList.add('menu-open'); }
         else { nav.classList.remove('nav-open'); overlay.classList.remove('active'); document.body.classList.remove('menu-open'); }
       }
-      if (burger) burger.addEventListener('click', function() { toggleMenu(true); });
-      if (close) close.addEventListener('click', function() { toggleMenu(false); });
-      if (overlay) overlay.addEventListener('click', function() { toggleMenu(false); });
+      if (burger) burger.addEventListener('click', function () { toggleMenu(true); });
+      if (close) close.addEventListener('click', function () { toggleMenu(false); });
+      if (overlay) overlay.addEventListener('click', function () { toggleMenu(false); });
     })();
   </script>
   <script>

@@ -3,7 +3,9 @@
     "allow": [
       "Bash(python3:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "WebFetch(domain:salsita.github.io)"
+      "WebFetch(domain:salsita.github.io)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
