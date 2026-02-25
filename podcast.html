@@ -262,6 +262,11 @@
       if (overlay) overlay.addEventListener('click', function() { toggleMenu(false); });
     })();
   </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
 </body>
 
 </html>

@@ -166,7 +166,8 @@ const csrfExemptPaths = [
   '/api/auth/login',
   '/api/auth/register',
   '/api/subscriptions/webhook',
-  '/api/language/preference'
+  '/api/language/preference',
+  '/api/analytics/track',  // ping public anonyme, pas de données sensibles
 ];
 
 app.use('/api', (req, res, next) => {

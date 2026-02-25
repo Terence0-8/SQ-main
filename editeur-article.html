@@ -115,6 +115,11 @@
   </form>
 
   <!-- AJOUTER CES 2 LIGNES AVANT   <script src="/js/lazyload.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
 </body> -->
   <script src="js/i18n.js"></script>
   <script src="js/config.js"></script>
@@ -275,6 +280,11 @@
     });
   </script>
   <script src="/js/lazyload.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
 </body>
 
 </html>

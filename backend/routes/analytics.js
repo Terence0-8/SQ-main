@@ -276,4 +276,41 @@ router.get('/categories', isAdmin, async (req, res) => {
   }
 });
 
+/**
+ * POST /api/analytics/track
+ * Enregistre un milestone de lecture (start, 25, 50, 75, 100)
+ * Route publique — pas d'authentification requise
+ */
+router.post('/track', async (req, res) => {
+  const { article_id, milestone } = req.body;
+
+  if (!article_id || milestone === undefined) {
+    return res.status(400).json({ success: false, error: 'article_id et milestone requis' });
+  }
+
+  const colMap = {
+    start: 'reads_start',
+    25:    'reads_25',
+    50:    'reads_50',
+    75:    'reads_75',
+    100:   'reads_100',
+  };
+
+  const col = colMap[milestone];
+  if (!col) {
+    return res.status(400).json({ success: false, error: `Milestone invalide : ${milestone}` });
+  }
+
+  try {
+    await db.query(
+      `UPDATE articles SET ${col} = COALESCE(${col}, 0) + 1 WHERE id = $1`,
+      [article_id]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error('❌ Erreur analytics/track:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;
