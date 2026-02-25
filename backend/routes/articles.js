@@ -54,6 +54,19 @@ const articleSchema = Joi.object({
   translation_id: Joi.number().integer().optional()
 });
 
+// ==========================================
+// UTILITAIRE : CALCUL DU READ_TIME
+// ==========================================
+// Vitesse de lecture adulte standard presse : 230 mots/minute
+// On strip le HTML pour ne compter que les mots réels
+const WORDS_PER_MINUTE = 230;
+
+function calcReadTime(content) {
+  if (!content || content.trim() === '') return 1;
+  const plainText = content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const wordCount = plainText.split(' ').filter(w => w.length > 0).length;
+  return Math.max(Math.ceil(wordCount / WORDS_PER_MINUTE), 1);
+}
 
 // ==========================================
 // 1. LECTURE INTELLIGENTE (Multi-langues - AFFICHE TOUT)
@@ -78,6 +91,7 @@ router.get('/', async (req, res) => {
         a.language, 
         a.tags,
         a.views_count,
+        a.read_time,
         a.translation_id,
         a.translation_method,
         u.username as author_name,
@@ -149,6 +163,7 @@ router.get('/by-slug/:slug', async (req, res) => {
         a.language,
         a.tags,
         a.views_count,
+        a.read_time,
         a.featured_image AS image_url,
         a.published_at,
         a.created_at,
@@ -228,6 +243,7 @@ router.get('/:id', async (req, res) => {
         a.language,
         a.tags,
         a.views_count,
+        a.read_time,
         a.featured_image AS image_url,
         a.published_at,
         a.created_at,
@@ -276,7 +292,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // ==========================================
-// 3. CRÉATION ARTICLE (SLUG AUTO)
+// 3. CRÉATION ARTICLE (SLUG AUTO + READ_TIME)
 // ==========================================
 router.post('/', isWriter, imageUpload.single('image'), async (req, res) => {
   try {
@@ -345,19 +361,22 @@ router.post('/', isWriter, imageUpload.single('image'), async (req, res) => {
 
     const targetLang = lang || 'fr';
 
-    // Insertion en base (statut 'draft' par défaut)
-    const query = `
-      INSERT INTO articles 
-      (title, slug, content, excerpt, category, author_id, language, featured_image, tags, translation_id, status, published_at, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'draft', NULL, NOW(), NOW())
-      RETURNING id, title, slug, status, language, category, translation_id
-    `;
-
     // ✅ SANITISATION XSS avant insertion
     title = sanitizeText(title);
     content = sanitizeHTML(content);
     excerpt = excerpt ? sanitizeText(excerpt) : '';
     if (tagsArray.length) tagsArray = sanitizeArray(tagsArray);
+
+    // ✅ CALCUL DU READ_TIME
+    const readTime = calcReadTime(content);
+
+    // Insertion en base (statut 'draft' par défaut)
+    const query = `
+      INSERT INTO articles 
+      (title, slug, content, excerpt, category, author_id, language, featured_image, tags, translation_id, read_time, status, published_at, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'draft', NULL, NOW(), NOW())
+      RETURNING id, title, slug, status, language, category, translation_id, read_time
+    `;
 
     const values = [
       title,
@@ -369,7 +388,8 @@ router.post('/', isWriter, imageUpload.single('image'), async (req, res) => {
       targetLang,
       finalImageUrl,
       tagsArray,
-      translation_id || null
+      translation_id || null,
+      readTime
     ];
 
     const { rows } = await pool.query(query, values);
@@ -415,7 +435,7 @@ router.post('/', isWriter, imageUpload.single('image'), async (req, res) => {
 // ==========================================
 
 // ==========================================
-// 4. MODIFICATION ARTICLE (RÉGÉNÉRATION SLUG SI TITRE CHANGE)
+// 4. MODIFICATION ARTICLE (RÉGÉNÉRATION SLUG + READ_TIME)
 // ==========================================
 router.put('/:id', isWriter, imageUpload.single('image'), async (req, res) => {
   try {
@@ -487,26 +507,29 @@ router.put('/:id', isWriter, imageUpload.single('image'), async (req, res) => {
     excerpt = excerpt ? sanitizeText(excerpt) : '';
     if (tagsArray.length) tagsArray = sanitizeArray(tagsArray);
 
+    // ✅ RECALCUL DU READ_TIME à chaque modification du contenu
+    const readTime = calcReadTime(content);
+
     let query, values;
 
     // Si nouvelle image, on met tout à jour
     if (finalImageUrl) {
       query = `
         UPDATE articles 
-        SET title=$1, slug=$2, content=$3, excerpt=$4, category=$5, featured_image=$6, tags=$7, translation_id=$8, updated_at=NOW()
-        WHERE id=$9 
-        RETURNING id, title, slug, status, language
+        SET title=$1, slug=$2, content=$3, excerpt=$4, category=$5, featured_image=$6, tags=$7, translation_id=$8, read_time=$9, updated_at=NOW()
+        WHERE id=$10 
+        RETURNING id, title, slug, status, language, read_time
       `;
-      values = [title, slug, content, excerpt, category, finalImageUrl, tagsArray, translation_id || null, id];
+      values = [title, slug, content, excerpt, category, finalImageUrl, tagsArray, translation_id || null, readTime, id];
     } else {
       // Sinon on garde l'image existante
       query = `
         UPDATE articles 
-        SET title=$1, slug=$2, content=$3, excerpt=$4, category=$5, tags=$6, translation_id=$7, updated_at=NOW()
-        WHERE id=$8 
-        RETURNING id, title, slug, status, language
+        SET title=$1, slug=$2, content=$3, excerpt=$4, category=$5, tags=$6, translation_id=$7, read_time=$8, updated_at=NOW()
+        WHERE id=$9 
+        RETURNING id, title, slug, status, language, read_time
       `;
-      values = [title, slug, content, excerpt, category, tagsArray, translation_id || null, id];
+      values = [title, slug, content, excerpt, category, tagsArray, translation_id || null, readTime, id];
     }
 
     const { rows } = await pool.query(query, values);
