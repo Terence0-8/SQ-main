@@ -393,7 +393,6 @@
 
     document.addEventListener('click', (e) => {
       if (searchContainer && searchContainer.classList.contains('active')) {
-        // On ferme si on clique ailleurs que sur le container, le bouton ou le label
         if (!searchContainer.contains(e.target) &&
           !searchBtn.contains(e.target) &&
           (!searchLabel || !searchLabel.contains(e.target))) {
@@ -488,9 +487,11 @@
             initTTS(article);
           }
 
-          // Temps de lecture
-          const words = article.content.split(/\s+/).length;
-          document.getElementById('art-readtime').textContent = Math.ceil(words / 200);
+          // ⏱️ TEMPS DE LECTURE — priorité à la valeur BDD (read_time),
+          // fallback JS sur le contenu brut si la migration n'a pas encore tourné
+          const readTime = article.read_time
+            || Math.max(Math.ceil(article.content.replace(/<[^>]*>/g, ' ').split(/\s+/).filter(w => w).length / 230), 1);
+          document.getElementById('art-readtime').textContent = readTime;
 
           // --- BOUTON MODIFIER (ADMIN) ---
           if (user && (user.role === 'admin' || user.role === 'writer')) {
@@ -538,12 +539,10 @@
       const t = texts[currentLang];
 
       try {
-        // Nouveau endpoint pour vérifier la traduction
         const res = await fetch(`${window.API_URL}/translate/article/${article.id}?lang=${targetLang}`);
         const data = await res.json();
 
         if (data.has_translation) {
-          // Traduction existe déjà
           const translation = data.translation;
           translationZone.innerHTML = `
             <div class="translation-notice">
@@ -553,7 +552,6 @@
             </div>
           `;
         } else {
-          // Aucune traduction -> Afficher le bouton + Container caché pour le progress circle
           translationZone.innerHTML = `
             <button id="translateBtn" class="translate-btn">
               <span>🌍</span>
@@ -570,7 +568,6 @@
             </div>
           `;
 
-          // Logique du cercle
           const circle = document.getElementById('progress-circle');
           const radius = circle.r.baseVal.value;
           const circumference = radius * 2 * Math.PI;
@@ -589,16 +586,11 @@
             const progressContainer = document.getElementById('progress-container');
             const label = document.getElementById('progress-label');
 
-            // 1. Masquer bouton, afficher loader
             btn.style.display = 'none';
             progressContainer.style.display = 'flex';
-
-            // Animation simulée (0 -> 30% -> 80%)
             setProgress(10);
 
-            // Démarrer la requête API
             try {
-              // Simulation étape 1 (Connexion)
               setTimeout(() => setProgress(30), 300);
 
               const translatePromise = fetch(`${window.API_URL}/translate/article/${article.id}`, {
@@ -607,7 +599,6 @@
                 body: JSON.stringify({ targetLang })
               });
 
-              // Simulation étape 2 (Traduction en cours)
               const simInterval = setInterval(() => {
                 const current = parseInt(document.getElementById('progress-text').textContent);
                 if (current < 80) {
@@ -622,14 +613,11 @@
               clearInterval(simInterval);
 
               if (result.success) {
-                // Étape 3 (Finalisation)
                 setProgress(100);
                 label.textContent = (targetLang === 'fr') ? "Finalisation..." : "Finalizing...";
-
                 setTimeout(() => {
                   window.location.href = `article.html?id=${result.translation.id}`;
                 }, 500);
-
               } else {
                 alert(`Error: ${result.error}`);
                 progressContainer.style.display = 'none';
@@ -656,7 +644,6 @@
     let _ttsBaseLabel = "Écouter l'article";
 
     function initTTS(article) {
-      // Vérification compatibilité navigateur
       if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
 
       const player = document.getElementById('tts-player');
@@ -666,22 +653,16 @@
 
       if (!player || !label || !info || !btn) return;
 
-      // Détection automatique de la langue via article.language
       _ttsLang = (article.language === 'en') ? 'en-US' : 'fr-FR';
       const isEnglish = _ttsLang === 'en-US';
 
-      // Textes de l'interface selon la langue de l'article
       _ttsBaseLabel = isEnglish ? 'Listen to this article' : "Écouter l'article";
       label.textContent = _ttsBaseLabel;
       info.textContent = isEnglish ? 'Audio reading' : 'Lecture audio';
 
-      // Attacher l'événement au bouton
       btn.addEventListener('click', toggleTTS);
-
-      // Afficher le lecteur
       player.style.display = 'flex';
 
-      // Stopper la lecture si l'utilisateur quitte la page
       window.addEventListener('beforeunload', () => {
         if (_ttsPlaying) window.speechSynthesis.cancel();
       });
@@ -695,7 +676,6 @@
       if (!contentDiv || !icon || !label) return;
 
       if (_ttsPlaying) {
-        // PAUSE — arrêt de la lecture
         window.speechSynthesis.cancel();
         _ttsPlaying = false;
         icon.textContent = '▶️';
@@ -703,7 +683,6 @@
         return;
       }
 
-      // PLAY — lecture du texte brut (innerText strip le HTML automatiquement)
       const text = (contentDiv.innerText || contentDiv.textContent || '').trim();
       if (!text) return;
 
@@ -712,14 +691,12 @@
       _ttsUtterance.rate = 0.95;
       _ttsUtterance.pitch = 1;
 
-      // Retour à l'état initial à la fin de la lecture
       _ttsUtterance.onend = () => {
         _ttsPlaying = false;
         icon.textContent = '▶️';
         label.textContent = _ttsBaseLabel;
       };
 
-      // Gestion erreur silencieuse
       _ttsUtterance.onerror = () => {
         _ttsPlaying = false;
         icon.textContent = '▶️';
@@ -729,7 +706,7 @@
       window.speechSynthesis.speak(_ttsUtterance);
       _ttsPlaying = true;
       icon.textContent = '⏸️';
-      label.textContent = (_ttsLang === 'en-US') ? 'Pause' : 'Pause';
+      label.textContent = 'Pause';
     }
 
     // --- 3. BARRE DE PROGRESSION ---
@@ -800,7 +777,7 @@
           const res = await fetch(`${window.API_URL}/comments`, {
             method: 'POST', headers: {
               'Content-Type': 'application/json',
-              'X-CSRF-Token': SolitiquoAPI.csrfToken // Protection CSRF
+              'X-CSRF-Token': SolitiquoAPI.csrfToken
             },
             body: JSON.stringify({ article_id: articleId, content: content }),
             credentials: 'include'
