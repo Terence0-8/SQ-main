@@ -30,7 +30,7 @@ app.use(compression());
 // CSS / JS / polices : cache 7 jours
 // Images : cache 30 jours
 const setStaticCacheHeaders = (res, filePath) => {
-  if (/\.(html?)$/i.test(filePath)) {
+  if (/\.(html?)$/i.test(filePath) || /sw\.js$/i.test(filePath)) {
     res.setHeader('Cache-Control', 'no-cache');
   } else if (/\.(css|js|woff2?|ttf|otf|eot)$/i.test(filePath)) {
     res.setHeader('Cache-Control', 'public, max-age=604800');   // 7 jours

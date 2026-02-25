@@ -11,6 +11,7 @@ const CACHE_NAME = 'solitiquo-v1';
 const PRECACHE_URLS = [
     '/',
     '/index.html',
+    '/offline.html',
     '/css/shared.css',
     '/js/solitiquo.js',
     '/js/api.js',
@@ -67,9 +68,9 @@ self.addEventListener('fetch', (event) => {
                     return response;
                 })
                 .catch(() => {
-                    // Offline → servir depuis le cache
+                    // Offline → servir depuis le cache, sinon page hors ligne
                     return caches.match(request).then((cached) => {
-                        return cached || caches.match('/index.html');
+                        return cached || caches.match('/offline.html');
                     });
                 })
         );
