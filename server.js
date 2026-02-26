@@ -75,7 +75,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Rate Limiting
-// Rate Limiting Basics
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5000,
@@ -84,31 +83,27 @@ const globalLimiter = rateLimit({
   legacyHeaders: false
 });
 
-// Specific Limiters
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10, // Strict pour login
+  max: 10,
   message: { success: false, error: 'Trop de tentatives de connexion, réessayez dans 15 minutes' }
 });
 
 const commentsLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20, // Anti-spam commentaires
+  max: 20,
   message: { success: false, error: 'Trop de commentaires, réessayez dans 15 minutes' }
 });
 
 const adminLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 50, // Protection admin
+  max: 50,
   message: { success: false, error: 'Trop de requêtes admin, réessayez dans 15 minutes' }
 });
 
-// Apply Specific Limiters BEFORE global or routes
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/comments', commentsLimiter);
 app.use('/api/admin', adminLimiter);
-
-// Apply Global Limiter
 app.use(globalLimiter);
 
 // Session
@@ -132,9 +127,9 @@ app.use(session({
   }
 }));
 
-// Synchro Session (Anti-Ban & Robustesse)
+// Synchro Session
 app.use(async (req, res, next) => {
-  if (req.session?.user?.id) { // Robustesse : Optional chaining
+  if (req.session?.user?.id) {
     try {
       const result = await pool.query('SELECT is_active, is_subscriber, role FROM users WHERE id = $1', [req.session.user.id]);
       if (result.rows.length === 0 || !result.rows[0].is_active) {
@@ -154,31 +149,24 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// 129. CSRF Protection
+// CSRF Protection
 const { csrfProtection, verifyCsrf } = require('./backend/middleware/csrf');
 app.use(csrfProtection);
 
 app.get('/api/csrf-token', (req, res) => res.json({ csrfToken: req.session?.csrfToken }));
 
-// Appliquer verifyCsrf sur TOUTES les routes API mutantes (POST/PUT/DELETE/PATCH)
-// Exceptions : login, register (pas de session), webhooks (callbacks externes)
 const csrfExemptPaths = [
   '/api/auth/login',
   '/api/auth/register',
   '/api/subscriptions/webhook',
   '/api/language/preference',
-  '/api/analytics/track',  // ping public anonyme, pas de données sensibles
+  '/api/analytics/track',
 ];
 
 app.use('/api', (req, res, next) => {
-  // Ignorer les méthodes safe
   if (['GET', 'OPTIONS', 'HEAD'].includes(req.method)) return next();
-
-  // Ignorer les routes exemptées
-  const fullPath = req.originalUrl.split('?')[0]; // sans query string
+  const fullPath = req.originalUrl.split('?')[0];
   if (csrfExemptPaths.some(exempt => fullPath === exempt)) return next();
-
-  // Appliquer la vérification CSRF
   verifyCsrf(req, res, next);
 });
 
@@ -237,11 +225,18 @@ app.get('/sitemap.xml', async (req, res) => {
   }
 });
 
-// Note: Static files moved to top
+// =============================================================================
+// 4. SSR META — article.html?id=X (bots de partage social)
+// Intercepte AVANT que Express serve le fichier statique.
+// Si l'article existe en BDD, injecte les bonnes balises <meta> OG + Twitter.
+// Si l'id est absent ou l'article introuvable, laisse passer vers le fichier
+// statique normalement (fallback transparent).
+// =============================================================================
+app.get('/article.html', seoController.handleArticleById);
 
-// SEO Friendly Routing (Front-Controller for SEO)
-app.use(slugResolver); // 1. Resolve Slug
-app.get(/^\/(fr|en)\/([^/]+)\/(?!.*\.(css|js|png|jpg|jpeg|gif|ico|svg|json)$)(.+)$/, seoController.handleSeoRoute); // 2. Inject Meta
+// SEO Friendly Routing
+app.use(slugResolver);
+app.get(/^\/(fr|en)\/([^/]+)\/(?!.*\.(css|js|png|jpg|jpeg|gif|ico|svg|json)$)(.+)$/, seoController.handleSeoRoute);
 
 // SPA Fallback (Language Roots)
 app.get(/^\/(fr|en)\/?$/, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
