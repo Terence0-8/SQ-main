@@ -18,9 +18,9 @@
   <meta property="og:image" content="https://solitiquo.com/logo.png" />
   <meta property="og:url" content="https://solitiquo.com" />
   <meta property="og:type" content="website" />
-    <link rel="alternate" hreflang="fr" href="https://solitiquo.com/fr/" />
-    <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
-    <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
+  <link rel="alternate" hreflang="fr" href="https://solitiquo.com/fr/" />
+  <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
+  <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
   <title>Chargement... — Podcast Solitiquo</title>
   <link rel="stylesheet" href="/css/shared.css" />
   <link rel="stylesheet" href="/css/pages/podcast.css" />
@@ -110,8 +110,11 @@
     </div>
   </nav>
 
-  <div id="loading-container">
-    <p style="color:#888; font-size:1.2rem;">Chargement de l'épisode...</p>
+  <div id="loading-container" style="max-width:800px; margin:2rem auto; padding:0 20px;">
+    <div class="skeleton skeleton-title" style="margin-bottom: 30px;"></div>
+    <div class="skeleton skeleton-image" style="height: 150px; border-radius: 16px; margin-bottom: 30px;"></div>
+    <div class="skeleton skeleton-text"></div>
+    <div class="skeleton skeleton-text short"></div>
   </div>
 
   <section class="player-section" id="main-content" style="display:none;">

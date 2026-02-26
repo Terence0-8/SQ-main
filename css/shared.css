@@ -5100,3 +5100,60 @@ body#page-success {
         }
     }
 }
+
+/* --- SKELETON LOADERS --- */
+.skeleton {
+    background: #e2e5e7;
+    background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+    border-radius: 5px;
+    background-size: 200% 100%;
+    animation: 1.5s shine linear infinite;
+}
+
+.skeleton-title {
+    height: 40px;
+    width: 80%;
+    margin: 0 auto 20px auto;
+}
+
+.skeleton-badge {
+    height: 24px;
+    width: 100px;
+    margin: 0 auto 20px auto;
+    border-radius: 12px;
+}
+
+.skeleton-text {
+    height: 16px;
+    width: 100%;
+    margin-bottom: 12px;
+}
+
+.skeleton-text.short {
+    width: 60%;
+}
+
+.skeleton-image {
+    height: 400px;
+    width: 100%;
+    margin: 30px 0;
+    border-radius: 12px;
+}
+
+.skeleton-meta {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.skeleton-meta-item {
+    height: 16px;
+    width: 80px;
+}
+
+@keyframes shine {
+    to {
+        background-position-x: -200%;
+    }
+}
