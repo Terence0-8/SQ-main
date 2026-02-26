@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <!-- Preconnect to external servers -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://res.cloudinary.com" />
+  <link rel="dns-prefetch" href="https://www.youtube.com" />
+  <link rel="dns-prefetch" href="https://img.youtube.com" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#37463D">
+  <meta name="description" content="Politique camerounaise  Analyses, décryptages et actualités politiques du Cameroun sur Solitiquo.">
+  <meta property="og:title" content="Solitiquo  L'Actualité Premium" />
+  <meta property="og:description" content="Le média de référence pour l'analyse politique et sociale au Cameroun." />
+  <meta property="og:image" content="https://solitiquo.com/logo.png" />
+  <meta property="og:url" content="https://solitiquo.com" />
+  <meta property="og:type" content="website" />
+  <title>Politique — Solitiquo</title>
+  <link rel="stylesheet" href="css/shared.css" />
+  <link rel="stylesheet" href="css/pages/politique.css" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
+    rel="stylesheet" />
+
+  <script>
+    function handleImgError(img) {
+      img.onerror = null;
+      img.src = 'https://placehold.co/600x400/eee/999?text=Solitiquo';
+    }
+  </script>
+
+
+</head>
+
+<body id="page-politique">
+
+  <header class="premium-header">
+    <div class="ph-left">
+      <div class="burger-container"><button class="burger-btn" id="burgerBtn">
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+        </button></div>
+      <a href="index.html" class="ph-brand">
+        <img src="logo.svg" alt="S">
+        <div class="brand-sep"></div>
+        <span class="brand-text">Solitiquo</span>
+      </a>
+    </div>
+    <div class="ph-center">
+      <nav class="ph-nav">
+        <a href="politique.html" class="ph-link active">Politique</a>
+        <a href="social.html" class="ph-link">Social</a>
+        <a href="partis-politiques.html" class="ph-link">Partis</a>
+        <a href="emissions.html" class="ph-link">Émissions</a>
+        <a href="podcasts.html" class="ph-link">Podcasts</a>
+      </nav>
+    </div>
+    <div class="ph-right" style="justify-content: flex-end; gap: 20px;">
+      <div class="lang-switch-container">
+        <button class="lang-seg-btn active" data-lang="fr">FR</button>
+        <button class="lang-seg-btn" data-lang="en">EN</button>
+      </div>
+      <div class="search-stack">
+        <div class="search-row">
+          <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
+            </svg>
+          </button>
+          <span class="search-label" id="searchLabel">Rechercher</span>
+        </div>
+
+        <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
+
+          <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput"
+            autocomplete="off" required />
+
+          <button class="search-submit" type="submit" aria-label="Lancer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+
+        </form>
+      </div>
+      <a href="auth.html" class="ph-btn-auth">S'identifier</a>
+    </div>
+  </header>
+
+  <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+  <nav id="mobileNav" class="mobile-nav-sidebar">
+    <div class="mobile-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img src="logo.svg" class="mobile-logo" alt="S">
+        <span style="font-family:'Playfair Display';font-weight:700;font-size:1.5rem;">Solitiquo</span>
+      </div>
+      <button id="mobileNavClose" class="mobile-close">×</button>
+    </div>
+    <ul class="mobile-links">
+      <li class="mobile-link-item"><a href="index.html" class="mobile-link">Accueil</a></li>
+      <li class="mobile-link-item"><a href="politique.html" class="mobile-link active">Politique</a></li>
+      <li class="mobile-link-item"><a href="social.html" class="mobile-link">Social</a></li>
+      <li class="mobile-link-item"><a href="partis-politiques.html" class="mobile-link">Partis</a></li>
+      <li class="mobile-link-item"><a href="emissions.html" class="mobile-link">Émissions</a></li>
+      <li class="mobile-link-item"><a href="podcasts.html" class="mobile-link">Podcasts</a></li>
+    </ul>
+    <div style="margin-top:auto; padding-top:2rem; border-top:1px solid #333;">
+      <a href="recherche.html" class="mobile-link" style="margin-bottom:1rem; display:flex; align-items:center; gap:10px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        Rechercher
+      </a>
+      <div style="display:flex; gap:8px; margin-bottom:1rem;">
+        <button class="lang-seg-btn active" data-lang="fr" style="color:#fff; border-color:rgba(255,255,255,.3);">FR</button>
+        <button class="lang-seg-btn" data-lang="en" style="color:#aaa; border-color:rgba(255,255,255,.15);">EN</button>
+      </div>
+      <a href="auth.html"
+        style="color:white; text-decoration:none; font-weight:700; display:flex; align-items:center; gap:10px;">
+        <span>👤</span> S'identifier
+      </a>
+    </div>
+  </nav>
+
+
+  <div id="hero-dynamic">
+    <section class="grand-hero-section" style="background:#eee;"></section>
+  </div>
+
+  <div class="main-grid">
+
+    <div class="content-left">
+
+      <div id="main-poll-area" style="display:none;">
+        <div class="poll-feed-card" id="poll-card-inner">
+          <div class="poll-label">
+            <span
+              style="background:var(--primary-dark); width:8px; height:8px; border-radius:50%; display:inline-block;"></span>
+            Le sondage de la semaine
+          </div>
+          <h3 class="poll-question-large" id="poll-question-main">...</h3>
+          <div id="poll-options-main"></div>
+        </div>
+      </div>
+
+      <div class="section-label">Nouveautés</div>
+      <div id="magazine-feed">
+        <p style="text-align:center; color:#888; padding:2rem;">Chargement...</p>
+      </div>
+
+      <div class="discover-section">
+        <div class="section-label" style="color:#2c2c2c; border-color:#2c2c2c; margin-top:2rem;">Découvrir</div>
+        <div id="discover-grid" class="discover-grid"></div>
+      </div>
+
+    </div>
+
+    <aside class="content-right">
+
+      <div id="sidebar-poll-result-area" style="display:none;">
+        <div class="sidebar-poll-results">
+          <div
+            style="text-transform:uppercase; font-size:0.7rem; color:#aaa; letter-spacing:1px; margin-bottom:0.8rem;">
+            Résultats en direct</div>
+          <h4 class="sidebar-poll-title" id="poll-question-sidebar">...</h4>
+          <div id="poll-results-sidebar"></div>
+          <div style="text-align:center; font-size:0.8rem; color:#aaa; margin-top:10px;">Merci de votre vote</div>
+        </div>
+      </div>
+
+      <div class="pod-sb-card">
+        <div style="position:relative;">
+          <img src="https://placehold.co/400x300" class="pod-sb-img" alt="Podcast" id="pol-pod-img"
+            onerror="handleImgError(this)" loading="lazy">
+          <div
+            style="position:absolute; top:15px; left:15px; background:var(--accent-red); color:white; font-size:0.6rem; font-weight:800; padding:4px 8px; border-radius:4px;">
+            PODCAST</div>
+        </div>
+        <div class="pod-sb-content">
+          <span class="pod-sb-tag" id="pol-pod-cat">POLITIQUE</span>
+          <h3 class="pod-sb-title" id="pol-pod-title">Chargement...</h3>
+          <p style="font-size:0.9rem; color:#ccc; line-height:1.5; margin-bottom:15px;">Le podcast politique du moment.
+          </p>
+          <a href="#" id="pol-pod-link"
+            style="display:inline-block; background:white; color:black; text-decoration:none; padding:8px 20px; border-radius:30px; font-weight:700; cursor:pointer;">Écouter</a>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+
+
+  <footer class="premium-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <div style="display:flex; gap:10px; align-items:center; margin-bottom:1.5rem;">
+          <img src="logo.svg" class="footer-logo" alt="S" onerror="handleImgError(this)">
+          <span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
+        </div>
+        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le média de référence.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Rubriques</h4>
+        <a href="politique.html" class="footer-link">Politique</a>
+        <a href="social.html" class="footer-link">Social</a>
+        <a href="partis-politiques.html" class="footer-link">Partis</a>
+      </div>
+      <div class="footer-col">
+        <h4>Légal</h4>
+        <a href="mentions-legales.html" class="footer-link">Mentions légales</a>
+        <a href="conditions-utilisation.html" class="footer-link">CGU</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <a href="contact.html" class="footer-link">Nous écrire</a>
+        <a href="auth.html" class="footer-link">S'identifier</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
+  </footer>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/solitiquo.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    // --- 1. GESTIONNAIRE DE CLICS GLOBAL (LA SOLUTION) ---
+    // Cette partie écoute tous les clics sur la page et réagit si c'est un bouton de sondage
+    document.addEventListener('click', (e) => {
+      // A. Clic sur une option de vote
+      if (e.target.classList.contains('js-poll-vote')) {
+        e.preventDefault();
+        const optionIndex = parseInt(e.target.dataset.index);
+        submitGlobalVote(optionIndex);
+      }
+
+      // B. Clic sur "Modifier mon vote"
+      if (e.target.classList.contains('js-poll-edit')) {
+        e.preventDefault();
+        renderSmartPoll(true); // Force le mode édition
+      }
+
+      // C. Clic sur "Annuler"
+      if (e.target.classList.contains('js-poll-cancel')) {
+        e.preventDefault();
+        renderSmartPoll(false); // Retour aux résultats
+      }
+    });
+
+    // --- 2. DONNÉES & LOGIQUE SONDAGE ---
+    let smartPollData = null;
+    const pageCategory = window.location.pathname.includes('social') ? 'Social' : 'Politique';
+
+    async function loadSmartPoll() {
+      const mainArea = document.getElementById('main-poll-area');
+      try {
+        const res = await fetch(`${API_URL}/polls/active/${pageCategory}`, { credentials: 'include' });
+        const data = await res.json();
+
+        if (!data.success) {
+          if (mainArea) mainArea.style.display = 'none';
+          return;
+        }
+
+        smartPollData = data;
+        renderSmartPoll(false);
+
+      } catch (e) { console.error(e); }
+    }
+
+    function renderSmartPoll(forceEdit) {
+      if (!smartPollData) return;
+      const { poll, hasVoted } = smartPollData;
+      const options = poll.options; // Options are inside poll object
+
+      const mainArea = document.getElementById('main-poll-area');
+      const sidebarArea = document.getElementById('sidebar-poll-result-area');
+      const showResults = hasVoted && !forceEdit;
+
+      if (showResults) {
+        // --- VUE RÉSULTATS (SIDEBAR) ---
+        if (mainArea) mainArea.style.display = 'none';
+        if (sidebarArea) {
+          sidebarArea.style.display = 'block';
+          document.getElementById('poll-question-sidebar').textContent = poll.question;
+
+          const total = options.reduce((a, b) => a + (parseInt(b.votes) || 0), 0);
+          const max = Math.max(...options.map(o => (parseInt(o.votes) || 0)));
+
+          document.getElementById('poll-results-sidebar').innerHTML = options.map(opt => {
+            const c = parseInt(opt.votes) || 0;
+            const pct = total === 0 ? 0 : Math.round((c / total) * 100);
+            const barColor = (c === max && total > 0) ? '#C82823' : '#cbd5e1';
+            const weight = (c === max && total > 0) ? '700' : '400';
+
+            return `
+                    <div style="margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:${weight}; margin-bottom:4px;">
+                            <span>${opt.text}</span><span>${pct}%</span>
+                        </div>
+                        <div style="height:5px; background:rgba(255,255,255,0.15); border-radius:3px; overflow:hidden;">
+                            <div style="width:${pct}%; background:${barColor}; height:100%; border-radius:3px; transition:width 0.5s;"></div>
+                        </div>
+                    </div>`;
+          }).join('');
+
+          // Bouton Modifier (Classe js-poll-edit pour le déclencheur)
+          const container = document.createElement('div');
+          container.style.textAlign = 'center';
+          container.style.marginTop = '15px';
+          container.innerHTML = `<button class="btn-modify-vote js-poll-edit" style="color:#aaa; border-color:#444;">Modifier mon vote</button>`;
+
+          // Nettoyage avant ajout
+          const existingBtn = document.getElementById('sidebar-edit-wrapper');
+          if (existingBtn) existingBtn.remove();
+          container.id = 'sidebar-edit-wrapper';
+
+          document.getElementById('poll-results-sidebar').appendChild(container);
+        }
+      } else {
+        // --- VUE VOTE (MAIN AREA) ---
+        if (sidebarArea) sidebarArea.style.display = 'none';
+        if (mainArea) {
+          mainArea.style.display = 'block';
+          document.getElementById('poll-question-main').textContent = poll.question;
+
+          // GÉNÉRATION DES BOUTONS (Notez la classe js-poll-vote et data-index)
+          document.getElementById('poll-options-main').innerHTML = options.map((opt, index) => `
+                    <button class="poll-option-btn js-poll-vote" data-index="${index}">${opt.text}</button>
+                `).join('');
+
+          // Bouton Annuler
+          if (hasVoted) {
+            const cancelDiv = document.createElement('div');
+            cancelDiv.style.textAlign = 'center';
+            cancelDiv.style.marginTop = '10px';
+            cancelDiv.innerHTML = `<a href="#" class="js-poll-cancel" style="color:#999; font-size:0.8rem; text-decoration:none;">Annuler</a>`;
+            document.getElementById('poll-options-main').appendChild(cancelDiv);
+          }
+
+          // Animation
+          const inner = document.getElementById('poll-card-inner');
+          if (inner) { inner.classList.remove('fade-out'); inner.classList.add('poll-fade-enter'); }
+        }
+      }
+    }
+
+    async function submitGlobalVote(optionIndex) {
+      if (!smartPollData) return;
+      const pollId = smartPollData.poll.id;
+
+      try {
+        const res = await fetch(`${API_URL}/polls/vote`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': SolitiquoAPI.csrfToken // Protection CSRF
+          },
+          body: JSON.stringify({
+            poll_id: pollId,
+            option_index: optionIndex
+          }),
+          credentials: 'include'
+        });
+        const json = await res.json();
+
+        if (json.success) {
+          // CAS 1 : Le vote a marché
+          smartPollData.hasVoted = true;
+          if (json.options) {
+            smartPollData.poll.options = json.options; // Update options inside poll
+          }
+          renderSmartPoll(false);
+        } else {
+          // CAS 2 : Le serveur a refusé
+          console.warn("Erreur vote:", json.error);
+          alert(json.error || "Vote impossible");
+          renderSmartPoll(false);
+        }
+      } catch (e) {
+        console.error(e);
+        alert("Erreur de connexion au serveur.");
+      }
+    }
+
+    // --- 3. MENU MOBILE & RECHERCHE (Standard) ---
+    const burger = document.getElementById('burgerBtn');
+    const mobileNav = document.getElementById('mobileNav');
+    const mobileClose = document.getElementById('mobileNavClose');
+    const overlay = document.getElementById('mobileNavOverlay');
+
+    function toggleMenu(show) {
+      if (show) { mobileNav.classList.add('nav-open'); overlay.classList.add('active'); document.body.classList.add('menu-open'); }
+      else { mobileNav.classList.remove('nav-open'); overlay.classList.remove('active'); document.body.classList.remove('menu-open'); }
+    }
+    if (burger) burger.addEventListener('click', () => toggleMenu(true));
+    if (mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
+    if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
+
+    const searchBtn = document.getElementById('searchBtn');
+    const searchLabel = document.getElementById('searchLabel');
+    const searchContainer = document.getElementById('searchContainer');
+    const searchInput = document.getElementById('searchInput');
+
+    function toggleSearch(e) {
+      e.stopPropagation();
+      searchContainer.classList.toggle('active');
+      if (searchContainer.classList.contains('active')) { setTimeout(() => searchInput.focus(), 100); }
+    }
+    if (searchBtn) searchBtn.addEventListener('click', toggleSearch);
+    if (searchLabel) searchLabel.addEventListener('click', toggleSearch);
+    document.addEventListener('click', (e) => {
+      if (searchContainer && searchContainer.classList.contains('active')) {
+        if (!searchContainer.contains(e.target) && !searchBtn.contains(e.target) && !searchLabel.contains(e.target)) {
+          searchContainer.classList.remove('active');
+        }
+      }
+    });
+
+    // --- 4. CHARGEMENT INITIAL (ARTICLES + SONDAGE) ---
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Init Language
+      await initLanguageSwitcher({ reloadPage: true });
+
+      // A. Chargement Articles
+      try {
+        const lang = getLanguage();
+
+        // 🔥 FIX: Charger TOUS les articles sans filtre langue (priorité = afficher contenu)
+        const res = await fetch(`${API_URL}/articles?lang=${lang}`);
+        const json = await res.json();
+
+        if (json.success && json.data.length > 0) {
+          // 🔥 Filtrer uniquement par catégorie "Politique"
+          const allArticles = json.data;
+          const articles = allArticles.filter(art => art.category === 'Politique');
+
+          if (articles.length === 0) {
+            document.getElementById('magazine-feed').innerHTML = '<p style="text-align:center; color:#888; padding:2rem;">Aucun article politique disponible pour le moment.</p>';
+            return;
+          }
+
+          // 🌍 Tri intelligent: articles dans la langue active en premier
+          articles.sort((a, b) => {
+            if (a.language === lang && b.language !== lang) return -1;
+            if (a.language !== lang && b.language === lang) return 1;
+            return 0;
+          });
+
+          const une = articles[0];
+          const linkUne = `article.html?id=${une.id}`;
+          const uneImg = une.image_url || 'https://via.placeholder.com/1600x900';
+
+          // 🌍 Badge langue si article pas dans langue active
+          const langBadge = une.language !== lang
+            ? `<span class="hero-lang-badge">🇫🇷 ${une.language.toUpperCase()}</span>`
+            : '';
+
+          document.getElementById('hero-dynamic').innerHTML = `
+            <section class="grand-hero-section">
+              <a href="${linkUne}" style="position:absolute; inset:0; z-index:2;"></a>
+              <img src="${uneImg}" class="hero-bg-img" onerror="handleImgError(this)" loading="lazy">
+              <div class="hero-overlay">
+                <div class="hero-tags-wrap">
+                    <span class="hero-badge-une">À LA UNE</span>
+                    <span class="hero-badge-cat">${une.category}</span>
+                    ${langBadge}
+                </div>
+                <h1 class="hero-title-main">${une.title}</h1>
+                <p class="hero-excerpt">${une.excerpt || ''}</p>
+              </div>
+            </section>
+          `;
+
+          const mainList = articles.slice(1, 4);
+          document.getElementById('magazine-feed').innerHTML = mainList.map(art => {
+            const langBadgeSmall = art.language !== lang
+              ? `<span style="background:#37463D; color:white; padding:2px 6px; border-radius:3px; font-size:0.65rem; margin-left:8px;">🇫🇷 ${art.language.toUpperCase()}</span>`
+              : '';
+
+            return `
+            <article class="article-magazine">
+              <img src="${art.image_url}" class="mag-img" onerror="handleImgError(this)" loading="lazy">
+              <div class="mag-content">
+                <a href="article.html?id=${art.id}" style="text-decoration:none;"><h3>${art.title} ${langBadgeSmall}</h3></a>
+                <p class="mag-excerpt">${art.excerpt || art.slug}</p>
+                <small style="color:#888; font-size:0.85rem;">${SolitiquoAPI.formatDate(art.published_at)}</small>
+              </div>
+            </article>
+          `}).join('');
+
+          // Injection de la grille "Découvrir" (Fix: Slice 5-13 + Fallback)
+          const discoverArticles = articles.slice(5, 13);
+          const discoverGrid = document.getElementById('discover-grid');
+          if (discoverGrid && discoverArticles.length > 0) {
+            discoverGrid.innerHTML = discoverArticles.map(art => `
+                <a href="article.html?id=${art.id}" class="disco-card">
+                <img src="${art.image_url}" class="disco-img" onerror="handleImgError(this)" loading="lazy">
+                <h4 class="disco-title">${art.title}</h4>
+                <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
+                </a>
+            `).join('');
+          } else if (discoverGrid) {
+            discoverGrid.innerHTML = '<p style="text-align:center;color:#999;">Plus d\'articles bientôt.</p>';
+          }
+        } else {
+          document.getElementById('magazine-feed').innerHTML = '<p style="text-align:center; color:#888; padding:2rem;">Aucun article disponible pour le moment.</p>';
+        }
+      } catch (e) {
+        console.error(e);
+        document.getElementById('magazine-feed').innerHTML = '<p style="text-align:center; color:#C82823; padding:2rem;">Erreur de chargement des articles.</p>';
+      }
+
+      // B. Chargement Podcast
+      try {
+        const resPod = await fetch(`${API_URL}/podcasts/featured/politique`);
+        const jsonPod = await resPod.json();
+        if (jsonPod.success && jsonPod.data) {
+          const pod = jsonPod.data;
+          const img = document.getElementById('pol-pod-img');
+          const title = document.getElementById('pol-pod-title');
+          const cat = document.getElementById('pol-pod-cat');
+          const link = document.getElementById('pol-pod-link');
+
+          if (img) img.src = pod.image_url || 'https://placehold.co/400x300';
+          if (title) title.textContent = pod.title;
+          if (cat) cat.textContent = pod.category.toUpperCase();
+          if (link) link.href = `podcast.html?id=${pod.id}`;
+        }
+      } catch (e) { }
+
+      // C. Lancement du Sondage
+      loadSmartPoll();
+    });
+  </script>
+  <script src="/js/lazyload.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
+</body>
