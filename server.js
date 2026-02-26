@@ -245,27 +245,7 @@ app.get(/^\/(fr|en)\/([^/]+)\/(?!.*\.(css|js|png|jpg|jpeg|gif|ico|svg|json)$)(.+
 
 // SPA Fallback (Language Roots)
 app.get(/^\/(fr|en)\/?$/, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-app.get(/^\/(fr|en)\/([^/]+)\/?$/, (req, res, next) => {
-  console.log(`🔍 Routing check: /${req.params[0]}/${req.params[1]}`);
-
-  // Redirection propre: /fr/index -> /fr
-  if (req.params[1] === 'index') {
-    return res.redirect(`/${req.params[0]}`);
-  }
-
-  const map = {
-    'politique': 'politique.html',
-    'social': 'social.html',
-    'emissions': 'emissions.html',
-    'podcasts': 'podcasts.html',
-    'partis': 'partis-politiques.html',
-    'parties': 'partis-politiques.html',
-    'partis-politiques': 'partis-politiques.html',
-    'admin': 'admin.html'
-  };
-  if (map[req.params[1]]) return res.sendFile(path.join(__dirname, map[req.params[1]]));
-  next();
-});
+app.get(/^\/(fr|en)\/([^/]+)\/?$/, seoController.handleStaticSeoRoute);
 
 // Health Check
 app.get('/api/health', (req, res) => res.json({ status: 'Server Running', environment: isProduction ? 'production' : 'development' }));
