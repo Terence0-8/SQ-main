@@ -23,207 +23,92 @@
   <title>Chargement... — Solitiquo</title>
   <link rel="stylesheet" href="/css/shared.css" />
   <link rel="stylesheet" href="/css/pages/article.css" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
-    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
   <style>
     /* 🌍 Traduction */
     .translate-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(55, 70, 61, 0.15);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1.5px solid rgba(55, 70, 61, 0.3);
-      color: #37463D;
-      padding: 12px 24px;
-      border-radius: 12px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin: 1.5rem 0;
-      box-shadow: 0 4px 20px rgba(55, 70, 61, 0.1);
+      display: inline-flex; align-items: center; gap: 10px;
+      background: rgba(55,70,61,.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      border: 1.5px solid rgba(55,70,61,.3); color: #37463D;
+      padding: 12px 24px; border-radius: 12px; font-weight: 600; font-size: .95rem;
+      cursor: pointer; transition: all .3s ease; margin: 1.5rem 0;
+      box-shadow: 0 4px 20px rgba(55,70,61,.1);
     }
-
-    .translate-btn:hover {
-      background: rgba(55, 70, 61, 0.25);
-      border-color: rgba(55, 70, 61, 0.5);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 25px rgba(55, 70, 61, 0.15);
-    }
-
-    .translate-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .translate-btn .spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(55, 70, 61, 0.3);
-      border-top-color: #37463D;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    .translation-notice {
-      background: rgba(55, 70, 61, 0.08);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1.5px solid rgba(55, 70, 61, 0.2);
-      border-radius: 14px;
-      padding: 18px 24px;
-      margin: 1.5rem 0;
-      font-size: 0.95rem;
-      color: #37463D;
-      line-height: 1.6;
-      box-shadow: 0 4px 20px rgba(55, 70, 61, 0.08);
-    }
-
-    .translation-notice a {
-      color: #C82823;
-      font-weight: 700;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 8px;
-      transition: all 0.2s ease;
-    }
-
-    .translation-notice a:hover {
-      color: #9a1f1b;
-      transform: translateX(3px);
-    }
-
-    .translation-notice a::after {
-      content: '→';
-      font-size: 1.2em;
-    }
+    .translate-btn:hover { background: rgba(55,70,61,.25); border-color: rgba(55,70,61,.5); transform: translateY(-2px); box-shadow: 0 6px 25px rgba(55,70,61,.15); }
+    .translate-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+    .translate-btn .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(55,70,61,.3); border-top-color: #37463D; border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .translation-notice { background: rgba(55,70,61,.08); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1.5px solid rgba(55,70,61,.2); border-radius: 14px; padding: 18px 24px; margin: 1.5rem 0; font-size: .95rem; color: #37463D; line-height: 1.6; box-shadow: 0 4px 20px rgba(55,70,61,.08); }
+    .translation-notice a { color: #C82823; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; transition: all .2s ease; }
+    .translation-notice a:hover { color: #9a1f1b; transform: translateX(3px); }
+    .translation-notice a::after { content: '→'; font-size: 1.2em; }
 
     /* 🔊 TTS */
-    .tts-player {
-      display: none;
-      align-items: center;
-      gap: 14px;
-      background: rgba(55, 70, 61, 0.07);
-      border: 1.5px solid rgba(55, 70, 61, 0.2);
-      border-radius: 12px;
-      padding: 12px 20px;
-      margin: 1rem 0 1.5rem 0;
-      transition: all 0.3s ease;
+    .tts-player { display: none; align-items: center; gap: 14px; background: rgba(55,70,61,.07); border: 1.5px solid rgba(55,70,61,.2); border-radius: 12px; padding: 12px 20px; margin: 1rem 0 1.5rem; transition: all .3s ease; }
+    .tts-player:hover { background: rgba(55,70,61,.11); border-color: rgba(55,70,61,.35); }
+    .tts-btn { background: var(--primary-dark,#37463D); color: white; border: none; border-radius: 8px; padding: 10px 18px; cursor: pointer; font-weight: 600; font-size: .9rem; display: flex; align-items: center; gap: 8px; transition: all .2s ease; white-space: nowrap; }
+    .tts-btn:hover { background: #2a3530; transform: translateY(-1px); }
+    .tts-info { font-size: .8rem; color: #888; font-style: italic; }
+
+    /* 📣 Barre de partage */
+    .share-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 2.5rem 0 2rem; padding: 1.5rem 2rem; background: #f8fbf1; border: 1px solid #e0e8dc; border-radius: 14px; }
+    .share-label { font-weight: 700; font-size: .9rem; color: #37463D; text-transform: uppercase; letter-spacing: .5px; margin-right: 6px; flex-shrink: 0; }
+    .share-btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 30px; font-size: .88rem; font-weight: 700; text-decoration: none; border: none; cursor: pointer; transition: all .2s ease; white-space: nowrap; }
+    .share-btn:hover { transform: translateY(-2px); opacity: .92; }
+    .share-wa   { background: #25D366; color: #fff; }
+    .share-fb   { background: #1877F2; color: #fff; }
+    .share-tw   { background: #000;    color: #fff; }
+    .share-copy { background: #37463D; color: #fff; }
+    .share-copy.copied { background: #2e7d32; }
+
+    /* ================================================
+       MODALE DE PARTAGE NATIVE SOLITIQUO
+       ================================================ */
+    #share-modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+      z-index: 10000; align-items: center; justify-content: center; padding: 1rem;
+    }
+    #share-modal-overlay.open { display: flex; animation: overlayIn .2s ease; }
+    @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+
+    #share-modal {
+      background: #fff; border-radius: 20px; width: 100%; max-width: 460px;
+      box-shadow: 0 24px 60px rgba(0,0,0,.25); overflow: hidden;
+      animation: modalUp .25s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes modalUp {
+      from { opacity: 0; transform: translateY(30px) scale(.97); }
+      to   { opacity: 1; transform: translateY(0)    scale(1);   }
     }
 
-    .tts-player:hover {
-      background: rgba(55, 70, 61, 0.11);
-      border-color: rgba(55, 70, 61, 0.35);
-    }
+    #share-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 1.5rem .8rem; border-bottom: 1px solid #eef0ec; }
+    #share-modal-header span { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700; color: #37463D; }
+    #share-modal-close { background: none; border: none; cursor: pointer; color: #888; font-size: 1.4rem; line-height: 1; padding: 4px 8px; border-radius: 8px; transition: background .15s, color .15s; }
+    #share-modal-close:hover { background: #f0f0f0; color: #333; }
 
-    .tts-btn {
-      background: var(--primary-dark, #37463D);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 18px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s ease;
-      white-space: nowrap;
-    }
+    #share-modal-preview { display: flex; align-items: center; gap: 14px; margin: 1rem 1.5rem; padding: 12px 14px; background: #f8fbf1; border: 1px solid #e0e8dc; border-radius: 12px; }
+    #share-modal-preview img { width: 72px; height: 56px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: #eee; }
+    #share-modal-preview-text { flex: 1; min-width: 0; }
+    #share-modal-preview-title { font-weight: 700; font-size: .88rem; color: #37463D; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    #share-modal-preview-domain { font-size: .75rem; color: #999; margin-top: 4px; }
 
-    .tts-btn:hover {
-      background: #2a3530;
-      transform: translateY(-1px);
-    }
+    #share-modal-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 1.5rem 1.5rem; }
+    .modal-share-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 14px; border-radius: 12px; font-size: .88rem; font-weight: 700; border: none; cursor: pointer; text-decoration: none; transition: all .2s ease; color: #fff; }
+    .modal-share-btn:hover { transform: translateY(-2px); opacity: .92; }
+    .modal-share-btn.msb-wa   { background: #25D366; }
+    .modal-share-btn.msb-fb   { background: #1877F2; }
+    .modal-share-btn.msb-tw   { background: #000; }
+    .modal-share-btn.msb-copy { background: #37463D; }
+    .modal-share-btn.msb-copy.copied { background: #2e7d32; }
 
-    .tts-info {
-      font-size: 0.8rem;
-      color: #888;
-      font-style: italic;
-    }
-
-    /* 📣 Boutons de partage */
-    .share-bar {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 2.5rem 0 2rem;
-      padding: 1.5rem 2rem;
-      background: #f8fbf1;
-      border: 1px solid #e0e8dc;
-      border-radius: 14px;
-    }
-
-    .share-label {
-      font-weight: 700;
-      font-size: 0.9rem;
-      color: #37463D;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-right: 6px;
-      flex-shrink: 0;
-    }
-
-    .share-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 9px 18px;
-      border-radius: 30px;
-      font-size: 0.88rem;
-      font-weight: 700;
-      text-decoration: none;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      white-space: nowrap;
-    }
-
-    .share-btn:hover {
-      transform: translateY(-2px);
-      opacity: 0.92;
-    }
-
-    .share-wa {
-      background: #25D366;
-      color: #fff;
-    }
-
-    .share-fb {
-      background: #1877F2;
-      color: #fff;
-    }
-
-    .share-tw {
-      background: #000;
-      color: #fff;
-    }
-
-    .share-copy {
-      background: #37463D;
-      color: #fff;
-    }
-
-    .share-copy.copied {
-      background: #2e7d32;
-    }
+    #share-modal-url-row { display: flex; align-items: center; gap: 8px; margin: 0 1.5rem 1.5rem; background: #f4f4f4; border-radius: 10px; padding: 8px 12px; }
+    #share-modal-url-text { flex: 1; font-size: .78rem; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #share-modal-url-copy { background: none; border: none; cursor: pointer; color: #37463D; font-size: .78rem; font-weight: 700; white-space: nowrap; padding: 2px 6px; border-radius: 6px; transition: background .15s; }
+    #share-modal-url-copy:hover { background: #e0e8dc; }
   </style>
 
   <script>
@@ -232,25 +117,15 @@
 </head>
 
 <body id="page-article">
-  <a href="javascript:history.length > 1 ? history.back() : window.location.href='index.html'" class="floating-back-btn"
-    aria-label="Retour page précédente">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-      stroke-linecap="round" stroke-linejoin="round">
-      <path d="M19 12H5M12 19l-7-7 7-7" />
-    </svg>
+  <a href="javascript:history.length > 1 ? history.back() : window.location.href='index.html'" class="floating-back-btn" aria-label="Retour page précédente">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
     <span>Retour</span>
   </a>
 
   <header class="premium-header">
     <div class="ph-left">
-      <div class="burger-container"><button class="burger-btn" id="burgerBtn">
-          <div class="burger-line"></div>
-          <div class="burger-line"></div>
-          <div class="burger-line"></div>
-        </button></div>
-      <a href="index.html" class="ph-brand"><img src="logo.svg" alt="S">
-        <div class="brand-sep"></div><span class="brand-text">Solitiquo</span>
-      </a>
+      <div class="burger-container"><button class="burger-btn" id="burgerBtn"><div class="burger-line"></div><div class="burger-line"></div><div class="burger-line"></div></button></div>
+      <a href="index.html" class="ph-brand"><img src="logo.svg" alt="S"><div class="brand-sep"></div><span class="brand-text">Solitiquo</span></a>
     </div>
     <div class="ph-center">
       <nav class="ph-nav">
@@ -261,29 +136,19 @@
         <a href="podcasts.html" class="ph-link">Podcasts</a>
       </nav>
     </div>
-    <div class="ph-right" style="justify-content:flex-end; gap:20px;">
+    <div class="ph-right" style="justify-content:flex-end;gap:20px;">
       <div class="lang-switch-container">
         <button class="lang-seg-btn active" data-lang="fr">FR</button>
         <button class="lang-seg-btn" data-lang="en">EN</button>
       </div>
       <div class="search-stack">
-        <div class="search-row" style="display:flex; align-items:center; cursor:pointer;">
-          <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8" />
-              <path d="M21 21l-4.35-4.35" />
-            </svg>
-          </button>
-          <span class="search-label" id="searchLabel"
-            style="font-size:0.9rem; font-weight:600; margin-left:8px;">Rechercher</span>
+        <div class="search-row" style="display:flex;align-items:center;cursor:pointer;">
+          <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></button>
+          <span class="search-label" id="searchLabel" style="font-size:.9rem;font-weight:600;margin-left:8px;">Rechercher</span>
         </div>
         <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
-          <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput"
-            autocomplete="off" required />
-          <button class="search-submit" type="submit" aria-label="Lancer"><svg width="16" height="16"
-              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="9 18 15 12 9 6" />
-            </svg></button>
+          <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput" autocomplete="off" required />
+          <button class="search-submit" type="submit" aria-label="Lancer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
         </form>
       </div>
     </div>
@@ -292,8 +157,7 @@
   <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
   <nav id="mobileNav" class="mobile-nav-sidebar">
     <div class="mobile-header">
-      <div style="display:flex;align-items:center;gap:10px;"><img src="logo.svg" class="mobile-logo" alt="S"><span
-          style="font-family:'Playfair Display';font-weight:700;font-size:1.5rem;">Solitiquo</span></div>
+      <div style="display:flex;align-items:center;gap:10px;"><img src="logo.svg" class="mobile-logo" alt="S"><span style="font-family:'Playfair Display';font-weight:700;font-size:1.5rem;">Solitiquo</span></div>
       <button id="mobileNavClose" class="mobile-close">×</button>
     </div>
     <ul class="mobile-links">
@@ -304,33 +168,20 @@
       <li class="mobile-link-item"><a href="emissions.html" class="mobile-link">Émissions</a></li>
       <li class="mobile-link-item"><a href="podcasts.html" class="mobile-link">Podcasts</a></li>
     </ul>
-    <div style="margin-top:auto; padding-top:2rem; border-top:1px solid #333;">
-      <a href="recherche.html" class="mobile-link"
-        style="margin-bottom:1rem; display:flex; align-items:center; gap:10px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8" />
-          <path d="M21 21l-4.35-4.35" />
-        </svg>
-        Rechercher
-      </a>
-      <div style="display:flex; gap:8px; margin-bottom:1rem;">
-        <button class="lang-seg-btn active" data-lang="fr"
-          style="color:#fff; border-color:rgba(255,255,255,.3);">FR</button>
-        <button class="lang-seg-btn" data-lang="en" style="color:#aaa; border-color:rgba(255,255,255,.15);">EN</button>
+    <div style="margin-top:auto;padding-top:2rem;border-top:1px solid #333;">
+      <a href="recherche.html" class="mobile-link" style="margin-bottom:1rem;display:flex;align-items:center;gap:10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>Rechercher</a>
+      <div style="display:flex;gap:8px;margin-bottom:1rem;">
+        <button class="lang-seg-btn active" data-lang="fr" style="color:#fff;border-color:rgba(255,255,255,.3);">FR</button>
+        <button class="lang-seg-btn" data-lang="en" style="color:#aaa;border-color:rgba(255,255,255,.15);">EN</button>
       </div>
-      <a href="auth.html"
-        style="color:white; text-decoration:none; font-weight:700; display:flex; align-items:center; gap:10px;"><span>👤</span>
-        S'identifier</a>
+      <a href="auth.html" style="color:white;text-decoration:none;font-weight:700;display:flex;align-items:center;gap:10px;"><span>👤</span>S'identifier</a>
     </div>
   </nav>
 
-  <div id="loading-container" class="article-detail-container" style="padding-top: 2rem; margin-top: 2rem;">
+  <div id="loading-container" class="article-detail-container" style="padding-top:2rem;margin-top:2rem;">
     <div class="skeleton skeleton-badge"></div>
     <div class="skeleton skeleton-title"></div>
-    <div class="skeleton skeleton-meta">
-      <div class="skeleton skeleton-meta-item"></div>
-      <div class="skeleton skeleton-meta-item"></div>
-    </div>
+    <div class="skeleton skeleton-meta"><div class="skeleton skeleton-meta-item"></div><div class="skeleton skeleton-meta-item"></div></div>
     <div class="skeleton skeleton-image"></div>
     <div class="skeleton skeleton-text"></div>
     <div class="skeleton skeleton-text"></div>
@@ -339,122 +190,116 @@
   </div>
 
   <main class="article-detail-container" id="main-article" style="display:none;">
-
-    <div style="text-align:center; margin-bottom:1rem;">
-      <span id="art-category-badge"
-        style="background:var(--primary-dark); color:white; padding:4px 12px; border-radius:4px; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:1px;"></span>
+    <div style="text-align:center;margin-bottom:1rem;">
+      <span id="art-category-badge" style="background:var(--primary-dark);color:white;padding:4px 12px;border-radius:4px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;"></span>
     </div>
-
     <h1 class="article-title" id="art-title"></h1>
-
-    <!-- ZONE DE TRADUCTION -->
     <div id="translation-zone" style="text-align:center;"></div>
-
     <div class="author-line"><strong>Par</strong> <span id="art-author"></span></div>
     <hr class="thin-separator">
     <div class="article-description" id="art-excerpt"></div>
-
     <div class="meta-info-simple">
       <span class="time-read">⏱️ <span id="art-readtime">...</span> min de lecture</span>
       <span class="date-publish" id="art-date"></span>
     </div>
-
-    <!-- 🔊 LECTEUR TTS -->
     <div id="tts-player" class="tts-player" role="region" aria-label="Lecteur audio">
-      <button id="tts-btn" type="button" class="tts-btn">
-        <span id="tts-icon">▶️</span>
-        <span id="tts-label">Écouter l'article</span>
-      </button>
+      <button id="tts-btn" type="button" class="tts-btn"><span id="tts-icon">▶️</span><span id="tts-label">Écouter l'article</span></button>
       <span class="tts-info" id="tts-info">Lecture audio</span>
     </div>
-
     <figure class="article-img" id="art-figure">
       <img id="art-image" src="" alt="Article Image" onerror="handleImgError(this)" loading="lazy">
       <figcaption id="art-caption"></figcaption>
     </figure>
-
     <article class="article-content" id="art-content"></article>
 
-    <!-- 📣 BOUTONS DE PARTAGE SOCIAL -->
+    <!-- 📣 BARRE DE PARTAGE — chaque bouton réseau ouvre la modale native -->
     <div class="share-bar" id="share-bar">
       <span class="share-label">Partager</span>
-
-      <!-- WhatsApp : lien classique (ouvre l'app mobile ou web.whatsapp.com) -->
-      <a class="share-btn share-wa" id="share-wa" target="_blank" rel="noopener noreferrer">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path
-            d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-        </svg>
+      <button class="share-btn share-wa" id="share-wa" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
         WhatsApp
-      </a>
-
-      <!-- Facebook : popup centrée 600×500 (reste sur Solitiquo en arrière-plan) -->
+      </button>
       <button class="share-btn share-fb" id="share-fb" type="button">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path
-            d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-        </svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
         Facebook
       </button>
-
-      <!-- X / Twitter : popup centrée 600×450 (reste sur Solitiquo en arrière-plan) -->
       <button class="share-btn share-tw" id="share-tw" type="button">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path
-            d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-        </svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
         X / Twitter
       </button>
-
-      <button class="share-btn share-copy" id="share-copy">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="9" y="9" width="13" height="13" rx="2" />
-          <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-        </svg>
+      <button class="share-btn share-copy" id="share-copy" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
         <span id="copy-label">Copier le lien</span>
       </button>
     </div>
 
     <section class="comments-section">
-      <h3 style="font-family:'Playfair Display'; font-size:2rem; margin-bottom:2rem; color:var(--primary-dark);">
-        Discussions</h3>
+      <h3 style="font-family:'Playfair Display';font-size:2rem;margin-bottom:2rem;color:var(--primary-dark);">Discussions</h3>
       <form id="commentForm" class="comment-box">
         <textarea id="commentInput" rows="3" class="comment-input" placeholder="Participez au débat..."></textarea>
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <div id="commentMsg" style="font-size:0.9rem;"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div id="commentMsg" style="font-size:.9rem;"></div>
           <button type="submit" class="btn-comment">Publier</button>
         </div>
       </form>
       <div id="commentsList"></div>
     </section>
-
   </main>
 
-  <div id="progressBarWrapper" style="position:fixed; bottom:0; left:0; width:100%; height:5px; z-index:9999;">
-    <div id="progressBar" style="height:100%; width:0%; background:var(--accent-red); transition:width 0.1s;"></div>
+  <div id="progressBarWrapper" style="position:fixed;bottom:0;left:0;width:100%;height:5px;z-index:9999;">
+    <div id="progressBar" style="height:100%;width:0%;background:var(--accent-red);transition:width .1s;"></div>
+  </div>
+
+  <!-- ================================================
+       MODALE DE PARTAGE NATIVE SOLITIQUO
+       ================================================ -->
+  <div id="share-modal-overlay" role="dialog" aria-modal="true" aria-label="Partager l'article">
+    <div id="share-modal">
+      <div id="share-modal-header">
+        <span>Partager l'article</span>
+        <button id="share-modal-close" aria-label="Fermer">✕</button>
+      </div>
+      <div id="share-modal-preview">
+        <img id="share-modal-img" src="" alt="" onerror="this.style.display='none'">
+        <div id="share-modal-preview-text">
+          <div id="share-modal-preview-title"></div>
+          <div id="share-modal-preview-domain">solitiquo.com</div>
+        </div>
+      </div>
+      <div id="share-modal-buttons">
+        <button class="modal-share-btn msb-wa" id="modal-btn-wa" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          WhatsApp
+        </button>
+        <button class="modal-share-btn msb-fb" id="modal-btn-fb" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Facebook
+        </button>
+        <button class="modal-share-btn msb-tw" id="modal-btn-tw" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          X / Twitter
+        </button>
+        <button class="modal-share-btn msb-copy" id="modal-btn-copy" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          <span id="modal-copy-label">Copier</span>
+        </button>
+      </div>
+      <div id="share-modal-url-row">
+        <span id="share-modal-url-text"></span>
+        <button id="share-modal-url-copy" type="button">Copier</button>
+      </div>
+    </div>
   </div>
 
   <footer class="premium-footer">
     <div class="footer-grid">
       <div class="footer-col">
-        <div style="display:flex; gap:10px; align-items:center; margin-bottom:1.5rem;"><img src="logo.svg"
-            class="footer-logo" alt="S" onerror="handleImgError(this)"><span
-            style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
-        </div>
-        <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le média de référence.</p>
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:1.5rem;"><img src="logo.svg" class="footer-logo" alt="S" onerror="handleImgError(this)"><span style="font-family:'Playfair Display';font-size:1.5rem;font-weight:700;color:white;">Solitiquo</span></div>
+        <p style="font-size:.9rem;opacity:.7;line-height:1.6;">Le média de référence.</p>
       </div>
-      <div class="footer-col">
-        <h4>Rubriques</h4><a href="politique.html" class="footer-link">Politique</a><a href="social.html"
-          class="footer-link">Social</a><a href="partis-politiques.html" class="footer-link">Partis</a>
-      </div>
-      <div class="footer-col">
-        <h4>Légal</h4><a href="mentions-legales.html" class="footer-link">Mentions légales</a><a
-          href="conditions-utilisation.html" class="footer-link">CGU</a>
-      </div>
-      <div class="footer-col">
-        <h4>Contact</h4><a href="contact.html" class="footer-link">Nous écrire</a><a href="auth.html"
-          class="footer-link">S'identifier</a>
-      </div>
+      <div class="footer-col"><h4>Rubriques</h4><a href="politique.html" class="footer-link">Politique</a><a href="social.html" class="footer-link">Social</a><a href="partis-politiques.html" class="footer-link">Partis</a></div>
+      <div class="footer-col"><h4>Légal</h4><a href="mentions-legales.html" class="footer-link">Mentions légales</a><a href="conditions-utilisation.html" class="footer-link">CGU</a></div>
+      <div class="footer-col"><h4>Contact</h4><a href="contact.html" class="footer-link">Nous écrire</a><a href="auth.html" class="footer-link">S'identifier</a></div>
     </div>
     <div class="footer-bottom">&copy; 2025 Solitiquo.</div>
   </footer>
@@ -491,9 +336,8 @@
     if (searchLabel) searchLabel.addEventListener('click', toggleSearch);
     document.addEventListener('click', (e) => {
       if (searchContainer && searchContainer.classList.contains('active')) {
-        if (!searchContainer.contains(e.target) && !searchBtn.contains(e.target) && (!searchLabel || !searchLabel.contains(e.target))) {
+        if (!searchContainer.contains(e.target) && !searchBtn.contains(e.target) && (!searchLabel || !searchLabel.contains(e.target)))
           searchContainer.classList.remove('active');
-        }
       }
     });
 
@@ -503,88 +347,100 @@
       const frId = article.language === 'fr' ? article.id : translationId;
       const enId = article.language === 'en' ? article.id : translationId;
       document.querySelectorAll('link[rel="alternate"][hreflang]').forEach(el => el.remove());
-      if (frId) { const l = document.createElement('link'); l.rel = 'alternate'; l.hreflang = 'fr'; l.href = base + frId; document.head.appendChild(l); }
-      if (enId) { const l = document.createElement('link'); l.rel = 'alternate'; l.hreflang = 'en'; l.href = base + enId; document.head.appendChild(l); }
-      const lDef = document.createElement('link'); lDef.rel = 'alternate'; lDef.hreflang = 'x-default'; lDef.href = base + (frId || article.id); document.head.appendChild(lDef);
+      if (frId) { const l = document.createElement('link'); l.rel='alternate'; l.hreflang='fr'; l.href=base+frId; document.head.appendChild(l); }
+      if (enId) { const l = document.createElement('link'); l.rel='alternate'; l.hreflang='en'; l.href=base+enId; document.head.appendChild(l); }
+      const lDef = document.createElement('link'); lDef.rel='alternate'; lDef.hreflang='x-default'; lDef.href=base+(frId||article.id); document.head.appendChild(lDef);
     }
 
     // --- OPEN GRAPH DYNAMIQUE ---
-    function updateOGTags(data, isPodcast = false) {
+    function updateOGTags(data, isPodcast=false) {
       const baseUrl = window.location.origin;
       const currentUrl = window.location.href;
       const title = data.title;
-      const desc = data.excerpt || (data.description ? data.description.substring(0, 160) : '');
-      const image = data.image_url || `${baseUrl}/logo.png`;
-      const ogTags = { 'og:title': title, 'og:description': desc, 'og:image': image, 'og:url': currentUrl, 'og:type': isPodcast ? 'music.episode' : 'article' };
-      for (const [prop, val] of Object.entries(ogTags)) {
-        let meta = document.querySelector(`meta[property="${prop}"]`);
-        if (!meta) { meta = document.createElement('meta'); meta.setAttribute('property', prop); document.head.appendChild(meta); }
-        meta.setAttribute('content', val);
+      const desc = data.excerpt||(data.description?data.description.substring(0,160):'');
+      const image = data.image_url||`${baseUrl}/logo.png`;
+      const ogTags = {'og:title':title,'og:description':desc,'og:image':image,'og:url':currentUrl,'og:type':isPodcast?'music.episode':'article'};
+      for (const [prop,val] of Object.entries(ogTags)) {
+        let meta=document.querySelector(`meta[property="${prop}"]`);
+        if (!meta){meta=document.createElement('meta');meta.setAttribute('property',prop);document.head.appendChild(meta);}
+        meta.setAttribute('content',val);
       }
-      const twTags = { 'twitter:card': 'summary_large_image', 'twitter:title': title, 'twitter:description': desc, 'twitter:image': image };
-      for (const [name, val] of Object.entries(twTags)) {
-        let meta = document.querySelector(`meta[name="${name}"]`);
-        if (!meta) { meta = document.createElement('meta'); meta.setAttribute('name', name); document.head.appendChild(meta); }
-        meta.setAttribute('content', val);
+      const twTags={'twitter:card':'summary_large_image','twitter:title':title,'twitter:description':desc,'twitter:image':image};
+      for (const [name,val] of Object.entries(twTags)) {
+        let meta=document.querySelector(`meta[name="${name}"]`);
+        if (!meta){meta=document.createElement('meta');meta.setAttribute('name',name);document.head.appendChild(meta);}
+        meta.setAttribute('content',val);
       }
     }
 
-    // --- 📣 BOUTONS DE PARTAGE ---
-    // Utilitaire : ouvre une popup centrée sur l'écran
-    function openSharePopup(url, w, h) {
-      const left = Math.round((screen.width - w) / 2);
-      const top = Math.round((screen.height - h) / 2);
-      window.open(url, 'solitiquo_share', `width=${w},height=${h},left=${left},top=${top},toolbar=0,menubar=0,scrollbars=1,resizable=1`);
+    // ================================================
+    // 📣 MODALE DE PARTAGE NATIVE
+    // ================================================
+    let _shareUrl='', _shareTitle='';
+
+    function openSharePopup(url,w,h){
+      const left=Math.round((screen.width-w)/2);
+      const top=Math.round((screen.height-h)/2);
+      window.open(url,'solitiquo_share',`width=${w},height=${h},left=${left},top=${top},toolbar=0,menubar=0,scrollbars=1,resizable=1`);
     }
 
-    function initShareButtons(title, url) {
-      const encodedUrl = encodeURIComponent(url);
-      const encodedTitle = encodeURIComponent(title);
+    function openShareModal(){ document.getElementById('share-modal-overlay').classList.add('open'); document.body.style.overflow='hidden'; }
+    function closeShareModal(){ document.getElementById('share-modal-overlay').classList.remove('open'); document.body.style.overflow=''; }
 
-      const waBtn  = document.getElementById('share-wa');
-      const fbBtn  = document.getElementById('share-fb');
-      const twBtn  = document.getElementById('share-tw');
-      const copyBtn = document.getElementById('share-copy');
-
-      // WhatsApp : lien classique (app mobile / web.whatsapp.com)
-      if (waBtn) waBtn.href = `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`;
-
-      // Facebook : popup centrée 600×500
-      if (fbBtn) fbBtn.addEventListener('click', () => {
-        openSharePopup(
-          `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
-          600, 500
-        );
+    function initShareModal(){
+      document.getElementById('share-modal-close').addEventListener('click', closeShareModal);
+      document.getElementById('share-modal-overlay').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('share-modal-overlay')) closeShareModal();
       });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeShareModal(); });
 
-      // X / Twitter : popup centrée 600×450
-      if (twBtn) twBtn.addEventListener('click', () => {
-        openSharePopup(
-          `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}&via=Solitiquo`,
-          600, 450
-        );
+      document.getElementById('modal-btn-wa').addEventListener('click', () => {
+        window.open(`https://wa.me/?text=${encodeURIComponent(_shareTitle+' '+_shareUrl)}`, '_blank');
+        closeShareModal();
       });
+      document.getElementById('modal-btn-fb').addEventListener('click', () => {
+        openSharePopup(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(_shareUrl)}`, 600, 500);
+        closeShareModal();
+      });
+      document.getElementById('modal-btn-tw').addEventListener('click', () => {
+        openSharePopup(`https://twitter.com/intent/tweet?text=${encodeURIComponent(_shareTitle)}&url=${encodeURIComponent(_shareUrl)}&via=Solitiquo`, 600, 450);
+        closeShareModal();
+      });
+      document.getElementById('modal-btn-copy').addEventListener('click', async () => {
+        await _copyToClipboard(_shareUrl, 'modal-copy-label', 'Copié !', 'Copier');
+      });
+      document.getElementById('share-modal-url-copy').addEventListener('click', async () => {
+        await _copyToClipboard(_shareUrl, null, null, null, document.getElementById('share-modal-url-copy'));
+      });
+    }
 
-      // Copier le lien
-      if (copyBtn) {
-        copyBtn.addEventListener('click', async () => {
-          try {
-            await navigator.clipboard.writeText(url);
-            const label = document.getElementById('copy-label');
-            label.textContent = '✓ Lien copié !';
-            copyBtn.classList.add('copied');
-            setTimeout(() => { label.textContent = 'Copier le lien'; copyBtn.classList.remove('copied'); }, 2500);
-          } catch (err) {
-            const ta = document.createElement('textarea');
-            ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
-            document.body.appendChild(ta); ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            document.getElementById('copy-label').textContent = '✓ Lien copié !';
-            setTimeout(() => { document.getElementById('copy-label').textContent = 'Copier le lien'; }, 2500);
-          }
-        });
+    async function _copyToClipboard(text, labelId, successText, defaultText, btn) {
+      try { await navigator.clipboard.writeText(text); }
+      catch {
+        const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
       }
+      if (labelId) { const el=document.getElementById(labelId); const orig=el.textContent; el.textContent=successText; setTimeout(()=>el.textContent=defaultText||orig, 2500); }
+      if (btn) { const orig=btn.textContent; btn.textContent='✓ Copié'; setTimeout(()=>btn.textContent=orig, 2500); }
+    }
+
+    function initShareButtons(title, url, imageUrl) {
+      _shareUrl = url;
+      _shareTitle = title;
+      document.getElementById('share-modal-preview-title').textContent = title;
+      document.getElementById('share-modal-url-text').textContent = url.replace(/^https?:\/\//, '');
+      const imgEl = document.getElementById('share-modal-img');
+      if (imageUrl) { imgEl.src=imageUrl; imgEl.style.display=''; } else { imgEl.style.display='none'; }
+      // Boutons WA / FB / X de la barre → ouvrent la modale
+      ['share-wa','share-fb','share-tw'].forEach(id => {
+        document.getElementById(id).addEventListener('click', openShareModal);
+      });
+      // Copier = copie directe sans modale
+      document.getElementById('share-copy').addEventListener('click', async () => {
+        await _copyToClipboard(url, 'copy-label', '✓ Lien copié !', 'Copier le lien');
+        document.getElementById('share-copy').classList.add('copied');
+        setTimeout(() => document.getElementById('share-copy').classList.remove('copied'), 2500);
+      });
     }
 
     // --- CHARGEMENT ARTICLE ---
@@ -594,6 +450,7 @@
       const loadingDiv = document.getElementById('loading-container');
       const mainArticle = document.getElementById('main-article');
 
+      initShareModal();
       SolitiquoAPI.initUserInterface();
       await initLanguageSwitcher({ reloadPage: true });
 
@@ -606,254 +463,168 @@
         if (article) {
           document.title = `${article.title} — Solitiquo`;
           document.getElementById('art-title').textContent = article.title;
-
           const badge = document.getElementById('art-category-badge');
           badge.textContent = article.category;
-          if (article.is_premium) {
-            badge.innerHTML += ' <img src="GOLD.png" alt="Premium" style="height:1.2em; vertical-align:middle; margin-left:5px;" loading="lazy">';
-            badge.style.backgroundColor = '#222';
-          }
-
+          if (article.is_premium) { badge.innerHTML += ' <img src="GOLD.png" alt="Premium" style="height:1.2em;vertical-align:middle;margin-left:5px;" loading="lazy">'; badge.style.backgroundColor='#222'; }
           document.getElementById('art-author').textContent = article.author_name || 'La Rédaction';
           document.getElementById('art-date').textContent = SolitiquoAPI.formatDate(article.published_at);
-
           if (article.excerpt) document.getElementById('art-excerpt').textContent = article.excerpt;
           else document.getElementById('art-excerpt').style.display = 'none';
-
-          if (article.image_url) {
-            document.getElementById('art-image').src = article.image_url;
-            document.getElementById('art-caption').textContent = article.image_caption || '© Solitiquo';
-          } else {
-            document.getElementById('art-figure').style.display = 'none';
-          }
-
+          if (article.image_url) { document.getElementById('art-image').src=article.image_url; document.getElementById('art-caption').textContent=article.image_caption||'© Solitiquo'; }
+          else document.getElementById('art-figure').style.display = 'none';
           await initTranslationButton(article);
-
           const contentDiv = document.getElementById('art-content');
-          const canRead = user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer');
-
+          const canRead = user && (user.is_subscriber || user.role==='admin' || user.role==='writer');
           if (article.is_premium && !canRead) {
             const tmpDiv = document.createElement('div');
-            tmpDiv.innerHTML = DOMPurify.sanitize(article.content, { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src'] });
-            const teaserText = (tmpDiv.textContent || tmpDiv.innerText || '').substring(0, 300);
-            contentDiv.innerHTML = `
-              <div style="position:relative; font-size:1.15rem; line-height:1.8; color:#333;">
-                <p>${teaserText}...</p>
-                <div style="position:absolute; bottom:0; left:0; width:100%; height:100%; background:linear-gradient(to bottom, rgba(255,255,255,0), rgba(253,253,253,1) 90%); pointer-events:none;"></div>
-              </div>
-              <div style="background:#f8fbf1; border:1px solid #C5C5A9; padding:3rem; text-align:center; border-radius:12px; margin-top:2rem;">
-                <h3 style="font-family:'Playfair Display'; font-size:1.8rem; color:#37463D; margin-bottom:1rem;">Lecture réservée aux abonnés</h3>
-                <p style="color:#666; margin-bottom:2rem;">Soutenez une information indépendante et accédez à l'intégralité de nos contenus.</p>
-                <a href="abonnement.html" style="display:inline-block; background:#C82823; color:white; padding:12px 30px; border-radius:30px; text-decoration:none; font-weight:700; transition:0.3s;">S'abonner dès 2000 FCFA</a>
-                <div style="margin-top:1.5rem; font-size:0.9rem;">Déjà abonné ? <a href="auth.html" style="color:#37463D; font-weight:bold;">Connectez-vous</a></div>
-              </div>`;
+            tmpDiv.innerHTML = DOMPurify.sanitize(article.content, { ADD_TAGS:['iframe'], ADD_ATTR:['allow','allowfullscreen','frameborder','scrolling','src'] });
+            const teaserText = (tmpDiv.textContent||tmpDiv.innerText||'').substring(0,300);
+            contentDiv.innerHTML = `<div style="position:relative;font-size:1.15rem;line-height:1.8;color:#333;"><p>${teaserText}...</p><div style="position:absolute;bottom:0;left:0;width:100%;height:100%;background:linear-gradient(to bottom,rgba(255,255,255,0),rgba(253,253,253,1) 90%);pointer-events:none;"></div></div><div style="background:#f8fbf1;border:1px solid #C5C5A9;padding:3rem;text-align:center;border-radius:12px;margin-top:2rem;"><h3 style="font-family:'Playfair Display';font-size:1.8rem;color:#37463D;margin-bottom:1rem;">Lecture réservée aux abonnés</h3><p style="color:#666;margin-bottom:2rem;">Soutenez une information indépendante et accédez à l'intégralité de nos contenus.</p><a href="abonnement.html" style="display:inline-block;background:#C82823;color:white;padding:12px 30px;border-radius:30px;text-decoration:none;font-weight:700;transition:.3s;">S'abonner dès 2000 FCFA</a><div style="margin-top:1.5rem;font-size:.9rem;">Déjà abonné ? <a href="auth.html" style="color:#37463D;font-weight:bold;">Connectez-vous</a></div></div>`;
           } else {
-            contentDiv.innerHTML = DOMPurify.sanitize(article.content, { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src'] });
+            contentDiv.innerHTML = DOMPurify.sanitize(article.content, { ADD_TAGS:['iframe'], ADD_ATTR:['allow','allowfullscreen','frameborder','scrolling','src'] });
             initTTS(article);
           }
-
-          const readTime = article.read_time || Math.max(Math.ceil(article.content.replace(/<[^>]*>/g, ' ').split(/\s+/).filter(w => w).length / 230), 1);
+          const readTime = article.read_time||Math.max(Math.ceil(article.content.replace(/<[^>]*>/g,' ').split(/\s+/).filter(w=>w).length/230),1);
           document.getElementById('art-readtime').textContent = readTime;
-
-          if (user && (user.role === 'admin' || user.role === 'writer')) {
+          if (user && (user.role==='admin'||user.role==='writer')) {
             const editLink = document.createElement('a');
             editLink.href = `editeur-article.html?id=${article.id}`;
-            editLink.innerHTML = ` <span style="background:#eee; padding:2px 8px; border-radius:4px; font-size:0.7rem; color:#333; text-decoration:none; margin-left:10px; cursor:pointer;">✏️ Modifier</span>`;
+            editLink.innerHTML = ` <span style="background:#eee;padding:2px 8px;border-radius:4px;font-size:.7rem;color:#333;text-decoration:none;margin-left:10px;cursor:pointer;">✏️ Modifier</span>`;
             document.querySelector('.meta-info-simple').appendChild(editLink);
           }
-
           loadingDiv.style.display = 'none';
           mainArticle.style.display = 'block';
-
           updateOGTags(article);
-          initShareButtons(article.title, window.location.href);
-
+          initShareButtons(article.title, window.location.href, article.image_url);
           loadComments(id);
           initAnalytics(id);
         }
-      } catch (e) {
-        console.error(e);
-        loadingDiv.innerHTML = '<p>Erreur de chargement.</p>';
-      }
+      } catch(e) { console.error(e); loadingDiv.innerHTML='<p>Erreur de chargement.</p>'; }
     });
 
     // --- TRADUCTION + HREFLANG ---
     async function initTranslationButton(article) {
       const translationZone = document.getElementById('translation-zone');
       const currentLang = article.language;
-      const targetLang = currentLang === 'fr' ? 'en' : 'fr';
+      const targetLang = currentLang==='fr'?'en':'fr';
       const texts = {
-        fr: { btnTranslate: 'Translate to English', noticePrefix: 'This article is available in English', noticeLink: 'Read English version', progressLabel: 'Connecting to translation service...' },
-        en: { btnTranslate: 'Traduire en français', noticePrefix: 'Cet article est disponible en français', noticeLink: 'Lire la version française', progressLabel: 'Connexion au service...' }
+        fr:{btnTranslate:'Translate to English',noticePrefix:'This article is available in English',noticeLink:'Read English version',progressLabel:'Connecting to translation service...'},
+        en:{btnTranslate:'Traduire en français',noticePrefix:'Cet article est disponible en français',noticeLink:'Lire la version française',progressLabel:'Connexion au service...'}
       };
-      const t = texts[currentLang] || texts['fr'];
+      const t = texts[currentLang]||texts['fr'];
       try {
         const res = await fetch(`${window.API_URL}/translate/article/${article.id}?lang=${targetLang}`);
         const data = await res.json();
         if (data.has_translation) {
-          const translation = data.translation;
-          updateHreflang(article, translation.id);
-          translationZone.innerHTML = `
-            <div class="translation-notice">
-              🌍 ${t.noticePrefix}<br>
-              <a href="article.html?id=${translation.id}">${t.noticeLink}</a>
-            </div>`;
+          updateHreflang(article, data.translation.id);
+          translationZone.innerHTML=`<div class="translation-notice">🌍 ${t.noticePrefix}<br><a href="article.html?id=${data.translation.id}">${t.noticeLink}</a></div>`;
         } else {
           updateHreflang(article, null);
-          translationZone.innerHTML = `
-            <button id="translateBtn" class="translate-btn"><span>🌍</span><span>${t.btnTranslate}</span></button>
-            <div id="progress-container" class="progress-container hidden" style="display:none;">
-              <svg class="progress-ring" width="120" height="120">
-                <circle class="progress-ring__circle-bg" stroke="#e0e0e0" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
-                <circle class="progress-ring__circle" id="progress-circle" stroke="#37463D" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
-                <text id="progress-text" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#37463D">0%</text>
-              </svg>
-              <p id="progress-label" style="margin-top:15px; font-weight:600; color:#37463D;">${t.progressLabel}</p>
-            </div>`;
-          const circle = document.getElementById('progress-circle');
-          const radius = circle.r.baseVal.value;
-          const circumference = radius * 2 * Math.PI;
-          circle.style.strokeDasharray = `${circumference} ${circumference}`;
-          circle.style.strokeDashoffset = circumference;
-          function setProgress(percent) {
-            circle.style.strokeDashoffset = circumference - percent / 100 * circumference;
-            document.getElementById('progress-text').textContent = `${percent}%`;
-          }
-          document.getElementById('translateBtn').addEventListener('click', async () => {
-            const btn = document.getElementById('translateBtn');
-            const progressContainer = document.getElementById('progress-container');
-            const label = document.getElementById('progress-label');
-            btn.style.display = 'none'; progressContainer.style.display = 'flex'; setProgress(10);
-            try {
-              setTimeout(() => setProgress(30), 300);
-              const translatePromise = fetch(`${window.API_URL}/translate/article/${article.id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ targetLang }) });
-              const simInterval = setInterval(() => {
-                const current = parseInt(document.getElementById('progress-text').textContent);
-                if (current < 80) { setProgress(current + Math.floor(Math.random() * 5)); if (current > 30) label.textContent = (targetLang === 'fr') ? 'Traduction en cours...' : 'Translating...'; }
-              }, 200);
-              const result = await (await translatePromise).json();
-              clearInterval(simInterval);
-              if (result.success) {
-                setProgress(100);
-                label.textContent = (targetLang === 'fr') ? 'Finalisation...' : 'Finalizing...';
-                updateHreflang(article, result.translation.id);
-                setTimeout(() => { window.location.href = `article.html?id=${result.translation.id}`; }, 500);
-              } else {
-                alert(`Error: ${result.error}`); progressContainer.style.display = 'none'; btn.style.display = 'inline-flex';
-              }
-            } catch (err) {
-              console.error('Erreur traduction:', err); alert('Translation service error.');
-              progressContainer.style.display = 'none'; btn.style.display = 'inline-flex';
-            }
+          translationZone.innerHTML=`<button id="translateBtn" class="translate-btn"><span>🌍</span><span>${t.btnTranslate}</span></button><div id="progress-container" class="progress-container hidden" style="display:none;"><svg class="progress-ring" width="120" height="120"><circle class="progress-ring__circle-bg" stroke="#e0e0e0" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/><circle class="progress-ring__circle" id="progress-circle" stroke="#37463D" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/><text id="progress-text" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#37463D">0%</text></svg><p id="progress-label" style="margin-top:15px;font-weight:600;color:#37463D;">${t.progressLabel}</p></div>`;
+          const circle=document.getElementById('progress-circle');
+          const circumference=circle.r.baseVal.value*2*Math.PI;
+          circle.style.strokeDasharray=`${circumference} ${circumference}`; circle.style.strokeDashoffset=circumference;
+          function setProgress(p){circle.style.strokeDashoffset=circumference-p/100*circumference;document.getElementById('progress-text').textContent=`${p}%`;}
+          document.getElementById('translateBtn').addEventListener('click',async()=>{
+            const btn=document.getElementById('translateBtn'),pc=document.getElementById('progress-container'),lbl=document.getElementById('progress-label');
+            btn.style.display='none'; pc.style.display='flex'; setProgress(10);
+            try{
+              setTimeout(()=>setProgress(30),300);
+              const tp=fetch(`${window.API_URL}/translate/article/${article.id}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({targetLang})});
+              const si=setInterval(()=>{const c=parseInt(document.getElementById('progress-text').textContent);if(c<80){setProgress(c+Math.floor(Math.random()*5));if(c>30)lbl.textContent=(targetLang==='fr')?'Traduction en cours...':'Translating...';}},200);
+              const result=await(await tp).json(); clearInterval(si);
+              if(result.success){setProgress(100);lbl.textContent=(targetLang==='fr')?'Finalisation...':'Finalizing...';updateHreflang(article,result.translation.id);setTimeout(()=>{window.location.href=`article.html?id=${result.translation.id}`;},500);}
+              else{alert(`Error: ${result.error}`);pc.style.display='none';btn.style.display='inline-flex';}
+            }catch(err){console.error('Erreur traduction:',err);alert('Translation service error.');pc.style.display='none';btn.style.display='inline-flex';}
           });
         }
-      } catch (err) {
-        console.error('Erreur chargement traduction:', err);
-        updateHreflang(article, null);
-      }
+      }catch(err){console.error('Erreur chargement traduction:',err);updateHreflang(article,null);}
     }
 
     // --- TTS ---
-    let _ttsPlaying = false, _ttsUtterance = null, _ttsLang = 'fr-FR', _ttsBaseLabel = "Écouter l'article";
-    function initTTS(article) {
-      if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
-      const player = document.getElementById('tts-player');
-      const label = document.getElementById('tts-label');
-      const info = document.getElementById('tts-info');
-      const btn = document.getElementById('tts-btn');
-      if (!player || !label || !info || !btn) return;
-      _ttsLang = (article.language === 'en') ? 'en-US' : 'fr-FR';
-      const isEn = _ttsLang === 'en-US';
-      _ttsBaseLabel = isEn ? 'Listen to this article' : "Écouter l'article";
-      label.textContent = _ttsBaseLabel;
-      info.textContent = isEn ? 'Audio reading' : 'Lecture audio';
-      btn.addEventListener('click', toggleTTS);
-      player.style.display = 'flex';
-      window.addEventListener('beforeunload', () => { if (_ttsPlaying) window.speechSynthesis.cancel(); });
+    let _ttsPlaying=false,_ttsUtterance=null,_ttsLang='fr-FR',_ttsBaseLabel="Écouter l'article";
+    function initTTS(article){
+      if(!('speechSynthesis' in window)||typeof SpeechSynthesisUtterance==='undefined') return;
+      const player=document.getElementById('tts-player'),label=document.getElementById('tts-label'),info=document.getElementById('tts-info'),btn=document.getElementById('tts-btn');
+      if(!player||!label||!info||!btn) return;
+      _ttsLang=(article.language==='en')?'en-US':'fr-FR';
+      const isEn=_ttsLang==='en-US';
+      _ttsBaseLabel=isEn?'Listen to this article':"Écouter l'article";
+      label.textContent=_ttsBaseLabel; info.textContent=isEn?'Audio reading':'Lecture audio';
+      btn.addEventListener('click',toggleTTS);
+      player.style.display='flex';
+      window.addEventListener('beforeunload',()=>{if(_ttsPlaying)window.speechSynthesis.cancel();});
     }
-    function toggleTTS() {
-      const contentDiv = document.getElementById('art-content');
-      const icon = document.getElementById('tts-icon');
-      const label = document.getElementById('tts-label');
-      if (!contentDiv || !icon || !label) return;
-      if (_ttsPlaying) { window.speechSynthesis.cancel(); _ttsPlaying = false; icon.textContent = '▶️'; label.textContent = _ttsBaseLabel; return; }
-      const text = (contentDiv.innerText || contentDiv.textContent || '').trim();
-      if (!text) return;
-      _ttsUtterance = new SpeechSynthesisUtterance(text);
-      _ttsUtterance.lang = _ttsLang; _ttsUtterance.rate = 0.95; _ttsUtterance.pitch = 1;
-      _ttsUtterance.onend = _ttsUtterance.onerror = () => { _ttsPlaying = false; icon.textContent = '▶️'; label.textContent = _ttsBaseLabel; };
+    function toggleTTS(){
+      const contentDiv=document.getElementById('art-content'),icon=document.getElementById('tts-icon'),label=document.getElementById('tts-label');
+      if(!contentDiv||!icon||!label) return;
+      if(_ttsPlaying){window.speechSynthesis.cancel();_ttsPlaying=false;icon.textContent='▶️';label.textContent=_ttsBaseLabel;return;}
+      const text=(contentDiv.innerText||contentDiv.textContent||'').trim();
+      if(!text) return;
+      _ttsUtterance=new SpeechSynthesisUtterance(text);
+      _ttsUtterance.lang=_ttsLang;_ttsUtterance.rate=.95;_ttsUtterance.pitch=1;
+      _ttsUtterance.onend=_ttsUtterance.onerror=()=>{_ttsPlaying=false;icon.textContent='▶️';label.textContent=_ttsBaseLabel;};
       window.speechSynthesis.speak(_ttsUtterance);
-      _ttsPlaying = true; icon.textContent = '⏸️'; label.textContent = 'Pause';
+      _ttsPlaying=true;icon.textContent='⏸️';label.textContent='Pause';
     }
 
     // --- BARRE DE PROGRESSION ---
-    window.addEventListener('scroll', () => {
-      const ac = document.getElementById('art-content');
-      const bar = document.getElementById('progressBar');
-      if (!ac || !bar) return;
-      const rect = ac.getBoundingClientRect();
-      const scrolled = (window.innerHeight - rect.top) - window.innerHeight / 3;
-      bar.style.width = Math.max(0, Math.min(100, (scrolled / rect.height) * 100)) + '%';
+    window.addEventListener('scroll',()=>{
+      const ac=document.getElementById('art-content'),bar=document.getElementById('progressBar');
+      if(!ac||!bar) return;
+      const rect=ac.getBoundingClientRect();
+      bar.style.width=Math.max(0,Math.min(100,((window.innerHeight-rect.top-window.innerHeight/3)/rect.height)*100))+'%';
     });
 
     // --- COMMENTAIRES ---
-    const commentForm = document.getElementById('commentForm');
-    const commentsList = document.getElementById('commentsList');
-    async function loadComments(articleId) {
-      try {
-        const json = await (await fetch(`${window.API_URL}/comments/${articleId}`)).json();
-        const user = await SolitiquoAPI.getProfile();
-        const isAdmin = user && (user.role === 'admin' || user.role === 'writer');
-        if (json.success && json.comments.length > 0) {
-          commentsList.innerHTML = json.comments.map(c => {
-            const d = new Date(c.created_at).toLocaleString('fr-FR');
-            const del = isAdmin ? `<button onclick="SolitiquoAPI.deleteComment(${c.id})" style="float:right;color:#C82823;background:none;border:none;font-size:1.2rem;cursor:pointer;opacity:0.6;">×</button>` : '';
-            return `<div id="comment-${c.id}" style="margin-bottom:20px;border-bottom:1px solid #eee;padding-bottom:15px;">${del}<div style="font-weight:bold;color:#37463D;margin-bottom:5px;">${c.username || 'Lecteur'} <span style="font-weight:normal;color:#888;font-size:0.8rem;">• ${d}</span></div><div style="line-height:1.5;color:#444;">${c.content}</div></div>`;
+    const commentForm=document.getElementById('commentForm'),commentsList=document.getElementById('commentsList');
+    async function loadComments(articleId){
+      try{
+        const json=await(await fetch(`${window.API_URL}/comments/${articleId}`)).json();
+        const user=await SolitiquoAPI.getProfile();
+        const isAdmin=user&&(user.role==='admin'||user.role==='writer');
+        if(json.success&&json.comments.length>0){
+          commentsList.innerHTML=json.comments.map(c=>{
+            const d=new Date(c.created_at).toLocaleString('fr-FR');
+            const del=isAdmin?`<button onclick="SolitiquoAPI.deleteComment(${c.id})" style="float:right;color:#C82823;background:none;border:none;font-size:1.2rem;cursor:pointer;opacity:.6;">×</button>`:'';
+            return `<div id="comment-${c.id}" style="margin-bottom:20px;border-bottom:1px solid #eee;padding-bottom:15px;">${del}<div style="font-weight:bold;color:#37463D;margin-bottom:5px;">${c.username||'Lecteur'} <span style="font-weight:normal;color:#888;font-size:.8rem;">• ${d}</span></div><div style="line-height:1.5;color:#444;">${c.content}</div></div>`;
           }).join('');
-        } else {
-          commentsList.innerHTML = '<p style="color:#888;font-style:italic;">Soyez le premier à réagir.</p>';
-        }
-      } catch (e) { }
+        } else commentsList.innerHTML='<p style="color:#888;font-style:italic;">Soyez le premier à réagir.</p>';
+      }catch(e){}
     }
-    if (commentForm) {
-      commentForm.addEventListener('submit', async (e) => {
+    if(commentForm){
+      commentForm.addEventListener('submit',async(e)=>{
         e.preventDefault();
-        const articleId = new URLSearchParams(window.location.search).get('id');
-        const content = document.getElementById('commentInput').value;
-        const msgDiv = document.getElementById('commentMsg');
-        const user = await SolitiquoAPI.getProfile();
-        if (!user) { if (confirm('Vous devez être connecté pour commenter. Se connecter ?')) window.location.href = 'auth.html'; return; }
-        if (!content.trim()) return;
-        try {
-          const json = await (await fetch(`${window.API_URL}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': SolitiquoAPI.csrfToken }, body: JSON.stringify({ article_id: articleId, content }), credentials: 'include' })).json();
-          if (json.success) {
-            document.getElementById('commentInput').value = '';
-            if (json.modere) { msgDiv.style.color = 'orange'; msgDiv.textContent = 'En attente de validation.'; }
-            else { msgDiv.style.color = 'green'; msgDiv.textContent = 'Publié !'; loadComments(articleId); }
-            setTimeout(() => msgDiv.textContent = '', 3000);
-          } else { msgDiv.style.color = 'red'; msgDiv.textContent = 'Erreur.'; }
-        } catch (err) { }
+        const articleId=new URLSearchParams(window.location.search).get('id');
+        const content=document.getElementById('commentInput').value;
+        const msgDiv=document.getElementById('commentMsg');
+        const user=await SolitiquoAPI.getProfile();
+        if(!user){if(confirm('Vous devez être connecté pour commenter. Se connecter ?'))window.location.href='auth.html';return;}
+        if(!content.trim()) return;
+        try{
+          const json=await(await fetch(`${window.API_URL}/comments`,{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':SolitiquoAPI.csrfToken},body:JSON.stringify({article_id:articleId,content}),credentials:'include'})).json();
+          if(json.success){document.getElementById('commentInput').value='';if(json.modere){msgDiv.style.color='orange';msgDiv.textContent='En attente de validation.';}else{msgDiv.style.color='green';msgDiv.textContent='Publié !';loadComments(articleId);}setTimeout(()=>msgDiv.textContent='',3000);}
+          else{msgDiv.style.color='red';msgDiv.textContent='Erreur.';}
+        }catch(err){}
       });
     }
 
     // --- ANALYTICS ---
-    function initAnalytics(articleId) {
-      const milestones = { 25: false, 50: false, 75: false, 100: false };
-      const sendPing = (p) => fetch(`${window.API_URL}/analytics/track`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ article_id: articleId, milestone: p }) }).catch(() => { });
+    function initAnalytics(articleId){
+      const milestones={25:false,50:false,75:false,100:false};
+      const sendPing=(p)=>fetch(`${window.API_URL}/analytics/track`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({article_id:articleId,milestone:p})}).catch(()=>{});
       sendPing('start');
-      window.addEventListener('scroll', () => {
-        const ac = document.getElementById('art-content');
-        if (!ac) return;
-        const pct = Math.min(100, Math.round(((window.innerHeight - ac.getBoundingClientRect().top) / ac.getBoundingClientRect().height) * 100));
-        if (pct >= 25 && !milestones[25]) { sendPing(25); milestones[25] = true; }
-        if (pct >= 50 && !milestones[50]) { sendPing(50); milestones[50] = true; }
-        if (pct >= 75 && !milestones[75]) { sendPing(75); milestones[75] = true; }
-        if (pct >= 95 && !milestones[100]) { sendPing(100); milestones[100] = true; }
+      window.addEventListener('scroll',()=>{
+        const ac=document.getElementById('art-content'); if(!ac) return;
+        const pct=Math.min(100,Math.round(((window.innerHeight-ac.getBoundingClientRect().top)/ac.getBoundingClientRect().height)*100));
+        if(pct>=25&&!milestones[25]){sendPing(25);milestones[25]=true;}
+        if(pct>=50&&!milestones[50]){sendPing(50);milestones[50]=true;}
+        if(pct>=75&&!milestones[75]){sendPing(75);milestones[75]=true;}
+        if(pct>=95&&!milestones[100]){sendPing(100);milestones[100]=true;}
       });
     }
   </script>
   <script src="/js/lazyload.js"></script>
-  <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js'); }</script>
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js');}</script>
 </body>
-
 </html>
