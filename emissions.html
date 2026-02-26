@@ -9,16 +9,26 @@
   <link rel="preconnect" href="https://res.cloudinary.com" />
   <link rel="dns-prefetch" href="https://www.youtube.com" />
   <link rel="dns-prefetch" href="https://img.youtube.com" />
-  <title>Solitiquo TV — Replays & Directs</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#37463D">
-  <meta name="description" content="Émissions vidéo Solitiquo  Débats, interviews et analyses en vidéo sur le Cameroun.">
-  <meta property="og:title" content="Solitiquo  L'Actualité Premium" />
-  <meta property="og:description" content="Le média de référence pour l'analyse politique et sociale au Cameroun." />
+  <meta name="description" content="Émissions vidéo Solitiquo — Débats, interviews et analyses en vidéo sur le Cameroun.">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Émissions — Solitiquo" />
+  <meta property="og:description" content="Débats, interviews et analyses en vidéo sur la politique et la société camerounaise." />
   <meta property="og:image" content="https://solitiquo.com/logo.png" />
-  <meta property="og:url" content="https://solitiquo.com" />
+  <meta property="og:url" content="https://solitiquo.com/emissions.html" />
   <meta property="og:type" content="website" />
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@Solitiquo">
+  <meta name="twitter:title" content="Émissions — Solitiquo">
+  <meta name="twitter:description" content="Débats, interviews et analyses en vidéo sur la politique et la société camerounaise.">
+  <meta name="twitter:image" content="https://solitiquo.com/logo.png">
+
+  <title>Solitiquo TV — Replays &amp; Directs</title>
   <link rel="stylesheet" href="/css/shared.css" />
   <link rel="stylesheet" href="/css/pages/emissions.css" />
   <link
@@ -201,7 +211,6 @@
 
     document.addEventListener('click', (e) => {
       if (searchContainer && searchContainer.classList.contains('active')) {
-        // On ferme si on clique ailleurs que sur le container, le bouton ou le label
         if (!searchContainer.contains(e.target) &&
           !searchBtn.contains(e.target) &&
           (!searchLabel || !searchLabel.contains(e.target))) {
