@@ -280,7 +280,7 @@
 
     <h1 class="article-title" id="art-title"></h1>
 
-    <!-- ZONE DE TRADUCTION (ajouté ici) -->
+    <!-- ZONE DE TRADUCTION -->
     <div id="translation-zone" style="text-align:center;"></div>
 
     <div class="author-line">
@@ -296,7 +296,7 @@
       <span class="date-publish" id="art-date"></span>
     </div>
 
-    <!-- 🔊 LECTEUR TTS — visible uniquement si article accessible -->
+    <!-- 🔊 LECTEUR TTS -->
     <div id="tts-player" class="tts-player" role="region" aria-label="Lecteur audio">
       <button id="tts-btn" type="button" class="tts-btn">
         <span id="tts-icon">▶️</span>
@@ -333,8 +333,6 @@
   <div id="progressBarWrapper" style="position:fixed; bottom:0; left:0; width:100%; height:5px; z-index:9999;">
     <div id="progressBar" style="height:100%; width:0%; background:var(--accent-red); transition:width 0.1s;"></div>
   </div>
-
-
 
   <footer class="premium-footer">
     <div class="footer-grid">
@@ -384,7 +382,6 @@
     if (mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
     if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
 
-    // --- LOGIQUE RECHERCHE UNIFIÉE ---
     const searchBtn = document.getElementById('searchBtn');
     const searchLabel = document.getElementById('searchLabel');
     const searchContainer = document.getElementById('searchContainer');
@@ -411,13 +408,50 @@
       }
     });
 
+    // --- HREFLANG DYNAMIQUE FR/EN ---
+    // Injecte les balises <link rel="alternate" hreflang> dans le <head>
+    // dès qu'on connaît l'article courant ET son éventuelle traduction.
+    function updateHreflang(article, translationId) {
+      const base = 'https://solitiquo.com/article.html?id=';
+
+      // Déterminer quel ID correspond à quelle langue
+      const frId = article.language === 'fr' ? article.id : translationId;
+      const enId = article.language === 'en' ? article.id : translationId;
+
+      // Nettoyer les anciennes balises hreflang (sécurité si rechargement SPA)
+      document.querySelectorAll('link[rel="alternate"][hreflang]').forEach(el => el.remove());
+
+      if (frId) {
+        const lFR = document.createElement('link');
+        lFR.rel = 'alternate';
+        lFR.hreflang = 'fr';
+        lFR.href = base + frId;
+        document.head.appendChild(lFR);
+      }
+
+      if (enId) {
+        const lEN = document.createElement('link');
+        lEN.rel = 'alternate';
+        lEN.hreflang = 'en';
+        lEN.href = base + enId;
+        document.head.appendChild(lEN);
+      }
+
+      // x-default : toujours pointer vers la version FR (ou la version courante si FR inconnue)
+      const lDef = document.createElement('link');
+      lDef.rel = 'alternate';
+      lDef.hreflang = 'x-default';
+      lDef.href = base + (frId || article.id);
+      document.head.appendChild(lDef);
+    }
+
     // --- OPEN GRAPH DYNAMIQUE ---
     function updateOGTags(data, isPodcast = false) {
       const baseUrl = window.location.origin;
       const currentUrl = window.location.href;
 
       const title = data.title;
-      const desc = data.excerpt || (data.description ? data.description.substring(0, 160) : "");
+      const desc = data.excerpt || (data.description ? data.description.substring(0, 160) : '');
       const image = data.image_url || `${baseUrl}/logo.png`;
 
       const tags = {
@@ -438,7 +472,6 @@
         meta.setAttribute('content', val);
       }
 
-      // Update Twitter tags as well for better compatibility
       const twitterTags = {
         'twitter:card': 'summary_large_image',
         'twitter:title': title,
@@ -464,30 +497,24 @@
       const loadingDiv = document.getElementById('loading-container');
       const mainArticle = document.getElementById('main-article');
 
-      // Init Header Auth & Language
       SolitiquoAPI.initUserInterface();
       await initLanguageSwitcher({ reloadPage: true });
 
       if (!id) { loadingDiv.innerHTML = '<p>Aucun article demandé.</p>'; return; }
 
       try {
-        // 1. On récupère l'article
         const article = await SolitiquoAPI.getArticleById(id);
-
-        // 2. On récupère l'utilisateur UNE SEULE FOIS ici
         const user = await SolitiquoAPI.getProfile();
 
         if (article) {
-          // --- Remplissage des infos de base ---
           document.title = `${article.title} — Solitiquo`;
           document.getElementById('art-title').textContent = article.title;
 
-          // Badge Catégorie + LOGO GOLD.PNG
           const badge = document.getElementById('art-category-badge');
           badge.textContent = article.category;
           if (article.is_premium) {
             badge.innerHTML += ' <img src="GOLD.png" alt="Premium" style="height: 1.2em; vertical-align: middle; margin-left: 5px;" loading="lazy">';
-            badge.style.backgroundColor = "#222";
+            badge.style.backgroundColor = '#222';
           }
 
           document.getElementById('art-author').textContent = article.author_name || 'La Rédaction';
@@ -503,68 +530,50 @@
             document.getElementById('art-figure').style.display = 'none';
           }
 
-          // --- 🌍 BOUTON DE TRADUCTION ---
+          // 🌍 TRADUCTION + HREFLANG (appelés ensemble)
           await initTranslationButton(article);
 
           // --- GESTION DU PAYWALL ---
           const contentDiv = document.getElementById('art-content');
-
           const canRead = user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer');
 
           if (article.is_premium && !canRead) {
-            // MODE FLOU (Non-abonné sur article payant)
-            const tmpDiv = document.createElement("div");
+            const tmpDiv = document.createElement('div');
             tmpDiv.innerHTML = DOMPurify.sanitize(article.content, { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src'] });
-            const teaserText = (tmpDiv.textContent || tmpDiv.innerText || "").substring(0, 300);
+            const teaserText = (tmpDiv.textContent || tmpDiv.innerText || '').substring(0, 300);
 
             contentDiv.innerHTML = `
-                        <div style="position:relative; font-size:1.15rem; line-height:1.8; color:#333;">
-                            <p>${teaserText}...</p>
-                            <div style="
-                                position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
-                                background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(253,253,253,1) 90%);
-                                pointer-events: none;
-                            "></div>
-                        </div>
-                        
-                        <div style="background:#f8fbf1; border:1px solid #C5C5A9; padding:3rem; text-align:center; border-radius:12px; margin-top:2rem;">
-                            <h3 style="font-family:'Playfair Display'; font-size:1.8rem; color:#37463D; margin-bottom:1rem;">Lecture réservée aux abonnés</h3>
-                            <p style="color:#666; margin-bottom:2rem;">Soutenez une information indépendante et accédez à l'intégralité de nos contenus.</p>
-                            <a href="abonnement.html" style="display:inline-block; background:#C82823; color:white; padding:12px 30px; border-radius:30px; text-decoration:none; font-weight:700; transition:0.3s;">S'abonner dès 2000 FCFA</a>
-                            <div style="margin-top:1.5rem; font-size:0.9rem;">Déjà abonné ? <a href="auth.html" style="color:#37463D; font-weight:bold;">Connectez-vous</a></div>
-                        </div>
-                    `;
-            // Paywall actif : on n'initialise PAS le TTS
+              <div style="position:relative; font-size:1.15rem; line-height:1.8; color:#333;">
+                <p>${teaserText}...</p>
+                <div style="position:absolute; bottom:0; left:0; width:100%; height:100%; background:linear-gradient(to bottom, rgba(255,255,255,0), rgba(253,253,253,1) 90%); pointer-events:none;"></div>
+              </div>
+              <div style="background:#f8fbf1; border:1px solid #C5C5A9; padding:3rem; text-align:center; border-radius:12px; margin-top:2rem;">
+                <h3 style="font-family:'Playfair Display'; font-size:1.8rem; color:#37463D; margin-bottom:1rem;">Lecture réservée aux abonnés</h3>
+                <p style="color:#666; margin-bottom:2rem;">Soutenez une information indépendante et accédez à l'intégralité de nos contenus.</p>
+                <a href="abonnement.html" style="display:inline-block; background:#C82823; color:white; padding:12px 30px; border-radius:30px; text-decoration:none; font-weight:700; transition:0.3s;">S'abonner dès 2000 FCFA</a>
+                <div style="margin-top:1.5rem; font-size:0.9rem;">Déjà abonné ? <a href="auth.html" style="color:#37463D; font-weight:bold;">Connectez-vous</a></div>
+              </div>
+            `;
           } else {
-            // MODE COMPLET - SÉCURISÉ
             contentDiv.innerHTML = DOMPurify.sanitize(article.content, { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src'] });
-
-            // --- 🔊 INIT TTS (uniquement si contenu accessible) ---
             initTTS(article);
           }
 
-          // ⏱️ TEMPS DE LECTURE — priorité à la valeur BDD (read_time),
-          // fallback JS sur le contenu brut si la migration n'a pas encore tourné
           const readTime = article.read_time
             || Math.max(Math.ceil(article.content.replace(/<[^>]*>/g, ' ').split(/\s+/).filter(w => w).length / 230), 1);
           document.getElementById('art-readtime').textContent = readTime;
 
-          // --- BOUTON MODIFIER (ADMIN) ---
           if (user && (user.role === 'admin' || user.role === 'writer')) {
             const editLink = document.createElement('a');
             editLink.href = `editeur-article.html?id=${article.id}`;
-            editLink.innerHTML = ` <span style="background:#eee; padding:2px 8px; border-radius:4px; font-size:0.7rem; color:#333; text-decoration:none; margin-left: 10px; cursor:pointer;">✏️ Modifier</span>`;
+            editLink.innerHTML = ` <span style="background:#eee; padding:2px 8px; border-radius:4px; font-size:0.7rem; color:#333; text-decoration:none; margin-left:10px; cursor:pointer;">✏️ Modifier</span>`;
             document.querySelector('.meta-info-simple').appendChild(editLink);
           }
 
-          // Affichage final
           loadingDiv.style.display = 'none';
           mainArticle.style.display = 'block';
 
-          // --- 📢 OPEN GRAPH DYNAMIQUE ---
           updateOGTags(article);
-
-          // Charger les commentaires et lancer le tracking
           loadComments(id);
           initAnalytics(id);
         }
@@ -574,10 +583,10 @@
       }
     });
 
-    // --- 2b. INITIALISATION BOUTON DE TRADUCTION (AVEC CERCLE DE PROGRESSION) ---
+    // --- 2b. BOUTON DE TRADUCTION + INJECTION HREFLANG ---
     async function initTranslationButton(article) {
       const translationZone = document.getElementById('translation-zone');
-      const currentLang = article.language; // 'fr' ou 'en'
+      const currentLang = article.language;
       const targetLang = currentLang === 'fr' ? 'en' : 'fr';
 
       const texts = {
@@ -595,7 +604,7 @@
         }
       };
 
-      const t = texts[currentLang];
+      const t = texts[currentLang] || texts['fr'];
 
       try {
         const res = await fetch(`${window.API_URL}/translate/article/${article.id}?lang=${targetLang}`);
@@ -603,6 +612,10 @@
 
         if (data.has_translation) {
           const translation = data.translation;
+
+          // ✅ Traduction connue : on injecte les hreflang avec les deux IDs
+          updateHreflang(article, translation.id);
+
           translationZone.innerHTML = `
             <div class="translation-notice">
               🌍 ${t.noticePrefix}
@@ -611,12 +624,15 @@
             </div>
           `;
         } else {
+          // ✅ Pas de traduction : hreflang uniquement pour la langue courante
+          updateHreflang(article, null);
+
           translationZone.innerHTML = `
             <button id="translateBtn" class="translate-btn">
               <span>🌍</span>
               <span>${t.btnTranslate}</span>
             </button>
-            
+
             <div id="progress-container" class="progress-container hidden" style="display:none;">
               <svg class="progress-ring" width="120" height="120">
                 <circle class="progress-ring__circle-bg" stroke="#e0e0e0" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
@@ -630,7 +646,6 @@
           const circle = document.getElementById('progress-circle');
           const radius = circle.r.baseVal.value;
           const circumference = radius * 2 * Math.PI;
-
           circle.style.strokeDasharray = `${circumference} ${circumference}`;
           circle.style.strokeDashoffset = circumference;
 
@@ -662,18 +677,19 @@
                 const current = parseInt(document.getElementById('progress-text').textContent);
                 if (current < 80) {
                   setProgress(current + Math.floor(Math.random() * 5));
-                  if (current > 30) label.textContent = (targetLang === 'fr') ? "Traduction en cours..." : "Translating...";
+                  if (current > 30) label.textContent = (targetLang === 'fr') ? 'Traduction en cours...' : 'Translating...';
                 }
               }, 200);
 
               const translateRes = await translatePromise;
               const result = await translateRes.json();
-
               clearInterval(simInterval);
 
               if (result.success) {
                 setProgress(100);
-                label.textContent = (targetLang === 'fr') ? "Finalisation..." : "Finalizing...";
+                label.textContent = (targetLang === 'fr') ? 'Finalisation...' : 'Finalizing...';
+                // ✅ Après traduction réussie, on met à jour les hreflang avec le nouvel ID
+                updateHreflang(article, result.translation.id);
                 setTimeout(() => {
                   window.location.href = `article.html?id=${result.translation.id}`;
                 }, 500);
@@ -682,7 +698,6 @@
                 progressContainer.style.display = 'none';
                 btn.style.display = 'inline-flex';
               }
-
             } catch (err) {
               console.error('Erreur traduction:', err);
               alert('Translation service error.');
@@ -693,10 +708,12 @@
         }
       } catch (err) {
         console.error('Erreur chargement traduction:', err);
+        // En cas d'erreur API, on injecte quand même un hreflang minimal
+        updateHreflang(article, null);
       }
     }
 
-    // --- 2c. LECTEUR TTS (Web Speech API — FR/EN automatique) ---
+    // --- 2c. LECTEUR TTS ---
     let _ttsPlaying = false;
     let _ttsUtterance = null;
     let _ttsLang = 'fr-FR';
@@ -798,18 +815,18 @@
         if (json.success && json.comments.length > 0) {
           commentsList.innerHTML = json.comments.map(c => {
             const dateAffichee = new Date(c.created_at).toLocaleString('fr-FR');
-            const deleteBtn = isAdmin ?
-              `<button onclick="SolitiquoAPI.deleteComment(${c.id})" style="float:right; color:#C82823; background:none; border:none; font-size:1.2rem; cursor:pointer; opacity:0.6;" title="Supprimer">×</button>` : '';
-
+            const deleteBtn = isAdmin
+              ? `<button onclick="SolitiquoAPI.deleteComment(${c.id})" style="float:right; color:#C82823; background:none; border:none; font-size:1.2rem; cursor:pointer; opacity:0.6;" title="Supprimer">×</button>`
+              : '';
             return `
-                    <div id="comment-${c.id}" style="margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px;">
-                        ${deleteBtn}
-                        <div style="font-weight:bold; color:#37463D; margin-bottom:5px;">
-                            ${c.username || 'Lecteur'} 
-                            <span style="font-weight:normal; color:#888; font-size:0.8rem;">• ${dateAffichee}</span>
-                        </div>
-                        <div style="line-height:1.5; color:#444;">${c.content}</div>
-                    </div>`;
+              <div id="comment-${c.id}" style="margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px;">
+                ${deleteBtn}
+                <div style="font-weight:bold; color:#37463D; margin-bottom:5px;">
+                  ${c.username || 'Lecteur'}
+                  <span style="font-weight:normal; color:#888; font-size:0.8rem;">• ${dateAffichee}</span>
+                </div>
+                <div style="line-height:1.5; color:#444;">${c.content}</div>
+              </div>`;
           }).join('');
         } else {
           commentsList.innerHTML = '<p style="color:#888; font-style:italic;">Soyez le premier à réagir.</p>';
@@ -827,17 +844,15 @@
 
         const user = await SolitiquoAPI.getProfile();
         if (!user) {
-          if (confirm("Vous devez être connecté pour commenter. Se connecter ?")) window.location.href = 'auth.html';
+          if (confirm('Vous devez être connecté pour commenter. Se connecter ?')) window.location.href = 'auth.html';
           return;
         }
         if (!content.trim()) return;
 
         try {
           const res = await fetch(`${window.API_URL}/comments`, {
-            method: 'POST', headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-Token': SolitiquoAPI.csrfToken
-            },
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': SolitiquoAPI.csrfToken },
             body: JSON.stringify({ article_id: articleId, content: content }),
             credentials: 'include'
           });
