@@ -250,7 +250,8 @@
 
       <div class="offline-divider"></div>
 
-      <button class="btn-retry" onclick="window.location.reload()">
+      <!-- Pas de onclick inline : addEventListener dans le script ci-dessous (compatible CSP stricte) -->
+      <button class="btn-retry" id="retryBtn" type="button">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <polyline points="1 4 1 10 7 10"/>
@@ -272,8 +273,15 @@
   </footer>
 
   <script>
+    // Bouton Réessayer — addEventListener (compatible CSP, pas de onclick inline)
+    document.getElementById('retryBtn').addEventListener('click', function () {
+      window.location.reload();
+    });
+
     // Recharger automatiquement dès que la connexion revient
-    window.addEventListener('online', () => window.location.reload());
+    window.addEventListener('online', function () {
+      window.location.reload();
+    });
   </script>
 
 </body>

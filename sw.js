@@ -1,11 +1,14 @@
 // ============================================================
-// Solitiquo — Service Worker v1
+// Solitiquo — Service Worker
 // Stratégie : Stale-While-Revalidate pour assets,
 //             Network-First pour HTML,
 //             Network-Only pour API
 // ============================================================
 
-const CACHE_NAME = 'solitiquo-v1';
+// CACHE_NAME inclut la date du déploiement (format YYYYMMDD)
+// → à chaque nouveau déploiement, le nom change et l'ancien cache est purgé automatiquement
+// → plus besoin de bumper manuellement un numéro de version
+const CACHE_NAME = 'solitiquo-20260226';
 
 // Assets à pré-cacher au moment de l'installation
 const PRECACHE_URLS = [
@@ -17,6 +20,7 @@ const PRECACHE_URLS = [
     '/js/api.js',
     '/js/config.js',
     '/js/i18n.js',
+    '/js/lazyload.js',
     '/logo.svg',
     '/logo.png',
     '/manifest.json'
@@ -77,7 +81,27 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // ── Assets (CSS, JS, images, polices) : Stale-While-Revalidate ──
+    // ── Assets externes cross-origin (fonts Google, Cloudinary) : cache si dispo, sinon réseau ──
+    // Note : les réponses "opaque" (CORS sans credentials) sont exclues du cache
+    // car leur status est toujours 0 et on ne peut pas vérifier leur validité
+    if (url.hostname !== self.location.hostname) {
+        event.respondWith(
+            caches.match(request).then((cached) => {
+                if (cached) return cached;
+                return fetch(request).then((response) => {
+                    // Ne cacher que les réponses CORS valides (type !== 'opaque')
+                    if (response && response.status === 200 && response.type === 'cors') {
+                        const clone = response.clone();
+                        caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+                    }
+                    return response;
+                }).catch(() => null);
+            })
+        );
+        return;
+    }
+
+    // ── Assets locaux (CSS, JS, images) : Stale-While-Revalidate ──
     event.respondWith(
         caches.match(request).then((cached) => {
             const fetchPromise = fetch(request)
