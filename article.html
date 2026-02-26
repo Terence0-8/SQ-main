@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -378,6 +378,8 @@
     <!-- 📣 BOUTONS DE PARTAGE SOCIAL -->
     <div class="share-bar" id="share-bar">
       <span class="share-label">Partager</span>
+
+      <!-- WhatsApp : lien classique (ouvre l'app mobile ou web.whatsapp.com) -->
       <a class="share-btn share-wa" id="share-wa" target="_blank" rel="noopener noreferrer">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path
@@ -385,20 +387,25 @@
         </svg>
         WhatsApp
       </a>
-      <a class="share-btn share-fb" id="share-fb" target="_blank" rel="noopener noreferrer">
+
+      <!-- Facebook : popup centrée 600×500 (reste sur Solitiquo en arrière-plan) -->
+      <button class="share-btn share-fb" id="share-fb" type="button">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path
             d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
         </svg>
         Facebook
-      </a>
-      <a class="share-btn share-tw" id="share-tw" target="_blank" rel="noopener noreferrer">
+      </button>
+
+      <!-- X / Twitter : popup centrée 600×450 (reste sur Solitiquo en arrière-plan) -->
+      <button class="share-btn share-tw" id="share-tw" type="button">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path
             d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
         </svg>
         X / Twitter
-      </a>
+      </button>
+
       <button class="share-btn share-copy" id="share-copy">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="9" y="9" width="13" height="13" rx="2" />
@@ -523,20 +530,42 @@
     }
 
     // --- 📣 BOUTONS DE PARTAGE ---
-    // Construit et branche les liens de partage dynamiquement avec titre + URL réels
+    // Utilitaire : ouvre une popup centrée sur l'écran
+    function openSharePopup(url, w, h) {
+      const left = Math.round((screen.width - w) / 2);
+      const top = Math.round((screen.height - h) / 2);
+      window.open(url, 'solitiquo_share', `width=${w},height=${h},left=${left},top=${top},toolbar=0,menubar=0,scrollbars=1,resizable=1`);
+    }
+
     function initShareButtons(title, url) {
       const encodedUrl = encodeURIComponent(url);
       const encodedTitle = encodeURIComponent(title);
 
-      const waBtn = document.getElementById('share-wa');
-      const fbBtn = document.getElementById('share-fb');
-      const twBtn = document.getElementById('share-tw');
+      const waBtn  = document.getElementById('share-wa');
+      const fbBtn  = document.getElementById('share-fb');
+      const twBtn  = document.getElementById('share-tw');
       const copyBtn = document.getElementById('share-copy');
 
+      // WhatsApp : lien classique (app mobile / web.whatsapp.com)
       if (waBtn) waBtn.href = `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`;
-      if (fbBtn) fbBtn.href = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
-      if (twBtn) twBtn.href = `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}&via=Solitiquo`;
 
+      // Facebook : popup centrée 600×500
+      if (fbBtn) fbBtn.addEventListener('click', () => {
+        openSharePopup(
+          `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+          600, 500
+        );
+      });
+
+      // X / Twitter : popup centrée 600×450
+      if (twBtn) twBtn.addEventListener('click', () => {
+        openSharePopup(
+          `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}&via=Solitiquo`,
+          600, 450
+        );
+      });
+
+      // Copier le lien
       if (copyBtn) {
         copyBtn.addEventListener('click', async () => {
           try {
@@ -546,7 +575,6 @@
             copyBtn.classList.add('copied');
             setTimeout(() => { label.textContent = 'Copier le lien'; copyBtn.classList.remove('copied'); }, 2500);
           } catch (err) {
-            // Fallback pour anciens navigateurs
             const ta = document.createElement('textarea');
             ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
             document.body.appendChild(ta); ta.select();
@@ -637,7 +665,6 @@
           loadingDiv.style.display = 'none';
           mainArticle.style.display = 'block';
 
-          // OG + Partage (même données)
           updateOGTags(article);
           initShareButtons(article.title, window.location.href);
 
