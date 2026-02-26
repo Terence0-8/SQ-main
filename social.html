@@ -12,12 +12,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#37463D">
-  <meta name="description" content="Actualités sociales du Cameroun  Éducation, santé, emploi et société sur Solitiquo.">
-  <meta property="og:title" content="Solitiquo  L'Actualité Premium" />
-  <meta property="og:description" content="Le média de référence pour l'analyse politique et sociale au Cameroun." />
+  <meta name="description" content="Actualités sociales du Cameroun — Éducation, santé, emploi et société sur Solitiquo.">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Social — Solitiquo" />
+  <meta property="og:description" content="Éducation, santé, emploi et société au Cameroun. Suivez l'actualité sociale avec Solitiquo." />
   <meta property="og:image" content="https://solitiquo.com/logo.png" />
-  <meta property="og:url" content="https://solitiquo.com" />
+  <meta property="og:url" content="https://solitiquo.com/social.html" />
   <meta property="og:type" content="website" />
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@Solitiquo">
+  <meta name="twitter:title" content="Social — Solitiquo">
+  <meta name="twitter:description" content="Éducation, santé, emploi et société au Cameroun. Suivez l'actualité sociale avec Solitiquo.">
+  <meta name="twitter:image" content="https://solitiquo.com/logo.png">
+
   <title>Social — Solitiquo</title>
   <link rel="stylesheet" href="css/shared.css" />
   <link rel="stylesheet" href="css/pages/social.css" />
@@ -223,111 +233,73 @@
   <script>
     // --- 1. GESTIONNAIRE DE CLICS GLOBAL ---
     document.addEventListener('click', (e) => {
-      // A. Clic sur une option de vote
       if (e.target.classList.contains('js-poll-vote')) {
         e.preventDefault();
         const optionIndex = parseInt(e.target.dataset.index);
         submitGlobalVote(optionIndex);
       }
-
-      // B. Clic sur "Modifier mon vote"
       if (e.target.classList.contains('js-poll-edit')) {
         e.preventDefault();
-        renderSmartPoll(true); // Force le mode édition
+        renderSmartPoll(true);
       }
-
-      // C. Clic sur "Annuler"
       if (e.target.classList.contains('js-poll-cancel')) {
         e.preventDefault();
-        renderSmartPoll(false); // Retour aux résultats
+        renderSmartPoll(false);
       }
     });
 
     // --- 2. CONFIGURATION & LOGIQUE SONDAGE ---
     let smartPollData = null;
-
-    // DÉTECTION AUTOMATIQUE DE LA CATÉGORIE
-    // Si le fichier s'appelle 'social.html', la catégorie bascule automatiquement sur 'Social'
     const pageCategory = window.location.pathname.includes('social') ? 'Social' : 'Politique';
 
     async function loadSmartPoll() {
       const mainArea = document.getElementById('main-poll-area');
       try {
-        // Appel dynamique selon la catégorie (Social ou Politique)
         const res = await fetch(`${API_URL}/polls/active/${pageCategory}`, { credentials: 'include' });
         const data = await res.json();
-
-        if (!data.success) {
-          if (mainArea) mainArea.style.display = 'none';
-          return;
-        }
-
+        if (!data.success) { if (mainArea) mainArea.style.display = 'none'; return; }
         smartPollData = data;
         renderSmartPoll(false);
-
       } catch (e) { console.error(e); }
     }
 
     function renderSmartPoll(forceEdit) {
       if (!smartPollData) return;
       const { poll, hasVoted } = smartPollData;
-      const options = poll.options; // Options are inside poll object
-
+      const options = poll.options;
       const mainArea = document.getElementById('main-poll-area');
       const sidebarArea = document.getElementById('sidebar-poll-result-area');
       const showResults = hasVoted && !forceEdit;
 
       if (showResults) {
-        // --- VUE RÉSULTATS (SIDEBAR) ---
         if (mainArea) mainArea.style.display = 'none';
         if (sidebarArea) {
           sidebarArea.style.display = 'block';
           document.getElementById('poll-question-sidebar').textContent = poll.question;
-
           const total = options.reduce((a, b) => a + (parseInt(b.votes) || 0), 0);
           const max = Math.max(...options.map(o => (parseInt(o.votes) || 0)));
-
           document.getElementById('poll-results-sidebar').innerHTML = options.map(opt => {
             const c = parseInt(opt.votes) || 0;
             const pct = total === 0 ? 0 : Math.round((c / total) * 100);
-            // Changement de couleur selon la page ? Ici on garde le rouge par défaut, 
-            // mais tu pourrais mettre une variable CSS différente pour le social.
             const barColor = (c === max && total > 0) ? '#C82823' : '#cbd5e1';
             const weight = (c === max && total > 0) ? '700' : '400';
-
-            return `
-                    <div style="margin-bottom:12px;">
-                        <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:${weight}; margin-bottom:4px;">
-                            <span>${opt.text}</span><span>${pct}%</span>
-                        </div>
-                        <div style="height:5px; background:rgba(255,255,255,0.15); border-radius:3px; overflow:hidden;">
-                            <div style="width:${pct}%; background:${barColor}; height:100%; border-radius:3px; transition:width 0.5s;"></div>
-                        </div>
-                    </div>`;
+            return `<div style="margin-bottom:12px;"><div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:${weight}; margin-bottom:4px;"><span>${opt.text}</span><span>${pct}%</span></div><div style="height:5px; background:rgba(255,255,255,0.15); border-radius:3px; overflow:hidden;"><div style="width:${pct}%; background:${barColor}; height:100%; border-radius:3px; transition:width 0.5s;"></div></div></div>`;
           }).join('');
-
           const container = document.createElement('div');
           container.style.textAlign = 'center';
           container.style.marginTop = '15px';
           container.innerHTML = `<button class="btn-modify-vote js-poll-edit" style="color:#aaa; border-color:#444;">Modifier mon vote</button>`;
-
           const existingBtn = document.getElementById('sidebar-edit-wrapper');
           if (existingBtn) existingBtn.remove();
           container.id = 'sidebar-edit-wrapper';
-
           document.getElementById('poll-results-sidebar').appendChild(container);
         }
       } else {
-        // --- VUE VOTE (MAIN AREA) ---
         if (sidebarArea) sidebarArea.style.display = 'none';
         if (mainArea) {
           mainArea.style.display = 'block';
           document.getElementById('poll-question-main').textContent = poll.question;
-
-          document.getElementById('poll-options-main').innerHTML = options.map((opt, index) => `
-                    <button class="poll-option-btn js-poll-vote" data-index="${index}">${opt.text}</button>
-                `).join('');
-
+          document.getElementById('poll-options-main').innerHTML = options.map((opt, index) => `<button class="poll-option-btn js-poll-vote" data-index="${index}">${opt.text}</button>`).join('');
           if (hasVoted) {
             const cancelDiv = document.createElement('div');
             cancelDiv.style.textAlign = 'center';
@@ -335,7 +307,6 @@
             cancelDiv.innerHTML = `<a href="#" class="js-poll-cancel" style="color:#999; font-size:0.8rem; text-decoration:none;">Annuler</a>`;
             document.getElementById('poll-options-main').appendChild(cancelDiv);
           }
-
           const inner = document.getElementById('poll-card-inner');
           if (inner) { inner.classList.remove('fade-out'); inner.classList.add('poll-fade-enter'); }
         }
@@ -345,37 +316,24 @@
     async function submitGlobalVote(optionIndex) {
       if (!smartPollData) return;
       const pollId = smartPollData.poll.id;
-
       try {
         const res = await fetch(`${API_URL}/polls/vote`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': SolitiquoAPI.csrfToken // Protection CSRF
-          },
-          body: JSON.stringify({
-            poll_id: pollId,
-            option_index: optionIndex
-          }),
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': SolitiquoAPI.csrfToken },
+          body: JSON.stringify({ poll_id: pollId, option_index: optionIndex }),
           credentials: 'include'
         });
         const json = await res.json();
-
         if (json.success) {
           smartPollData.hasVoted = true;
-          if (json.options) {
-            smartPollData.poll.options = json.options;
-          }
+          if (json.options) smartPollData.poll.options = json.options;
           renderSmartPoll(false);
         } else {
-          console.warn("Erreur vote:", json.error);
-          alert(json.error || "Vote impossible");
+          console.warn('Erreur vote:', json.error);
+          alert(json.error || 'Vote impossible');
           renderSmartPoll(false);
         }
-      } catch (e) {
-        console.error(e);
-        alert("Erreur de connexion au serveur.");
-      }
+      } catch (e) { console.error(e); alert('Erreur de connexion au serveur.'); }
     }
 
     // --- 3. UI (Menu Mobile & Recherche) ---
@@ -412,41 +370,26 @@
       }
     });
 
-    // --- 4. CHARGEMENT INITIAL (ARTICLES SOCIAL + SONDAGE) ---
+    // --- 4. CHARGEMENT INITIAL ---
     document.addEventListener('DOMContentLoaded', async () => {
-      // Init Language
       await initLanguageSwitcher({ reloadPage: true });
-
-      // A. Chargement Articles (Catégorie Social) - SANS FILTRE LANGUE
       try {
         const lang = getLanguage();
         let catParam = pageCategory;
-
-        // 🔥 CORRECTION : On retire le filtre langue
         const res = await fetch(`${API_URL}/articles?category=${catParam}`);
         const json = await res.json();
-
         if (json.success && json.data.length > 0) {
           let articles = json.data;
-
-          // 🛡️ TRI INTELLIGENT : Articles dans la langue active en premier
           articles.sort((a, b) => {
             if (a.language === lang && b.language !== lang) return -1;
             if (a.language !== lang && b.language === lang) return 1;
             return 0;
           });
-
           const une = articles[0];
           const linkUne = `article.html?id=${une.id}`;
           const uneImg = une.image_url || 'https://via.placeholder.com/1600x900';
-
-          // 🏷️ Badge langue pour la Une
           let langBadgeUne = '';
-          if (une.language !== lang) {
-            langBadgeUne = une.language === 'fr' ? '🇫🇷' : '🇬🇧';
-          }
-
-          // Injection de la "Une"
+          if (une.language !== lang) { langBadgeUne = une.language === 'fr' ? '🇫🇷' : '🇬🇧'; }
           document.getElementById('hero-dynamic').innerHTML = `
             <section class="grand-hero-section">
               <a href="${linkUne}" style="position:absolute; inset:0; z-index:2;"></a>
@@ -461,42 +404,19 @@
               </div>
             </section>
           `;
-
-          // Injection de la liste principale avec badges langue
           const mainList = articles.slice(1, 4);
           document.getElementById('magazine-feed').innerHTML = mainList.map(art => {
             let langBadge = '';
-            if (art.language !== lang) {
-              langBadge = art.language === 'fr' ? ' 🇫🇷' : ' 🇬🇧';
-            }
-            return `
-              <article class="article-magazine">
-                <img src="${art.image_url}" class="mag-img" onerror="handleImgError(this)" loading="lazy">
-                <div class="mag-content">
-                  <a href="article.html?id=${art.id}" style="text-decoration:none;"><h3>${art.title}${langBadge}</h3></a>
-                  <p class="mag-excerpt">${art.excerpt || art.slug}</p>
-                  <small style="color:#888; font-size:0.85rem;">${SolitiquoAPI.formatDate(art.published_at)}</small>
-                </div>
-              </article>
-            `;
+            if (art.language !== lang) { langBadge = art.language === 'fr' ? ' 🇫🇷' : ' 🇬🇧'; }
+            return `<article class="article-magazine"><img src="${art.image_url}" class="mag-img" onerror="handleImgError(this)" loading="lazy"><div class="mag-content"><a href="article.html?id=${art.id}" style="text-decoration:none;"><h3>${art.title}${langBadge}</h3></a><p class="mag-excerpt">${art.excerpt || art.slug}</p><small style="color:#888; font-size:0.85rem;">${SolitiquoAPI.formatDate(art.published_at)}</small></div></article>`;
           }).join('');
-
-          // Injection de la grille "Découvrir" avec badges langue
           const discoverArticles = articles.slice(5, 13);
           const discoverGrid = document.getElementById('discover-grid');
           if (discoverGrid && discoverArticles.length > 0) {
             discoverGrid.innerHTML = discoverArticles.map(art => {
               let langBadge = '';
-              if (art.language !== lang) {
-                langBadge = art.language === 'fr' ? ' 🇫🇷' : ' 🇬🇧';
-              }
-              return `
-                <a href="article.html?id=${art.id}" class="disco-card">
-                  <img src="${art.image_url}" class="disco-img" onerror="handleImgError(this)" loading="lazy">
-                  <h4 class="disco-title">${art.title}${langBadge}</h4>
-                  <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
-                </a>
-              `;
+              if (art.language !== lang) { langBadge = art.language === 'fr' ? ' 🇫🇷' : ' 🇬🇧'; }
+              return `<a href="article.html?id=${art.id}" class="disco-card"><img src="${art.image_url}" class="disco-img" onerror="handleImgError(this)" loading="lazy"><h4 class="disco-title">${art.title}${langBadge}</h4><div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div></a>`;
             }).join('');
           } else if (discoverGrid) {
             discoverGrid.innerHTML = '<p style="text-align:center;color:#999;">Plus d\'articles bientôt.</p>';
@@ -504,21 +424,16 @@
         }
       } catch (e) { console.error(e); }
 
-      // B. Chargement Podcast (Spécifique Social)
       try {
         const resPod = await fetch(`${API_URL}/podcasts/featured/${pageCategory.toLowerCase()}`);
         const jsonPod = await resPod.json();
         if (jsonPod.success && jsonPod.data) {
           const pod = jsonPod.data;
-
-          // Définition du préfixe ID : si Social -> 'soc', sinon 'pol'
           const prefix = pageCategory === 'Social' ? 'soc' : 'pol';
-
           const img = document.getElementById(`${prefix}-pod-img`);
           const title = document.getElementById(`${prefix}-pod-title`);
           const cat = document.getElementById(`${prefix}-pod-cat`);
           const link = document.getElementById(`${prefix}-pod-link`);
-
           if (img) img.src = pod.image_url || 'https://placehold.co/400x300';
           if (title) title.textContent = pod.title;
           if (cat) cat.textContent = pod.category.toUpperCase();
@@ -526,7 +441,6 @@
         }
       } catch (e) { }
 
-      // C. Lancement du Sondage
       loadSmartPoll();
     });
   </script>
