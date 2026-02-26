@@ -30,11 +30,12 @@ const injectMetaTags = (html, data, url, alternates = []) => {
     <meta property="og:description" content="${description}" />
     <meta property="og:image" content="${image}" />
 
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="${url}" />
-    <meta property="twitter:title" content="${title}" />
-    <meta property="twitter:description" content="${description}" />
-    <meta property="twitter:image" content="${image}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@Solitiquo" />
+    <meta name="twitter:url" content="${url}" />
+    <meta name="twitter:title" content="${title}" />
+    <meta name="twitter:description" content="${description}" />
+    <meta name="twitter:image" content="${image}" />
   `;
 
     return html
@@ -92,8 +93,6 @@ exports.handleSeoRoute = async (req, res, next) => {
                 );
                 if (podcastRes.rows.length === 0) return next();
                 data = podcastRes.rows[0];
-                // Podcasts logic for alternates (if implemented in DB)
-                // For now, assume single language or future-proof
                 if (data.language && data.slug) {
                     alternates.push({ lang: data.language, url: `/${data.language}/podcasts/${data.slug}` });
                 }
@@ -107,7 +106,6 @@ exports.handleSeoRoute = async (req, res, next) => {
                 );
                 if (emissionRes.rows.length === 0) return next();
                 data = emissionRes.rows[0];
-                // Emissions are usually fixed lang, but let's add current
                 alternates.push({ lang: 'fr', url: `/fr/emissions/${data.slug}` });
                 break;
 
@@ -123,7 +121,6 @@ exports.handleSeoRoute = async (req, res, next) => {
                     description: partyRes.rows[0].description,
                     image: partyRes.rows[0].logo_url
                 };
-                // Generic static-ish slugs for parties
                 alternates.push({ lang: 'fr', url: `/fr/partis` });
                 if (partyRes.rows[0].slug_en) {
                     alternates.push({ lang: 'en', url: `/en/parties` });
@@ -157,6 +154,73 @@ exports.handleSeoRoute = async (req, res, next) => {
     }
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Route SSR pour article.html?id=X  (utilisée par les bots de partage social)
+// Twitter/X, Facebook, WhatsApp ne font pas tourner le JS — ils lisent le HTML
+// brut. Cette route intercepte la requête avant que Express serve le fichier
+// statique, interroge la BDD pour l'article demandé, et injecte les bonnes
+// balises <meta> dans le HTML avant de l'envoyer.
+// ─────────────────────────────────────────────────────────────────────────────
+exports.handleArticleById = async (req, res, next) => {
+    const id = req.query.id;
+
+    // Pas d'id = on laisse passer (Express sert le fichier statique normalement)
+    if (!id || isNaN(parseInt(id))) return next();
+
+    try {
+        const result = await pool.query(
+            `SELECT a.title, a.excerpt, a.image_url, a.language, a.category, a.slug,
+                    t.id AS trans_id, t.language AS trans_lang, t.category AS trans_cat, t.slug AS trans_slug
+             FROM articles a
+             LEFT JOIN articles t
+               ON (a.translation_id = t.id OR t.translation_id = a.id)
+               AND t.id != a.id
+             WHERE a.id = $1 AND a.status = 'published'
+             LIMIT 1`,
+            [parseInt(id)]
+        );
+
+        // Article introuvable ou non publié → fichier statique normal
+        if (result.rows.length === 0) return next();
+
+        const article = result.rows[0];
+        const categoryMap = {
+            'Politique': 'politique', 'Social': 'social',
+            'Économie': 'economie', 'Culture': 'culture',
+            'International': 'international', 'Dossiers': 'dossiers'
+        };
+
+        const currentCat = categoryMap[article.category] || 'politique';
+        const canonicalUrl = `${BASE_URL}/${article.language}/${currentCat}/${article.slug}`;
+
+        const alternates = [
+            { lang: article.language, url: `/${article.language}/${currentCat}/${article.slug}` }
+        ];
+
+        if (article.trans_lang && article.trans_slug) {
+            const transCat = categoryMap[article.trans_cat] || 'politique';
+            alternates.push({ lang: article.trans_lang, url: `/${article.trans_lang}/${transCat}/${article.trans_slug}` });
+        }
+
+        const templatePath = path.resolve(__dirname, '../../article.html');
+        fs.readFile(templatePath, 'utf8', (err, html) => {
+            if (err) return next();
+
+            const finalHtml = injectMetaTags(html, {
+                title: article.title,
+                description: article.excerpt,
+                image: article.image_url,
+            }, canonicalUrl, alternates);
+
+            res.send(finalHtml);
+        });
+
+    } catch (err) {
+        console.error('❌ Erreur SSR article.html?id:', err);
+        next(); // fallback silencieux → fichier statique
+    }
+};
+
 exports.handleStaticSeoRoute = async (req, res, next) => {
     const lang = req.params[0]; // 'fr' or 'en'
     const slug = req.params[1]; // 'politique', 'social', etc.
@@ -175,7 +239,6 @@ exports.handleStaticSeoRoute = async (req, res, next) => {
     const templateFile = map[slug];
     if (!templateFile) return next();
 
-    // Specific slugs for hreflang
     const hreflangMap = {
         'politique.html': { fr: 'politique', en: 'politics' },
         'social.html': { fr: 'social', en: 'social' },
@@ -195,7 +258,6 @@ exports.handleStaticSeoRoute = async (req, res, next) => {
         fs.readFile(templatePath, 'utf8', (err, html) => {
             if (err) return next();
 
-            // Generic titles for static pages
             const titles = {
                 'politique.html': 'Politique',
                 'social.html': 'Social',
