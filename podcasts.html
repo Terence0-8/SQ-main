@@ -12,12 +12,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#37463D">
-  <meta name="description" content="Podcasts Solitiquo  Écoutez nos émissions audio sur la politique et la société camerounaise.">
-  <meta property="og:title" content="Solitiquo  L'Actualité Premium" />
-  <meta property="og:description" content="Le média de référence pour l'analyse politique et sociale au Cameroun." />
+  <meta name="description" content="Podcasts Solitiquo — Écoutez nos émissions audio sur la politique et la société camerounaise.">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Podcasts — Solitiquo" />
+  <meta property="og:description" content="Écoutez nos émissions audio sur la politique et la société camerounaise. Le média de référence." />
   <meta property="og:image" content="https://solitiquo.com/logo.png" />
-  <meta property="og:url" content="https://solitiquo.com" />
+  <meta property="og:url" content="https://solitiquo.com/podcasts.html" />
   <meta property="og:type" content="website" />
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@Solitiquo">
+  <meta name="twitter:title" content="Podcasts — Solitiquo">
+  <meta name="twitter:description" content="Écoutez nos émissions audio sur la politique et la société camerounaise. Le média de référence.">
+  <meta name="twitter:image" content="https://solitiquo.com/logo.png">
+
   <title>Podcasts — Solitiquo</title>
   <link rel="stylesheet" href="/css/shared.css" />
   <link rel="stylesheet" href="/css/pages/podcasts.css" />
@@ -200,7 +210,6 @@
     if (mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
     if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
 
-    // --- LOGIQUE RECHERCHE UNIFIÉE ---
     const searchBtn = document.getElementById('searchBtn');
     const searchLabel = document.getElementById('searchLabel');
     const searchContainer = document.getElementById('searchContainer');
@@ -219,7 +228,6 @@
 
     document.addEventListener('click', (e) => {
       if (searchContainer && searchContainer.classList.contains('active')) {
-        // On ferme si on clique ailleurs que sur le container, le bouton ou le label
         if (!searchContainer.contains(e.target) &&
           !searchBtn.contains(e.target) &&
           (!searchLabel || !searchLabel.contains(e.target))) {
@@ -228,13 +236,11 @@
       }
     });
 
-    // Fonction scroll
     window.scrollToContent = () => {
       const target = document.getElementById('pod-list-anchor');
       if (target) target.scrollIntoView({ behavior: 'smooth' });
     };
 
-    // --- SCROLL ANIMATION ---
     const initScrollObserver = () => {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -250,7 +256,6 @@
       });
     };
 
-    // --- DATA LOAD ---
     document.addEventListener('DOMContentLoaded', async () => {
       await initLanguageSwitcher({ reloadPage: true });
       try {
@@ -261,7 +266,6 @@
           const highlights = podcasts.slice(1, 3);
           const list = podcasts.slice(3);
 
-          // 1. HERO (Sans la flèche, qui est maintenant dehors)
           document.getElementById('hero-pod-dynamic').innerHTML = `
             <div class="hero-pod-container">
                 <a href="podcast.html?id=${une.id}" class="hero-cover-wrap">
@@ -276,7 +280,6 @@
                     </div>
                     <h1 class="hero-title">${une.title}</h1>
                     <p class="hero-desc">${une.description || ''}</p>
-                    
                     <a href="podcast.html?id=${une.id}" class="btn-listen">
                         <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                         Écouter maintenant
@@ -284,7 +287,6 @@
                 </div>
             </div>`;
 
-          // 2. HIGHLIGHTS
           if (highlights.length > 0) {
             document.getElementById('highlights-grid').innerHTML = highlights.map((pod, index) => `
                     <a href="podcast.html?id=${pod.id}" class="hl-card" style="transition-delay: ${index * 0.15}s">
@@ -307,7 +309,6 @@
             document.querySelector('.highlights-container').style.display = 'none';
           }
 
-          // 3. GRILLE
           if (list.length > 0) {
             document.getElementById('podcasts-grid').innerHTML = list.map(pod => `
                     <a href="podcast.html?id=${pod.id}" class="pod-card">
