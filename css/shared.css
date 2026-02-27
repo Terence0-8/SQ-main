@@ -5066,8 +5066,9 @@ body#page-success {
 .language-badge .flag {
     font-size: 1rem;
     line-height: 1;
+}
 
-    @media screen and (max-width:600px) {
+@media screen and (max-width:600px) {
         .mobile-nav-sidebar {
             width: 280px
         }
@@ -5099,7 +5100,6 @@ body#page-success {
             font-size: 1.3rem !important
         }
     }
-}
 
 /* --- SKELETON LOADERS --- */
 .skeleton {
