@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ============================================================
   // 1. GESTION DU MENU MOBILE (Burger)
   // ============================================================
-  const burger = document.getElementById('burgerMenu');
+  const burger = document.getElementById('burgerBtn') || document.getElementById('burgerMenu');
   const mobileNav = document.getElementById('mobileNav');
   const mobileClose = document.getElementById('mobileNavClose');
   const overlay = document.getElementById('mobileNavOverlay');
