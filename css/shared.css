@@ -81,7 +81,7 @@ body.menu-open {
 
 .burger-menu {
     display: none;
-    position: fixed;
+    position: absolute;
     top: 16px;
     left: 16px;
     z-index: 10002;
@@ -470,7 +470,7 @@ body.menu-open {
     }
 
     .subtitle {
-        font-size: .75rem !important
+        display : none;
     }
 }
 
@@ -1586,17 +1586,6 @@ body.menu-open {
 }
 
 @media (max-width:900px) {
-    .header-container {
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
-        align-items: center;
-        max-width: 1200px;
-        margin: 0 auto;
-        gap: 2rem;
-        position: relative;
-        z-index: 1001;
-        pointer-events: auto
-    }
 
     .burger-menu {
         display: flex
@@ -5080,7 +5069,7 @@ body#page-success {
         }
 
         .site-title {
-            font-size: 1.5rem !important
+            font-size: 1.4rem !important
         }
     }
 
