@@ -331,52 +331,6 @@ body.menu-open {
     margin-top: 1rem
 }
 
-.mobile-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem
-}
-
-.mobile-close {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 2rem;
-    cursor: pointer;
-    line-height: 1
-}
-
-.mobile-links {
-    list-style: none;
-    padding: 0;
-    margin: 0
-}
-
-.mobile-link-item {
-    margin-bottom: .5rem
-}
-
-.mobile-link {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.4rem;
-    color: #888;
-    text-decoration: none;
-    display: block;
-    padding: .5rem 0;
-    transition: color .3s, padding-left .3s
-}
-
-.mobile-link:hover,
-.mobile-link.active {
-    color: white
-}
-
-.mobile-link.active {
-    border-left: 3px solid var(--accent-red);
-    padding-left: .75rem
-}
-
 @media screen and (max-width:900px) {
 
     .mobile-nav-sidebar {
