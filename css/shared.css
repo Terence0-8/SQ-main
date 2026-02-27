@@ -671,7 +671,7 @@ body.menu-open {
 }
 
 .hero-slider {
-    height: 500px;
+    height: clamp(320px, 60vh, 500px);
     position: relative;
     overflow: hidden;
     width: 100%
@@ -679,7 +679,7 @@ body.menu-open {
 
 @media (max-width:768px) {
     .hero-slider {
-        height: 400px
+        height: clamp(260px, 55vh, 400px)
     }
 }
 
@@ -707,7 +707,7 @@ body.menu-open {
     background-repeat: no-repeat;
     display: flex;
     align-items: flex-end;
-    padding: 60px
+    padding: clamp(24px, 5vw, 60px)
 }
 
 .slide-link {
@@ -971,6 +971,11 @@ body.menu-open {
     .layout-split {
         grid-template-columns: 1fr
     }
+
+    .featured-media {
+        height: auto;
+        max-height: 300px
+    }
 }
 
 .masonry-grid {
@@ -1037,7 +1042,7 @@ body.menu-open {
 
 .vertical-feature img {
     width: 100%;
-    height: 380px;
+    height: clamp(220px, 35vw, 380px);
     object-fit: cover
 }
 
@@ -1073,7 +1078,7 @@ body.menu-open {
     }
 
     .vertical-feature img {
-        height: 260px
+        height: clamp(220px, 45vw, 320px)
     }
 }
 
@@ -3294,8 +3299,10 @@ a[class*="btn"] {
 }
 
 .pod-thumb {
-    width: 140px;
-    height: 140px;
+    width: min(140px, 100%);
+    height: auto;
+    max-width: 100%;
+    aspect-ratio: 1 / 1;
     object-fit: cover;
     border-radius: 6px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, .5);
@@ -3455,8 +3462,7 @@ a[class*="btn"] {
     .pod-thumb {
         margin: 0 auto;
         transform: none;
-        width: 140px;
-        height: 140px
+        width: min(140px, 100%)
     }
 
     .scroll-wrapper {
