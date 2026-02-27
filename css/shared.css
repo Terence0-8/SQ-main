@@ -410,6 +410,12 @@ body.menu-open {
     .subtitle {
         display : none;
     }
+
+    .left-section { order: 2; align-items: center }
+    .right-section { order: 3; justify-content: center }
+    .center-section { order: 1 }
+    .main-nav { display: none }
+
 }
 
 .left-section {
@@ -1446,31 +1452,6 @@ body.menu-open {
 
     .footer-col {
         grid-column: span 1 !important
-    }
-}
-
-@media (max-width:900px) {
-
-    .left-section {
-        order: 2;
-        align-items: center
-    }
-
-    .right-section {
-        order: 3;
-        justify-content: center
-    }
-
-    .center-section {
-        order: 1
-    }
-
-    .main-nav {
-        display: none
-    }
-
-    .subtitle {
-        display: none;
     }
 }
 
