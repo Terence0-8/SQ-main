@@ -283,30 +283,30 @@
     if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
 
     // --- RECHERCHE ---
-    const searchBtn = document.getElementById('searchBtn');
-    const searchLabel = document.getElementById('searchLabel');
-    const searchContainer = document.getElementById('searchContainer');
-    const searchInput = document.getElementById('searchInput');
+        document.addEventListener('DOMContentLoaded', () => {
+      const searchBtn = document.getElementById('searchBtn');
+      const searchLabel = document.getElementById('searchLabel');
+      const searchContainer = document.getElementById('searchContainer');
+      const searchInput = document.getElementById('searchInput');
 
-    function toggleSearch(e) {
-      e.stopPropagation();
-      searchContainer.classList.toggle('active');
-      if (searchContainer.classList.contains('active')) {
-        setTimeout(() => searchInput.focus(), 100);
-      }
-    }
+      if (!searchBtn || !searchContainer || !searchInput) return;
 
-    if (searchBtn) searchBtn.addEventListener('click', toggleSearch);
-    if (searchLabel) searchLabel.addEventListener('click', toggleSearch);
-
-    document.addEventListener('click', (e) => {
-      if (searchContainer && searchContainer.classList.contains('active')) {
-        if (!searchContainer.contains(e.target) &&
-          !searchBtn.contains(e.target) &&
-          (!searchLabel || !searchLabel.contains(e.target))) {
-          searchContainer.classList.remove('active');
+      function toggleSearch(e) {
+        e.stopPropagation();
+        searchContainer.classList.toggle('active');
+        if (searchContainer.classList.contains('active')) {
+          setTimeout(() => searchInput.focus(), 100);
         }
       }
+
+      searchBtn.addEventListener('click', toggleSearch);
+      if (searchLabel) searchLabel.addEventListener('click', toggleSearch);
+
+      document.addEventListener('click', (e) => {
+        if (!searchContainer.contains(e.target) && !searchBtn.contains(e.target) && (!searchLabel || !searchLabel.contains(e.target))) {
+          searchContainer.classList.remove('active');
+        }
+      });
     });
   </script>
   <script src="/js/lazyload.js"></script>
