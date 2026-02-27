@@ -382,8 +382,17 @@ body.menu-open {
     flex-direction: column
 }
 
-.search-stack {
+.main-header .search-stack {
     position: relative;
+    --search-top: 100%;
+    --search-left: -110px;
+    --search-right: auto;
+    --search-width: 300px;
+    --search-border: 2px solid #37463D;
+    --search-radius: 8px;
+    --search-padding: .5rem;
+    --search-shadow: none;
+    --search-transition: all .35s cubic-bezier(.4, .1, .2, 1);
     display: flex;
     flex-direction: column;
     gap: .4rem
@@ -420,20 +429,22 @@ body.menu-open {
 
 .main-header .search-container {
     position: absolute;
-    top: 100%;
-    left: -110px;
-    width: 300px;
+    top: var(--search-top, 100%);
+    left: var(--search-left, -110px);
+    right: var(--search-right, auto);
+    width: var(--search-width, 300px);
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
-    transition: all .35s cubic-bezier(.4, .1, .2, 1);
+    transition: var(--search-transition, all .35s cubic-bezier(.4, .1, .2, 1));
     display: flex;
     align-items: center;
     gap: .5rem;
     background: #fff;
-    border: 2px solid #37463D;
-    border-radius: 8px;
-    padding: .5rem;
+    border: var(--search-border, 2px solid #37463D);
+    border-radius: var(--search-radius, 8px);
+    padding: var(--search-padding, .5rem);
+    box-shadow: var(--search-shadow, none);
     margin-top: .5rem;
     z-index: 10001
 }
@@ -2689,7 +2700,7 @@ body.menu-open {
     padding: 2rem 0 4rem 0
 }
 
-.search-page .search-container {
+.search-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem
@@ -3102,7 +3113,7 @@ body.menu-open {
 }
 
 @media screen and (max-width:768px) {
-    .search-page .search-container {
+    .search-container {
         padding: 0 1rem
     }
 
@@ -3714,7 +3725,7 @@ a[class*="btn"] {
     flex-wrap: wrap
 }
 
-.filter-bar .filter-btn {
+.filter-btn {
     background: rgba(255, 255, 255, .1);
     border: 2px solid rgba(255, 255, 255, .2);
     color: white;
@@ -3727,13 +3738,13 @@ a[class*="btn"] {
     backdrop-filter: blur(5px)
 }
 
-.filter-bar .filter-btn:hover {
+.filter-btn:hover {
     background: rgba(255, 255, 255, .15);
     border-color: rgba(255, 255, 255, .4);
     transform: translateY(-2px)
 }
 
-.filter-bar .filter-btn.active {
+.filter-btn.active {
     background: var(--accent-red);
     border-color: var(--accent-red);
     box-shadow: 0 4px 16px rgba(200, 40, 35, .4)
@@ -3757,7 +3768,7 @@ a[class*="btn"] {
         flex-direction: column
     }
 
-    .filter-bar .filter-btn {
+    .filter-btn {
         width: 100%
     }
 }
@@ -3900,11 +3911,11 @@ a[class*="btn"] {
     white-space: nowrap
 }
 
-.search-stack {
+.premium-header .search-stack {
     position: relative
 }
 
-.premium-header .search-container {
+.search-container {
     position: absolute;
     top: 50px;
     right: 0;

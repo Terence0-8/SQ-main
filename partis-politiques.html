@@ -147,10 +147,10 @@
         dossiers complets des formations politiques camerounaises.</p>
 
       <div class="filter-bar">
-        <button class="filter-btn active" data-filter="all">Tous</button>
-        <button class="filter-btn" data-filter="majorite">Majorité</button>
-        <button class="filter-btn" data-filter="opposition">Opposition</button>
-        <button class="filter-btn" data-filter="historique">Historique</button>
+        <button class="party-filter-btn active" data-filter="all">Tous</button>
+        <button class="party-filter-btn" data-filter="majorite">Majorité</button>
+        <button class="party-filter-btn" data-filter="opposition">Opposition</button>
+        <button class="party-filter-btn" data-filter="historique">Historique</button>
       </div>
     </div>
   </section>
@@ -251,7 +251,7 @@
       }
 
       // --- GESTION DES FILTRES ---
-      const filterBtns = document.querySelectorAll('.filter-btn');
+      const filterBtns = document.querySelectorAll('.party-filter-btn');
 
       filterBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
