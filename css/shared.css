@@ -1610,8 +1610,7 @@ body.menu-open {
     }
 
     .subtitle {
-        right: -28px;
-        bottom: -10px
+        display: none;
     }
 }
 
