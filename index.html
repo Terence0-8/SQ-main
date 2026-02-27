@@ -303,28 +303,33 @@
     if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
 
     // --- RECHERCHE ---
-    const searchBtn = document.getElementById('searchBtn');
-    const searchContainer = document.getElementById('searchContainer');
-    const searchInput = document.getElementById('searchInput');
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchBtn = document.getElementById('searchBtn');
+      const searchLabel = document.getElementById('searchLabel');
+      const searchContainer = document.getElementById('searchContainer');
+      const searchInput = document.getElementById('searchInput');
 
-    // Fonction pour ouvrir/fermer
-    function toggleSearch(e) {
-      e.stopPropagation();
-      searchContainer.classList.toggle('active');
-      if (searchContainer.classList.contains('active')) {
-        setTimeout(() => searchInput.focus(), 100);
+      if (!searchBtn || !searchContainer || !searchInput) return;
+
+      // Fonction pour ouvrir/fermer
+      function toggleSearch(e) {
+        e.stopPropagation();
+        searchContainer.classList.toggle('active');
+        if (searchContainer.classList.contains('active')) {
+          setTimeout(() => searchInput.focus(), 100);
+        }
       }
-    }
 
-    // On active le clic sur le bouton ET sur le texte
-    if (searchBtn) searchBtn.addEventListener('click', toggleSearch);
-    if (searchLabel) searchLabel.addEventListener('click', toggleSearch);
+      // On active le clic sur le bouton ET sur le texte
+      searchBtn.addEventListener('click', toggleSearch);
+      if (searchLabel) searchLabel.addEventListener('click', toggleSearch);
 
-    // Fermeture au clic dehors
-    document.addEventListener('click', (e) => {
-      if (!searchContainer.contains(e.target) && !searchBtn.contains(e.target) && !searchLabel.contains(e.target)) {
-        searchContainer.classList.remove('active');
-      }
+      // Fermeture au clic dehors
+      document.addEventListener('click', (e) => {
+        if (!searchContainer.contains(e.target) && !searchBtn.contains(e.target) && (!searchLabel || !searchLabel.contains(e.target))) {
+          searchContainer.classList.remove('active');
+        }
+      });
     });
 
 
