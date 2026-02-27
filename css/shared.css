@@ -79,65 +79,6 @@ body.menu-open {
     pointer-events: auto
 }
 
-.burger-menu {
-    display: none;
-    position: absolute;
-    top: 16px;
-    left: 16px;
-    z-index: 10002;
-    width: 50px;
-    height: 50px;
-    border: none;
-    background: #fff;
-    border-radius: 50%;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    cursor: pointer;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, .18);
-    transition: all .3s cubic-bezier(.4, 0, .2, 1)
-}
-
-.burger-menu:hover {
-    background: #37463D;
-    transform: scale(1.1);
-    box-shadow: 0 5px 20px rgba(55, 70, 61, .35)
-}
-
-.burger-menu span {
-    display: block;
-    width: 24px;
-    height: 2.5px;
-    background: #37463D;
-    border-radius: 2px;
-    transition: all .3s ease
-}
-
-.burger-menu:hover span {
-    background: #fff
-}
-
-.burger-menu.open {
-    background: #37463D
-}
-
-.burger-menu.open span {
-    background: #fff
-}
-
-.burger-menu.open span:nth-child(1) {
-    transform: translateY(7.5px) rotate(45deg)
-}
-
-.burger-menu.open span:nth-child(2) {
-    opacity: 0
-}
-
-.burger-menu.open span:nth-child(3) {
-    transform: translateY(-7.5px) rotate(-45deg)
-}
-
 .mobile-nav-sidebar {
     display: none;
     position: fixed;
@@ -437,9 +378,6 @@ body.menu-open {
 }
 
 @media screen and (max-width:900px) {
-    .burger-menu {
-        display: flex
-    }
 
     .mobile-nav-sidebar {
         display: block
@@ -623,7 +561,6 @@ body.menu-open {
     font-size: .95rem;
     font-weight: 500;
     position: absolute;
-    right: -35px;
     bottom: -12px;
     font-style: italic;
     background: transparent;
@@ -1513,10 +1450,6 @@ body.menu-open {
 }
 
 @media (max-width:900px) {
-
-    .burger-menu {
-        display: flex
-    }
 
     .left-section {
         order: 2;
