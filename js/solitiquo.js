@@ -49,7 +49,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const searchContainer = document.getElementById('searchContainer');
   const searchInput = document.getElementById('searchInput');
 
-  if (searchBtn && searchContainer) {
+  // Garde anti-double-registration : si la page a son propre listener (data-search-init),
+  // solitiquo.js ne s'enregistre pas pour éviter le double-toggle (ouvre + ferme = rien).
+  if (searchBtn && searchContainer && !searchBtn.dataset.searchInit) {
+    searchBtn.dataset.searchInit = 'solitiquo';
+
     // Ouvrir / Fermer au clic sur le bouton rond
     searchBtn.addEventListener('click', (e) => {
       e.stopPropagation(); // Empêche le clic de remonter au document
