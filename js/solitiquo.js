@@ -43,41 +43,89 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   // ============================================================
-  // 2. GESTION DE LA RECHERCHE (Visuel uniquement)
+  // 2. OVERLAY DE RECHERCHE GLASSMORPHISM (mobile-first)
   // ============================================================
   const searchBtn = document.getElementById('searchBtn');
   const searchContainer = document.getElementById('searchContainer');
   const searchInput = document.getElementById('searchInput');
 
-  // Garde anti-double-registration : si la page a son propre listener (data-search-init),
-  // solitiquo.js ne s'enregistre pas pour éviter le double-toggle (ouvre + ferme = rien).
+  // Création de l'overlay global de recherche (injection dans DOM une seule fois)
+  function createSearchOverlay() {
+    if (document.getElementById('globalSearchOverlay')) return;
+    const lang = (localStorage.getItem('siteLanguage') || 'fr');
+    const placeholder = lang === 'en' ? 'Search...' : 'Rechercher...';
+    const labelBtn = lang === 'en' ? 'Search' : 'Rechercher';
+
+    const overlay = document.createElement('div');
+    overlay.id = 'globalSearchOverlay';
+    overlay.innerHTML = `
+      <div class="gso-backdrop"></div>
+      <div class="gso-box">
+        <form class="gso-form" action="recherche.html" method="get">
+          <div class="gso-input-wrap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input type="text" name="q" class="gso-input" placeholder="${placeholder}" autocomplete="off" autofocus>
+            <button type="button" class="gso-close-btn" id="gsoClose" aria-label="Fermer">×</button>
+          </div>
+          <button type="submit" class="gso-submit">${labelBtn}</button>
+        </form>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    // Fermeture
+    overlay.querySelector('.gso-backdrop').addEventListener('click', closeSearchOverlay);
+    overlay.querySelector('#gsoClose').addEventListener('click', closeSearchOverlay);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSearchOverlay(); });
+  }
+
+  function openSearchOverlay() {
+    createSearchOverlay();
+    const overlay = document.getElementById('globalSearchOverlay');
+    overlay.classList.add('active');
+    setTimeout(() => {
+      const input = overlay.querySelector('.gso-input');
+      if (input) input.focus();
+    }, 150);
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeSearchOverlay() {
+    const overlay = document.getElementById('globalSearchOverlay');
+    if (overlay) overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  // Bouton de recherche dans le header (desktop ou mobile)
   if (searchBtn && searchContainer && !searchBtn.dataset.searchInit) {
     searchBtn.dataset.searchInit = 'solitiquo';
 
-    // Ouvrir / Fermer au clic sur le bouton rond
+    // Sur mobile (burger visible), ouvrir l'overlay global
+    // Sur desktop, comportement classique (dropdown)
     searchBtn.addEventListener('click', (e) => {
-      e.stopPropagation(); // Empêche le clic de remonter au document
-      searchContainer.classList.toggle('active');
-
-      // Feedback visuel de debug au clic : si la classe active n'y est pas (css override),
-      // changer le background pour prouver que JS marche.
-      if (searchContainer.classList.contains('active')) {
-        setTimeout(() => searchInput && searchInput.focus(), 100);
-        searchBtn.style.backgroundColor = ''; // Reset background if active
+      e.stopPropagation();
+      const isMobile = window.innerWidth <= 900;
+      if (isMobile) {
+        openSearchOverlay();
       } else {
-        // Optionnel : un petit repère visuel (commenté si on trouve ça gênant, mais pratique pour vous rassurer)
-        searchBtn.style.backgroundColor = 'red'; // Set background to red if not active
+        searchContainer.classList.toggle('active');
+        if (searchContainer.classList.contains('active')) {
+          setTimeout(() => searchInput && searchInput.focus(), 100);
+        }
       }
     });
 
-    // Empêcher la fermeture quand on clique DANS le formulaire
-    searchContainer.addEventListener('click', (e) => {
-      e.stopPropagation();
-    });
+    searchContainer.addEventListener('click', (e) => e.stopPropagation());
+    document.addEventListener('click', () => searchContainer.classList.remove('active'));
+  }
 
-    // Fermer si on clique ailleurs sur la page
-    document.addEventListener('click', () => {
-      searchContainer.classList.remove('active');
+  // Bouton loupe mobile dédié (burgerSearchBtn) si présent dans le header
+  const burgerSearchBtn = document.getElementById('burgerSearchBtn');
+  if (burgerSearchBtn) {
+    burgerSearchBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openSearchOverlay();
     });
   }
 
