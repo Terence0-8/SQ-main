@@ -5139,3 +5139,230 @@ body#page-success {
         background-position-x: -200%;
     }
 }
+
+/* ================================================================
+   RESPONSIVE GLOBAL — Améliorations UX/UI
+   ================================================================ */
+
+/* ---------------------------------------------------------------
+   1. BOUTON "S'IDENTIFIER" DU MENU MOBILE — Style Glassmorphism Premium
+   --------------------------------------------------------------- */
+.mobile-nav-sidebar a[href="auth.html"][style] {
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    color: var(--primary-dark) !important;
+    border: 1.5px solid rgba(55, 70, 61, 0.25) !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+    border-radius: 30px !important;
+    padding: 1rem 2rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    margin: 0 !important;
+    text-decoration: none !important;
+    box-shadow: 0 4px 16px rgba(55, 70, 61, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    letter-spacing: 0.3px !important;
+}
+
+.mobile-nav-sidebar a[href="auth.html"][style]:hover {
+    background: var(--primary-dark) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 24px rgba(55, 70, 61, 0.25) !important;
+}
+
+/* ---------------------------------------------------------------
+   2. RESPONSIVE GLOBAL — Réduction des tailles de texte et padding
+   --------------------------------------------------------------- */
+@media (max-width: 768px) {
+
+    /* Hero sections */
+    .hero-title-main,
+    h1.hero-title {
+        font-size: clamp(1.6rem, 7vw, 2.4rem) !important;
+        line-height: 1.2 !important;
+    }
+
+    .hero-title,
+    .politics-hero .hero-title {
+        font-size: clamp(1.8rem, 8vw, 2.8rem) !important;
+    }
+
+    .hero-subtitle,
+    .hero-excerpt {
+        font-size: .95rem !important;
+        line-height: 1.5 !important;
+    }
+
+    /* Sections générales */
+    section {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    .grand-hero-section {
+        min-height: 60vh !important;
+    }
+
+    /* Titres de sections */
+    h2 {
+        font-size: clamp(1.4rem, 6vw, 2rem) !important;
+    }
+
+    h3 {
+        font-size: clamp(1.1rem, 4.5vw, 1.5rem) !important;
+    }
+
+    /* Padding des conteneurs */
+    .container,
+    [class*="-container"],
+    [class*="-wrapper"] {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+}
+
+/* ---------------------------------------------------------------
+   3. PODCASTS — Grille 2 colonnes jusqu'au format téléphone
+   --------------------------------------------------------------- */
+@media (max-width: 768px) {
+    .podcasts-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 16px !important;
+    }
+
+    .highlights-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 16px !important;
+    }
+
+    .hl-card {
+        flex-direction: column !important;
+        padding: 12px !important;
+    }
+
+    .hl-img-wrap {
+        width: 100% !important;
+        height: 110px !important;
+    }
+
+    .hl-title {
+        font-size: 1rem !important;
+    }
+
+    .hero-pod-container {
+        padding: 0 16px !important;
+    }
+
+    .hero-title {
+        font-size: 2.2rem !important;
+    }
+}
+
+@media (max-width: 400px) {
+    .podcasts-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+
+    .pc-title {
+        font-size: 1rem !important;
+    }
+}
+
+/* ---------------------------------------------------------------
+   4. PARTIS POLITIQUES — Grille 2 colonnes jusqu'au format téléphone
+   --------------------------------------------------------------- */
+@media (max-width: 768px) {
+    .parties-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 16px !important;
+    }
+
+    .party-card {
+        padding: 1.5rem 1rem !important;
+    }
+
+    .party-acronym {
+        font-size: 1.6rem !important;
+    }
+
+    .party-name {
+        font-size: .8rem !important;
+        min-height: unset !important;
+    }
+
+    .party-logo-box {
+        width: 70px !important;
+        height: 70px !important;
+    }
+
+    .party-logo {
+        width: 65% !important;
+    }
+}
+
+@media (max-width: 400px) {
+    .parties-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+}
+
+/* ---------------------------------------------------------------
+   5. ÉMISSIONS — Vidéo en priorité sur mobile, texte réduit
+   --------------------------------------------------------------- */
+@media (max-width: 768px) {
+
+    .cinema-container {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+        padding: 0 16px !important;
+    }
+
+    /* Vidéo apparaît EN PREMIER (avant les infos texte) */
+    .video-player-wrap {
+        order: -1 !important;
+    }
+
+    .tv-info {
+        order: 1 !important;
+        padding: 1.5rem !important;
+    }
+
+    .video-title {
+        font-size: 1.5rem !important;
+    }
+
+    .video-desc {
+        -webkit-line-clamp: 2 !important;
+        line-clamp: 2 !important;
+        font-size: .9rem !important;
+    }
+
+    .cinema-hero {
+        padding: 2rem 0 3rem !important;
+        min-height: auto !important;
+    }
+
+    .video-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1rem !important;
+        padding: 0 16px !important;
+    }
+
+    .replay-title {
+        font-size: 1rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .video-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
