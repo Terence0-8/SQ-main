@@ -5641,3 +5641,56 @@ a.art-link {
         padding: 1rem !important;
     }
 }
+
+/* ================================================================
+   BOUTON LOUPE MOBILE — #burgerSearchBtn
+   Visible à droite du header quand le burger est actif (≤900px)
+   ================================================================ */
+.burger-search-btn {
+    display: none;
+    /* Masqué par défaut (desktop) */
+}
+
+@media (max-width: 900px) {
+    .burger-search-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        top: 12px;
+        right: 14px;
+        z-index: 9000;
+        width: 44px;
+        height: 44px;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px) saturate(160%);
+        -webkit-backdrop-filter: blur(10px) saturate(160%);
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        border-radius: 50%;
+        cursor: pointer;
+        color: #2c2c2c;
+        box-shadow:
+            0 4px 12px rgba(0, 0, 0, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.7);
+        transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .burger-search-btn:hover,
+    .burger-search-btn:active {
+        background: var(--primary-dark, #37463D);
+        color: #fff;
+        border-color: transparent;
+        transform: scale(1.08);
+        box-shadow: 0 6px 18px rgba(55, 70, 61, 0.25);
+    }
+
+    .burger-search-btn svg {
+        pointer-events: none;
+    }
+
+    /* Quand le menu mobile est ouvert, cacher le bouton pour ne pas superposer */
+    body.menu-open .burger-search-btn {
+        opacity: 0;
+        pointer-events: none;
+    }
+}
