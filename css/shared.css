@@ -82,22 +82,24 @@ body.menu-open {
     position: fixed;
     top: 0;
     left: 0;
-    width: 300px;
+    width: 320px;
     max-width: 85vw;
     height: 100vh;
-    background: linear-gradient(135deg, #0f0f11 0%, #1a1a1e 100%);
-    z-index: 10001;
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(20px) saturate(180%);
+    z-index: 10001 !important;
     transform: translateX(-100%);
     visibility: hidden;
     pointer-events: none;
-    transition: transform .4s cubic-bezier(.4, 0, .2, 1);
+    transition: transform .45s cubic-bezier(0.2, 0.8, 0.2, 1);
     overflow-y: auto;
-    box-shadow: 4px 0 24px rgba(0, 0, 0, .4)
+    box-shadow: 10px 0 40px rgba(0, 0, 0, 0.08);
+    border-right: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .mobile-nav-sidebar.nav-open {
-    visibility: visible;
-    pointer-events: auto;
+    visibility: visible !important;
+    pointer-events: auto !important;
     transform: translateX(0)
 }
 
@@ -107,8 +109,7 @@ body.menu-open {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, .65);
-    backdrop-filter: blur(3px);
+    background: rgba(15, 20, 25, 0.4);
     z-index: 10000;
     opacity: 0;
     visibility: hidden;
@@ -126,29 +127,31 @@ body.menu-open {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.2rem 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, .08);
-    background: #141416
+    padding: 1.5rem 1.8rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    background: transparent;
 }
 
 .mobile-nav-close {
-    background: transparent;
-    color: rgba(255, 255, 255, .7);
-    border: none;
-    width: 38px;
-    height: 38px;
+    background: rgba(0, 0, 0, 0.04);
+    color: #333;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all .3s ease
+    transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
 .mobile-nav-close:hover {
-    background: rgba(255, 255, 255, .1);
-    color: #fff;
-    transform: rotate(90deg)
+    background: #fff;
+    color: #C82823;
+    transform: rotate(90deg) scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .mobile-nav-branding {
@@ -164,31 +167,31 @@ body.menu-open {
     width: 32px;
     height: 32px;
     object-fit: contain;
-    order: 1
+    order: 1;
+    filter: invert(1);
 }
 
 .mobile-nav-branding::after {
     content: '';
     width: 2px;
-    height: 38px;
-    background: linear-gradient(180deg, rgba(255, 255, 255, .3), rgba(255, 255, 255, .1));
+    height: 34px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, .15), rgba(0, 0, 0, .05));
     border-radius: 1px;
     order: 2;
     margin: 0 .5rem
 }
 
 .mobile-site-name {
-    color: #fff;
+    color: #222;
     font-size: 1.6rem;
     font-weight: 900;
     font-family: 'Playfair Display', serif;
-    letter-spacing: -1px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, .3);
+    letter-spacing: -0.5px;
     order: 3
 }
 
 .mobile-nav-content {
-    padding: 1.8rem 0 2rem 0
+    padding: 2rem 0 2rem 0
 }
 
 .mobile-search-box {
@@ -201,30 +204,33 @@ body.menu-open {
     left: 1.1rem;
     top: 50%;
     transform: translateY(-50%);
-    color: rgba(255, 255, 255, .4);
+    color: rgba(0, 0, 0, .4);
     pointer-events: none
 }
 
 .mobile-search-input {
     width: 100%;
-    padding: .9rem 1rem .9rem 3rem;
-    background: rgba(255, 255, 255, .06);
-    border: 1px solid rgba(255, 255, 255, .12);
-    border-radius: 10px;
-    color: #fff;
-    font-size: .85rem;
+    padding: 1rem 1rem 1rem 3.2rem;
+    background: rgba(0, 0, 0, .03);
+    border: 1px solid rgba(0, 0, 0, .08);
+    border-radius: 14px;
+    color: #333;
+    font-size: .9rem;
+    font-weight: 500;
     outline: none;
-    transition: all .3s ease;
-    font-family: 'Inter', sans-serif
+    transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Inter', sans-serif;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.01);
 }
 
 .mobile-search-input::placeholder {
-    color: rgba(255, 255, 255, .4)
+    color: rgba(0, 0, 0, .4)
 }
 
 .mobile-search-input:focus {
-    background: rgba(255, 255, 255, .1);
-    border-color: rgba(255, 255, 255, .25)
+    background: #fff;
+    border-color: rgba(200, 40, 35, 0.3);
+    box-shadow: 0 4px 15px rgba(200, 40, 35, 0.08);
 }
 
 .mobile-nav-section {
@@ -232,13 +238,13 @@ body.menu-open {
 }
 
 .mobile-nav-section-title {
-    color: rgba(255, 255, 255, .45);
-    font-size: .7rem;
+    color: rgba(0, 0, 0, .45);
+    font-size: .75rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 0 1.5rem;
-    margin-bottom: .8rem;
+    letter-spacing: 1.2px;
+    padding: 0 1.8rem;
+    margin-bottom: 1rem;
     font-family: 'Inter', sans-serif
 }
 
@@ -252,23 +258,24 @@ body.menu-open {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    color: #e8e8e8;
+    color: #444;
     text-decoration: none;
-    font-size: 1rem;
-    font-weight: 500;
-    padding: .85rem 1.5rem .85rem 2.6rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    padding: 1rem 1.8rem 1rem 2.5rem;
     transition: all .3s cubic-bezier(.4, 0, .2, 1);
     position: relative;
     font-family: 'Inter', sans-serif;
     text-align: left;
-    border-radius: 8px;
-    margin: 0 .8rem .6rem .8rem
+    border-radius: 12px;
+    margin: 0 1rem .6rem 1rem;
+    background: transparent;
 }
 
 .mobile-nav-link::before {
     content: '';
     position: absolute;
-    left: 1.5rem;
+    left: 1.2rem;
     top: 50%;
     transform: translateY(-50%) scale(0);
     width: 6px;
@@ -276,7 +283,8 @@ body.menu-open {
     background: #C82823;
     border-radius: 50%;
     opacity: 0;
-    transition: all .3s cubic-bezier(.4, 0, .2, 1)
+    transition: all .3s cubic-bezier(.4, 0, .2, 1);
+    box-shadow: 0 0 8px rgba(200, 40, 35, 0.6);
 }
 
 .mobile-nav-link:hover::before {
@@ -285,34 +293,40 @@ body.menu-open {
 }
 
 .mobile-nav-link:hover {
-    color: #fff;
-    background: rgba(200, 40, 35, .18);
-    padding-left: 3.2rem;
+    color: #111;
+    background: #fff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    padding-left: 3rem;
     transform: translateX(4px)
 }
 
 .mobile-nav-link.active {
-    color: #fff;
+    color: #C82823;
     font-weight: 700;
-    border-left: 4px solid #C82823;
-    background: rgba(200, 40, 35, .12);
-    border-bottom: none;
-    padding-left: 2.2rem
+    background: rgba(200, 40, 35, .06);
+    border-left: none;
+    padding-left: 3rem;
 }
 
 .mobile-nav-link.active::before {
     opacity: 1;
-    transform: translateY(-50%) scale(1.2)
+    transform: translateY(-50%) scale(1.2);
+    left: 1.4rem;
 }
 
 .mobile-nav-link-auth {
     display: flex;
     align-items: center;
-    gap: .65rem;
-    color: #C82823 !important;
+    gap: .8rem;
+    color: #fff !important;
+    background: var(--primary-dark);
     font-weight: 600;
-    padding-left: 1.5rem !important;
-    justify-content: flex-start
+    padding: 1rem 1.8rem !important;
+    justify-content: center;
+    border-radius: 30px;
+    margin: 0 1.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 16px rgba(55, 70, 61, 0.2);
 }
 
 .mobile-nav-link-auth::before {
@@ -324,15 +338,90 @@ body.menu-open {
 }
 
 .mobile-nav-link-auth:hover {
-    background: rgba(200, 40, 35, .1);
-    color: #f33 !important
+    background: var(--tertiary-green);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(55, 70, 61, 0.3);
+    color: #fff !important;
 }
 
 .mobile-nav-section-account {
-    border-top: 1px solid rgba(255, 255, 255, .08);
+    border-top: 1px solid rgba(0, 0, 0, .06) !important;
     padding-top: 1.5rem;
-    margin-top: 1rem
+    margin-top: auto;
 }
+
+/* ============================================================
+   OVERRIDES: neutralise les inline styles codés en dur dans le HTML
+   pour le menu mobile (glassmorphism clair)
+   ============================================================ */
+
+/* Conteneur de bas de nav (🔑 override border-top:#333 inline) */
+.mobile-nav-sidebar [style*="border-top:1px solid #333"] {
+    border-top: 1px solid rgba(0, 0, 0, .06) !important;
+    padding-top: 1.5rem !important;
+    margin-top: auto !important;
+}
+
+/* Logo - le filtre invert(1) qui était "inline" sur des dupliqués anciens */
+.mobile-nav-sidebar .mobile-logo {
+    filter: none !important;
+}
+
+/* Titre "Solitiquo" en span inline dans le header */
+.mobile-nav-sidebar [style*="font-family:'Playfair Display'"] {
+    color: #1a1a1a !important;
+}
+
+/* Lien "Rechercher" bas de menu */
+.mobile-nav-sidebar .mobile-nav-link[href="recherche.html"] {
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 12px;
+    padding-left: 1.8rem;
+}
+
+/* Boutons FR / EN dans le menu mobile */
+.mobile-nav-sidebar .lang-seg-btn {
+    color: #555 !important;
+    border-color: rgba(0, 0, 0, .12) !important;
+    background: rgba(0, 0, 0, .04) !important;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-weight: 700;
+    font-size: .85rem;
+    transition: all .2s ease;
+}
+
+.mobile-nav-sidebar .lang-seg-btn.active {
+    background: #fff !important;
+    color: #C82823 !important;
+    border-color: rgba(200, 40, 35, .2) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .08) !important;
+}
+
+/* Lien "S'identifier" bas de menu (inline style color:white) */
+.mobile-nav-sidebar a[href="auth.html"][style] {
+    background: var(--primary-dark) !important;
+    color: #fff !important;
+    text-decoration: none !important;
+    font-weight: 700 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    border-radius: 30px !important;
+    padding: 1rem 1.8rem !important;
+    margin: 0 !important;
+    box-shadow: 0 6px 16px rgba(55, 70, 61, 0.2) !important;
+    transition: all 0.3s ease !important;
+}
+
+.mobile-nav-sidebar a[href="auth.html"][style]:hover {
+    background: var(--tertiary-green) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(55, 70, 61, 0.3) !important;
+}
+
+
 
 @media screen and (max-width:900px) {
 

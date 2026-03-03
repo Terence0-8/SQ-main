@@ -59,9 +59,14 @@ document.addEventListener('DOMContentLoaded', () => {
       e.stopPropagation(); // Empêche le clic de remonter au document
       searchContainer.classList.toggle('active');
 
-      // Focus automatique
-      if (searchContainer.classList.contains('active') && searchInput) {
-        setTimeout(() => searchInput.focus(), 100);
+      // Feedback visuel de debug au clic : si la classe active n'y est pas (css override),
+      // changer le background pour prouver que JS marche.
+      if (searchContainer.classList.contains('active')) {
+        setTimeout(() => searchInput && searchInput.focus(), 100);
+        searchBtn.style.backgroundColor = ''; // Reset background if active
+      } else {
+        // Optionnel : un petit repère visuel (commenté si on trouve ça gênant, mais pratique pour vous rassurer)
+        searchBtn.style.backgroundColor = 'red'; // Set background to red if not active
       }
     });
 
