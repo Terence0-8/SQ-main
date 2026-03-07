@@ -67,15 +67,65 @@
     </aside>
 
     <main class="main-content">
-        <header class="top-bar">
-            <h1 class="page-title" id="page-header">Vue d'ensemble</h1>
-            <div style="flex:1;"></div>
-            <div class="lang-switch-container" style="margin-right:20px;">
-                <button class="lang-seg-btn active" data-lang="fr">FR</button>
-                <button class="lang-seg-btn" data-lang="en">EN</button>
-            </div>
-            <div id="header-actions"></div>
-        
+        <header class="premium-header">
+    <div class="ph-left">
+      <div class="burger-container">
+        <button class="burger-btn" id="burgerBtn">
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+        </button>
+      </div>
+
+      <a href="index.html" class="ph-brand">
+        <img src="logo.svg" alt="S">
+        <div class="brand-sep"></div>
+        <span class="brand-text">Solitiquo</span>
+      </a>
+    </div>
+
+    <div class="ph-center">
+      <nav class="ph-nav">
+        <a href="politique.html" class="ph-link" data-i18n="nav_pol">Politique</a>
+        <a href="social.html" class="ph-link" data-i18n="nav_soc">Social</a>
+        <a href="partis-politiques.html" class="ph-link" data-i18n="nav_parties">Partis</a>
+        <a href="emissions.html" class="ph-link" data-i18n="nav_shows">Émissions</a>
+        <a href="podcasts.html" class="ph-link" data-i18n="nav_podcasts">Podcasts</a>
+      </nav>
+    </div>
+
+    <div class="ph-right" style="justify-content: flex-end; gap: 20px;">
+      <div class="lang-switch-container">
+        <button class="lang-seg-btn active" data-lang="fr">FR</button>
+        <button class="lang-seg-btn" data-lang="en">EN</button>
+      </div>
+      <div class="search-stack">
+        <div class="search-row">
+          <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
+            </svg>
+          </button>
+          <span class="search-label" id="searchLabel">Rechercher</span>
+        </div>
+
+        <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
+
+          <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput"
+            autocomplete="off" required />
+
+          <button class="search-submit" type="submit" aria-label="Lancer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+
+        </form>
+      </div>
+      <a href="auth.html" class="ph-btn-auth" data-i18n="nav_login">S'identifier</a>
+    </div>
+  
       <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <circle cx="11" cy="11" r="7"/>

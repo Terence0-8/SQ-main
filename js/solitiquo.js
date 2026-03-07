@@ -12,6 +12,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ============================================================
+  // 0.5. NAVIGATION GLOBALE (Active state)
+  // ============================================================
+  const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+  document.querySelectorAll('nav.ph-nav .ph-link, ul.mobile-nav-list .mobile-nav-link').forEach(link => {
+    link.classList.remove('active');
+    const href = link.getAttribute('href');
+    if (href === currentPath || (currentPath === '' && href === 'index.html')) {
+      link.classList.add('active');
+    }
+  });
+
+  // ============================================================
   // 1. GESTION DU MENU MOBILE (Burger)
   // ============================================================
   const burger = document.getElementById('burgerBtn') || document.getElementById('burgerMenu');

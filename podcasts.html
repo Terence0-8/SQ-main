@@ -1,40 +1,45 @@
-<html lang="fr"><head></head><body id="page-podcasts">﻿
+﻿<!DOCTYPE html>
+<html lang="fr">
 
-
-
-  <meta charset="UTF-8">
+<head>
+  <meta charset="UTF-8" />
   <!-- Preconnect to external servers -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-  <link rel="preconnect" href="https://res.cloudinary.com">
-  <link rel="dns-prefetch" href="https://www.youtube.com">
-  <link rel="dns-prefetch" href="https://img.youtube.com">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://res.cloudinary.com" />
+  <link rel="dns-prefetch" href="https://www.youtube.com" />
+  <link rel="dns-prefetch" href="https://img.youtube.com" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#37463D">
-  <meta name="description" content="Podcasts Solitiquo — Écoutez nos émissions audio sur la politique et la société camerounaise.">
+  <meta name="description"
+    content="Podcasts Solitiquo — Écoutez nos émissions audio sur la politique et la société camerounaise.">
 
   <!-- Open Graph -->
-  <meta property="og:title" content="Podcasts — Solitiquo">
-  <meta property="og:description" content="Écoutez nos émissions audio sur la politique et la société camerounaise. Le média de référence.">
-  <meta property="og:image" content="https://solitiquo.com/logo.png">
-  <meta property="og:url" content="https://solitiquo.com/podcasts.html">
-  <meta property="og:type" content="website">
+  <meta property="og:title" content="Podcasts — Solitiquo" />
+  <meta property="og:description"
+    content="Écoutez nos émissions audio sur la politique et la société camerounaise. Le média de référence." />
+  <meta property="og:image" content="https://solitiquo.com/logo.png" />
+  <meta property="og:url" content="https://solitiquo.com/podcasts.html" />
+  <meta property="og:type" content="website" />
 
   <!-- Twitter Cards -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@Solitiquo">
   <meta name="twitter:title" content="Podcasts — Solitiquo">
-  <meta name="twitter:description" content="Écoutez nos émissions audio sur la politique et la société camerounaise. Le média de référence.">
+  <meta name="twitter:description"
+    content="Écoutez nos émissions audio sur la politique et la société camerounaise. Le média de référence.">
   <meta name="twitter:image" content="https://solitiquo.com/logo.png">
 
-  <link rel="alternate" hreflang="fr" href="https://solitiquo.com/fr/">
-  <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/">
-  <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/">
+  <link rel="alternate" hreflang="fr" href="https://solitiquo.com/fr/" />
+  <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
+  <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
   <title>Podcasts — Solitiquo</title>
-  <link rel="stylesheet" href="/css/shared.css">
-  <link rel="stylesheet" href="/css/pages/podcasts.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Playfair+Display:ital,wght@0,700;1,400&amp;family=Nunito:wght@400;700&amp;display=swap&amp;subset=latin-ext" rel="stylesheet">
+  <link rel="stylesheet" href="/css/shared.css" />
+  <link rel="stylesheet" href="/css/pages/podcasts.css" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
+    rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
   <script>function handleImgError(i) { i.onerror = null; i.src = 'https://placehold.co/400x400/111/FFF?text=Audio'; }</script>
@@ -57,33 +62,38 @@
   <meta name="apple-mobile-web-app-title" content="Solitiquo">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
 
-
-
+<body id="page-podcasts">
 
   <header class="premium-header">
     <div class="ph-left">
-      <div class="burger-container"><button class="burger-btn" id="burgerBtn">
+      <div class="burger-container">
+        <button class="burger-btn" id="burgerBtn">
           <div class="burger-line"></div>
           <div class="burger-line"></div>
           <div class="burger-line"></div>
-        </button></div>
+        </button>
+      </div>
+
       <a href="index.html" class="ph-brand">
         <img src="logo.svg" alt="S">
         <div class="brand-sep"></div>
         <span class="brand-text">Solitiquo</span>
       </a>
     </div>
+
     <div class="ph-center">
       <nav class="ph-nav">
         <a href="politique.html" class="ph-link" data-i18n="nav_pol">Politique</a>
         <a href="social.html" class="ph-link" data-i18n="nav_soc">Social</a>
         <a href="partis-politiques.html" class="ph-link" data-i18n="nav_parties">Partis</a>
         <a href="emissions.html" class="ph-link" data-i18n="nav_shows">Émissions</a>
-        <a href="podcasts.html" class="ph-link active" data-i18n="nav_podcasts">Podcasts</a>
+        <a href="podcasts.html" class="ph-link" data-i18n="nav_podcasts">Podcasts</a>
       </nav>
     </div>
-    <div class="ph-right">
+
+    <div class="ph-right" style="justify-content: flex-end; gap: 20px;">
       <div class="lang-switch-container">
         <button class="lang-seg-btn active" data-lang="fr">FR</button>
         <button class="lang-seg-btn" data-lang="en">EN</button>
@@ -92,8 +102,8 @@
         <div class="search-row">
           <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="M21 21l-4.35-4.35"></path>
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
             </svg>
           </button>
           <span class="search-label" id="searchLabel">Rechercher</span>
@@ -101,11 +111,12 @@
 
         <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
 
-          <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput" autocomplete="off" required="">
+          <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput"
+            autocomplete="off" required />
 
           <button class="search-submit" type="submit" aria-label="Lancer">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="9 18 15 12 9 6"></polyline>
+              <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
 
@@ -113,13 +124,13 @@
       </div>
       <a href="auth.html" class="ph-btn-auth" data-i18n="nav_login">S'identifier</a>
     </div>
-
-    <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <circle cx="11" cy="11" r="7"></circle>
-        <path d="M21 21l-4.35-4.35"></path>
-      </svg>
-    </button>
+  
+      <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="11" cy="11" r="7"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+      </button>
   </header>
 
   <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
@@ -140,10 +151,12 @@
       <li><a href="podcasts.html" class="mobile-nav-link active" data-i18n="nav_podcasts">Podcasts</a></li>
     </ul>
     <div style="margin-top:auto; padding-top:2rem; border-top:1px solid #333;">
-      <a href="auth.html" style="color:white; text-decoration:none; font-weight:700; display:flex; align-items:center; gap:10px;"><span>👤</span>
+      <a href="auth.html"
+        style="color:white; text-decoration:none; font-weight:700; display:flex; align-items:center; gap:10px;"><span>👤</span>
         <span data-i18n="nav_login">S'identifier</span></a>
       <div style="display:flex; gap:8px; margin-top:1rem; margin-bottom:1rem;">
-        <button class="lang-seg-btn active" data-lang="fr" style="color:#fff; border-color:rgba(255,255,255,.3);">FR</button>
+        <button class="lang-seg-btn active" data-lang="fr"
+          style="color:#fff; border-color:rgba(255,255,255,.3);">FR</button>
         <button class="lang-seg-btn" data-lang="en" style="color:#aaa; border-color:rgba(255,255,255,.15);">EN</button>
       </div>
     </div>
@@ -156,7 +169,7 @@
       <div id="hero-pod-dynamic"></div>
 
       <div class="highlights-container">
-        <div class="highlights-title" data-i18n="section_essentiel">À ne pas manquer</div>
+        <div class="highlights-title">À ne pas manquer</div>
         <div id="highlights-grid" class="highlights-grid"></div>
       </div>
 
@@ -169,7 +182,7 @@
 
     <section class="grid-section" id="pod-list-anchor">
       <div class="grid-container">
-        <h2 class="section-header" data-i18n="podcast_latest_episodes">Tous les épisodes</h2>
+        <h2 class="section-header">Tous les épisodes</h2>
         <div id="podcasts-grid" class="podcasts-grid">
           <div class="podcast-card" style="box-shadow:none; background:transparent;">
             <div class="skeleton skeleton-image" style="height:200px; margin-bottom:15px;"></div>
@@ -201,23 +214,23 @@
         <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le média de référence.</p>
       </div>
       <div class="footer-col">
-        <h4 data-i18n="footer_rubriques">Rubriques</h4>
+        <h4>Rubriques</h4>
         <a href="politique.html" class="footer-link" data-i18n="nav_pol">Politique</a>
         <a href="social.html" class="footer-link" data-i18n="nav_soc">Social</a>
         <a href="partis-politiques.html" class="footer-link" data-i18n="nav_parties">Partis</a>
       </div>
       <div class="footer-col">
-        <h4 data-i18n="footer_legal">Légal</h4>
+        <h4>Légal</h4>
         <a href="mentions-legales.html" class="footer-link" data-i18n="footer_legal">Mentions légales</a>
         <a href="conditions-utilisation.html" class="footer-link" data-i18n="footer_terms">CGU</a>
       </div>
       <div class="footer-col">
-        <h4 data-i18n="footer_contact">Contact</h4>
+        <h4>Contact</h4>
         <a href="contact.html" class="footer-link" data-i18n="footer_contact">Nous écrire</a>
         <a href="auth.html" class="footer-link" data-i18n="nav_login">S'identifier</a>
       </div>
     </div>
-    <div class="footer-bottom">© 2025 Solitiquo. Tous droits réservés.</div>
+    <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
   </footer>
 
 
@@ -426,6 +439,6 @@
       navigator.serviceWorker.register('/sw.js');
     }
   </script>
+</body>
 
-
-</body></html>
+</html>

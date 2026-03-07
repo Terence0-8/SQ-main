@@ -1,30 +1,32 @@
-<html lang="fr"><head></head><body id="page-recherche">﻿
+﻿<!DOCTYPE html>
+<html lang="fr">
 
-
-
-    <meta charset="UTF-8">
+<head>
+    <meta charset="UTF-8" />
     <!-- Preconnect to external servers -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-    <link rel="preconnect" href="https://res.cloudinary.com">
-    <link rel="dns-prefetch" href="https://www.youtube.com">
-    <link rel="dns-prefetch" href="https://img.youtube.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://res.cloudinary.com" />
+    <link rel="dns-prefetch" href="https://www.youtube.com" />
+    <link rel="dns-prefetch" href="https://img.youtube.com" />
     <title>Recherche — Solitiquo</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#37463D">
     <meta name="description" content="Recherche  Trouvez articles, podcasts et émissions sur Solitiquo.">
-    <meta property="og:title" content="Solitiquo  L'Actualité Premium">
-    <meta property="og:description" content="Le média de référence pour l'analyse politique et sociale au Cameroun.">
-    <meta property="og:image" content="https://solitiquo.com/logo.png">
-    <meta property="og:url" content="https://solitiquo.com">
-    <meta property="og:type" content="website">
-    <link rel="alternate" hreflang="fr" href="https://solitiquo.com/fr/">
-    <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/">
-    <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/">
-    <link rel="stylesheet" href="css/shared.css">
-    <link rel="stylesheet" href="css/pages/recherche.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;family=Playfair+Display:ital,wght@0,700;1,400&amp;family=Nunito:wght@400;700&amp;display=swap&amp;subset=latin-ext" rel="stylesheet">
+    <meta property="og:title" content="Solitiquo  L'Actualité Premium" />
+    <meta property="og:description" content="Le média de référence pour l'analyse politique et sociale au Cameroun." />
+    <meta property="og:image" content="https://solitiquo.com/logo.png" />
+    <meta property="og:url" content="https://solitiquo.com" />
+    <meta property="og:type" content="website" />
+    <link rel="alternate" hreflang="fr" href="https://solitiquo.com/fr/" />
+    <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
+    <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
+    <link rel="stylesheet" href="css/shared.css" />
+    <link rel="stylesheet" href="css/pages/recherche.css" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
+        rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
     <script>function handleImgError(i) { i.onerror = null; i.src = 'https://placehold.co/300x200/eee/999?text=Solitiquo'; }</script>
@@ -43,51 +45,80 @@
   <meta name="apple-mobile-web-app-title" content="Solitiquo">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
 
-
-
-    <a href="javascript:history.length > 1 ? history.back() : window.location.href='index.html'" class="floating-back-btn" aria-label="Retour page précédente">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7"></path>
+<body id="page-recherche">
+    <a href="javascript:history.length > 1 ? history.back() : window.location.href='index.html'"
+        class="floating-back-btn" aria-label="Retour page précédente">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
         </svg>
         <span>Retour</span>
     </a>
     <header class="premium-header">
-        <div class="ph-left">
-            <div class="burger-container">
-                <button class="burger-btn" id="burgerBtn">
-                    <div class="burger-line"></div>
-                    <div class="burger-line"></div>
-                    <div class="burger-line"></div>
-                </button>
-            </div>
-            <a href="index.html" class="ph-brand"><img src="logo.svg" alt="S">
-                <div class="brand-sep"></div><span class="brand-text">Solitiquo</span>
-            </a>
+    <div class="ph-left">
+      <div class="burger-container">
+        <button class="burger-btn" id="burgerBtn">
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+        </button>
+      </div>
+
+      <a href="index.html" class="ph-brand">
+        <img src="logo.svg" alt="S">
+        <div class="brand-sep"></div>
+        <span class="brand-text">Solitiquo</span>
+      </a>
+    </div>
+
+    <div class="ph-center">
+      <nav class="ph-nav">
+        <a href="politique.html" class="ph-link" data-i18n="nav_pol">Politique</a>
+        <a href="social.html" class="ph-link" data-i18n="nav_soc">Social</a>
+        <a href="partis-politiques.html" class="ph-link" data-i18n="nav_parties">Partis</a>
+        <a href="emissions.html" class="ph-link" data-i18n="nav_shows">Émissions</a>
+        <a href="podcasts.html" class="ph-link" data-i18n="nav_podcasts">Podcasts</a>
+      </nav>
+    </div>
+
+    <div class="ph-right" style="justify-content: flex-end; gap: 20px;">
+      <div class="lang-switch-container">
+        <button class="lang-seg-btn active" data-lang="fr">FR</button>
+        <button class="lang-seg-btn" data-lang="en">EN</button>
+      </div>
+      <div class="search-stack">
+        <div class="search-row">
+          <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
+            </svg>
+          </button>
+          <span class="search-label" id="searchLabel">Rechercher</span>
         </div>
-        <div class="ph-center">
-            <nav class="ph-nav">
-                <a href="politique.html" class="ph-link" data-i18n="nav_pol">Politique</a>
-                <a href="social.html" class="ph-link" data-i18n="nav_soc">Social</a>
-                <a href="partis-politiques.html" class="ph-link" data-i18n="nav_parties">Partis</a>
-                <a href="emissions.html" class="ph-link" data-i18n="nav_shows">Émissions</a>
-                <a href="podcasts.html" class="ph-link" data-i18n="nav_podcasts">Podcasts</a>
-            </nav>
-        </div>
-        <div class="ph-right">
-            <div class="lang-switch-container">
-                <button class="lang-seg-btn active" data-lang="fr">FR</button>
-                <button class="lang-seg-btn" data-lang="en">EN</button>
-            </div>
-            <button onclick="loadEverything()" style="background:none; border:none; cursor:pointer; font-weight:600; color:#555;">Tout le
-                catalogue</button>
-            <a href="auth.html" class="ph-btn-auth" data-i18n="nav_login">S'identifier</a>
-        </div>
-    
+
+        <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
+
+          <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput"
+            autocomplete="off" required />
+
+          <button class="search-submit" type="submit" aria-label="Lancer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+
+        </form>
+      </div>
+      <a href="auth.html" class="ph-btn-auth" data-i18n="nav_login">S'identifier</a>
+    </div>
+  
       <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <circle cx="11" cy="11" r="7"></circle>
-          <path d="M21 21l-4.35-4.35"></path>
+          <circle cx="11" cy="11" r="7"/>
+          <path d="M21 21l-4.35-4.35"/>
         </svg>
       </button>
   </header>
@@ -110,9 +141,11 @@
             <li><a href="podcasts.html" class="mobile-nav-link" data-i18n="nav_podcasts">Podcasts</a></li>
         </ul>
             <div style="margin-top:auto; padding-top:2rem; border-top:1px solid #333;">
-      <a href="auth.html" style="color:white; text-decoration:none; font-weight:700; display:flex; align-items:center; gap:10px;"><span>👤</span> <span data-i18n="nav_login">S'identifier</span></a>
+      <a href="auth.html"
+        style="color:white; text-decoration:none; font-weight:700; display:flex; align-items:center; gap:10px;"><span>👤</span> <span data-i18n="nav_login">S'identifier</span></a>
       <div style="display:flex; gap:8px; margin-top:1rem; margin-bottom:1rem;">
-        <button class="lang-seg-btn active" data-lang="fr" style="color:#fff; border-color:rgba(255,255,255,.3);">FR</button>
+        <button class="lang-seg-btn active" data-lang="fr"
+          style="color:#fff; border-color:rgba(255,255,255,.3);">FR</button>
         <button class="lang-seg-btn" data-lang="en" style="color:#aaa; border-color:rgba(255,255,255,.15);">EN</button>
       </div>
     </div>
@@ -126,8 +159,11 @@
                 <p class="results-count" id="results-count">...</p>
 
                 <div style="margin-top:20px; display:flex; justify-content:center; gap:10px;">
-                    <input type="text" id="internalSearch" placeholder="Nouvelle recherche..." style="padding:10px 15px; border:1px solid #ddd; border-radius:30px; width:300px; outline:none;">
-                    <button onclick="window.location.href='recherche.html?q='+document.getElementById('internalSearch').value" style="background:var(--primary-dark); color:white; border:none; padding:10px 20px; border-radius:30px; cursor:pointer;">Chercher</button>
+                    <input type="text" id="internalSearch" placeholder="Nouvelle recherche..."
+                        style="padding:10px 15px; border:1px solid #ddd; border-radius:30px; width:300px; outline:none;">
+                    <button
+                        onclick="window.location.href='recherche.html?q='+document.getElementById('internalSearch').value"
+                        style="background:var(--primary-dark); color:white; border:none; padding:10px 20px; border-radius:30px; cursor:pointer;">Chercher</button>
                 </div>
             </div>
 
@@ -151,7 +187,8 @@
 
             <div id="results-list"></div>
             <div style="text-align:center; margin-top:30px;">
-                <button onclick="loadEverything()" id="btn-show-all" style="display:none; background:white; border:1px solid #ddd; padding:10px 20px; border-radius:30px; cursor:pointer;">Afficher
+                <button onclick="loadEverything()" id="btn-show-all"
+                    style="display:none; background:white; border:1px solid #ddd; padding:10px 20px; border-radius:30px; cursor:pointer;">Afficher
                     tout le contenu du site</button>
             </div>
 
@@ -161,21 +198,26 @@
     <footer class="premium-footer">
         <div class="footer-grid">
             <div class="footer-col">
-                <div style="display:flex; gap:10px; align-items:center; margin-bottom:1.5rem;"><img src="logo.svg" class="footer-logo" alt="S" onerror="handleImgError(this)"><span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
+                <div style="display:flex; gap:10px; align-items:center; margin-bottom:1.5rem;"><img src="logo.svg"
+                        class="footer-logo" alt="S" onerror="handleImgError(this)"><span
+                        style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
                 </div>
                 <p style="font-size:0.9rem; opacity:0.7; line-height:1.6;">Le média de référence.</p>
             </div>
             <div class="footer-col">
-                <h4 data-i18n="footer_rubriques">Rubriques</h4><a href="politique.html" class="footer-link" data-i18n="nav_pol">Politique</a><a href="social.html" class="footer-link" data-i18n="nav_soc">Social</a><a href="partis-politiques.html" class="footer-link" data-i18n="nav_parties">Partis</a>
+                <h4>Rubriques</h4><a href="politique.html" class="footer-link" data-i18n="nav_pol">Politique</a><a href="social.html"
+                    class="footer-link">Social</a><a href="partis-politiques.html" class="footer-link" data-i18n="nav_parties">Partis</a>
             </div>
             <div class="footer-col">
-                <h4 data-i18n="footer_legal">Légal</h4><a href="mentions-legales.html" class="footer-link">Mentions</a><a href="conditions-utilisation.html" class="footer-link" data-i18n="footer_terms">CGU</a>
+                <h4>Légal</h4><a href="mentions-legales.html" class="footer-link" data-i18n="footer_legal">Mentions</a><a
+                    href="conditions-utilisation.html" class="footer-link" data-i18n="footer_terms">CGU</a>
             </div>
             <div class="footer-col">
-                <h4 data-i18n="footer_contact">Contact</h4><a href="contact.html" class="footer-link" data-i18n="footer_contact">Nous écrire</a><a href="auth.html" class="footer-link" data-i18n="nav_login">S'identifier</a>
+                <h4>Contact</h4><a href="contact.html" class="footer-link" data-i18n="footer_contact">Nous écrire</a><a href="auth.html"
+                    class="footer-link">S'identifier</a>
             </div>
         </div>
-        <div class="footer-bottom">© 2025 Solitiquo.</div>
+        <div class="footer-bottom">&copy; 2025 Solitiquo.</div>
     </footer>
 
 
@@ -373,6 +415,6 @@
             navigator.serviceWorker.register('/sw.js');
         }
     </script>
+</body>
 
-
-</body></html>
+</html>
