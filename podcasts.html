@@ -108,13 +108,13 @@
       </div>
       <a href="auth.html" class="ph-btn-auth">S'identifier</a>
     </div>
-  
-      <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <circle cx="11" cy="11" r="7"/>
-          <path d="M21 21l-4.35-4.35"/>
-        </svg>
-      </button>
+
+    <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="11" cy="11" r="7" />
+        <path d="M21 21l-4.35-4.35" />
+      </svg>
+    </button>
   </header>
 
   <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
@@ -134,9 +134,10 @@
       <li><a href="emissions.html" class="mobile-nav-link" data-i18n="nav_shows">Émissions</a></li>
       <li><a href="podcasts.html" class="mobile-nav-link active" data-i18n="nav_podcasts">Podcasts</a></li>
     </ul>
-        <div style="margin-top:auto; padding-top:2rem; border-top:1px solid #333;">
+    <div style="margin-top:auto; padding-top:2rem; border-top:1px solid #333;">
       <a href="auth.html"
-        style="color:white; text-decoration:none; font-weight:700; display:flex; align-items:center; gap:10px;"><span>👤</span> <span data-i18n="nav_login">S'identifier</span></a>
+        style="color:white; text-decoration:none; font-weight:700; display:flex; align-items:center; gap:10px;"><span>👤</span>
+        <span data-i18n="nav_login">S'identifier</span></a>
       <div style="display:flex; gap:8px; margin-top:1rem; margin-bottom:1rem;">
         <button class="lang-seg-btn active" data-lang="fr"
           style="color:#fff; border-color:rgba(255,255,255,.3);">FR</button>
@@ -232,7 +233,7 @@
     if (mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
     if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
 
-        document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
       const searchBtn = document.getElementById('searchBtn');
       const searchLabel = document.getElementById('searchLabel');
       const searchContainer = document.getElementById('searchContainer');
@@ -360,6 +361,63 @@
 
   </script>
   <script src="/js/lazyload.js"></script>
+  <script>
+    // Boutons de téléchargement audio (Premium) — injectés après rendu dynamique
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await SolitiquoAPI.getProfile().catch(() => null);
+      const isPro = user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer');
+      // Attendre que les cartes pod-card soient disponibles dans le DOM
+      let tries = 0;
+      const inject = () => {
+        const cards = document.querySelectorAll('.pod-card');
+        if (cards.length === 0 && tries++ < 20) { setTimeout(inject, 300); return; }
+        cards.forEach(card => {
+          if (card.querySelector('.btn-dl-audio')) return; // éviter les doublons
+          const idParam = card.href ? new URL(card.href, location.origin).searchParams.get('id') : null;
+          const btn = document.createElement('button');
+          btn.className = 'btn-dl-audio';
+          btn.dataset.podId = idParam;
+          btn.textContent = isPro ? '⬇ Audio' : '🔒 Audio';
+          btn.title = isPro ? "Télécharger l'épisode" : 'Réservé aux abonnés Premium';
+          btn.style.cssText = 'position:absolute;bottom:10px;right:10px;background:rgba(55,70,61,.88);color:#fff;border:none;border-radius:20px;padding:6px 12px;font-size:.78rem;font-weight:700;cursor:pointer;z-index:10;transition:all .2s;';
+          if (card.style.position !== 'relative') card.style.position = 'relative';
+          card.appendChild(btn);
+          btn.addEventListener('click', async (e) => {
+            e.preventDefault(); e.stopPropagation();
+            if (!isPro) {
+              document.getElementById('premium-tooltip') && document.getElementById('premium-tooltip').remove();
+              const tip = document.createElement('div');
+              tip.id = 'premium-tooltip';
+              tip.innerHTML = '<strong>Fonctionnalité Premium &#128274;</strong><p style="margin:.5rem 0">Téléchargez nos podcasts audio en vous abonnant.</p><a href="abonnement.html" style="display:block;margin-top:8px;background:#37463D;color:#fff;padding:8px;border-radius:6px;text-decoration:none;font-weight:600;">S\'abonner</a>';
+              tip.style.cssText = 'position:fixed;width:230px;background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.15);z-index:9999;font-family:Inter,sans-serif;font-size:.85rem;text-align:center;';
+              document.body.appendChild(tip);
+              const r = btn.getBoundingClientRect();
+              tip.style.top = (r.bottom + 8) + 'px';
+              tip.style.left = Math.min(r.left, window.innerWidth - 248) + 'px';
+              setTimeout(() => document.addEventListener('click', function h(ev) { if (!tip.contains(ev.target)) { tip.remove(); document.removeEventListener('click', h); } }, true), 10);
+              return;
+            }
+            // Abonné → on cherche le slug via l'API avec l'id
+            if (!idParam) return;
+            try {
+              const podData = await fetch(window.API_URL + '/podcasts/' + idParam).then(r => r.json());
+              const slug = podData.data && podData.data.slug;
+              if (slug) {
+                const lang = localStorage.getItem('lang') || 'fr';
+                const a = document.createElement('a');
+                a.href = '/api/podcasts/' + slug + '/download?lang=' + lang;
+                a.download = 'solitiquo-' + slug + '.mp3';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+              }
+            } catch (err) { console.error(err); }
+          });
+        });
+      };
+      inject();
+    });
+  </script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js');

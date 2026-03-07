@@ -167,6 +167,51 @@ router.post('/logout', verifyCsrf, (req, res) => {
 });
 
 // ============================================
+// OAUTH: GOOGLE & FACEBOOK
+// ============================================
+const passport = require('../config/passport');
+
+// ➔ Google
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+router.get('/google/callback',
+  passport.authenticate('google', { failureRedirect: '/auth.html?error=oauth_failed', session: false }),
+  (req, res) => {
+    // Authentification réussie
+    req.session.user = {
+      id: req.user.id,
+      username: req.user.username,
+      email: req.user.email,
+      role: req.user.role,
+      is_subscriber: req.user.is_subscriber,
+      subscription_start_date: req.user.subscription_start_date,
+      subscription_end_date: req.user.subscription_end_date
+    };
+    res.redirect('/');
+  }
+);
+
+// ➔ Facebook  
+router.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }));
+
+router.get('/facebook/callback',
+  passport.authenticate('facebook', { failureRedirect: '/auth.html?error=oauth_failed', session: false }),
+  (req, res) => {
+    // Authentification réussie
+    req.session.user = {
+      id: req.user.id,
+      username: req.user.username,
+      email: req.user.email,
+      role: req.user.role,
+      is_subscriber: req.user.is_subscriber,
+      subscription_start_date: req.user.subscription_start_date,
+      subscription_end_date: req.user.subscription_end_date
+    };
+    res.redirect('/');
+  }
+);
+
+// ============================================
 // 4. QUI SUIS-JE ? (Check Session)
 // ⚡ AMÉLIORATION : Récupère les données FRAÎCHES depuis la BDD
 // ============================================

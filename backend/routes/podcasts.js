@@ -462,4 +462,76 @@ router.get('/category/:category', async (req, res) => {
   }
 });
 
+// ==========================================
+// TÉLÉCHARGEMENT AUDIO — Premium uniquement
+// ==========================================
+const axios = require('axios');
+const { isSubscriber } = require('../middleware/auth');
+
+router.get('/:slug/download', isSubscriber, async (req, res) => {
+  try {
+    const lang = req.query.lang || 'fr';
+    const slugCol = lang === 'en' ? 'slug_en' : 'slug';
+    const audioCol = lang === 'en' ? 'audio_url_en' : 'audio_url';
+    const titleCol = lang === 'en' ? 'title_en' : 'title';
+
+    const result = await pool.query(
+      `SELECT ${titleCol} AS title, ${audioCol} AS audio_url
+       FROM podcasts
+       WHERE ${slugCol} = $1 AND status = 'published'`,
+      [req.params.slug]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Podcast introuvable' });
+    }
+
+    const { title, audio_url } = result.rows[0];
+
+    if (!audio_url) {
+      return res.status(404).json({ success: false, error: 'Fichier audio introuvable' });
+    }
+
+    // Extraire l'extension depuis l'URL (mp3, m4a, ogg, etc.)
+    const urlPath = new URL(audio_url).pathname;
+    const ext = urlPath.split('.').pop().split('?')[0] || 'mp3';
+
+    // Nom du fichier en téléchargement
+    const safeTitle = (title || req.params.slug)
+      .toLowerCase()
+      .replace(/[^a-z0-9\u00C0-\u024F\s-]/gi, '')
+      .replace(/\s+/g, '-')
+      .substring(0, 80);
+    const filename = `solitiquo-${safeTitle}.${ext}`;
+
+    // Proxy stream depuis Cloudinary → client
+    const audioResponse = await axios.get(audio_url, {
+      responseType: 'stream',
+      timeout: 30000
+    });
+
+    res.setHeader('Content-Type', audioResponse.headers['content-type'] || `audio/${ext}`);
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    if (audioResponse.headers['content-length']) {
+      res.setHeader('Content-Length', audioResponse.headers['content-length']);
+    }
+
+    audioResponse.data.pipe(res);
+
+    audioResponse.data.on('error', (err) => {
+      console.error('❌ Stream audio error:', err);
+      if (!res.headersSent) {
+        res.status(500).json({ success: false, error: 'Erreur lors du téléchargement audio' });
+      }
+    });
+
+  } catch (err) {
+    console.error('❌ Erreur téléchargement podcast:', err);
+    if (!res.headersSent) {
+      res.status(500).json({ success: false, error: 'Erreur serveur' });
+    }
+  }
+});
+
 module.exports = router;
+

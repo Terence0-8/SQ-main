@@ -593,4 +593,129 @@ router.delete('/:id', isWriter, async (req, res) => {
   }
 });
 
+// ==========================================
+// TÉLÉCHARGEMENT PDF — Premium uniquement
+// ==========================================
+const PDFDocument = require('pdfkit');
+const { isSubscriber } = require('../middleware/auth');
+const https = require('https');
+const http = require('http');
+
+router.get('/:slug/download', isSubscriber, async (req, res) => {
+  try {
+    const lang = req.query.lang || 'fr';
+    const slugCol = lang === 'en' ? 'slug_en' : 'slug';
+    const titleCol = lang === 'en' ? 'title_en' : 'title';
+    const contentCol = lang === 'en' ? 'content_en' : 'content';
+
+    const result = await pool.query(
+      `SELECT a.id, a.${titleCol} AS title, a.${contentCol} AS content,
+              a.excerpt, a.featured_image, a.published_at, a.category,
+              u.username AS author_name
+       FROM articles a
+       LEFT JOIN users u ON u.id = a.author_id
+       WHERE a.${slugCol} = $1 AND a.status = 'published'`,
+      [req.params.slug]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Article introuvable' });
+    }
+
+    const article = result.rows[0];
+    const doc = new PDFDocument({ margin: 60, size: 'A4' });
+
+    const filename = `solitiquo-${req.params.slug}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    doc.pipe(res);
+
+    // ── En-tête ──────────────────────────────────────────
+    doc.rect(0, 0, doc.page.width, 90).fill('#37463D');
+    doc.fill('#FFFFFF')
+      .fontSize(22)
+      .font('Helvetica-Bold')
+      .text('SOLITIQUO', 60, 34, { align: 'left' });
+    doc.fill('#A8C4A2')
+      .fontSize(10)
+      .font('Helvetica')
+      .text('Le média de référence', 60, 60, { align: 'left' });
+
+    doc.moveDown(4);
+
+    // ── Catégorie ─────────────────────────────────────────
+    if (article.category) {
+      doc.fill('#C82823')
+        .fontSize(10)
+        .font('Helvetica-Bold')
+        .text(article.category.toUpperCase(), { align: 'left' });
+      doc.moveDown(0.5);
+    }
+
+    // ── Titre ─────────────────────────────────────────────
+    doc.fill('#1a1a1a')
+      .fontSize(24)
+      .font('Helvetica-Bold')
+      .text(article.title || 'Sans titre', { align: 'left' });
+    doc.moveDown(0.8);
+
+    // ── Méta (auteur + date) ──────────────────────────────
+    const authorName = article.author_name || 'Solitiquo';
+    const publishDate = article.published_at
+      ? new Date(article.published_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+      : '';
+    doc.fill('#888888')
+      .fontSize(10)
+      .font('Helvetica')
+      .text(`Par ${authorName}${publishDate ? '  ·  ' + publishDate : ''}`, { align: 'left' });
+
+    // ── Séparateur ────────────────────────────────────────
+    doc.moveDown(1);
+    doc.moveTo(60, doc.y).lineTo(doc.page.width - 60, doc.y).strokeColor('#DDDDDD').lineWidth(1).stroke();
+    doc.moveDown(1.5);
+
+    // ── Contenu (strip HTML) ─────────────────────────────
+    const rawContent = article.content || '';
+    const cleanContent = rawContent
+      .replace(/<h[1-6][^>]*>(.*?)<\/h[1-6]>/gi, '\n\n$1\n\n')
+      .replace(/<\/?strong>/gi, '')
+      .replace(/<\/?em>/gi, '')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/p>/gi, '\n\n')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&quot;/g, '"')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+
+    doc.fill('#333333')
+      .fontSize(11.5)
+      .font('Helvetica')
+      .lineGap(4)
+      .text(cleanContent, { align: 'justify', lineBreak: true });
+
+    // ── Pied de page premium ─────────────────────────────
+    doc.moveDown(2);
+    doc.moveTo(60, doc.y).lineTo(doc.page.width - 60, doc.y).strokeColor('#DDDDDD').lineWidth(1).stroke();
+    doc.moveDown(0.5);
+    doc.fill('#AAAAAA')
+      .fontSize(9)
+      .text('Ce contenu est réservé aux abonnés Premium de Solitiquo — solitiquo.com', {
+        align: 'center'
+      });
+
+    doc.end();
+
+  } catch (err) {
+    console.error('❌ Erreur génération PDF article:', err);
+    if (!res.headersSent) {
+      res.status(500).json({ success: false, error: 'Erreur lors de la génération du PDF' });
+    }
+  }
+});
+
 module.exports = router;
+
