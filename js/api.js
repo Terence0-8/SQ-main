@@ -31,7 +31,8 @@ const SolitiquoAPI = {
   // --- PODCASTS ---
   getPodcasts: async () => {
     try {
-      const response = await fetch(`${API_URL}/podcasts`);
+      const lang = localStorage.getItem('siteLanguage') || 'fr';
+      const response = await fetch(`${API_URL}/podcasts?lang=${lang}`);
       if (!response.ok) throw new Error('Erreur réseau');
       const json = await response.json();
       return json.data || [];
@@ -40,7 +41,8 @@ const SolitiquoAPI = {
 
   getPodcastById: async (id) => {
     try {
-      const response = await fetch(`${API_URL}/podcasts/${id}`);
+      const lang = localStorage.getItem('siteLanguage') || 'fr';
+      const response = await fetch(`${API_URL}/podcasts/${id}?lang=${lang}`);
       if (!response.ok) throw new Error('Introuvable');
       const json = await response.json();
       return json.podcast;

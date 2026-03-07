@@ -60,13 +60,14 @@ function getYoutubeThumbnail(videoUrl) {
 // ==========================================
 router.get('/', async (req, res) => {
   try {
-    const { category } = req.query;
+    const { category, lang } = req.query;
+    const isEn = lang === 'en';
 
     let query = `
       SELECT 
         e.id,
-        e.title,
-        e.description,
+        ${isEn ? 'COALESCE(e.title_en, e.title)' : 'e.title'} as title,
+        ${isEn ? 'COALESCE(e.description_en, e.description)' : 'e.description'} as description,
         e.video_url,
         e.thumbnail_url,
         e.duration_seconds,
@@ -104,6 +105,8 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    const { lang } = req.query;
+    const isEn = lang === 'en';
 
     if (isNaN(id)) {
       return res.status(400).json({ success: false, error: 'ID invalide' });
@@ -112,6 +115,8 @@ router.get('/:id', async (req, res) => {
     const query = `
       SELECT 
         e.*,
+        ${isEn ? 'COALESCE(e.title_en, e.title)' : 'e.title'} as title,
+        ${isEn ? 'COALESCE(e.description_en, e.description)' : 'e.description'} as description,
         u.username as author_name
       FROM emissions e
       LEFT JOIN users u ON e.host_id = u.id
@@ -361,12 +366,14 @@ router.delete('/:id', isWriter, async (req, res) => {
 router.get('/category/:category', async (req, res) => {
   try {
     const { category } = req.params;
+    const { lang } = req.query;
+    const isEn = lang === 'en';
 
     const query = `
       SELECT 
         e.id,
-        e.title,
-        e.description,
+        ${isEn ? 'COALESCE(e.title_en, e.title)' : 'e.title'} as title,
+        ${isEn ? 'COALESCE(e.description_en, e.description)' : 'e.description'} as description,
         e.video_url,
         e.thumbnail_url,
         e.duration_seconds,

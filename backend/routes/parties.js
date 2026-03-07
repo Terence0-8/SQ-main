@@ -63,9 +63,28 @@ const partySchema = Joi.object({
 // ==========================================
 router.get('/', async (req, res) => {
     try {
-        const { active } = req.query;
+        const { active, lang } = req.query;
+        const isEn = lang === 'en';
 
-        let query = 'SELECT * FROM parties';
+        let query = `
+          SELECT 
+            id,
+            ${isEn ? 'COALESCE(title_en, name)' : 'name'} as name,
+            acronym,
+            logo_url,
+            color,
+            founded_year,
+            leader_name,
+            ideology,
+            ${isEn ? 'COALESCE(description_en, description)' : 'description'} as description,
+            program_summary,
+            website_url,
+            social_twitter,
+            social_facebook,
+            contact_email,
+            is_active
+          FROM parties
+        `;
         const params = [];
 
         // Filtrer par statut actif si demandé
@@ -94,12 +113,34 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
+        const { lang } = req.query;
+        const isEn = lang === 'en';
 
         if (isNaN(id)) {
             return res.status(400).json({ success: false, error: 'ID invalide' });
         }
 
-        const result = await pool.query('SELECT * FROM parties WHERE id = $1', [id]);
+        const query = `
+          SELECT 
+            id,
+            ${isEn ? 'COALESCE(title_en, name)' : 'name'} as name,
+            acronym,
+            logo_url,
+            color,
+            founded_year,
+            leader_name,
+            ideology,
+            ${isEn ? 'COALESCE(description_en, description)' : 'description'} as description,
+            program_summary,
+            website_url,
+            social_twitter,
+            social_facebook,
+            contact_email,
+            is_active
+          FROM parties WHERE id = $1
+        `;
+
+        const result = await pool.query(query, [id]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({

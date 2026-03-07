@@ -37,14 +37,15 @@ const podcastSchema = Joi.object({
 router.get('/', async (req, res) => {
   console.log('--- GET /api/podcasts HIT ---'); // DEBUG
   try {
-    const { category } = req.query;
+    const { category, lang } = req.query;
+    const isEn = lang === 'en';
 
     let query = `
       SELECT 
         p.id,
-        p.title,
-        p.description,
-        p.audio_url,
+        ${isEn ? 'COALESCE(p.title_en, p.title)' : 'p.title'} as title,
+        ${isEn ? 'COALESCE(p.description_en, p.description)' : 'p.description'} as description,
+        ${isEn ? 'COALESCE(p.audio_url_en, p.audio_url)' : 'p.audio_url'} as audio_url,
         p.cover_image,
         p.duration_seconds,
         p.category,
@@ -81,6 +82,8 @@ router.get('/', async (req, res) => {
 router.get('/featured/:category', async (req, res) => {
   try {
     const { category } = req.params;
+    const { lang } = req.query;
+    const isEn = lang === 'en';
 
     // Normaliser la catégorie
     const normalizedCategory = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
@@ -88,9 +91,9 @@ router.get('/featured/:category', async (req, res) => {
     const query = `
       SELECT 
         p.id,
-        p.title,
-        p.description,
-        p.audio_url,
+        ${isEn ? 'COALESCE(p.title_en, p.title)' : 'p.title'} as title,
+        ${isEn ? 'COALESCE(p.description_en, p.description)' : 'p.description'} as description,
+        ${isEn ? 'COALESCE(p.audio_url_en, p.audio_url)' : 'p.audio_url'} as audio_url,
         p.cover_image,
         p.duration_seconds,
         p.category,

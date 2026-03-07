@@ -133,13 +133,13 @@
       </div>
       <a href="auth.html" class="ph-btn-auth" data-i18n="nav_login">S'identifier</a>
     </div>
-  
-      <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <circle cx="11" cy="11" r="7"/>
-          <path d="M21 21l-4.35-4.35"/>
-        </svg>
-      </button>
+
+    <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="11" cy="11" r="7" />
+        <path d="M21 21l-4.35-4.35" />
+      </svg>
+    </button>
   </header>
 
   <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
@@ -159,9 +159,10 @@
       <li><a href="emissions.html" class="mobile-nav-link" data-i18n="nav_shows">Émissions</a></li>
       <li><a href="podcasts.html" class="mobile-nav-link" data-i18n="nav_podcasts">Podcasts</a></li>
     </ul>
-        <div style="margin-top:auto; padding-top:2rem; border-top:1px solid #333;">
+    <div style="margin-top:auto; padding-top:2rem; border-top:1px solid #333;">
       <a href="auth.html"
-        style="color:white; text-decoration:none; font-weight:700; display:flex; align-items:center; gap:10px;"><span>👤</span> <span data-i18n="nav_login">S'identifier</span></a>
+        style="color:white; text-decoration:none; font-weight:700; display:flex; align-items:center; gap:10px;"><span>👤</span>
+        <span data-i18n="nav_login">S'identifier</span></a>
       <div style="display:flex; gap:8px; margin-top:1rem; margin-bottom:1rem;">
         <button class="lang-seg-btn active" data-lang="fr"
           style="color:#fff; border-color:rgba(255,255,255,.3);">FR</button>
@@ -367,7 +368,8 @@
       if (!container) return;
 
       try {
-        const res = await fetch(API_URL + '/polls/active/Politique');
+        const lang = getLanguage();
+        const res = await fetch(API_URL + '/polls/active/Politique?lang=' + lang);
         const data = await res.json();
 
         // ✅ Vérifications robustes
@@ -443,14 +445,15 @@
       };
 
       try {
-        let res = await fetch(API_URL + '/podcasts/featured/index');
+        const lang = getLanguage();
+        let res = await fetch(API_URL + '/podcasts/featured/index?lang=' + lang);
         let json = await res.json();
 
         if (json.success && json.data) {
           updatePodUI(json.data);
         } else {
           // Fallback: Get most recent
-          const res2 = await fetch(API_URL + '/podcasts?limit=1');
+          const res2 = await fetch(API_URL + '/podcasts?limit=1&lang=' + lang);
           const json2 = await res2.json();
           if (json2.success && json2.data && json2.data.length > 0) {
             updatePodUI(json2.data[0]);
