@@ -14,7 +14,8 @@ var TRANSLATIONS = {
     nav_search: 'Rechercher',
     nav_profile: 'Profil',
     nav_logout: 'Déconnexion',
-    nav_login: 'Connexion',
+    nav_login: 'S\'identifier',
+    nav_home: 'Accueil',
     nav_admin: 'Administration',
 
     // ==================== SECTIONS HOMEPAGE ====================
@@ -218,7 +219,8 @@ var TRANSLATIONS = {
     nav_search: 'Search',
     nav_profile: 'Profile',
     nav_logout: 'Logout',
-    nav_login: 'Login',
+    nav_login: 'Sign in',
+    nav_home: 'Home',
     nav_admin: 'Administration',
 
     // ==================== SECTIONS HOMEPAGE ====================
@@ -691,10 +693,10 @@ async function initLanguageSwitcher(options = {}) {
           // Page index.html: recharger les articles dynamiquement
           await loadArticles(selectedLang);
           console.log(`🌍 Articles rechargés en ${selectedLang.toUpperCase()}`);
-        } else if (reloadPage) {
-          // Autres pages: recharger la page pour appliquer la langue
-          console.log(`🌍 Rechargement de la page en ${selectedLang.toUpperCase()}`);
-          location.reload();
+        } else {
+          // Autres pages : mise à jour instantanée sans rechargement
+          console.log(`🌍 Interface mise à jour en ${selectedLang.toUpperCase()}`);
+          document.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang: selectedLang } }));
         }
       });
     });

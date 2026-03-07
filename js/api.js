@@ -175,3 +175,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   await SolitiquoAPI.initCsrf(); // D'abord le token
   await SolitiquoAPI.initUserInterface(); // Ensuite l'UI
 });
+
+// Réagir au changement de langue pour les éléments dynamiques
+document.addEventListener('languageChanged', (e) => {
+  const lang = e.detail.lang;
+  // Si l'utilisateur n'est pas connecté, le bouton auth doit être retraduit
+  // (quand connecté, le texte est remplacé par le nom d'utilisateur — pas besoin de retraduire)
+  const authBtns = document.querySelectorAll('.ph-btn-auth');
+  authBtns.forEach(btn => {
+    // Seulement si le bouton pointe encore vers auth.html (= utilisateur non connecté)
+    if (btn.href && btn.href.includes('auth.html')) {
+      btn.textContent = lang === 'en' ? 'Sign in' : "S'identifier";
+    }
+  });
+});
