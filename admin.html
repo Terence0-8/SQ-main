@@ -3,14 +3,14 @@
 
 <head>
     <meta charset="UTF-8" />
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#37463D">
-  <meta name="description" content="Administration  Tableau de bord Solitiquo.">
-  <meta property="og:title" content="Solitiquo  L'Actualité Premium" />
-  <meta property="og:description" content="Le média de référence pour l'analyse politique et sociale au Cameroun." />
-  <meta property="og:image" content="https://solitiquo.com/logo.png" />
-  <meta property="og:url" content="https://solitiquo.com" />
-  <meta property="og:type" content="website" />
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#37463D">
+    <meta name="description" content="Administration  Tableau de bord Solitiquo.">
+    <meta property="og:title" content="Solitiquo  L'Actualité Premium" />
+    <meta property="og:description" content="Le média de référence pour l'analyse politique et sociale au Cameroun." />
+    <meta property="og:image" content="https://solitiquo.com/logo.png" />
+    <meta property="og:url" content="https://solitiquo.com" />
+    <meta property="og:type" content="website" />
     <!-- Preconnect to external servers -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -24,19 +24,20 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
         rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-  <!-- Favicon & icônes app -->
-  <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png">
-  <link rel="icon" href="/favicon.ico">
-  <!-- Apple / iOS -->
-  <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
-  <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-167x167.png">
-  <meta name="apple-mobile-web-app-title" content="Solitiquo">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Favicon & icônes app -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png">
+    <link rel="icon" href="/favicon.ico">
+    <!-- Apple / iOS -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-167x167.png">
+    <meta name="apple-mobile-web-app-title" content="Solitiquo">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 
 <body id="page-admin">
@@ -47,92 +48,37 @@
             <span>Solitiquo</span>
         </a>
         <nav class="nav-menu">
-            <div class="nav-item active" data-view="dashboard">📊 Vue d'ensemble</div>
-            <div class="nav-item" data-view="analytics">📈 Analytics</div>
-            <div class="nav-item" data-view="articles">📝 Articles <span id="badge-art-pending"
-                    class="badge badge-pending" style="display:none; margin-left:auto; font-size:0.6rem;">0</span></div>
-            <div class="nav-item" data-view="podcasts">🎙️ Podcasts</div>
-            <div class="nav-item" data-view="emissions">📺 Émissions</div>
-            <div class="nav-item" data-view="parties">🏛️ Partis</div>
-            <div class="nav-item" data-view="polls">📊 Sondages</div>
-            <div class="nav-item" data-view="moderation">🛡️ Modération <span id="badge-mod" class="badge badge-draft"
-                    style="display:none; margin-left:auto;">0</span></div>
-            <div class="nav-item" data-view="users">👥 Utilisateurs</div>
+            <div class="nav-item active" data-view="dashboard"><i data-lucide="layout-dashboard"></i> Vue d'ensemble
+            </div>
+            <div class="nav-item" data-view="analytics"><i data-lucide="line-chart"></i> Analytics</div>
+            <div class="nav-item" data-view="articles">
+                <i data-lucide="file-text"></i> Articles
+                <span id="badge-art-pending" class="badge badge-pending"
+                    style="display:none; margin-left:auto; font-size:0.6rem;">0</span>
+            </div>
+            <div class="nav-item" data-view="podcasts"><i data-lucide="mic"></i> Podcasts</div>
+            <div class="nav-item" data-view="emissions"><i data-lucide="tv"></i> Émissions</div>
+            <div class="nav-item" data-view="parties"><i data-lucide="landmark"></i> Partis</div>
+            <div class="nav-item" data-view="polls"><i data-lucide="bar-chart-2"></i> Sondages</div>
+            <div class="nav-item" data-view="moderation">
+                <i data-lucide="shield-alert"></i> Modération
+                <span id="badge-mod" class="badge badge-draft" style="display:none; margin-left:auto;">0</span>
+            </div>
+            <div class="nav-item" data-view="users"><i data-lucide="users"></i> Utilisateurs</div>
 
             <div class="nav-spacer" style="margin-top:auto;"></div>
 
-            <div class="nav-item" id="btn-home">🏠 Retour Site</div>
-            <div class="nav-item" id="btn-logout" style="color:#ef4444;">🚺 Déconnexion</div>
+            <div class="nav-item" id="btn-home"><i data-lucide="external-link"></i> Retour Site</div>
+            <div class="nav-item" id="btn-logout"><i data-lucide="log-out"></i> Déconnexion</div>
         </nav>
     </aside>
 
     <main class="main-content">
-        <header class="premium-header">
-    <div class="ph-left">
-      <div class="burger-container">
-        <button class="burger-btn" id="burgerBtn">
-          <div class="burger-line"></div>
-          <div class="burger-line"></div>
-          <div class="burger-line"></div>
-        </button>
-      </div>
-
-      <a href="index.html" class="ph-brand">
-        <img src="logo.svg" alt="S">
-        <div class="brand-sep"></div>
-        <span class="brand-text">Solitiquo</span>
-      </a>
-    </div>
-
-    <div class="ph-center">
-      <nav class="ph-nav">
-        <a href="politique.html" class="ph-link" data-i18n="nav_pol">Politique</a>
-        <a href="social.html" class="ph-link" data-i18n="nav_soc">Social</a>
-        <a href="partis-politiques.html" class="ph-link" data-i18n="nav_parties">Partis</a>
-        <a href="emissions.html" class="ph-link" data-i18n="nav_shows">Émissions</a>
-        <a href="podcasts.html" class="ph-link" data-i18n="nav_podcasts">Podcasts</a>
-      </nav>
-    </div>
-
-    <div class="ph-right" style="justify-content: flex-end; gap: 20px;">
-      <div class="lang-switch-container">
-        <button class="lang-seg-btn active" data-lang="fr">FR</button>
-        <button class="lang-seg-btn" data-lang="en">EN</button>
-      </div>
-      <div class="search-stack">
-        <div class="search-row">
-          <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8" />
-              <path d="M21 21l-4.35-4.35" />
-            </svg>
-          </button>
-          <span class="search-label" id="searchLabel">Rechercher</span>
-        </div>
-
-        <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
-
-          <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput"
-            autocomplete="off" required />
-
-          <button class="search-submit" type="submit" aria-label="Lancer">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </button>
-
-        </form>
-      </div>
-      <a href="auth.html" class="ph-btn-auth" data-i18n="nav_login">S'identifier</a>
-    </div>
-  
-      <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <circle cx="11" cy="11" r="7"/>
-          <path d="M21 21l-4.35-4.35"/>
-        </svg>
-      </button>
-  </header>
+        <!-- TOP BAR (Remplacement de premium-header) -->
+        <header class="top-bar">
+            <div class="page-title" id="page-header"><i data-lucide="layout-dashboard"></i> Vue d'ensemble</div>
+            <div class="header-actions" id="header-actions"></div>
+        </header>
 
         <div class="scroll-zone">
             <div id="view-dashboard" class="view-section active">
@@ -379,11 +325,14 @@
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
     <script>
-        // Helper pour sécuriser l'injection HTML
+        // Helper pour sécuriser l'injection HTML (inclut le support des <tr> et <td> via un wrapper)
         function safeHTML(html) {
-            return DOMPurify.sanitize(html, {
-                ADD_ATTR: ['target', 'data-action', 'data-id', 'data-type', 'data-isprem', 'data-active', 'data-view', 'data-lang', 'data-index', 'data-is-active']
+            const clean = DOMPurify.sanitize('<table><tbody>' + html + '</tbody></table>', {
+                ADD_TAGS: ['i'],
+                ADD_ATTR: ['data-lucide', 'target', 'data-action', 'data-id', 'data-type', 'data-isprem', 'data-active', 'data-view', 'data-lang', 'data-index', 'data-is-active']
             });
+            const m = clean.match(/<tbody>([\s\S]*?)<\/tbody>/);
+            return m ? m[1] : clean;
         }
 
         // Variables globales pour les graphiques
@@ -456,31 +405,33 @@
                 actions.innerHTML = "";
 
                 if (viewName === 'analytics') {
-                    header.textContent = "Tableau de Bord Analytics";
+                    header.innerHTML = `<i data-lucide="line-chart"></i> Tableau de Bord Analytics`;
                     loadAnalytics();
                 } else if (viewName === 'articles') {
-                    header.textContent = "Gestion des Articles";
-                    actions.innerHTML = `<a href="editeur-article.html" class="action-btn"><span>+</span> Nouvel Article</a>`;
+                    header.innerHTML = `<i data-lucide="file-text"></i> Gestion des Articles`;
+                    actions.innerHTML = `<a href="editeur-article.html" class="action-btn"><i data-lucide="plus"></i> Nouvel Article</a>`;
                 } else if (viewName === 'podcasts') {
-                    header.textContent = "Gestion des Podcasts";
-                    actions.innerHTML = `<a href="editeur-podcast.html" class="action-btn"><span>+</span> Nouveau Podcast</a>`;
+                    header.innerHTML = `<i data-lucide="mic"></i> Gestion des Podcasts`;
+                    actions.innerHTML = `<a href="editeur-podcast.html" class="action-btn"><i data-lucide="plus"></i> Nouveau Podcast</a>`;
                 } else if (viewName === 'emissions') {
-                    header.textContent = "Gestion des Émissions";
-                    actions.innerHTML = `<a href="editeur-emission.html" class="action-btn"><span>+</span> Nouvelle Émission</a>`;
+                    header.innerHTML = `<i data-lucide="tv"></i> Gestion des Émissions`;
+                    actions.innerHTML = `<a href="editeur-emission.html" class="action-btn"><i data-lucide="plus"></i> Nouvelle Émission</a>`;
                 } else if (viewName === 'parties') {
-                    header.textContent = "Répertoire des Partis";
-                    actions.innerHTML = `<button class="action-btn" data-action="new-party"><span>+</span> Nouveau Parti</button>`;
+                    header.innerHTML = `<i data-lucide="landmark"></i> Répertoire des Partis`;
+                    actions.innerHTML = `<button class="action-btn" data-action="new-party"><i data-lucide="plus"></i> Nouveau Parti</button>`;
                     loadParties();
                 } else if (viewName === 'polls') {
-                    header.textContent = "Historique des Sondages";
-                    actions.innerHTML = `<button class="btn-apple-add" data-action="new-poll"><span class="icon-plus">+</span> Nouveau Sondage</button>`;
+                    header.innerHTML = `<i data-lucide="bar-chart-2"></i> Historique des Sondages`;
+                    actions.innerHTML = `<button class="action-btn" data-action="new-poll"><i data-lucide="plus"></i> Nouveau Sondage</button>`;
                     loadPolls();
                 } else if (viewName === 'users') {
-                    header.textContent = "Gestion des Utilisateurs";
+                    header.innerHTML = `<i data-lucide="users"></i> Gestion des Utilisateurs`;
                     loadUsers();
                 } else {
-                    header.textContent = "Vue d'ensemble";
+                    header.innerHTML = `<i data-lucide="layout-dashboard"></i> Vue d'ensemble`;
                 }
+
+                setTimeout(() => lucide.createIcons(), 50);
             }
 
             // ========================================================
@@ -729,9 +680,9 @@
                         </td>
                         <td>${art.views_count || 0} vues</td>
                         <td style="text-align:right;">
-                            <a href="article.html?id=${art.id}" target="_blank" class="btn-icon-sm">👁️</a>
-                            <a href="editeur-article.html?id=${art.id}" class="btn-icon-sm">✏️</a>
-                            <button class="btn-icon-sm del" data-action="delete" data-type="article" data-id="${art.id}">🗑️</button>
+                            <a href="article.html?id=${art.id}" target="_blank" class="btn-icon-sm view" title="Voir l'article"><i data-lucide="eye"></i></a>
+                            <a href="editeur-article.html?id=${art.id}" class="btn-icon-sm edit" title="Éditer"><i data-lucide="pencil"></i></a>
+                            <button class="btn-icon-sm del" data-action="delete" data-type="article" data-id="${art.id}" title="Supprimer"><i data-lucide="trash-2"></i></button>
                         </td>
                     </tr>`;
                 }).join(''));
@@ -745,9 +696,9 @@
                     <td>${p.category}</td>
                     <td>${new Date(p.created_at).toLocaleDateString()}</td>
                     <td style="text-align:right;">
-                        <button class="btn-icon-sm" data-action="set-featured" data-id="${p.id}" style="color:#EAB308;">⭐</button>
-                        <a href="editeur-podcast.html?id=${p.id}" class="btn-icon-sm">✏️</a>
-                        <button class="btn-icon-sm del" data-action="delete" data-type="podcast" data-id="${p.id}">🗑️</button>
+                        <button class="btn-icon-sm" data-action="set-featured" data-id="${p.id}" style="color:#EAB308;" title="Mettre en avant"><i data-lucide="star"></i></button>
+                        <a href="editeur-podcast.html?id=${p.id}" class="btn-icon-sm edit" title="Éditer"><i data-lucide="pencil"></i></a>
+                        <button class="btn-icon-sm del" data-action="delete" data-type="podcast" data-id="${p.id}" title="Supprimer"><i data-lucide="trash-2"></i></button>
                     </td>
                 </tr>`).join(''));
             }
@@ -760,8 +711,8 @@
                     <td>${e.category}</td>
                     <td>${new Date(e.published_at).toLocaleDateString()}</td>
                     <td style="text-align:right;">
-                        <a href="editeur-emission.html?id=${e.id}" class="btn-icon-sm">✏️</a>
-                        <button class="btn-icon-sm del" data-action="delete" data-type="emission" data-id="${e.id}">🗑️</button>
+                        <a href="editeur-emission.html?id=${e.id}" class="btn-icon-sm edit" title="Éditer"><i data-lucide="pencil"></i></a>
+                        <button class="btn-icon-sm del" data-action="delete" data-type="emission" data-id="${e.id}" title="Supprimer"><i data-lucide="trash-2"></i></button>
                     </td>
                 </tr>`).join(''));
             }
@@ -777,8 +728,8 @@
                         <td style="color:#444;">${c.content}</td>
                         <td style="color:#b91c1c;">${c.flag_reason}</td>
                         <td style="text-align:right;">
-                            <button class="btn-valid" data-action="mod-approve" data-id="${c.id}">✔</button>
-                            <button class="btn-reject" data-action="mod-delete" data-id="${c.id}">✖</button>
+                            <button class="btn-valid" data-action="mod-approve" data-id="${c.id}"><i data-lucide="check" style="width:14px;"></i> Accepter</button>
+                            <button class="btn-reject" data-action="mod-delete" data-id="${c.id}"><i data-lucide="x" style="width:14px;"></i> Rejeter</button>
                         </td>
                     </tr>`).join(''));
                 } else {
@@ -798,8 +749,8 @@
                         <td><strong>${p.acronym}</strong> - ${p.name}</td>
                         <td>${p.orientation}</td>
                         <td style="text-align:right;">
-                            <a href="editeur-parti.html?id=${p.id}" class="btn-icon-sm">✏️</a>
-                            <button class="btn-icon-sm del" data-action="delete" data-type="party" data-id="${p.id}">🗑️</button>
+                            <a href="editeur-parti.html?id=${p.id}" class="btn-icon-sm edit" title="Éditer"><i data-lucide="pencil"></i></a>
+                            <button class="btn-icon-sm del" data-action="delete" data-type="party" data-id="${p.id}" title="Supprimer"><i data-lucide="trash-2"></i></button>
                         </td>
                     </tr>`).join(''));
                 } catch (e) { tbody.innerHTML = '<tr><td colspan="4">Erreur</td></tr>'; }
@@ -824,10 +775,10 @@
                             <td>${p.total_votes}</td>
                             <td style="font-size:0.8rem;">${results}</td>
                             <td style="text-align:right;">
-                                <button class="btn-icon-sm" data-action="visualize-poll" data-id="${p.id}" title="Visualiser">📊</button>
-                                <button class="btn-icon-sm" data-action="toggle-poll" data-id="${p.id}" data-active="${p.is_active}">⏯</button>
-                                <button class="btn-icon-sm" data-action="edit-poll" data-id="${p.id}">✏️</button>
-                                <button class="btn-icon-sm del" data-action="delete" data-type="poll" data-id="${p.id}">🗑️</button>
+                                <button class="btn-icon-sm view" data-action="visualize-poll" data-id="${p.id}" title="Voir les stats"><i data-lucide="bar-chart"></i></button>
+                                <button class="btn-icon-sm edit" data-action="toggle-poll" data-id="${p.id}" data-active="${p.is_active}" title="${p.is_active ? 'Mettre en pause' : 'Réactiver'}"><i data-lucide="${p.is_active ? 'pause' : 'play'}"></i></button>
+                                <button class="btn-icon-sm edit" data-action="edit-poll" data-id="${p.id}" title="Éditer"><i data-lucide="pencil"></i></button>
+                                <button class="btn-icon-sm del" data-action="delete" data-type="poll" data-id="${p.id}" title="Supprimer"><i data-lucide="trash-2"></i></button>
                             </td>
                          </tr>`;
                     }).join(''));
@@ -877,8 +828,9 @@
                     if (!poll) return;
                 }
 
-                const { value: result } = await Swal.fire({
-                    title: isEdit ? '✏️ Modifier le Sondage' : '📊 Nouveau Sondage',
+                const result = await Swal.fire({
+                    title: isEdit ? 'Modifier le Sondage' : 'Nouveau Sondage',
+                    icon: 'question',
                     customClass: { popup: 'swal2-glass' },
                     html: `
                         <div style="text-align: left; margin-bottom: 1.5rem;">
@@ -971,7 +923,7 @@
 
                         if (res.ok) {
                             const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
-                            Toast.fire({ icon: 'success', title: isEdit ? '✅ Sondage modifié' : '✅ Sondage créé' });
+                            Toast.fire({ icon: 'success', title: isEdit ? 'Sondage modifié' : 'Sondage créé' });
                             loadPolls();
                         } else {
                             throw new Error('Erreur serveur');
@@ -1117,7 +1069,7 @@
                         <td style="text-align:right;">
                             ${u.role !== 'admin' ? `
                             <button class="btn-icon-sm" data-action="ban-user" data-id="${u.id}" data-is-active="${u.is_active}" style="color:${u.is_active ? '#ef4444' : '#22c55e'};" title="${u.is_active ? 'Bannir' : 'Débannir'}">
-                                ${u.is_active ? '🚫' : '✅'}
+                                <i data-lucide="${u.is_active ? 'user-x' : 'user-check'}"></i>
                             </button>` : '<span style="color:#94a3b8; font-size:0.8rem;">-</span>'}
                         </td>
                     </tr>`;
@@ -1177,11 +1129,11 @@
 
     </script>
     <script src="/js/lazyload.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js');
-    }
-  </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js');
+        }
+    </script>
 </body>
 
 </html>

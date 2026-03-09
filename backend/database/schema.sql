@@ -82,6 +82,11 @@ CREATE TABLE IF NOT EXISTS articles (
   language VARCHAR(5) DEFAULT 'fr' CHECK (language IN ('fr', 'en')),
   views_count INT DEFAULT 0,
   read_time INTEGER NOT NULL DEFAULT 1,
+  reads_start INTEGER DEFAULT 0,
+  reads_25 INTEGER DEFAULT 0,
+  reads_50 INTEGER DEFAULT 0,
+  reads_75 INTEGER DEFAULT 0,
+  reads_100 INTEGER DEFAULT 0,
   -- Lien article traduit
   translation_id INT REFERENCES articles(id) ON DELETE SET NULL,
   translation_method VARCHAR(20) CHECK (translation_method IN ('manual', 'ai', NULL)),
