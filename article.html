@@ -120,7 +120,9 @@
     }
 
     .translation-notice span.tn-icon {
-      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      color: #37463D;
     }
 
     .translation-notice a {
@@ -141,6 +143,11 @@
     .translation-notice a::after {
       content: '→';
       font-size: 1.1em;
+    }
+
+    /* 🖼️ Resserrer l'espace entre légende et bouton TTS */
+    figure.article-img {
+      margin-bottom: 0.8rem;
     }
 
     /* 🔊 TTS - Liquid Glass Green */
@@ -527,6 +534,16 @@
 
     <div class="article-actions-row">
       <div id="translation-zone"></div>
+    </div>
+
+    <hr class="thin-separator">
+    <div class="article-description" id="art-excerpt"></div>
+    <figure class="article-img" id="art-figure">
+      <img id="art-image" src="" alt="Article Image" onerror="handleImgError(this)" loading="lazy">
+      <figcaption id="art-caption"></figcaption>
+    </figure>
+
+    <div style="display:flex; justify-content:center; margin: 0.5rem 0 2rem;">
       <button id="tts-player" class="tts-player" type="button" aria-label="Lecteur audio">
         <span id="tts-icon" style="margin-right: 8px; display: flex;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -539,12 +556,6 @@
       </button>
     </div>
 
-    <hr class="thin-separator">
-    <div class="article-description" id="art-excerpt"></div>
-    <figure class="article-img" id="art-figure">
-      <img id="art-image" src="" alt="Article Image" onerror="handleImgError(this)" loading="lazy">
-      <figcaption id="art-caption"></figcaption>
-    </figure>
     <article class="article-content" id="art-content"></article>
 
     <!-- 📣 BARRE DE PARTAGE — chaque bouton réseau ouvre la modale native -->
@@ -924,19 +935,20 @@
       const currentLang = article.language;
       const targetLang = currentLang === 'fr' ? 'en' : 'fr';
       const texts = {
-        fr: { btnTranslate: 'Version française', noticePrefix: 'Disponible en français', noticeLink: 'Lire', progressLabel: 'Connexion...' },
-        en: { btnTranslate: 'Version anglaise', noticePrefix: 'Available in English', noticeLink: 'Read', progressLabel: 'Connecting...' }
+        fr: { btnTranslate: 'Version française', noticePrefix: 'Available in English', noticeLink: 'Lire', progressLabel: 'Connexion...' },
+        en: { btnTranslate: 'Version anglaise', noticePrefix: 'Disponible en Français', noticeLink: 'Read', progressLabel: 'Connecting...' }
       };
       const t = texts[currentLang] || texts['fr'];
+      const globeSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>`;
       try {
         const res = await fetch(`${window.API_URL}/translate/article/${article.id}?lang=${targetLang}`);
         const data = await res.json();
         if (data.has_translation) {
           updateHreflang(article, data.translation.id);
-          translationZone.innerHTML = `<div class="translation-notice"><span class="tn-icon">🌍</span> <span class="tn-text">${t.noticePrefix}</span> <a href="article.html?id=${data.translation.id}">${t.noticeLink}</a></div>`;
+          translationZone.innerHTML = `<div class="translation-notice"><span class="tn-icon">${globeSvg}</span> <span class="tn-text">${t.noticePrefix}</span> <a href="article.html?id=${data.translation.id}">${t.noticeLink}</a></div>`;
         } else {
           updateHreflang(article, null);
-          translationZone.innerHTML = `<button id="translateBtn" class="translate-btn"><span>🌍</span><span>${t.btnTranslate}</span></button><div id="progress-container" class="progress-container hidden" style="display:none;"><svg class="progress-ring" width="120" height="120"><circle class="progress-ring__circle-bg" stroke="#e0e0e0" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/><circle class="progress-ring__circle" id="progress-circle" stroke="#37463D" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/><text id="progress-text" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#37463D">0%</text></svg><p id="progress-label" style="margin-top:15px;font-weight:600;color:#37463D;">${t.progressLabel}</p></div>`;
+          translationZone.innerHTML = `<button id="translateBtn" class="translate-btn"><span style="display:flex;align-items:center;">${globeSvg}</span><span>${t.btnTranslate}</span></button><div id="progress-container" class="progress-container hidden" style="display:none;"><svg class="progress-ring" width="120" height="120"><circle class="progress-ring__circle-bg" stroke="#e0e0e0" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/><circle class="progress-ring__circle" id="progress-circle" stroke="#37463D" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/><text id="progress-text" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#37463D">0%</text></svg><p id="progress-label" style="margin-top:15px;font-weight:600;color:#37463D;">${t.progressLabel}</p></div>`;
           const circle = document.getElementById('progress-circle');
           const circumference = circle.r.baseVal.value * 2 * Math.PI;
           circle.style.strokeDasharray = `${circumference} ${circumference}`; circle.style.strokeDashoffset = circumference;
