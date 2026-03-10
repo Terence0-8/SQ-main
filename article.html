@@ -153,43 +153,31 @@
       -webkit-backdrop-filter: blur(16px) saturate(180%);
       border: 1px solid rgba(55, 70, 61, 0.2);
       border-radius: 30px;
-      padding: 6px 16px 6px 6px;
+      padding: 10px 22px;
       margin: 0;
+      cursor: pointer;
+      color: #37463D;
+      font-weight: 600;
+      font-size: .9rem;
       transition: all .3s ease;
       box-shadow: 0 4px 15px rgba(55, 70, 61, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
     }
 
     .tts-player:hover {
-      background: linear-gradient(135deg, rgba(55, 70, 61, 0.16), rgba(55, 70, 61, 0.06));
+      background: linear-gradient(135deg, rgba(55, 70, 61, 0.18), rgba(55, 70, 61, 0.08));
       border-color: rgba(55, 70, 61, 0.3);
+      transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(55, 70, 61, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
     }
 
-    .tts-btn {
-      background: var(--primary-dark, #37463D);
-      color: white;
-      border: none;
-      border-radius: 24px;
-      padding: 8px 16px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: .85rem;
+    .tts-player span {
       display: flex;
       align-items: center;
-      gap: 6px;
-      transition: all .2s ease;
-      white-space: nowrap;
-    }
-
-    .tts-btn:hover {
-      background: #2a3530;
-      transform: translateY(-1px);
     }
 
     .tts-info {
       font-size: .8rem;
       color: #888;
-      font-style: italic;
     }
 
     /* 📣 Barre de partage */
@@ -539,12 +527,16 @@
 
     <div class="article-actions-row">
       <div id="translation-zone"></div>
-      <div id="tts-player" class="tts-player" role="region" aria-label="Lecteur audio">
-        <button id="tts-btn" type="button" class="tts-btn"><span id="tts-icon">▶️</span><span id="tts-label">Écouter
-            l'article</span></button>
-        <span class="tts-info" id="tts-info" style="font-size: .85rem; color: #555; font-weight: 500;">Lecture
-          audio</span>
-      </div>
+      <button id="tts-player" class="tts-player" type="button" aria-label="Lecteur audio">
+        <span id="tts-icon" style="margin-right: 8px; display: flex;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 5V19L19 12L8 5Z" />
+          </svg>
+        </span>
+        <span id="tts-label">Écouter l'article</span>
+        <span class="tts-info" id="tts-info"
+          style="font-size: .85rem; color: #555; font-weight: 500; margin-left:8px; opacity:0.8;">Lecture audio</span>
+      </button>
     </div>
 
     <hr class="thin-separator">
@@ -932,8 +924,8 @@
       const currentLang = article.language;
       const targetLang = currentLang === 'fr' ? 'en' : 'fr';
       const texts = {
-        fr: { btnTranslate: 'Version anglaise', noticePrefix: 'Disponible en anglais', noticeLink: 'Lire', progressLabel: 'Connexion...' },
-        en: { btnTranslate: 'Version française', noticePrefix: 'Available in French', noticeLink: 'Read', progressLabel: 'Connecting...' }
+        fr: { btnTranslate: 'Version française', noticePrefix: 'Disponible en français', noticeLink: 'Lire', progressLabel: 'Connexion...' },
+        en: { btnTranslate: 'Version anglaise', noticePrefix: 'Available in English', noticeLink: 'Read', progressLabel: 'Connecting...' }
       };
       const t = texts[currentLang] || texts['fr'];
       try {
@@ -966,30 +958,34 @@
     }
 
     // --- TTS ---
-    let _ttsPlaying = false, _ttsUtterance = null, _ttsLang = 'fr-FR', _ttsBaseLabel = "Écouter";
+    const playSvg = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 5V19L19 12L8 5Z" /></svg>';
+    const pauseSvg = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M6 19H10V5H6V19ZM14 5V19H18V5H14Z" /></svg>';
+
+    let _ttsPlaying = false, _ttsUtterance = null, _ttsLang = 'fr-FR', _ttsBaseLabel = "Écouter l'article";
     function initTTS(article) {
       if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
-      const player = document.getElementById('tts-player'), label = document.getElementById('tts-label'), info = document.getElementById('tts-info'), btn = document.getElementById('tts-btn');
-      if (!player || !label || !info || !btn) return;
+      const player = document.getElementById('tts-player'), label = document.getElementById('tts-label'), info = document.getElementById('tts-info'), icon = document.getElementById('tts-icon');
+      if (!player || !label || !info || !icon) return;
       _ttsLang = (article.language === 'en') ? 'en-US' : 'fr-FR';
       const isEn = _ttsLang === 'en-US';
-      _ttsBaseLabel = isEn ? 'Listen' : "Écouter";
-      label.textContent = _ttsBaseLabel; info.textContent = 'Audio';
-      btn.addEventListener('click', toggleTTS);
-      player.style.display = 'flex';
+      _ttsBaseLabel = isEn ? 'Listen to this article' : "Écouter l'article";
+      label.textContent = _ttsBaseLabel; info.textContent = isEn ? 'Audio reading' : 'Lecture audio';
+      icon.innerHTML = playSvg;
+      player.addEventListener('click', toggleTTS);
+      player.style.display = 'inline-flex';
       window.addEventListener('beforeunload', () => { if (_ttsPlaying) window.speechSynthesis.cancel(); });
     }
     function toggleTTS() {
       const contentDiv = document.getElementById('art-content'), icon = document.getElementById('tts-icon'), label = document.getElementById('tts-label');
       if (!contentDiv || !icon || !label) return;
-      if (_ttsPlaying) { window.speechSynthesis.cancel(); _ttsPlaying = false; icon.textContent = '▶️'; label.textContent = _ttsBaseLabel; return; }
+      if (_ttsPlaying) { window.speechSynthesis.cancel(); _ttsPlaying = false; icon.innerHTML = playSvg; label.textContent = _ttsBaseLabel; return; }
       const text = (contentDiv.innerText || contentDiv.textContent || '').trim();
       if (!text) return;
       _ttsUtterance = new SpeechSynthesisUtterance(text);
       _ttsUtterance.lang = _ttsLang; _ttsUtterance.rate = .95; _ttsUtterance.pitch = 1;
-      _ttsUtterance.onend = _ttsUtterance.onerror = () => { _ttsPlaying = false; icon.textContent = '▶️'; label.textContent = _ttsBaseLabel; };
+      _ttsUtterance.onend = _ttsUtterance.onerror = () => { _ttsPlaying = false; icon.innerHTML = playSvg; label.textContent = _ttsBaseLabel; };
       window.speechSynthesis.speak(_ttsUtterance);
-      _ttsPlaying = true; icon.textContent = '⏸️'; label.textContent = 'Pause';
+      _ttsPlaying = true; icon.innerHTML = pauseSvg; label.textContent = 'Pause';
     }
 
     // --- BARRE DE PROGRESSION ---
