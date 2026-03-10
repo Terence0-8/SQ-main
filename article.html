@@ -29,6 +29,21 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
   <style>
+    /* 🎨 Ajustements post-suppression Header */
+    #page-article {
+      padding-top: 1rem;
+    }
+
+    #page-article .floating-back-btn {
+      top: 30px;
+    }
+
+    @media (max-width: 1000px) {
+      #page-article .floating-back-btn {
+        top: 20px;
+      }
+    }
+
     /* 🌍 Traduction */
     .translate-btn {
       display: inline-flex;
@@ -477,100 +492,6 @@
     <span>Retour</span>
   </a>
 
-  <header class="premium-header">
-    <div class="ph-left">
-      <div class="burger-container">
-        <button class="burger-btn" id="burgerBtn">
-          <div class="burger-line"></div>
-          <div class="burger-line"></div>
-          <div class="burger-line"></div>
-        </button>
-      </div>
-
-      <a href="index.html" class="ph-brand">
-        <img src="logo.svg" alt="S">
-        <div class="brand-sep"></div>
-        <span class="brand-text">Solitiquo</span>
-      </a>
-    </div>
-
-    <div class="ph-center">
-      <nav class="ph-nav">
-        <a href="politique.html" class="ph-link" data-i18n="nav_pol">Politique</a>
-        <a href="social.html" class="ph-link" data-i18n="nav_soc">Social</a>
-        <a href="partis-politiques.html" class="ph-link" data-i18n="nav_parties">Partis</a>
-        <a href="emissions.html" class="ph-link" data-i18n="nav_shows">Émissions</a>
-        <a href="podcasts.html" class="ph-link" data-i18n="nav_podcasts">Podcasts</a>
-      </nav>
-    </div>
-
-    <div class="ph-right" style="justify-content: flex-end; gap: 20px;">
-      <div class="lang-switch-container">
-        <button class="lang-seg-btn active" data-lang="fr">FR</button>
-        <button class="lang-seg-btn" data-lang="en">EN</button>
-      </div>
-      <div class="search-stack">
-        <div class="search-row">
-          <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8" />
-              <path d="M21 21l-4.35-4.35" />
-            </svg>
-          </button>
-          <span class="search-label" id="searchLabel">Rechercher</span>
-        </div>
-
-        <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
-
-          <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput"
-            autocomplete="off" required />
-
-          <button class="search-submit" type="submit" aria-label="Lancer">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </button>
-
-        </form>
-      </div>
-      <a href="auth.html" class="ph-btn-auth" data-i18n="nav_login">S'identifier</a>
-    </div>
-  
-      <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <circle cx="11" cy="11" r="7"/>
-          <path d="M21 21l-4.35-4.35"/>
-        </svg>
-      </button>
-  </header>
-
-  <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
-  <nav id="mobileNav" class="mobile-nav-sidebar">
-    <div class="mobile-nav-header">
-      <div style="display:flex;align-items:center;gap:10px;"><img src="logo.svg" class="mobile-logo" alt="S"><span
-          style="font-family:'Playfair Display';font-weight:700;font-size:1.5rem;">Solitiquo</span></div>
-      <button id="mobileNavClose" class="mobile-nav-close">×</button>
-    </div>
-    <ul class="mobile-nav-list">
-      <li><a href="index.html" class="mobile-nav-link" data-i18n="nav_home">Accueil</a></li>
-      <li><a href="politique.html" class="mobile-nav-link" data-i18n="nav_pol">Politique</a></li>
-      <li><a href="social.html" class="mobile-nav-link" data-i18n="nav_soc">Social</a></li>
-      <li><a href="partis-politiques.html" class="mobile-nav-link" data-i18n="nav_parties">Partis</a></li>
-      <li><a href="emissions.html" class="mobile-nav-link" data-i18n="nav_shows">Émissions</a></li>
-      <li><a href="podcasts.html" class="mobile-nav-link" data-i18n="nav_podcasts">Podcasts</a></li>
-    </ul>
-    <div style="margin-top:auto; padding-top:2rem; border-top:1px solid #333;">
-      <a href="auth.html"
-        style="color:white; text-decoration:none; font-weight:700; display:flex; align-items:center; gap:10px;"><span>👤</span>
-        <span data-i18n="nav_login">S'identifier</span></a>
-      <div style="display:flex; gap:8px; margin-top:1rem; margin-bottom:1rem;">
-        <button class="lang-seg-btn active" data-lang="fr"
-          style="color:#fff; border-color:rgba(255,255,255,.3);">FR</button>
-        <button class="lang-seg-btn" data-lang="en" style="color:#aaa; border-color:rgba(255,255,255,.15);">EN</button>
-      </div>
-    </div>
-  </nav>
-
   <div id="loading-container" class="article-detail-container" style="padding-top:2rem;margin-top:2rem;">
     <div class="skeleton skeleton-badge"></div>
     <div class="skeleton skeleton-title"></div>
@@ -723,16 +644,17 @@
         <p style="font-size:.9rem;opacity:.7;line-height:1.6;">Le média de référence.</p>
       </div>
       <div class="footer-col">
-        <h4>Rubriques</h4><a href="politique.html" class="footer-link" data-i18n="nav_pol">Politique</a><a href="social.html"
-          class="footer-link">Social</a><a href="partis-politiques.html" class="footer-link" data-i18n="nav_parties">Partis</a>
+        <h4>Rubriques</h4><a href="politique.html" class="footer-link" data-i18n="nav_pol">Politique</a><a
+          href="social.html" class="footer-link">Social</a><a href="partis-politiques.html" class="footer-link"
+          data-i18n="nav_parties">Partis</a>
       </div>
       <div class="footer-col">
-        <h4>Légal</h4><a href="mentions-legales.html" class="footer-link" data-i18n="footer_legal">Mentions légales</a><a
-          href="conditions-utilisation.html" class="footer-link" data-i18n="footer_terms">CGU</a>
+        <h4>Légal</h4><a href="mentions-legales.html" class="footer-link" data-i18n="footer_legal">Mentions
+          légales</a><a href="conditions-utilisation.html" class="footer-link" data-i18n="footer_terms">CGU</a>
       </div>
       <div class="footer-col">
-        <h4>Contact</h4><a href="contact.html" class="footer-link" data-i18n="footer_contact">Nous écrire</a><a href="auth.html"
-          class="footer-link">S'identifier</a>
+        <h4>Contact</h4><a href="contact.html" class="footer-link" data-i18n="footer_contact">Nous écrire</a><a
+          href="auth.html" class="footer-link">S'identifier</a>
       </div>
     </div>
     <div class="footer-bottom">&copy; 2025 Solitiquo.</div>
