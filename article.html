@@ -54,31 +54,31 @@
       margin: 1.5rem 0 3rem;
     }
 
-    /* 🌍 Traduction */
+    /* 🌍 Traduction - Liquid Glass Blue */
     .translate-btn {
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      background: rgba(55, 70, 61, .06);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(55, 70, 61, .15);
+      background: linear-gradient(135deg, rgba(41, 128, 185, 0.12), rgba(41, 128, 185, 0.04));
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      border: 1px solid rgba(41, 128, 185, 0.2);
       color: #37463D;
-      padding: 10px 20px;
+      padding: 10px 22px;
       border-radius: 30px;
       font-weight: 600;
       font-size: .9rem;
       cursor: pointer;
       transition: all .3s ease;
-      box-shadow: 0 4px 15px rgba(55, 70, 61, .05);
+      box-shadow: 0 4px 15px rgba(41, 128, 185, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
       margin: 0;
     }
 
     .translate-btn:hover {
-      background: rgba(55, 70, 61, .1);
-      border-color: rgba(55, 70, 61, .3);
+      background: linear-gradient(135deg, rgba(41, 128, 185, 0.18), rgba(41, 128, 185, 0.08));
+      border-color: rgba(41, 128, 185, 0.3);
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(55, 70, 61, .1);
+      box-shadow: 0 6px 20px rgba(41, 128, 185, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
     }
 
     .translate-btn:disabled {
@@ -91,8 +91,8 @@
       display: inline-block;
       width: 14px;
       height: 14px;
-      border: 2px solid rgba(55, 70, 61, .3);
-      border-top-color: #37463D;
+      border: 2px solid rgba(41, 128, 185, 0.3);
+      border-top-color: #2980B9;
       border-radius: 50%;
       animation: spin .8s linear infinite;
     }
@@ -107,15 +107,15 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(55, 70, 61, .05);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(55, 70, 61, .15);
+      background: linear-gradient(135deg, rgba(41, 128, 185, 0.1), rgba(41, 128, 185, 0.02));
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      border: 1px solid rgba(41, 128, 185, 0.25);
       border-radius: 30px;
-      padding: 10px 20px;
+      padding: 8px 18px;
       font-size: .9rem;
       color: #37463D;
-      box-shadow: 0 4px 15px rgba(55, 70, 61, .05);
+      box-shadow: 0 4px 15px rgba(41, 128, 185, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
       margin: 0;
     }
 
@@ -143,23 +143,26 @@
       font-size: 1.1em;
     }
 
-    /* 🔊 TTS */
+    /* 🔊 TTS - Liquid Glass Green */
     .tts-player {
       display: none;
       align-items: center;
       gap: 12px;
-      background: rgba(55, 70, 61, .05);
-      border: 1px solid rgba(55, 70, 61, .15);
+      background: linear-gradient(135deg, rgba(55, 70, 61, 0.12), rgba(55, 70, 61, 0.04));
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      border: 1px solid rgba(55, 70, 61, 0.2);
       border-radius: 30px;
       padding: 6px 16px 6px 6px;
       margin: 0;
       transition: all .3s ease;
-      box-shadow: 0 4px 15px rgba(55, 70, 61, .05);
+      box-shadow: 0 4px 15px rgba(55, 70, 61, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
     }
 
     .tts-player:hover {
-      background: rgba(55, 70, 61, .08);
-      border-color: rgba(55, 70, 61, .25);
+      background: linear-gradient(135deg, rgba(55, 70, 61, 0.16), rgba(55, 70, 61, 0.06));
+      border-color: rgba(55, 70, 61, 0.3);
+      box-shadow: 0 6px 20px rgba(55, 70, 61, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
     }
 
     .tts-btn {
@@ -929,8 +932,8 @@
       const currentLang = article.language;
       const targetLang = currentLang === 'fr' ? 'en' : 'fr';
       const texts = {
-        fr: { btnTranslate: 'Translate to English', noticePrefix: 'This article is available in English', noticeLink: 'Read English version', progressLabel: 'Connecting to translation service...' },
-        en: { btnTranslate: 'Traduire en français', noticePrefix: 'Cet article est disponible en français', noticeLink: 'Lire la version française', progressLabel: 'Connexion au service...' }
+        fr: { btnTranslate: 'Version anglaise', noticePrefix: 'Disponible en anglais', noticeLink: 'Lire', progressLabel: 'Connexion...' },
+        en: { btnTranslate: 'Version française', noticePrefix: 'Available in French', noticeLink: 'Read', progressLabel: 'Connecting...' }
       };
       const t = texts[currentLang] || texts['fr'];
       try {
@@ -963,15 +966,15 @@
     }
 
     // --- TTS ---
-    let _ttsPlaying = false, _ttsUtterance = null, _ttsLang = 'fr-FR', _ttsBaseLabel = "Écouter l'article";
+    let _ttsPlaying = false, _ttsUtterance = null, _ttsLang = 'fr-FR', _ttsBaseLabel = "Écouter";
     function initTTS(article) {
       if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
       const player = document.getElementById('tts-player'), label = document.getElementById('tts-label'), info = document.getElementById('tts-info'), btn = document.getElementById('tts-btn');
       if (!player || !label || !info || !btn) return;
       _ttsLang = (article.language === 'en') ? 'en-US' : 'fr-FR';
       const isEn = _ttsLang === 'en-US';
-      _ttsBaseLabel = isEn ? 'Listen to this article' : "Écouter l'article";
-      label.textContent = _ttsBaseLabel; info.textContent = isEn ? 'Audio reading' : 'Lecture audio';
+      _ttsBaseLabel = isEn ? 'Listen' : "Écouter";
+      label.textContent = _ttsBaseLabel; info.textContent = 'Audio';
       btn.addEventListener('click', toggleTTS);
       player.style.display = 'flex';
       window.addEventListener('beforeunload', () => { if (_ttsPlaying) window.speechSynthesis.cancel(); });
