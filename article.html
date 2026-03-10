@@ -44,31 +44,41 @@
       }
     }
 
+    /* 🎛️ Barre d'actions (Traduction & Audio) */
+    .article-actions-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin: 1.5rem 0 3rem;
+    }
+
     /* 🌍 Traduction */
     .translate-btn {
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      background: rgba(55, 70, 61, .15);
+      background: rgba(55, 70, 61, .06);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      border: 1.5px solid rgba(55, 70, 61, .3);
+      border: 1px solid rgba(55, 70, 61, .15);
       color: #37463D;
-      padding: 12px 24px;
-      border-radius: 12px;
+      padding: 10px 20px;
+      border-radius: 30px;
       font-weight: 600;
-      font-size: .95rem;
+      font-size: .9rem;
       cursor: pointer;
       transition: all .3s ease;
-      margin: 1.5rem 0;
-      box-shadow: 0 4px 20px rgba(55, 70, 61, .1);
+      box-shadow: 0 4px 15px rgba(55, 70, 61, .05);
+      margin: 0;
     }
 
     .translate-btn:hover {
-      background: rgba(55, 70, 61, .25);
-      border-color: rgba(55, 70, 61, .5);
+      background: rgba(55, 70, 61, .1);
+      border-color: rgba(55, 70, 61, .3);
       transform: translateY(-2px);
-      box-shadow: 0 6px 25px rgba(55, 70, 61, .15);
+      box-shadow: 0 6px 20px rgba(55, 70, 61, .1);
     }
 
     .translate-btn:disabled {
@@ -79,8 +89,8 @@
 
     .translate-btn .spinner {
       display: inline-block;
-      width: 16px;
-      height: 16px;
+      width: 14px;
+      height: 14px;
       border: 2px solid rgba(55, 70, 61, .3);
       border-top-color: #37463D;
       border-radius: 50%;
@@ -94,17 +104,23 @@
     }
 
     .translation-notice {
-      background: rgba(55, 70, 61, .08);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(55, 70, 61, .05);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border: 1.5px solid rgba(55, 70, 61, .2);
-      border-radius: 14px;
-      padding: 18px 24px;
-      margin: 1.5rem 0;
-      font-size: .95rem;
+      border: 1px solid rgba(55, 70, 61, .15);
+      border-radius: 30px;
+      padding: 10px 20px;
+      font-size: .9rem;
       color: #37463D;
-      line-height: 1.6;
-      box-shadow: 0 4px 20px rgba(55, 70, 61, .08);
+      box-shadow: 0 4px 15px rgba(55, 70, 61, .05);
+      margin: 0;
+    }
+
+    .translation-notice span.tn-icon {
+      font-size: 1.1rem;
     }
 
     .translation-notice a {
@@ -113,8 +129,7 @@
       text-decoration: none;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      margin-top: 8px;
+      gap: 4px;
       transition: all .2s ease;
     }
 
@@ -125,39 +140,40 @@
 
     .translation-notice a::after {
       content: '→';
-      font-size: 1.2em;
+      font-size: 1.1em;
     }
 
     /* 🔊 TTS */
     .tts-player {
       display: none;
       align-items: center;
-      gap: 14px;
-      background: rgba(55, 70, 61, .07);
-      border: 1.5px solid rgba(55, 70, 61, .2);
-      border-radius: 12px;
-      padding: 12px 20px;
-      margin: 1rem 0 1.5rem;
+      gap: 12px;
+      background: rgba(55, 70, 61, .05);
+      border: 1px solid rgba(55, 70, 61, .15);
+      border-radius: 30px;
+      padding: 6px 16px 6px 6px;
+      margin: 0;
       transition: all .3s ease;
+      box-shadow: 0 4px 15px rgba(55, 70, 61, .05);
     }
 
     .tts-player:hover {
-      background: rgba(55, 70, 61, .11);
-      border-color: rgba(55, 70, 61, .35);
+      background: rgba(55, 70, 61, .08);
+      border-color: rgba(55, 70, 61, .25);
     }
 
     .tts-btn {
       background: var(--primary-dark, #37463D);
       color: white;
       border: none;
-      border-radius: 8px;
-      padding: 10px 18px;
+      border-radius: 24px;
+      padding: 8px 16px;
       cursor: pointer;
       font-weight: 600;
-      font-size: .9rem;
+      font-size: .85rem;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       transition: all .2s ease;
       white-space: nowrap;
     }
@@ -512,19 +528,24 @@
         style="background:var(--primary-dark);color:white;padding:4px 12px;border-radius:4px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;"></span>
     </div>
     <h1 class="article-title" id="art-title"></h1>
-    <div id="translation-zone" style="text-align:center;"></div>
     <div class="author-line"><strong>Par</strong> <span id="art-author"></span></div>
-    <hr class="thin-separator">
-    <div class="article-description" id="art-excerpt"></div>
-    <div class="meta-info-simple">
+    <div class="meta-info-simple" style="margin-bottom:1.5rem;">
       <span class="time-read">⏱️ <span id="art-readtime">...</span> min de lecture</span>
       <span class="date-publish" id="art-date"></span>
     </div>
-    <div id="tts-player" class="tts-player" role="region" aria-label="Lecteur audio">
-      <button id="tts-btn" type="button" class="tts-btn"><span id="tts-icon">▶️</span><span id="tts-label">Écouter
-          l'article</span></button>
-      <span class="tts-info" id="tts-info">Lecture audio</span>
+
+    <div class="article-actions-row">
+      <div id="translation-zone"></div>
+      <div id="tts-player" class="tts-player" role="region" aria-label="Lecteur audio">
+        <button id="tts-btn" type="button" class="tts-btn"><span id="tts-icon">▶️</span><span id="tts-label">Écouter
+            l'article</span></button>
+        <span class="tts-info" id="tts-info" style="font-size: .85rem; color: #555; font-weight: 500;">Lecture
+          audio</span>
+      </div>
     </div>
+
+    <hr class="thin-separator">
+    <div class="article-description" id="art-excerpt"></div>
     <figure class="article-img" id="art-figure">
       <img id="art-image" src="" alt="Article Image" onerror="handleImgError(this)" loading="lazy">
       <figcaption id="art-caption"></figcaption>
@@ -917,7 +938,7 @@
         const data = await res.json();
         if (data.has_translation) {
           updateHreflang(article, data.translation.id);
-          translationZone.innerHTML = `<div class="translation-notice">🌍 ${t.noticePrefix}<br><a href="article.html?id=${data.translation.id}">${t.noticeLink}</a></div>`;
+          translationZone.innerHTML = `<div class="translation-notice"><span class="tn-icon">🌍</span> <span class="tn-text">${t.noticePrefix}</span> <a href="article.html?id=${data.translation.id}">${t.noticeLink}</a></div>`;
         } else {
           updateHreflang(article, null);
           translationZone.innerHTML = `<button id="translateBtn" class="translate-btn"><span>🌍</span><span>${t.btnTranslate}</span></button><div id="progress-container" class="progress-container hidden" style="display:none;"><svg class="progress-ring" width="120" height="120"><circle class="progress-ring__circle-bg" stroke="#e0e0e0" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/><circle class="progress-ring__circle" id="progress-circle" stroke="#37463D" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/><text id="progress-text" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#37463D">0%</text></svg><p id="progress-label" style="margin-top:15px;font-weight:600;color:#37463D;">${t.progressLabel}</p></div>`;
