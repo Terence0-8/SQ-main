@@ -8,7 +8,7 @@ const pool = require('../config/database');
 // ============================================================
 router.get('/', async (req, res) => {
   try {
-    const { q, type, sort = 'relevance', limit = 50 } = req.query;
+    const { q, type, sort = 'relevance', limit = 50, lang = 'fr' } = req.query;
 
     // --- Validation ---
     if (!q || q.trim().length < 2) {
@@ -35,6 +35,7 @@ router.get('/', async (req, res) => {
         0              AS rank
       FROM articles
       WHERE status = 'published'
+        AND language = $3
         AND (title ILIKE $1 OR excerpt ILIKE $1 OR content ILIKE $1)
       ORDER BY published_at DESC
       LIMIT $2
@@ -42,43 +43,43 @@ router.get('/', async (req, res) => {
 
     // ── Podcasts ─────────────────────────────────────────────
     const podcastsSQL = `
-      SELECT
-        id,
-        title,
-        description,
-        cover_image     AS image_url,
+    SELECT
+    id,
+      title,
+      description,
+      cover_image     AS image_url,
         category,
         created_at      AS date,
-        'podcast'       AS type,
-        0               AS rank
+          'podcast'       AS type,
+            0               AS rank
       FROM podcasts
       WHERE status = 'published'
-        AND (title ILIKE $1 OR description ILIKE $1)
+    AND(title ILIKE $1 OR description ILIKE $1)
       ORDER BY created_at DESC
       LIMIT $2
-    `;
+      `;
 
     // ── Emissions ─────────────────────────────────────────────
     const emissionsSQL = `
-      SELECT
-        id,
-        title,
-        description,
-        thumbnail_url AS image_url,
+    SELECT
+    id,
+      title,
+      description,
+      thumbnail_url AS image_url,
         category,
         created_at    AS date,
-        'emission'    AS type,
-        0             AS rank
+          'emission'    AS type,
+            0             AS rank
       FROM emissions
       WHERE status = 'published'
-        AND (title ILIKE $1 OR description ILIKE $1)
+    AND(title ILIKE $1 OR description ILIKE $1)
       ORDER BY created_at DESC
       LIMIT $2
-    `;
+      `;
 
     // ── Exécution en parallèle ────────────────────────────────
     const [artRes, podRes, emiRes] = await Promise.all([
-      pool.query(articlesSQL, [ilike, safeLimit]),
+      pool.query(articlesSQL, [ilike, safeLimit, lang]),
       pool.query(podcastsSQL, [ilike, safeLimit]).catch(() => ({ rows: [] })),
       pool.query(emissionsSQL, [ilike, safeLimit]).catch(() => ({ rows: [] }))
     ]);

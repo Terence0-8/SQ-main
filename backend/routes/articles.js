@@ -75,8 +75,7 @@ router.get('/', async (req, res) => {
   try {
     const { category, lang } = req.query;
 
-    // 🌍 NOUVEAUTÉ: On affiche TOUS les articles, pas seulement ceux de la langue active
-    // On trie juste en priorité les articles dans la langue demandée
+    // 🌍 NOUVEAUTÉ: On filtre strictement par langue pour éviter les doublons avec les traductions
     const targetLang = (lang === 'en') ? 'en' : 'fr';
 
     let query = `
@@ -108,10 +107,10 @@ router.get('/', async (req, res) => {
         ) as linked_translation_id
       FROM articles a
       LEFT JOIN users u ON a.author_id = u.id
-      WHERE a.status = 'published'
+      WHERE a.status = 'published' AND a.language = $1
     `;
 
-    const params = [];
+    const params = [targetLang];
 
     // Filtrage par Catégorie ou Tags
     if (category) {
@@ -119,12 +118,8 @@ router.get('/', async (req, res) => {
       query += ` AND (a.category = $${params.length} OR $${params.length} = ANY(a.tags))`;
     }
 
-    // Tri: Langue demandée en premier, puis par date
-    query += ` ORDER BY 
-      CASE WHEN a.language = $${params.length + 1} THEN 0 ELSE 1 END,
-      a.published_at DESC
-    `;
-    params.push(targetLang);
+    // Tri par date
+    query += ` ORDER BY a.published_at DESC`;
 
     const { rows } = await pool.query(query, params);
     res.json({

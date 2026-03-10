@@ -801,7 +801,30 @@
             }
 
             async function togglePremium(type, id, currentStatus) {
-                alert("Fonctionnalité Premium toggle à implémenter côté API pour " + id);
+                try {
+                    const res = await fetch(`${API_URL}/admin/content/${type}/${id}/toggle-premium`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include'
+                    });
+                    const data = await res.json();
+
+                    if (data.success) {
+                        const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                        Toast.fire({ icon: 'success', title: data.message });
+
+                        if (type === 'article') {
+                            loadAllData();
+                        } else {
+                            loadOtherContent();
+                        }
+                    } else {
+                        Swal.fire('Erreur', data.error || 'Erreur lors de la modification', 'error');
+                    }
+                } catch (e) {
+                    console.error('Erreur togglePremium:', e);
+                    Swal.fire('Erreur', 'Impossible de modifier le statut premium', 'error');
+                }
             }
 
             async function workflow(id, action) {

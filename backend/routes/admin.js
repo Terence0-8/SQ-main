@@ -116,10 +116,28 @@ router.put('/content/:type/:id/toggle-premium', isAdmin, async (req, res) => {
       });
     }
 
+    const newPremiumStatus = result.rows[0].is_premium;
+
+    // 🌍 NOUVEAUTÉ: Si c'est un article, synchroniser le statut premium avec la traduction liée (si elle existe)
+    if (type === 'article') {
+      try {
+        await pool.query(
+          `UPDATE articles 
+           SET is_premium = $1 
+           WHERE id = (SELECT translation_id FROM articles WHERE id = $2) 
+              OR translation_id = $2`,
+          [newPremiumStatus, id]
+        );
+      } catch (syncErr) {
+        console.error('❌ Erreur sync premium traduction:', syncErr);
+        // On ne bloque pas la réponse principale en cas d'échec de synchro
+      }
+    }
+
     res.json({
       success: true,
       message: 'Statut premium mis à jour',
-      is_premium: result.rows[0].is_premium
+      is_premium: newPremiumStatus
     });
   } catch (err) {
     console.error('❌ Erreur toggle premium:', err);
