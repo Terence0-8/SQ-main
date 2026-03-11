@@ -244,6 +244,11 @@
       <div id="home-poll-card" class="poll-box">
         <p style="text-align:center; color:#888;">Chargement...</p>
       </div>
+
+      <div class="section-label" style="border-color:var(--primary-dark); color:var(--primary-dark); margin-top:2rem;" data-i18n="section_party">Parti du moment</div>
+      <div id="home-party-card">
+        <p style="text-align:center; color:#888;">Chargement...</p>
+      </div>
     </aside>
   </div>
 
@@ -357,10 +362,12 @@
 
       // 3. Chargement Sondage
       loadHomePoll();
+      loadHomeParty();
     });
 
     // Attacher les handlers d'erreur après injection
     attachImageErrorHandlers(document.getElementById('discover-grid'));
+
 
     // --- SONDAGE ---
     async function loadHomePoll() {
@@ -369,63 +376,118 @@
 
       try {
         const lang = getLanguage();
-        const res = await fetch(API_URL + '/polls/active/Politique?lang=' + lang);
+        const res = await fetch(API_URL + '/polls/active/Politique?lang=' + lang, { credentials: 'include' });
         const data = await res.json();
 
-        // ✅ Vérifications robustes
         if (!data.success || !data.poll) {
           container.innerHTML = '<p style="text-align:center;color:#999;">Aucun sondage actif.</p>';
           return;
         }
 
-        const { poll, options, hasVoted } = data;
+        const { poll, hasVoted, userVote } = data;
+        const options = poll.options;
 
-        // ✅ Vérifier que options existe et est un tableau
         if (!options || !Array.isArray(options) || options.length === 0) {
           container.innerHTML = '<p style="text-align:center;color:#999;">Sondage en préparation...</p>';
           return;
         }
 
-        if (hasVoted) {
-          const total = options.reduce((sum, opt) => sum + (opt.votes_count || 0), 0);
-          const max = Math.max(...options.map(o => o.votes_count || 0));
+        // Always calculate totals from options.votes
+        const total = options.reduce((sum, opt) => sum + (opt.votes || 0), 0);
+        const max = total > 0 ? Math.max(...options.map(o => o.votes || 0)) : 0;
 
-          const html = options.map(opt => {
-            const pct = total === 0 ? 0 : Math.round(((opt.votes_count || 0) / total) * 100);
-            const col = (opt.votes_count === max) ? '#C82823' : '#ddd';
-            return `
-          <div style="margin-bottom:8px;">
-            <div style="font-size:0.8rem; display:flex; justify-content:space-between;">
-              <span>${opt.label || 'Option'}</span>
-              <span>${pct}%</span>
+        const barsHtml = options.map((opt, i) => {
+          const pct = total === 0 ? 0 : Math.round(((opt.votes || 0) / total) * 100);
+          const isWinner = total > 0 && (opt.votes || 0) === max;
+          const isUserVote = hasVoted && userVote === i;
+          return `
+          <div style="margin-bottom:10px;">
+            <div style="font-size:0.8rem; display:flex; justify-content:space-between; margin-bottom:3px;">
+              <span style="color:${isUserVote ? 'var(--primary-dark)' : '#444'}; font-weight:${isUserVote ? '700' : '400'};">
+                ${isUserVote ? '✓ ' : ''}${opt.text || 'Option'}
+              </span>
+              <span style="font-weight:${isWinner ? '700' : '400'}; color:${isWinner ? '#C82823' : '#888'};">${pct}%</span>
             </div>
-            <div style="height:4px; background:#eee; margin-top:2px;">
-              <div style="width:${pct}%; background:${col}; height:100%;"></div>
+            <div style="height:5px; background:#eee; border-radius:3px; overflow:hidden;">
+              <div style="width:${pct}%; background:${isWinner ? '#C82823' : '#C5C5A9'}; height:100%; border-radius:3px; transition:width 0.6s;"></div>
             </div>
-          </div>
-        `;
-          }).join('');
+          </div>`;
+        }).join('');
 
-          container.innerHTML = `
-        <p class="poll-q">${poll.question}</p>
-        ${html}
-        <div style="text-align:center; font-size:0.7rem; color:#aaa; margin-top:10px;">Merci de votre vote</div>
-      `;
-        } else {
-          container.innerHTML = `
-        <p class="poll-q">${poll.question}</p>
-        <a href="politique.html?poll=${poll.id}" 
-           style="display:block; background:var(--primary-dark); color:white; text-align:center; 
-                  padding:10px; border-radius:4px; text-decoration:none; font-weight:600; font-size:0.9rem;">
-          Voter
-        </a>
-      `;
-        }
+        const totalLabel = `<div style="text-align:right; font-size:0.7rem; color:#aaa; margin-top:6px;">${total} vote${total !== 1 ? 's' : ''}</div>`;
+
+        const voteBtn = !hasVoted
+          ? `<a href="politique.html?poll=${poll.id}" style="display:block; background:var(--primary-dark); color:white; text-align:center; padding:9px; border-radius:4px; text-decoration:none; font-weight:600; font-size:0.85rem; margin-top:12px;">Voter</a>`
+          : `<div style="text-align:center; font-size:0.7rem; color:#aaa; margin-top:10px;">Merci de votre vote</div>`;
+
+        container.innerHTML = `<p class="poll-q">${poll.question}</p>${barsHtml}${totalLabel}${voteBtn}`;
       } catch (e) {
         console.error('Erreur chargement sondage:', e);
         container.innerHTML = '<p style="text-align:center;color:#999;">Chargement...</p>';
       }
     }
+
+    // --- PARTI DU MOMENT (rotation quotidienne) ---
+    async function loadHomeParty() {
+      const container = document.getElementById('home-party-card');
+      if (!container) return;
+
+      try {
+        const lang = getLanguage();
+        const res = await fetch(`${API_URL}/parties?active=true&lang=${lang}`);
+        const data = await res.json();
+
+        if (!data.success || !data.data || data.data.length === 0) {
+          container.style.display = 'none';
+          return;
+        }
+
+        const parties = data.data;
+
+        // Daily rotation: use the day-of-year as seed
+        const now = new Date();
+        const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+        const party = parties[dayOfYear % parties.length];
+
+        const accentColor = party.color || '#37463D';
+        const logoHtml = party.logo_url
+          ? `<img src="${party.logo_url}" alt="${party.name}" style="width:56px;height:56px;object-fit:contain;border-radius:8px;background:#fff;padding:4px;border:1px solid #eee;" onerror="this.style.display='none'">`
+          : `<div style="width:56px;height:56px;border-radius:8px;background:${accentColor};display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:900;color:#fff;">${(party.acronym || party.name).substring(0,2).toUpperCase()}</div>`;
+
+        const tagItems = [
+          party.ideology ? `<span style="background:${accentColor}18;color:${accentColor};border:1px solid ${accentColor}44;padding:2px 8px;border-radius:20px;font-size:0.7rem;font-weight:600;">${party.ideology}</span>` : '',
+          party.founded_year ? `<span style="color:#999;font-size:0.75rem;">Est. ${party.founded_year}</span>` : ''
+        ].filter(Boolean).join(' ');
+
+        const desc = party.description
+          ? party.description.replace(/<[^>]+>/g, '').substring(0, 110) + (party.description.length > 110 ? '…' : '')
+          : '';
+
+        container.innerHTML = `
+          <a href="partis-politiques.html#parti-${party.id}" style="display:block;text-decoration:none;color:inherit;">
+            <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
+              ${logoHtml}
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:1rem;font-weight:800;color:#1a1a1a;font-family:'Playfair Display',serif;line-height:1.2;margin-bottom:3px;">${party.name}</div>
+                ${party.acronym ? `<div style="font-size:0.72rem;font-weight:700;color:${accentColor};letter-spacing:1px;">${party.acronym}</div>` : ''}
+              </div>
+            </div>
+            ${tagItems ? `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px;">${tagItems}</div>` : ''}
+            ${party.leader_name ? `<div style="font-size:0.8rem;color:#666;margin-bottom:6px;">👤 ${party.leader_name}</div>` : ''}
+            ${desc ? `<p style="font-size:0.82rem;color:#555;line-height:1.5;margin:0 0 10px;">${desc}</p>` : ''}
+            <div style="font-size:0.78rem;font-weight:600;color:${accentColor};display:flex;align-items:center;gap:4px;">En savoir plus <span>→</span></div>
+          </a>`;
+
+        // Accent border left
+        container.style.borderLeft = `3px solid ${accentColor}`;
+
+      } catch (e) {
+        console.error('Erreur chargement parti:', e);
+        container.style.display = 'none';
+      }
+    }
+
+
 
   </script>
   <script>
