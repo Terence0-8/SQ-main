@@ -112,11 +112,21 @@
       -webkit-backdrop-filter: blur(16px) saturate(180%);
       border: 1px solid rgba(41, 128, 185, 0.25);
       border-radius: 30px;
-      padding: 8px 18px;
+      padding: 10px 20px;
       font-size: .9rem;
       color: #37463D;
       box-shadow: 0 4px 15px rgba(41, 128, 185, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
       margin: 0;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all .3s ease;
+    }
+
+    .translation-notice:hover {
+      background: linear-gradient(135deg, rgba(41, 128, 185, 0.16), rgba(41, 128, 185, 0.06));
+      border-color: rgba(41, 128, 185, 0.35);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(41, 128, 185, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
     }
 
     .translation-notice span.tn-icon {
@@ -125,24 +135,13 @@
       color: #37463D;
     }
 
-    .translation-notice a {
+    .translation-notice span.tn-link {
       color: #C82823;
       font-weight: 700;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      transition: all .2s ease;
     }
 
-    .translation-notice a:hover {
-      color: #9a1f1b;
-      transform: translateX(3px);
-    }
-
-    .translation-notice a::after {
-      content: '→';
-      font-size: 1.1em;
+    .translation-notice span.tn-link::after {
+      content: ' →';
     }
 
     /* 🖼️ Resserrer l'espace entre légende et bouton TTS */
@@ -945,7 +944,7 @@
         const data = await res.json();
         if (data.has_translation) {
           updateHreflang(article, data.translation.id);
-          translationZone.innerHTML = `<div class="translation-notice"><span class="tn-icon">${globeSvg}</span> <span class="tn-text">${t.noticePrefix}</span> <a href="article.html?id=${data.translation.id}">${t.noticeLink}</a></div>`;
+          translationZone.innerHTML = `<a class="translation-notice" href="article.html?id=${data.translation.id}"><span class="tn-icon">${globeSvg}</span><span class="tn-text">${t.noticePrefix}</span><span class="tn-link">${t.noticeLink}</span></a>`;
         } else {
           updateHreflang(article, null);
           translationZone.innerHTML = `<button id="translateBtn" class="translate-btn"><span style="display:flex;align-items:center;">${globeSvg}</span><span>${t.btnTranslate}</span></button><div id="progress-container" class="progress-container hidden" style="display:none;"><svg class="progress-ring" width="120" height="120"><circle class="progress-ring__circle-bg" stroke="#e0e0e0" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/><circle class="progress-ring__circle" id="progress-circle" stroke="#37463D" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/><text id="progress-text" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#37463D">0%</text></svg><p id="progress-label" style="margin-top:15px;font-weight:600;color:#37463D;">${t.progressLabel}</p></div>`;
