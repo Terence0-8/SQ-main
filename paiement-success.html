@@ -75,78 +75,96 @@
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
     <script>
-        // 1. Afficher l'ID de transaction
         const params = new URLSearchParams(window.location.search);
-        const transactionId = params.get('transaction_id');
+        const transactionId   = params.get('transaction_id'); // CinetPay / simulateur
+        const paymentIntentId = params.get('payment_intent'); // Stripe Payment Element
+        const redirectStatus  = params.get('redirect_status');
         const isMock = params.get('mock') === 'true';
 
+        const transIdEl     = document.getElementById('transId');
+        const syncMessageEl = document.getElementById('syncMessage');
+        const syncSuccessEl = document.getElementById('syncSuccess');
+
+        // ── Afficher l'ID ──────────────────────────────────────────────
         if (transactionId) {
-            document.getElementById('transId').textContent = transactionId;
+            transIdEl.textContent = transactionId;
+        } else if (paymentIntentId) {
+            transIdEl.textContent = paymentIntentId.substring(0, 27) + '…';
+        } else {
+            transIdEl.textContent = 'Inconnu';
+        }
 
-            // 2. Vérification de sécurité (Double Check) - Uniquement si pas en mode mock
-            if (!isMock) {
-                SolitiquoAPI.fetchWithAuth(`/subscriptions/check-status`, {
-                    method: 'POST',
-                    body: JSON.stringify({ transaction_id: transactionId })
-                }).then(res => {
-                    if (!res.success) {
-                        console.warn("Le paiement est encore en cours de validation côté serveur.");
+        // ── Synchronisation du statut abonné ───────────────────────────
+        async function syncAndRedirect() {
+            syncMessageEl.style.display = 'block';
+
+            try {
+                // Stripe Payment Element → confirmer via /confirm-stripe?payment_intent=...
+                // (le webhook peut arriver légèrement après la redirection du navigateur)
+                if (paymentIntentId && !isMock && redirectStatus === 'succeeded') {
+                    try {
+                        const confirmRes = await fetch(
+                            `${window.API_URL}/subscriptions/confirm-stripe?payment_intent=${encodeURIComponent(paymentIntentId)}`,
+                            { credentials: 'include' }
+                        );
+                        const confirmData = await confirmRes.json();
+                        if (!confirmData.success) {
+                            console.warn('Confirm-stripe en attente:', confirmData.error);
+                        }
+                    } catch (confirmErr) {
+                        console.warn('Erreur confirm-stripe (non bloquant):', confirmErr);
                     }
-                }).catch(err => console.error("Erreur vérification:", err));
-            }
-
-            // 3. 🔥 SYNCHRONISATION IMMDIATE DU STATUT ABONNÉ
-            // On utilise le nouvel endpoint /auth/refresh-user
-            document.getElementById('syncMessage').style.display = 'block';
-
-            fetch(`${window.API_URL}/auth/refresh-user`, { 
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json'
                 }
-            })
-            .then(res => res.json())
-            .then(data => {
+
+                // Synchroniser la session utilisateur
+                const refreshRes = await fetch(`${window.API_URL}/auth/refresh-user`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await refreshRes.json();
+
                 if (data.success && data.user) {
-                    console.log('✅ Statut abonné synchronisé:', data.user.is_subscriber);
-
-                    // Mise à jour du localStorage pour compatibilité avec le reste de l'app
                     localStorage.setItem('user', JSON.stringify(data.user));
+                    syncMessageEl.style.display = 'none';
+                    syncSuccessEl.style.display = 'block';
 
-                    // Masquer le message de synchro, afficher le succès
-                    document.getElementById('syncMessage').style.display = 'none';
-                    document.getElementById('syncSuccess').style.display = 'block';
-
-                    // Vérifier que l'utilisateur est bien abonné
                     if (data.user.is_subscriber) {
-                        console.log('🎉 Accès Premium activé !');
-                        
-                        // Redirection automatique vers le profil après 3 secondes
-                        setTimeout(() => {
-                            window.location.href = 'profil.html';
-                        }, 3000);
+                        setTimeout(() => { window.location.href = 'profil.html'; }, 3000);
                     } else {
-                        console.warn('⚠️ Statut abonné non activé - Vérifier la logique backend');
-                        document.getElementById('syncSuccess').innerHTML = '<strong>⚠️ Activation en attente</strong><br><small>Veuillez contacter le support si le problème persiste.</small>';
-                        document.getElementById('syncSuccess').style.background = '#fef3c7';
-                        document.getElementById('syncSuccess').style.color = '#92400e';
+                        // Webhook pas encore arrivé — on retente après 3 s
+                        setTimeout(async () => {
+                            try {
+                                const retry = await fetch(`${window.API_URL}/auth/refresh-user`, {
+                                    method: 'POST', credentials: 'include',
+                                    headers: { 'Content-Type': 'application/json' }
+                                });
+                                const retryData = await retry.json();
+                                if (retryData.success && retryData.user?.is_subscriber) {
+                                    localStorage.setItem('user', JSON.stringify(retryData.user));
+                                    window.location.href = 'profil.html';
+                                } else {
+                                    syncSuccessEl.innerHTML = '<strong>⚠️ Activation en attente</strong><br><small>Votre paiement a été reçu. L\'accès sera activé dans quelques instants. Contactez le support si le problème persiste.</small>';
+                                    syncSuccessEl.style.background = '#fef3c7';
+                                    syncSuccessEl.style.color = '#92400e';
+                                }
+                            } catch (e) { console.error('Retry refresh-user:', e); }
+                        }, 3000);
                     }
                 } else {
-                    console.error('Erreur récupération données utilisateur:', data);
-                    document.getElementById('syncMessage').style.display = 'none';
+                    syncMessageEl.style.display = 'none';
+                    console.error('Erreur refresh-user:', data);
                 }
-            })
-            .catch(err => {
-                console.error('Erreur sync abonné:', err);
-                document.getElementById('syncMessage').innerHTML = '<strong>⚠️ Erreur de synchronisation</strong><br><small>Veuillez rafraîchir la page</small>';
-                document.getElementById('syncMessage').style.background = '#fef2f2';
-                document.getElementById('syncMessage').style.color = '#991b1b';
-            });
+            } catch (err) {
+                console.error('Erreur sync:', err);
+                syncMessageEl.innerHTML = '<strong>⚠️ Erreur de synchronisation</strong><br><small>Veuillez rafraîchir la page</small>';
+                syncMessageEl.style.background = '#fef2f2';
+                syncMessageEl.style.color = '#991b1b';
+            }
+        }
 
-        } else {
-            document.getElementById('transId').textContent = "Inconnu";
-            console.warn('Aucun ID de transaction trouvé dans l\'URL');
+        if (transactionId || paymentIntentId) {
+            syncAndRedirect();
         }
     </script>
   <script src="/js/lazyload.js"></script>

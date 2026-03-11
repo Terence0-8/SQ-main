@@ -22,6 +22,9 @@ const BASE_URL = isProduction ? 'https://solitiquo.com' : `http://localhost:${PO
 // =============================================================================
 app.use(compression());
 
+// Stripe webhook needs the raw body BEFORE express.json() parses it
+app.use('/api/subscriptions/stripe-webhook', express.raw({ type: 'application/json' }));
+
 // =============================================================================
 // 2. FICHIERS STATIQUES — Cache HTTP par type de fichier
 // =============================================================================
@@ -33,7 +36,7 @@ const setStaticCacheHeaders = (res, filePath) => {
   if (/\.(html?)$/i.test(filePath) || /sw\.js$/i.test(filePath)) {
     res.setHeader('Cache-Control', 'no-cache');
   } else if (/\.(css|js|woff2?|ttf|otf|eot)$/i.test(filePath)) {
-    res.setHeader('Cache-Control', 'public, max-age=604800');   // 7 jours
+    res.setHeader('Cache-Control', isProduction ? 'public, max-age=604800' : 'no-cache');   // 7 jours en prod, no-cache en dev
   } else if (/\.(png|jpe?g|gif|ico|svg|webp)$/i.test(filePath)) {
     res.setHeader('Cache-Control', 'public, max-age=2592000');  // 30 jours
   }
@@ -51,13 +54,13 @@ app.use(helmet({
   contentSecurityPolicy: isProduction ? {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com", "https://js.stripe.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
-      connectSrc: ["'self'", "https://res.cloudinary.com"],
+      connectSrc: ["'self'", "https://res.cloudinary.com", "https://api.stripe.com"],
       mediaSrc: ["'self'", "https://res.cloudinary.com"],
-      frameSrc: ["'self'", "https://www.youtube.com", "https://www.youtube-nocookie.com", "https://www.facebook.com", "https://w.soundcloud.com"]
+      frameSrc: ["'self'", "https://www.youtube.com", "https://www.youtube-nocookie.com", "https://www.facebook.com", "https://w.soundcloud.com", "https://js.stripe.com", "https://*.stripe.com"]
     }
   } : false,
   crossOriginEmbedderPolicy: false,
@@ -159,6 +162,7 @@ const csrfExemptPaths = [
   '/api/auth/login',
   '/api/auth/register',
   '/api/subscriptions/webhook',
+  '/api/subscriptions/stripe-webhook',
   '/api/language/preference',
   '/api/analytics/track',
 ];

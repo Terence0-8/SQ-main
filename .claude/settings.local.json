@@ -5,7 +5,12 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:salsita.github.io)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(ls:*)",
+      "Bash(winget install:*)",
+      "Bash(where:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(\"C:\\\\Users\\\\Térence\\\\AppData\\\\Local\\\\Microsoft\\\\WinGet\\\\Packages\\\\Stripe.StripeCli_Microsoft.Winget.Source_8wekyb3d8bbwe\\\\stripe.exe\" listen --api-key sk_test_51T407OBu1609TRVilGEDL7UCdYU06QloXasLPn6LJ5YMcVvXkU5F0P3j6Q2CEaZPxlzzjdS4JPZkhiEcaeHBC1Jw00Zc2V8CT4 --forward-to http://localhost:5000/api/subscriptions/stripe-webhook)"
     ]
   }
 }

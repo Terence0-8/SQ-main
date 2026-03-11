@@ -145,50 +145,53 @@
   </nav>
 
   <section class="sub-hero">
-    <h1 class="sub-title">Soutenez une information libre</h1>
-    <p class="sub-desc">Accédez à nos enquêtes exclusives, profitez d'une lecture sans publicité et participez aux
+    <h1 class="sub-title" data-i18n="sub_hero_title">Soutenez une information libre</h1>
+    <p class="sub-desc" data-i18n="sub_hero_desc">Accédez à nos enquêtes exclusives, profitez d'une lecture sans publicité et participez aux
       débats réservés à nos abonnés.</p>
   </section>
 
   <main class="pricing-container">
 
     <div class="price-card">
-      <div class="plan-name">Découverte</div>
+      <div class="plan-name" data-i18n="sub_plan_decouverte">Découverte</div>
       <div class="plan-price">0 <span style="font-size:1.5rem;">FCFA</span></div>
-      <span class="plan-period">Accès limité</span>
+      <span class="plan-period" data-i18n="sub_limited_access">Accès limité</span>
       <ul class="plan-features">
-        <li><span class="check-icon">✓</span> Articles d'actualité</li>
-        <li><span class="check-icon">✓</span> Podcasts (audio simple)</li>
-        <li><span class="cross-icon">✕</span> Publicités activées</li>
-        <li><span class="cross-icon">✕</span> Enquêtes exclusives</li>
+        <li><span class="check-icon">✓</span> <span data-i18n="sub_feature_articles">Articles d'actualité</span></li>
+        <li><span class="check-icon">✓</span> <span data-i18n="sub_feature_podcasts_basic">Podcasts (audio simple)</span></li>
+        <li><span class="cross-icon">✕</span> <span data-i18n="sub_feature_ads">Publicités activées</span></li>
+        <li><span class="cross-icon">✕</span> <span data-i18n="sub_feature_no_exclu">Enquêtes exclusives</span></li>
       </ul>
-      <a href="auth.html" class="btn-sub secondary">Créer un compte</a>
+      <a href="auth.html" class="btn-sub secondary" data-i18n="sub_btn_create">Créer un compte</a>
     </div>
 
     <div class="price-card featured">
-      <div class="badge-best">LE PLUS POPULAIRE</div>
-      <div class="plan-name">Engagé</div>
-      <div class="plan-price">2000 <span style="font-size:1.5rem;">FCFA</span></div>
-      <span class="plan-period">Par mois, sans engagement</span>
+      <div class="badge-best" data-i18n="sub_most_popular">LE PLUS POPULAIRE</div>
+      <div class="plan-name" data-i18n="sub_plan_engage">Engagé</div>
+      <div class="plan-price" id="monthly-price-display">
+        <span class="price-loader" style="font-size:1.2rem;opacity:0.5;">…</span>
+      </div>
+      <span class="plan-period" data-i18n="sub_per_month">Par mois, sans engagement</span>
       <ul class="plan-features">
-        <li><span class="check-icon">✓</span> <strong>Zéro publicité</strong></li>
-        <li><span class="check-icon">✓</span> Accès illimité aux enquêtes</li>
-        <li><span class="check-icon">✓</span> Commentaires prioritaires</li>
-        <li><span class="check-icon">✓</span> Newsletter exclusive</li>
+        <li><span class="check-icon">✓</span> <strong data-i18n="sub_feature_noad">Zéro publicité</strong></li>
+        <li><span class="check-icon">✓</span> <span data-i18n="sub_feature_enquetes">Accès illimité aux enquêtes</span></li>
+        <li><span class="check-icon">✓</span> <span data-i18n="sub_feature_comments">Commentaires prioritaires</span></li>
+        <li><span class="check-icon">✓</span> <span data-i18n="sub_feature_newsletter">Newsletter exclusive</span></li>
       </ul>
-      <button id="btn-sub-monthly" class="btn-sub primary">Je m'abonne</button>
+      <button id="btn-sub-monthly" class="btn-sub primary" data-i18n="sub_btn_subscribe">Je m'abonne</button>
     </div>
 
-    <div class="price-card">
-      <div class="plan-name">Soutien</div>
-      <div class="plan-price">20.000 <span style="font-size:1.5rem;">FCFA</span></div>
-      <span class="plan-period">Par an (2 mois offerts)</span>
+    <!-- Carte annuelle : visible uniquement pour les utilisateurs XAF (Cameroun) -->
+    <div class="price-card" id="card-yearly" style="display:none;">
+      <div class="plan-name" data-i18n="sub_plan_soutien">Soutien</div>
+      <div class="plan-price">30.000 <span style="font-size:1.5rem;">FCFA</span></div>
+      <span class="plan-period" data-i18n="sub_per_year">Par an (2 mois offerts)</span>
       <ul class="plan-features">
-        <li><span class="check-icon">✓</span> Tous les avantages "Engagé"</li>
-        <li><span class="check-icon">✓</span> Badge "Soutien" sur le profil</li>
-        <li><span class="check-icon">✓</span> Invitations aux événements</li>
+        <li><span class="check-icon">✓</span> <span data-i18n="sub_feature_all_engaged">Tous les avantages "Engagé"</span></li>
+        <li><span class="check-icon">✓</span> <span data-i18n="sub_feature_badge">Badge "Soutien" sur le profil</span></li>
+        <li><span class="check-icon">✓</span> <span data-i18n="sub_feature_events">Invitations aux événements</span></li>
       </ul>
-      <button id="btn-sub-yearly" class="btn-sub secondary">Choisir l'annuel</button>
+      <button id="btn-sub-yearly" class="btn-sub secondary" data-i18n="sub_btn_yearly">Choisir l'annuel</button>
     </div>
 
   </main>
@@ -230,23 +233,60 @@
       // 1. Initialisation UI (Header connecté etc.)
       SolitiquoAPI.initUserInterface();
 
-      // 2. Logique d'abonnement (Remplace onclick)
+      // 2. Geo-pricing : charger le prix depuis le backend
+      const testCountry = new URLSearchParams(window.location.search).get('testCountry');
+      let geoPricing = null;
+      try {
+        const pricingUrl = testCountry
+          ? `${window.API_URL}/subscriptions/pricing?testCountry=${encodeURIComponent(testCountry)}`
+          : `${window.API_URL}/subscriptions/pricing`;
+        const pricingRes = await fetch(pricingUrl);
+        geoPricing = await pricingRes.json();
+      } catch (e) {
+        console.warn("Impossible de charger le pricing géo, fallback USD", e);
+        geoPricing = { success: true, currency: 'USD', symbol: '$', amount: 7.99, provider: 'stripe' };
+      }
+
+      // Mettre à jour l'affichage du prix mensuel
+      const priceDisplay = document.getElementById('monthly-price-display');
+      if (priceDisplay && geoPricing?.success) {
+        if (geoPricing.currency === 'XAF') {
+          priceDisplay.innerHTML = `3 000 <span style="font-size:1.5rem;">FCFA</span>`;
+        } else {
+          // Formater selon la devise
+          const formatted = new Intl.NumberFormat('fr-FR', {
+            style: 'currency',
+            currency: geoPricing.currency,
+            minimumFractionDigits: 2
+          }).format(geoPricing.amount);
+          priceDisplay.innerHTML = `${formatted} <span style="font-size:1rem;opacity:0.7;display:block;margin-top:4px;">par mois</span>`;
+        }
+      }
+
+      // Afficher la carte annuelle uniquement pour les utilisateurs XAF (Cameroun)
+      const cardYearly = document.getElementById('card-yearly');
+      if (cardYearly && geoPricing?.currency === 'XAF') {
+        cardYearly.style.display = '';
+      }
+
+      // 3. Logique d'abonnement
       async function handleSubscribe(plan) {
         try {
           const user = await SolitiquoAPI.getProfile();
 
           if (!user) {
-            // Si pas connecté -> Stocker l'intention et rediriger vers auth
             sessionStorage.setItem('wantsToSubscribe', plan);
             window.location.href = 'auth.html';
             return;
           }
 
-          // Si connecté -> Direction la caisse
-          window.location.href = `paiement.html?plan=${plan}`;
+          // Direction la caisse avec la devise détectée
+          const currency = geoPricing?.currency || 'USD';
+          const tcParam = testCountry ? `&testCountry=${encodeURIComponent(testCountry)}` : '';
+          window.location.href = `paiement.html?plan=${plan}&currency=${currency}${tcParam}`;
         } catch (e) {
           console.error("Erreur profil:", e);
-          window.location.href = 'auth.html'; // Fallback
+          window.location.href = 'auth.html';
         }
       }
 
