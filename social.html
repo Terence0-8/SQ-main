@@ -228,7 +228,7 @@
           <span class="pod-sb-tag" id="soc-pod-cat">SOCIAL</span>
           <h3 class="pod-sb-title" id="soc-pod-title">Chargement...</h3>
           <p style="font-size:0.9rem; color:#ccc; line-height:1.5; margin-bottom:15px;">Le podcast social du moment.</p>
-          <a href="#" id="soc-pod-link"
+          <a href="#" id="soc-pod-link" href="podcasts.html"
             style="display:inline-block; background:white; color:black; text-decoration:none; padding:8px 20px; border-radius:30px; font-weight:700; cursor:pointer;">Écouter</a>
         </div>
       </div>
@@ -483,8 +483,14 @@
           if (title) title.textContent = pod.title;
           if (cat) cat.textContent = pod.category.toUpperCase();
           if (link) link.href = `podcast.html?id=${pod.id}`;
+        } else {
+          const link = document.getElementById('soc-pod-link');
+          if (link) link.href = 'podcasts.html';
         }
-      } catch (e) { }
+      } catch (e) {
+        const link = document.getElementById('soc-pod-link');
+        if (link) link.href = 'podcasts.html';
+      }
 
       loadSmartPoll();
     });

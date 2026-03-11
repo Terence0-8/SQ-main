@@ -197,7 +197,7 @@
       <p class="pod-desc" id="index-pod-desc">Le dernier épisode disponible sur Solitiquo.</p>
     </div>
 
-    <a href="#" class="pod-play-btn" id="index-pod-link" style="text-decoration:none;">
+    <a href="#" class="pod-play-btn" id="index-pod-link" href="podcasts.html" style="text-decoration:none;">
       <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
         <path d="M8 5v14l11-7z" />
       </svg>
@@ -533,7 +533,11 @@
             updatePodUI(json2.data[0]);
           }
         }
-      } catch (e) { console.error("Erreur podcast index", e); }
+      } catch (e) {
+        console.error("Erreur podcast index", e);
+        const podLink = document.getElementById('index-pod-link');
+        if (podLink) podLink.href = 'podcasts.html';
+      }
     });
   </script>
   <script src="/js/lazyload.js"></script>
