@@ -580,9 +580,9 @@
           const cat = document.getElementById('pol-pod-cat');
           const link = document.getElementById('pol-pod-link');
 
-          if (img) img.src = pod.image_url || 'https://placehold.co/400x300';
+          if (img) img.src = pod.image_url || pod.cover_image || 'https://placehold.co/400x300';
           if (title) title.textContent = pod.title;
-          if (cat) cat.textContent = pod.category.toUpperCase();
+          if (cat) cat.textContent = (pod.category || 'Podcast').toUpperCase();
           if (link) link.href = `podcast.html?id=${pod.id}`;
         } else {
           const link = document.getElementById('pol-pod-link');

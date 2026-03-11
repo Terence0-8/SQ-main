@@ -479,7 +479,7 @@
           const title = document.getElementById(`${prefix}-pod-title`);
           const cat = document.getElementById(`${prefix}-pod-cat`);
           const link = document.getElementById(`${prefix}-pod-link`);
-          if (img) img.src = pod.image_url || 'https://placehold.co/400x300';
+          if (img) img.src = pod.image_url || pod.cover_image || 'https://placehold.co/400x300';
           if (title) title.textContent = pod.title;
           if (cat) cat.textContent = pod.category.toUpperCase();
           if (link) link.href = `podcast.html?id=${pod.id}`;

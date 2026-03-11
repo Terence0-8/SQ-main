@@ -1,6 +1,12 @@
 const express = require('express');
 const router = express.Router();
 console.log('--- PODCASTS ROUTER LOADED ---'); // DEBUG
+
+// Ensure is_featured column exists (idempotent)
+const pool_ensure = require('../config/database');
+pool_ensure.query("ALTER TABLE podcasts ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT FALSE")
+  .catch(e => console.log('is_featured column already exists or error:', e.message));
+
 const pool = require('../config/database');
 const multer = require('multer');
 const cloudinary = require('../config/cloudinary');
@@ -77,7 +83,46 @@ router.get('/', async (req, res) => {
 });
 
 // ==========================================
-// 🆕 1B. PODCASTS EN VEDETTE PAR CATÉGORIE
+// 🆕 1B. PODCAST À LA UNE GLOBAL (pour index.html)
+// ==========================================
+router.get('/featured', async (req, res) => {
+  try {
+    const { lang } = req.query;
+    const isEn = lang === 'en';
+
+    const query = `
+      SELECT 
+        p.id,
+        ${isEn ? 'COALESCE(p.title_en, p.title)' : 'p.title'} as title,
+        ${isEn ? 'COALESCE(p.description_en, p.description)' : 'p.description'} as description,
+        ${isEn ? 'COALESCE(p.audio_url_en, p.audio_url)' : 'p.audio_url'} as audio_url,
+        p.cover_image as image_url,
+        p.duration_seconds,
+        p.category,
+        p.is_premium,
+        p.is_featured,
+        p.play_count,
+        p.created_at,
+        u.username as author_name
+      FROM podcasts p
+      LEFT JOIN users u ON p.author_id = u.id
+      WHERE p.status = 'published'
+      ORDER BY p.is_featured DESC, p.created_at DESC
+      LIMIT 1
+    `;
+
+    const { rows } = await pool.query(query);
+    if (rows.length === 0) {
+      return res.json({ success: false, message: 'Aucun podcast publié' });
+    }
+    res.json({ success: true, data: rows[0] });
+  } catch (err) {
+    console.error('❌ Erreur podcast featured global:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
+// 🆕 1C. PODCAST À LA UNE PAR CATÉGORIE (pour politique.html / social.html)
 // ==========================================
 router.get('/featured/:category', async (req, res) => {
   try {
@@ -85,7 +130,6 @@ router.get('/featured/:category', async (req, res) => {
     const { lang } = req.query;
     const isEn = lang === 'en';
 
-    // Normaliser la catégorie
     const normalizedCategory = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
 
     const query = `
@@ -94,30 +138,34 @@ router.get('/featured/:category', async (req, res) => {
         ${isEn ? 'COALESCE(p.title_en, p.title)' : 'p.title'} as title,
         ${isEn ? 'COALESCE(p.description_en, p.description)' : 'p.description'} as description,
         ${isEn ? 'COALESCE(p.audio_url_en, p.audio_url)' : 'p.audio_url'} as audio_url,
-        p.cover_image,
+        p.cover_image as image_url,
         p.duration_seconds,
         p.category,
         p.is_premium,
+        p.is_featured,
         p.play_count,
         p.created_at,
         u.username as author_name
       FROM podcasts p
       LEFT JOIN users u ON p.author_id = u.id
-      WHERE p.status = 'published' AND p.category = $1
-      ORDER BY p.play_count DESC, p.created_at DESC
-      LIMIT 5
+      WHERE p.status = 'published'
+        AND (p.category = $1 OR p.is_featured = TRUE)
+      ORDER BY 
+        CASE WHEN p.category = $1 AND p.is_featured = TRUE THEN 0
+             WHEN p.is_featured = TRUE THEN 1
+             WHEN p.category = $1 THEN 2
+             ELSE 3 END,
+        p.created_at DESC
+      LIMIT 1
     `;
 
     const { rows } = await pool.query(query, [normalizedCategory]);
-
-    res.json({
-      success: true,
-      category: normalizedCategory,
-      count: rows.length,
-      data: rows
-    });
+    if (rows.length === 0) {
+      return res.json({ success: false, message: 'Aucun podcast pour cette catégorie' });
+    }
+    res.json({ success: true, data: rows[0] });
   } catch (err) {
-    console.error('❌ Erreur podcasts featured:', err);
+    console.error('❌ Erreur podcast featured catégorie:', err);
     res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 });
@@ -533,6 +581,30 @@ router.get('/:slug/download', isSubscriber, async (req, res) => {
     if (!res.headersSent) {
       res.status(500).json({ success: false, error: 'Erreur serveur' });
     }
+  }
+});
+
+// ==========================================
+// TOGGLE IS_FEATURED (Admin)
+// ==========================================
+const { isAdmin } = require('../middleware/auth');
+router.post('/:id/toggle-featured', isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (isNaN(id)) return res.status(400).json({ success: false, error: 'ID invalide' });
+
+    // Unfeature all, then feature this one (only one featured at a time)
+    await pool.query('UPDATE podcasts SET is_featured = FALSE WHERE is_featured = TRUE');
+    const result = await pool.query(
+      'UPDATE podcasts SET is_featured = NOT is_featured WHERE id = $1 RETURNING is_featured',
+      [id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'Podcast introuvable' });
+
+    res.json({ success: true, is_featured: result.rows[0].is_featured });
+  } catch (err) {
+    console.error('❌ Erreur toggle featured:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 });
 

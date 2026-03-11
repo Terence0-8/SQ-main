@@ -520,7 +520,7 @@
 
       try {
         const lang = getLanguage();
-        let res = await fetch(API_URL + '/podcasts/featured/index?lang=' + lang);
+        let res = await fetch(API_URL + '/podcasts/featured?lang=' + lang);
         let json = await res.json();
 
         if (json.success && json.data) {
