@@ -522,6 +522,7 @@
                     <span class="hero-badge-une">À LA UNE</span>
                     <span class="hero-badge-cat">${une.category}</span>
                     ${langBadge}
+                    ${une.is_premium ? '<span class="premium-tag">PREMIUM</span>' : ''}
                 </div>
                 <h1 class="hero-title-main">${une.title}</h1>
                 <p class="hero-excerpt">${une.excerpt || ''}</p>
@@ -537,7 +538,7 @@
 
             return `
             <article class="article-magazine">
-              <img src="${art.image_url}" class="mag-img" onerror="handleImgError(this)" loading="lazy">
+              <div style="position:relative;"><img src="${art.image_url}" class="mag-img" onerror="handleImgError(this)" loading="lazy">${art.is_premium ? '<img src="GOLD.png" alt="Premium" class="premium-badge-card" loading="lazy">' : ''}</div>
               <div class="mag-content">
                 <a href="article.html?id=${art.id}" style="text-decoration:none;"><h3>${art.title} ${langBadgeSmall}</h3></a>
                 <p class="mag-excerpt">${art.excerpt || art.slug}</p>
@@ -552,7 +553,7 @@
           if (discoverGrid && discoverArticles.length > 0) {
             discoverGrid.innerHTML = discoverArticles.map(art => `
                 <a href="article.html?id=${art.id}" class="disco-card">
-                <img src="${art.image_url}" class="disco-img" onerror="handleImgError(this)" loading="lazy">
+                <div style="position:relative;"><img src="${art.image_url}" class="disco-img" onerror="handleImgError(this)" loading="lazy">${art.is_premium ? '<img src="GOLD.png" alt="Premium" class="premium-badge-card" loading="lazy">' : ''}</div>
                 <h4 class="disco-title">${art.title}</h4>
                 <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
                 </a>
