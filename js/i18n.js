@@ -602,7 +602,7 @@ async function loadArticles(lang) {
             <span class="art-cat">${art.category}</span>
             ${langBadge}
             <a href="${linkArt}" style="text-decoration:none;">
-              <h3 class="art-title">${art.title}</h3>
+              <h3 class="art-title">${art.title} ${art.is_premium ? '<img src="GOLD.png" alt="★" style="height:1.1em;vertical-align:middle;margin-left:5px;" loading="lazy">' : ''}</h3>
             </a>
             <p class="art-desc">${art.excerpt || art.slug}</p>
             <div style="font-size:0.8rem; color:#999; margin-top:8px;">${SolitiquoAPI.formatDate(art.published_at)}</div>
@@ -624,7 +624,7 @@ async function loadArticles(lang) {
               <img src="${art.image_url}" class="disco-img" loading="lazy">
               ${art.is_premium ? `<img src="GOLD.png" alt="Premium" class="premium-badge-card" loading="lazy">` : ''}
             </div>
-            <h4 class="disco-title">${art.title}</h4>
+            <h4 class="disco-title">${art.title} ${art.is_premium ? '<img src="GOLD.png" alt="★" style="height:1.1em;vertical-align:middle;margin-left:5px;" loading="lazy">' : ''}</h4>
             <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
           </a>
         `}).join('');
