@@ -443,47 +443,59 @@
         }
 
         const parties = data.data;
-
-        // Daily rotation: use the day-of-year as seed
         const now = new Date();
         const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
         const party = parties[dayOfYear % parties.length];
 
-        const accentColor = party.color || '#37463D';
-        const logoHtml = party.logo_url
-          ? `<img src="${party.logo_url}" alt="${party.name}" style="width:56px;height:56px;object-fit:contain;border-radius:8px;background:#fff;padding:4px;border:1px solid #eee;" onerror="this.style.display='none'">`
-          : `<div style="width:56px;height:56px;border-radius:8px;background:${accentColor};display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:900;color:#fff;">${(party.acronym || party.name).substring(0,2).toUpperCase()}</div>`;
+        const accent = party.color || '#37463D';
 
-        const tagItems = [
-          party.ideology ? `<span style="background:${accentColor}18;color:${accentColor};border:1px solid ${accentColor}44;padding:2px 8px;border-radius:20px;font-size:0.7rem;font-weight:600;">${party.ideology}</span>` : '',
-          party.founded_year ? `<span style="color:#999;font-size:0.75rem;">Est. ${party.founded_year}</span>` : ''
-        ].filter(Boolean).join(' ');
+        // Logo or initials
+        const initials = (party.acronym || party.name).substring(0, 3).toUpperCase();
+        const logoHtml = party.logo_url
+          ? `<img src="${party.logo_url}" alt="${party.name}" class="party-card-logo" onerror="this.outerHTML='<div class=\\'party-card-logo-fallback\\' style=\\'background:${accent};\\'>'+initials+'</div>'">`
+          : `<div class="party-card-logo-fallback" style="background:${accent};">${initials}</div>`;
 
         const desc = party.description
-          ? party.description.replace(/<[^>]+>/g, '').substring(0, 110) + (party.description.length > 110 ? '…' : '')
+          ? party.description.replace(/<[^>]+>/g, '').substring(0, 100) + '…'
           : '';
 
+        container.className = 'party-glass-card';
+        container.style.setProperty('--party-accent', accent);
         container.innerHTML = `
-          <a href="partis-politiques.html#parti-${party.id}" style="display:block;text-decoration:none;color:inherit;">
-            <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
+          <div class="party-glass-glow" style="background:${accent};"></div>
+          <a href="partis-politiques.html" class="party-glass-inner" style="text-decoration:none;color:inherit;">
+
+            <div class="party-glass-top">
               ${logoHtml}
-              <div style="flex:1;min-width:0;">
-                <div style="font-size:1rem;font-weight:800;color:#1a1a1a;font-family:'Playfair Display',serif;line-height:1.2;margin-bottom:3px;">${party.name}</div>
-                ${party.acronym ? `<div style="font-size:0.72rem;font-weight:700;color:${accentColor};letter-spacing:1px;">${party.acronym}</div>` : ''}
+              <div class="party-glass-identity">
+                <div class="party-glass-name">${party.name}</div>
+                ${party.acronym ? `<div class="party-glass-acronym" style="color:${accent};">${party.acronym}</div>` : ''}
               </div>
             </div>
-            ${tagItems ? `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px;">${tagItems}</div>` : ''}
-            ${party.leader_name ? `<div style="font-size:0.8rem;color:#666;margin-bottom:6px;">👤 ${party.leader_name}</div>` : ''}
-            ${desc ? `<p style="font-size:0.82rem;color:#555;line-height:1.5;margin:0 0 10px;">${desc}</p>` : ''}
-            <div style="font-size:0.78rem;font-weight:600;color:${accentColor};display:flex;align-items:center;gap:4px;">En savoir plus <span>→</span></div>
-          </a>`;
 
-        // Accent border left
-        container.style.borderLeft = `3px solid ${accentColor}`;
+            <div class="party-glass-tags">
+              ${party.ideology ? `<span class="party-glass-tag" style="border-color:${accent}44;color:${accent};">${party.ideology}</span>` : ''}
+              ${party.founded_year ? `<span class="party-glass-tag-year">Est. ${party.founded_year}</span>` : ''}
+            </div>
+
+            ${party.leader_name ? `
+            <div class="party-glass-leader">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="${accent}"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+              <span>${party.leader_name}</span>
+            </div>` : ''}
+
+            ${desc ? `<p class="party-glass-desc">${desc}</p>` : ''}
+
+            <div class="party-glass-cta" style="background:${accent};">
+              <span>Découvrir le parti</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </a>`;
 
       } catch (e) {
         console.error('Erreur chargement parti:', e);
-        container.style.display = 'none';
+        const container = document.getElementById('home-party-card');
+        if (container) container.style.display = 'none';
       }
     }
 
