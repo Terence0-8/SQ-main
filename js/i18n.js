@@ -574,8 +574,8 @@ async function loadArticles(lang) {
           <div class="hero-overlay">
             <span class="hero-tag">${t('badge_une')} • ${une.category}</span>
             ${langBadge}
-            ${une.is_premium ? '<span class="premium-tag">PREMIUM</span>' : ''}
-            <h1 class="hero-title-main">${une.title}</h1>
+
+            <h1 class="hero-title-main">${une.title} ${une.is_premium ? '<img src="GOLD.png" alt="★" style="height:1.1em;vertical-align:middle;margin-left:5px;" loading="lazy">' : ''}</h1>
             <p class="hero-excerpt">${une.excerpt || ''}</p>
           </div>
         </section>
@@ -592,11 +592,10 @@ async function loadArticles(lang) {
 
         return `
         <article class="article-row">
-          <div style="overflow:hidden; border-radius:4px; height:220px; position:relative;">
+          <div style="overflow:hidden; border-radius:4px; height:220px;">
             <a href="${linkArt}">
               <img src="${art.image_url}" class="art-img" loading="lazy">
             </a>
-            ${art.is_premium ? `<img src="GOLD.png" alt="Premium" class="premium-badge-card" loading="lazy">` : ''}
           </div>
           <div class="art-info">
             <span class="art-cat">${art.category}</span>
@@ -620,10 +619,7 @@ async function loadArticles(lang) {
           const linkDisco = `article.html?id=${art.id}`;
           return `
           <a href="${linkDisco}" class="disco-card">
-            <div style="position:relative;">
-              <img src="${art.image_url}" class="disco-img" loading="lazy">
-              ${art.is_premium ? `<img src="GOLD.png" alt="Premium" class="premium-badge-card" loading="lazy">` : ''}
-            </div>
+            <img src="${art.image_url}" class="disco-img" loading="lazy">
             <h4 class="disco-title">${art.title} ${art.is_premium ? '<img src="GOLD.png" alt="★" style="height:1.1em;vertical-align:middle;margin-left:5px;" loading="lazy">' : ''}</h4>
             <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
           </a>

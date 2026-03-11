@@ -522,9 +522,9 @@
                     <span class="hero-badge-une">À LA UNE</span>
                     <span class="hero-badge-cat">${une.category}</span>
                     ${langBadge}
-                    ${une.is_premium ? '<span class="premium-tag">PREMIUM</span>' : ''}
+
                 </div>
-                <h1 class="hero-title-main">${une.title}</h1>
+                <h1 class="hero-title-main">${une.title} ${une.is_premium ? '<img src="GOLD.png" alt="★" style="height:1.1em;vertical-align:middle;margin-left:5px;" loading="lazy">' : ''}</h1>
                 <p class="hero-excerpt">${une.excerpt || ''}</p>
               </div>
             </section>
@@ -538,7 +538,7 @@
 
             return `
             <article class="article-magazine">
-              <div style="position:relative;"><img src="${art.image_url}" class="mag-img" onerror="handleImgError(this)" loading="lazy">${art.is_premium ? '<img src="GOLD.png" alt="Premium" class="premium-badge-card" loading="lazy">' : ''}</div>
+              <img src="${art.image_url}" class="mag-img" onerror="handleImgError(this)" loading="lazy">
               <div class="mag-content">
                 <a href="article.html?id=${art.id}" style="text-decoration:none;"><h3>${art.title} ${langBadgeSmall} ${art.is_premium ? '<img src="GOLD.png" alt="★" style="height:1.1em;vertical-align:middle;margin-left:5px;" loading="lazy">' : ''}</h3></a>
                 <p class="mag-excerpt">${art.excerpt || art.slug}</p>
