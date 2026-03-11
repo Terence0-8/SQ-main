@@ -444,7 +444,7 @@
                     <span class="hero-badge-cat">${une.category} ${langBadgeUne}</span>
                     ${une.is_premium ? '<span class="premium-tag">PREMIUM</span>' : ''}
                 </div>
-                <h1 class="hero-title-main">${une.title} ${une.is_premium ? '<img src="GOLD.png" alt="★" style="height:1.1em;vertical-align:middle;margin-left:5px;" loading="lazy">' : ''}</h1>
+                <h1 class="hero-title-main">${une.title} ${une.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">' : ''}</h1>
                 <p class="hero-excerpt">${une.excerpt || ''}</p>
               </div>
             </section>
@@ -453,7 +453,7 @@
           document.getElementById('magazine-feed').innerHTML = mainList.map(art => {
             let langBadge = '';
             if (art.language !== lang) { langBadge = art.language === 'fr' ? ' 🇫🇷' : ' 🇬🇧'; }
-            return `<article class="article-magazine"><img src="${art.image_url}" class="mag-img" onerror="handleImgError(this)" loading="lazy"><div class="mag-content"><a href="article.html?id=${art.id}" style="text-decoration:none;"><h3>${art.title}${langBadge} ${art.is_premium ? '<img src="GOLD.png" alt="★" style="height:1.1em;vertical-align:middle;margin-left:5px;" loading="lazy">' : ''}</h3></a><p class="mag-excerpt">${art.excerpt || art.slug}</p><small style="color:#888; font-size:0.85rem;">${SolitiquoAPI.formatDate(art.published_at)}</small></div></article>`;
+            return `<article class="article-magazine"><img src="${art.image_url}" class="mag-img" onerror="handleImgError(this)" loading="lazy"><div class="mag-content"><a href="article.html?id=${art.id}" style="text-decoration:none;"><h3>${art.title}${langBadge} ${art.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">' : ''}</h3></a><p class="mag-excerpt">${art.excerpt || art.slug}</p><small style="color:#888; font-size:0.85rem;">${SolitiquoAPI.formatDate(art.published_at)}</small></div></article>`;
           }).join('');
           const discoverArticles = articles.slice(5, 13);
           const discoverGrid = document.getElementById('discover-grid');
@@ -461,7 +461,7 @@
             discoverGrid.innerHTML = discoverArticles.map(art => {
               let langBadge = '';
               if (art.language !== lang) { langBadge = art.language === 'fr' ? ' 🇫🇷' : ' 🇬🇧'; }
-              return `<a href="article.html?id=${art.id}" class="disco-card"><img src="${art.image_url}" class="disco-img" onerror="handleImgError(this)" loading="lazy"><h4 class="disco-title">${art.title}${langBadge} ${art.is_premium ? '<img src="GOLD.png" alt="★" style="height:1.1em;vertical-align:middle;margin-left:5px;" loading="lazy">' : ''}</h4><div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div></a>`;
+              return `<a href="article.html?id=${art.id}" class="disco-card"><img src="${art.image_url}" class="disco-img" onerror="handleImgError(this)" loading="lazy"><h4 class="disco-title">${art.title}${langBadge} ${art.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">' : ''}</h4><div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div></a>`;
             }).join('');
           } else if (discoverGrid) {
             discoverGrid.innerHTML = '<p style="text-align:center;color:#999;">Plus d\'articles bientôt.</p>';
