@@ -93,6 +93,7 @@ router.get('/', async (req, res) => {
         a.read_time,
         a.translation_id,
         a.translation_method,
+        a.is_premium,
         u.username as author_name,
         -- Vérifier si une traduction existe
         CASE 

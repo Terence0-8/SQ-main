@@ -5762,3 +5762,32 @@ a.art-link {
         padding: 0 16px !important;
     }
 }
+
+/* ===================================================
+   🥇 PREMIUM BADGE — Cartes articles
+   =================================================== */
+.premium-badge-card {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    height: 2rem;
+    width: auto;
+    z-index: 5;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
+    pointer-events: none;
+}
+
+/* Badge textuel dans la zone hero */
+.premium-tag {
+    display: inline-block;
+    background: linear-gradient(135deg, #D4A017, #F5D16E);
+    color: #1a1000;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 8px rgba(212, 160, 23, 0.4);
+}
