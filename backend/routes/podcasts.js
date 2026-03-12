@@ -45,8 +45,8 @@ router.get('/', async (req, res) => {
         ${isEn ? 'COALESCE(p.title_en, p.title)' : 'p.title'} as title,
         ${isEn ? 'COALESCE(p.description_en, p.description)' : 'p.description'} as description,
         ${isEn ? 'COALESCE(p.audio_url_en, p.audio_url)' : 'p.audio_url'} as audio_url,
-        p.cover_image,
-        p.duration_seconds,
+        p.cover_image as image_url,
+        p.duration_seconds as duration,
         p.category,
         p.status,
         p.is_premium,
@@ -192,8 +192,10 @@ router.get('/:id', async (req, res) => {
       });
     }
 
-    // Incrémenter le compteur de lectures
-    await pool.query('UPDATE podcasts SET play_count = play_count + 1 WHERE id = $1', [id]);
+    // Incrémenter le compteur de lectures (sauf en mode édition admin)
+    if (!req.query.edit) {
+      await pool.query('UPDATE podcasts SET play_count = play_count + 1 WHERE id = $1', [id]);
+    }
 
     res.json({ success: true, podcast: rows[0] });
   } catch (err) {

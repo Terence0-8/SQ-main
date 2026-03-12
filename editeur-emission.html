@@ -181,14 +181,7 @@
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script>
-    // SÉCURITÉ
-    (async function checkAccess() {
-      await initLanguageSwitcher({ reloadPage: true });
-      const user = await SolitiquoAPI.getProfile();
-      if (!user || (user.role !== 'admin' && user.role !== 'writer')) {
-        window.location.href = 'auth.html';
-      }
-    })();
+    let editId = null;
 
     function getYoutubeId(url) {
       const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -199,7 +192,6 @@
     function updatePreview(url) {
       const id = getYoutubeId(url);
       const container = document.getElementById('video-container');
-
       if (id) {
         container.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}" allowfullscreen></iframe>`;
       } else {
@@ -207,12 +199,46 @@
       }
     }
 
-    // ENVOI
+    async function maybeLoadEmission() {
+      const id = new URLSearchParams(window.location.search).get('id');
+      if (!id) return;
+      editId = id;
+      try {
+        const res = await fetch(`${window.API_URL}/emissions/${id}?edit=1`);
+        const json = await res.json();
+        if (!json.success) throw new Error(json.error);
+        const em = json.emission;
+        document.getElementById('video_url').value = em.video_url || '';
+        document.getElementById('title').value = em.title || '';
+        document.getElementById('description').value = em.description || '';
+        document.getElementById('category').value = em.category || 'Politique';
+        document.getElementById('duration').value = em.duration_seconds ? Math.round(em.duration_seconds / 60) : '';
+        if (em.video_url) updatePreview(em.video_url);
+        document.getElementById('preview-title').textContent = em.title || 'Titre...';
+        document.getElementById('preview-desc').textContent = em.description || 'Description...';
+        document.querySelector('.btn-publish').textContent = 'Mettre à jour';
+        document.title = `Modifier — ${em.title} — Solitiquo`;
+      } catch (err) {
+        const msg = document.getElementById('status-msg');
+        msg.style.color = 'red';
+        msg.textContent = 'Erreur de chargement : ' + err.message;
+      }
+    }
+
+    (async function checkAccess() {
+      await initLanguageSwitcher({ reloadPage: true });
+      const user = await SolitiquoAPI.getProfile();
+      if (!user || (user.role !== 'admin' && user.role !== 'writer')) {
+        window.location.href = 'auth.html';
+        return;
+      }
+      await maybeLoadEmission();
+    })();
+
     document.getElementById('emissionForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.querySelector('.btn-publish');
       const msg = document.getElementById('status-msg');
-
       btn.textContent = 'Traitement...'; btn.disabled = true; msg.textContent = '';
 
       const formData = new FormData();
@@ -220,23 +246,24 @@
       formData.append('description', document.getElementById('description').value);
       formData.append('category', document.getElementById('category').value);
       formData.append('video_url', document.getElementById('video_url').value);
-      formData.append('duration', document.getElementById('duration').value || 0);
-      formData.append('author_id', 1);
+      formData.append('duration_seconds', (parseInt(document.getElementById('duration').value) || 0) * 60);
 
       const imgFile = document.getElementById('image_file').files[0];
-      if (imgFile) formData.append('image_file', imgFile);
+      if (imgFile) formData.append('thumbnail', imgFile);
 
       try {
-        const res = await fetch(`${window.API_URL}/emissions`, { method: 'POST', body: formData });
+        const method = editId ? 'PUT' : 'POST';
+        const endpoint = editId ? `${window.API_URL}/emissions/${editId}` : `${window.API_URL}/emissions`;
+        const res = await fetch(endpoint, { method, body: formData });
         const json = await res.json();
-
         if (json.success) {
-          msg.style.color = 'green'; msg.textContent = '✅ Émission publiée !';
+          msg.style.color = 'green';
+          msg.textContent = editId ? '✅ Émission mise à jour !' : '✅ Émission publiée !';
           setTimeout(() => window.location.href = 'emissions.html', 1000);
         } else { throw new Error(json.error); }
       } catch (err) {
         msg.style.color = 'red'; msg.textContent = 'Erreur: ' + err.message;
-        btn.textContent = 'Réessayer'; btn.disabled = false;
+        btn.textContent = editId ? 'Réessayer' : 'Mettre en ligne'; btn.disabled = false;
       }
     });
   </script>

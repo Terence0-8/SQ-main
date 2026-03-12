@@ -132,8 +132,10 @@ router.get('/:id', async (req, res) => {
       });
     }
 
-    // Incrémenter le compteur de vues
-    await pool.query('UPDATE emissions SET view_count = view_count + 1 WHERE id = $1', [id]);
+    // Incrémenter le compteur de vues (sauf en mode édition admin)
+    if (!req.query.edit) {
+      await pool.query('UPDATE emissions SET view_count = view_count + 1 WHERE id = $1', [id]);
+    }
 
     res.json({ success: true, emission: rows[0] });
   } catch (err) {

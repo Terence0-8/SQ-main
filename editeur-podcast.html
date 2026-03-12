@@ -148,6 +148,10 @@
           </div>
           <input type="file" id="audio_file" accept="audio/*" style="display:none;" required
             onchange="showFileName(this, 'audio-name')">
+          <div id="current-audio-info" style="display:none; margin-top:8px; padding:8px 10px; background:#f0f4f0; border-radius:8px; font-size:0.8rem; color:#555;">
+            Audio actuel : <a id="current-audio-link" href="#" target="_blank" rel="noopener" style="color:#37463D; font-weight:700;">Écouter ↗</a><br>
+            <span style="color:#888;">Laissez vide pour conserver. Un nouveau fichier remplacera l'existant.</span>
+          </div>
         </div>
 
         <div class="field-group">
@@ -198,13 +202,7 @@
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script>
-    (async function checkAccess() {
-      await initLanguageSwitcher({ reloadPage: true });
-      const user = await SolitiquoAPI.getProfile();
-      if (!user || (user.role !== 'admin' && user.role !== 'writer')) {
-        window.location.href = 'auth.html';
-      }
-    })();
+    let editId = null;
 
     function format(cmd, val = null) { document.execCommand(cmd, false, val); }
 
@@ -218,7 +216,7 @@
     `;
       document.getElementById('chapters-container').appendChild(div);
     }
-    // Initialisation
+    // Chapitre par défaut uniquement en création
     addChapterRow('00:00', 'Intro');
 
     function showFileName(input, displayId) {
@@ -232,7 +230,7 @@
           const img = document.getElementById('cover-preview');
           img.src = e.target.result; img.style.display = 'block';
           document.getElementById('cover-placeholder').style.display = 'none';
-        }
+        };
         reader.readAsDataURL(input.files[0]);
       }
     }
@@ -246,14 +244,65 @@
       }
     }
 
+    async function maybeLoadPodcast() {
+      const id = new URLSearchParams(window.location.search).get('id');
+      if (!id) return;
+      editId = id;
+      try {
+        const res = await fetch(`${window.API_URL}/podcasts/${id}?edit=1`);
+        const json = await res.json();
+        if (!json.success) throw new Error(json.error);
+        const p = json.podcast;
+
+        document.getElementById('title').value = p.title || '';
+        document.getElementById('description').value = p.description || '';
+        document.getElementById('category').value = p.category || 'Politique';
+
+        // Transcription : vide le placeholder si vide en base
+        const transcriptEl = document.getElementById('transcript-editor');
+        transcriptEl.innerHTML = '';
+
+        // Pochette existante
+        if (p.cover_image) {
+          previewCoverUrl(p.cover_image);
+          document.getElementById('image_url').value = p.cover_image;
+        }
+
+        // Audio existant : l'input file ne peut pas être pré-rempli (sécurité navigateur)
+        if (p.audio_url) {
+          document.getElementById('audio_file').removeAttribute('required');
+          const infoEl = document.getElementById('current-audio-info');
+          document.getElementById('current-audio-link').href = p.audio_url;
+          infoEl.style.display = 'block';
+        }
+
+        // Supprimer le chapitre "Intro" par défaut
+        document.getElementById('chapters-container').innerHTML = '';
+
+        document.querySelector('.btn-publish').textContent = 'Mettre à jour';
+        document.title = `Modifier — ${p.title} — Solitiquo`;
+      } catch (err) {
+        const msg = document.getElementById('status-msg');
+        msg.style.color = 'red';
+        msg.textContent = 'Erreur de chargement : ' + err.message;
+      }
+    }
+
+    (async function checkAccess() {
+      await initLanguageSwitcher({ reloadPage: true });
+      const user = await SolitiquoAPI.getProfile();
+      if (!user || (user.role !== 'admin' && user.role !== 'writer')) {
+        window.location.href = 'auth.html';
+        return;
+      }
+      await maybeLoadPodcast();
+    })();
+
     document.getElementById('podcastForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.querySelector('.btn-publish');
       const msg = document.getElementById('status-msg');
-
-      btn.textContent = 'Envoi en cours...';
-      btn.disabled = true;
-      msg.textContent = '';
+      btn.textContent = 'Envoi en cours...'; btn.disabled = true; msg.textContent = '';
 
       const chapters = [];
       document.querySelectorAll('.chapter-item').forEach(row => {
@@ -262,32 +311,40 @@
           title: row.querySelector('.chap-title').value
         });
       });
+
       const formData = new FormData();
       formData.append('title', document.getElementById('title').value);
       formData.append('description', document.getElementById('description').value);
-      formData.append('transcript', document.getElementById('transcript-editor').innerHTML);
       formData.append('category', document.getElementById('category').value);
-      formData.append('author_id', 1);
 
-      formData.append('audio_file', document.getElementById('audio_file').files[0]);
-      formData.append('chapters', JSON.stringify(chapters)); // Ajout du JSON
+      const audioFile = document.getElementById('audio_file').files[0];
       const imgFile = document.getElementById('image_file').files[0];
       const imgUrl = document.getElementById('image_url').value;
 
-      if (imgFile) formData.append('image_file', imgFile);
-      else if (imgUrl) formData.append('image_url', imgUrl); // Attention: Backend doit gérer ce champ (optionnel)
+      if (audioFile) formData.append('audio_file', audioFile);
+
+      if (imgFile) formData.append('cover_image', imgFile);
+      else if (imgUrl) formData.append('cover_image', imgUrl);
+
+      if (!editId) {
+        formData.append('author_id', 1);
+        formData.append('transcript', document.getElementById('transcript-editor').innerHTML);
+        formData.append('chapters', JSON.stringify(chapters));
+      }
 
       try {
-        const res = await fetch(`${window.API_URL}/podcasts`, { method: 'POST', body: formData });
+        const method = editId ? 'PUT' : 'POST';
+        const endpoint = editId ? `${window.API_URL}/podcasts/${editId}` : `${window.API_URL}/podcasts`;
+        const res = await fetch(endpoint, { method, body: formData });
         const json = await res.json();
-
         if (json.success) {
-          msg.style.color = 'green'; msg.textContent = '✅ Podcast publié !';
+          msg.style.color = 'green';
+          msg.textContent = editId ? '✅ Podcast mis à jour !' : '✅ Podcast publié !';
           setTimeout(() => window.location.href = 'podcasts.html', 1500);
         } else { throw new Error(json.error); }
       } catch (err) {
         msg.style.color = 'red'; msg.textContent = 'Erreur: ' + err.message;
-        btn.textContent = 'Mettre en ligne'; btn.disabled = false;
+        btn.textContent = editId ? 'Réessayer' : 'Mettre en ligne'; btn.disabled = false;
       }
     });
   </script>
