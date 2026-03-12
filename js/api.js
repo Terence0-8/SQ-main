@@ -98,7 +98,7 @@ const SolitiquoAPI = {
     if (user) {
       // 1. Changer le bouton connexion
       authBtns.forEach(btn => {
-        btn.innerHTML = `👤 ${user.username}`;
+        btn.textContent = `👤 ${user.username}`;
         btn.href = "#";
         btn.style.backgroundColor = "#f0f0f0";
         btn.style.color = "#37463D";

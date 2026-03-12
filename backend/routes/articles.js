@@ -307,7 +307,6 @@ router.post('/', isWriter, imageUpload.single('image'), async (req, res) => {
     // ✅ GÉNÉRATION AUTOMATIQUE DU SLUG
     if (!slug) {
       slug = await createUniqueSlug(title, 'articles');
-      console.log(`✅ Slug généré automatiquement: ${slug}`);
     } else {
       // Vérifier unicité du slug fourni
       const existing = await pool.query('SELECT id FROM articles WHERE slug = $1', [slug]);
@@ -464,7 +463,6 @@ router.put('/:id', isWriter, imageUpload.single('image'), async (req, res) => {
     // ✅ RÉGÉNÉRER LE SLUG SI LE TITRE CHANGE
     if (title !== currentArticle.rows[0].title && !slug) {
       slug = await createUniqueSlug(title, 'articles', id);
-      console.log(`✅ Slug régénéré automatiquement: ${slug}`);
     } else if (!slug) {
       slug = currentArticle.rows[0].slug; // Garder l'ancien slug
     }

@@ -87,7 +87,6 @@ router.post('/preference', async (req, res) => {
                 [language, userId]
             );
 
-            console.log(`✅ Language updated for user ${userId}: ${language}`);
         } else {
             // Anonymous user - upsert into language_preferences table
             await pool.query(
@@ -98,7 +97,6 @@ router.post('/preference', async (req, res) => {
                 [ipAddress, language]
             );
 
-            console.log(`✅ Language updated for IP ${ipAddress}: ${language}`);
         }
 
         res.json({

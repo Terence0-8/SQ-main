@@ -68,7 +68,7 @@ app.use(helmet({
 }));
 
 const corsOptions = {
-  origin: isProduction ? (process.env.ALLOWED_ORIGINS || '').split(',') : true,
+  origin: isProduction ? (process.env.ALLOWED_ORIGINS || 'https://solitiquo.com').split(',').filter(Boolean) : true,
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token']
 };

@@ -118,6 +118,14 @@ router.post('/init-payment', isAuthenticated, verifyCsrf, async (req, res) => {
       return res.status(400).json({ success: false, error: "Plan invalide" });
     }
 
+    const activeCheck = await pool.query(
+      "SELECT id FROM subscriptions WHERE user_id = $1 AND status = 'active' AND ends_at > NOW()",
+      [userId]
+    );
+    if (activeCheck.rows.length > 0) {
+      return res.status(400).json({ success: false, error: "Vous avez déjà un abonnement actif" });
+    }
+
     const amount = plan === 'yearly'
       ? PLAN_CONFIG['yearly'].xaf_amount
       : CURRENCY_PRICING['XAF'].amount;
@@ -181,7 +189,7 @@ router.post('/webhook', async (req, res) => {
     const data = checkRes.data.data;
 
     if (data.payment_method && data.status === 'ACCEPTED') {
-      console.log(`✅ Paiement CinetPay validé : ${cpm_trans_id}`);
+      console.log('✅ Paiement CinetPay validé');
 
       const subInfo = await pool.query(
         'SELECT user_id, plan FROM subscriptions WHERE transaction_id = $1',
@@ -249,6 +257,14 @@ router.post('/init-stripe-payment', isAuthenticated, verifyCsrf, async (req, res
       return res.status(400).json({ success: false, error: "Plan invalide" });
     }
 
+    const activeCheckStripe = await pool.query(
+      "SELECT id FROM subscriptions WHERE user_id = $1 AND status = 'active' AND ends_at > NOW()",
+      [userId]
+    );
+    if (activeCheckStripe.rows.length > 0) {
+      return res.status(400).json({ success: false, error: "Vous avez déjà un abonnement actif" });
+    }
+
     // Dériver la devise depuis l'IP serveur — le client ne peut pas l'influencer
     const country = getCountryFromReq(req);
     const geoPricing = getPricingForCountry(country);
@@ -310,7 +326,7 @@ router.post('/stripe-webhook', async (req, res) => {
     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
     console.error('❌ Stripe webhook signature invalide:', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    return res.status(400).send('Webhook signature invalide');
   }
 
   // Payment Element → payment_intent.succeeded
@@ -327,8 +343,8 @@ router.post('/stripe-webhook', async (req, res) => {
     if (!planConfig) return res.status(200).send('OK (plan invalid)');
 
     try {
-      await _activateStripeSubscription(userId, plan, transactionId, planConfig);
-      console.log(`✅ Paiement Stripe (PaymentIntent) validé — ${transactionId}`);
+      await _activateStripeSubscription(userId, transactionId, planConfig);
+      console.log('✅ Paiement Stripe (PaymentIntent) validé');
     } catch (dbErr) {
       console.error('❌ DB Error Stripe webhook (PI):', dbErr);
       return res.status(500).send('DB Error');
@@ -384,7 +400,7 @@ router.get('/confirm-stripe', isAuthenticated, async (req, res) => {
       return res.json({ success: true, already_active: true });
     }
 
-    await _activateStripeSubscription(userId, plan, transactionId, planConfig);
+    await _activateStripeSubscription(userId, transactionId, planConfig);
 
     // Mettre à jour la session immédiatement
     if (req.session?.user) {
@@ -402,7 +418,7 @@ router.get('/confirm-stripe', isAuthenticated, async (req, res) => {
 });
 
 // Helper partagé
-async function _activateStripeSubscription(userId, plan, transactionId, planConfig) {
+async function _activateStripeSubscription(userId, transactionId, planConfig) {
   await pool.query(
     `UPDATE subscriptions
      SET status = 'active', payment_method = 'stripe_card',
@@ -498,7 +514,7 @@ router.post('/cancel', isAuthenticated, verifyCsrf, async (req, res) => {
       req.session.user.is_subscriber = false;
       req.session.save((err) => {
         if (err) return res.status(500).json({ success: false, error: "Erreur session" });
-        console.log(`❌ Abonnement résilié — user ${userId}`);
+        console.log('❌ Abonnement résilié');
         res.json({ success: true, message: "Votre abonnement a été résilié avec succès." });
       });
     } else {

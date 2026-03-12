@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "build": "npm run css:minify && npm run migrate",
     "dev": "nodemon server.js",
     "css:minify": "node scripts/minify-css.js",
     "test": "echo \"Tests à configurer\" && exit 0",
@@ -49,11 +50,11 @@
     "pg": "^8.16.3",
     "node-pg-migrate": "^8.0.4",
     "sharp": "^0.34.5",
-    "stripe": "^20.4.1",
-    "supertest": "^7.2.2"
+    "stripe": "^20.4.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "supertest": "^7.2.2"
   },
   "engines": {
     "node": ">=18.0.0"

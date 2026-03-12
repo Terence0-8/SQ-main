@@ -158,7 +158,7 @@ router.post('/', isAuthenticated, verifyCsrf, async (req, res) => {
       is_approved = false;
       message = 'Votre commentaire a été soumis et sera vérifié par un modérateur avant publication.';
 
-      console.log(`🚨 Commentaire flaggé - Utilisateur ${user_id} - Mot détecté: ${bannedCheck.word}`);
+      console.log('🚨 Commentaire soumis à modération');
     }
 
     // ✅ SANITISATION XSS — strip tout HTML du commentaire

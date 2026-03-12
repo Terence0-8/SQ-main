@@ -20,7 +20,6 @@ router.get(/^\/(fr|en)\/([^/]+)\.html$/, (req, res) => {
 
     // Redirection 301 vers URL sans extension
     const newUrl = `/${lang}/${section}`;
-    console.log(`♻️ Redirection 301: /${lang}/${section}.html → ${newUrl}`);
     res.redirect(301, newUrl);
 });
 
@@ -41,7 +40,6 @@ router.get('/article.html', async (req, res) => {
         const urlCategory = categoryMap[category] || 'politique';
         const newUrl = `/${language}/${urlCategory}/${slug}`;
 
-        console.log(`♻️ Redirection 301: /article.html?id=${id} → ${newUrl}`);
         res.redirect(301, newUrl);
     } catch (err) {
         console.error('❌ Erreur redirection article:', err);

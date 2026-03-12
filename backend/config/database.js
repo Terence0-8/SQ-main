@@ -9,6 +9,9 @@ const pool = new Pool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
   database: process.env.DB_NAME,
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 5000,
 });
 
 // Test simple

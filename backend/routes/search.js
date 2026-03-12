@@ -104,7 +104,7 @@ router.get('/', async (req, res) => {
 
   } catch (err) {
     console.error('❌ Erreur recherche:', err.message);
-    res.status(500).json({ success: false, error: 'Erreur serveur: ' + err.message });
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 });
 

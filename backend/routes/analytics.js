@@ -75,7 +75,7 @@ router.get('/overview', isAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error('❌ Erreur overview:', err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 });
 
@@ -122,7 +122,7 @@ router.get('/reading-progress', isAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error('❌ Erreur reading progress:', err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 });
 
@@ -159,7 +159,7 @@ router.get('/top-articles', isAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error('❌ Erreur top articles:', err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 });
 
@@ -240,7 +240,7 @@ router.get('/timeline', isAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error('❌ Erreur timeline:', err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 });
 
@@ -272,7 +272,7 @@ router.get('/categories', isAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error('❌ Erreur categories:', err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 });
 
@@ -309,7 +309,7 @@ router.post('/track', async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error('❌ Erreur analytics/track:', err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 });
 

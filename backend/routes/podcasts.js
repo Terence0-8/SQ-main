@@ -1,11 +1,5 @@
 const express = require('express');
 const router = express.Router();
-console.log('--- PODCASTS ROUTER LOADED ---'); // DEBUG
-
-// Ensure is_featured column exists (idempotent)
-const pool_ensure = require('../config/database');
-pool_ensure.query("ALTER TABLE podcasts ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT FALSE")
-  .catch(e => console.log('is_featured column already exists or error:', e.message));
 
 const pool = require('../config/database');
 const multer = require('multer');
@@ -41,7 +35,6 @@ const podcastSchema = Joi.object({
 // 1. LISTE DES PODCASTS PUBLIÉS
 // ==========================================
 router.get('/', async (req, res) => {
-  console.log('--- GET /api/podcasts HIT ---'); // DEBUG
   try {
     const { category, lang } = req.query;
     const isEn = lang === 'en';
