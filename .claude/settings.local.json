@@ -13,7 +13,22 @@
       "Bash(\"C:\\\\Users\\\\Térence\\\\AppData\\\\Local\\\\Microsoft\\\\WinGet\\\\Packages\\\\Stripe.StripeCli_Microsoft.Winget.Source_8wekyb3d8bbwe\\\\stripe.exe\" listen --api-key sk_test_51T407OBu1609TRVilGEDL7UCdYU06QloXasLPn6LJ5YMcVvXkU5F0P3j6Q2CEaZPxlzzjdS4JPZkhiEcaeHBC1Jw00Zc2V8CT4 --forward-to http://localhost:5000/api/subscriptions/stripe-webhook)",
       "Bash(node:*)",
       "Bash(npm run migrate:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(echo:*)",
+      "Bash(psql:*)",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -lqt)",
+      "Bash(PGPASSWORD=\"Onesimesloxys1044*\" \"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -h localhost -p 5432 -d solitiquo -f \"d:/Downloads/SQ-main/backend/seed_articles.sql\")",
+      "Bash(DB_USER=postgres DB_PASSWORD=\"Onesimesloxys1044*\" DB_HOST=localhost DB_PORT=5432 DB_NAME=solitiquo node:*)",
+      "Bash(wmic:*)",
+      "Bash(curl:*)",
+      "Bash(npm cache clean:*)",
+      "Bash(du:*)",
+      "Bash(head -5 du -sh /c/Users/*/AppData/Local/pip)",
+      "Bash(head -3 du -sh /c/Users/*/AppData/Roaming/npm-cache)",
+      "Bash(powershell -File -:*)",
+      "Bash(sort:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(start \"\" \"d:\\\\Downloads\\\\auto-clicker-Projet-Voltaire\\\\projet_voltaire\\\\application\\\\externe_sv.py\")"
     ]
   }
 }
