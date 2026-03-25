@@ -287,7 +287,7 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 // Error Handling
 app.use('/api', (req, res) => res.status(404).json({ success: false, error: 'Route API introuvable' }));
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   logger.error({ err, method: req.method, url: req.originalUrl }, 'Erreur serveur non gérée');
   res.status(500).json({ success: false, error: isProduction ? 'Erreur serveur' : err.message });
 });

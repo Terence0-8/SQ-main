@@ -15,7 +15,7 @@ const pool = new Pool({
 });
 
 // Test simple
-pool.query('SELECT NOW()', (err, res) => {
+pool.query('SELECT NOW()', (err, _res) => {
   if (err) {
     console.error('❌ Erreur PostgreSQL:', err.message);
   } else {

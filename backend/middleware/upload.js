@@ -3,7 +3,6 @@
  * Fix #4 - Validation des fichiers uploadés
  */
 const multer = require('multer');
-const path = require('path');
 
 // Types MIME autorisés (STRICT)
 const ALLOWED_IMAGES = ['image/jpeg', 'image/png', 'image/webp']; // Removed gif as per request? User said "que image/jpeg..." but usually implies standard images. User listed: jpeg, png, webp. I will stick to this list.

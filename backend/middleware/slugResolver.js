@@ -1,6 +1,5 @@
 // backend/middleware/slugResolver.js
 const pool = require('../config/database');
-const path = require('path');
 
 /**
  * Middleware pour résoudre un slug en ID et type de contenu
