@@ -7,6 +7,8 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
 const compression = require('compression');
+const pinoHttp = require('pino-http');
+const logger = require('./backend/config/logger');
 const pool = require('./backend/config/database');
 const slugResolver = require('./backend/middleware/slugResolver');
 const seoController = require('./backend/controllers/seoController');
@@ -15,12 +17,27 @@ const legacyRedirects = require('./backend/routes/legacyRedirects');
 const app = express();
 const PORT = process.env.PORT || 5000;
 const isProduction = process.env.NODE_ENV === 'production';
+const isTest = process.env.NODE_ENV === 'test';
 const BASE_URL = isProduction ? 'https://solitiquo.com' : `http://localhost:${PORT}`;
 
 // =============================================================================
 // 1. COMPRESSION (avant tout le reste pour maximiser l'effet)
 // =============================================================================
 app.use(compression());
+
+// HTTP request logging (silencieux en test)
+if (!isTest) {
+  app.use(pinoHttp({
+    logger,
+    // Ne pas logger les assets statiques pour ne pas noyer les vrais logs
+    autoLogging: { ignore: req => /\.(css|js|png|jpg|webp|ico|svg|woff2?)$/.test(req.url) },
+    customLogLevel: (_req, res) => {
+      if (res.statusCode >= 500) return 'error';
+      if (res.statusCode >= 400) return 'warn';
+      return 'info';
+    },
+  }));
+}
 
 // Stripe webhook needs the raw body BEFORE express.json() parses it
 app.use('/api/subscriptions/stripe-webhook', express.raw({ type: 'application/json' }));
@@ -43,7 +60,12 @@ const setStaticCacheHeaders = (res, filePath) => {
 };
 
 const staticOptions = { setHeaders: setStaticCacheHeaders, etag: true, lastModified: true };
-app.use(express.static(__dirname, staticOptions));
+// admin.html est exclu du serving statique — servi via route protégée après session/auth
+const rootStatic = express.static(__dirname, staticOptions);
+app.use((req, res, next) => {
+  if (req.path === '/admin.html') return next();
+  rootStatic(req, res, next);
+});
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), staticOptions));
 app.use(['/fr', '/en'], express.static(__dirname, staticOptions));
 
@@ -110,16 +132,20 @@ app.use('/api/admin', adminLimiter);
 app.use(globalLimiter);
 
 // Session
+const sessionSecret = process.env.SESSION_SECRET || (isTest ? 'test-secret-only' : null);
+if (!sessionSecret) throw new Error('❌ SESSION_SECRET manquant dans .env - Le serveur refuse de démarrer.');
+
+const sessionStore = isTest
+  ? undefined // MemoryStore (in-process, pas de pg)
+  : new (require('connect-pg-simple')(session))({
+      pool: pool,
+      tableName: 'session_user_cookies',
+      createTableIfMissing: true
+    });
+
 app.use(session({
-  store: new (require('connect-pg-simple')(session))({
-    pool: pool,
-    tableName: 'session_user_cookies',
-    createTableIfMissing: true
-  }),
-  secret: (() => {
-    if (!process.env.SESSION_SECRET) throw new Error('❌ SESSION_SECRET manquant dans .env - Le serveur refuse de démarrer.');
-    return process.env.SESSION_SECRET;
-  })(),
+  store: sessionStore,
+  secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -132,6 +158,7 @@ app.use(session({
 
 // Synchro Session
 app.use(async (req, res, next) => {
+  if (isTest || !req.session?.user?.id) return next();
   if (req.session?.user?.id) {
     try {
       const result = await pool.query('SELECT is_active, is_subscriber, role FROM users WHERE id = $1', [req.session.user.id]);
@@ -177,6 +204,14 @@ app.use('/api', (req, res, next) => {
 // =============================================================================
 // 3. ROUTING & CONTROLLERS
 // =============================================================================
+
+// Route protégée : admin.html — réservée aux admins
+app.get('/admin.html', (req, res) => {
+  if (!req.session?.user || req.session.user.role !== 'admin') {
+    return res.redirect('/auth.html?error=access_denied');
+  }
+  res.sendFile(path.join(__dirname, 'admin.html'));
+});
 
 // Redirections Legacy (301)
 app.use(legacyRedirects);
@@ -253,11 +288,14 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 // Error Handling
 app.use('/api', (req, res) => res.status(404).json({ success: false, error: 'Route API introuvable' }));
 app.use((err, req, res, next) => {
-  console.error('❌ Erreur serveur:', err.message);
+  logger.error({ err, method: req.method, url: req.originalUrl }, 'Erreur serveur non gérée');
   res.status(500).json({ success: false, error: isProduction ? 'Erreur serveur' : err.message });
 });
 
-app.listen(PORT, () => {
-  console.log(`\n🚀 Serveur Solitiquo (OPTIMIZED) lancé sur ${BASE_URL}`);
-  console.log(`🔒 Mode : ${isProduction ? 'PRODUCTION' : 'DEVELOPPEMENT'}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    logger.info({ url: BASE_URL, env: isProduction ? 'production' : 'development' }, '🚀 Serveur Solitiquo démarré');
+  });
+}
+
+module.exports = app;

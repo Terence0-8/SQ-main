@@ -28,7 +28,11 @@
       "Bash(powershell -File -:*)",
       "Bash(sort:*)",
       "WebFetch(domain:github.com)",
-      "Bash(start \"\" \"d:\\\\Downloads\\\\auto-clicker-Projet-Voltaire\\\\projet_voltaire\\\\application\\\\externe_sv.py\")"
+      "Bash(start \"\" \"d:\\\\Downloads\\\\auto-clicker-Projet-Voltaire\\\\projet_voltaire\\\\application\\\\externe_sv.py\")",
+      "Bash(git push)",
+      "Bash(git rm:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run lint:*)"
     ]
   }
 }

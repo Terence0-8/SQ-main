@@ -1,0 +1,13 @@
+node_modules/
+uploads/
+.env
+.env.*
+!.env.example
+dist/
+build/
+.git/
+.github/
+tests/
+*.log
+migrate_err.txt
+test_out.txt

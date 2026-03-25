@@ -8,12 +8,15 @@
     "build": "npm run css:minify && npm run migrate",
     "dev": "nodemon server.js",
     "css:minify": "node scripts/minify-css.js",
-    "test": "echo \"Tests à configurer\" && exit 0",
+    "test": "node --test tests/**/*.test.js",
     "migrate": "node-pg-migrate up --migrations-dir backend/migrations",
     "migrate:down": "node-pg-migrate down --migrations-dir backend/migrations",
     "migrate:create": "node-pg-migrate create --migrations-dir backend/migrations --migration-file-language js --template-file-name backend/migrations/template.js",
     "migrate:status": "node scripts/migrate-status.js",
-    "migrate:validate": "node scripts/migrate-validate.js"
+    "migrate:validate": "node scripts/migrate-validate.js",
+    "lint": "eslint backend/ server.js",
+    "lint:fix": "eslint backend/ server.js --fix",
+    "format": "prettier --write \"backend/**/*.js\" server.js"
   },
   "keywords": [
     "politique",
@@ -41,19 +44,24 @@
     "helmet": "^8.1.0",
     "joi": "^18.0.2",
     "jsdom": "^28.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "multer": "1.4.5-lts.1",
+    "multer": "^2.1.1",
+    "node-pg-migrate": "^8.0.4",
     "passport": "^0.7.0",
     "passport-facebook": "^3.0.0",
     "passport-google-oauth20": "^2.0.0",
     "pdfkit": "^0.17.2",
     "pg": "^8.16.3",
-    "node-pg-migrate": "^8.0.4",
+    "pino": "^10.3.1",
+    "pino-http": "^11.0.0",
     "sharp": "^0.34.5",
     "stripe": "^20.4.1"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.3",
+    "eslint-config-prettier": "^10.1.8",
     "nodemon": "^3.1.10",
+    "prettier": "^3.8.1",
     "supertest": "^7.2.2"
   },
   "engines": {
