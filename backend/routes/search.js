@@ -8,7 +8,7 @@ const pool = require('../config/database');
 // ============================================================
 router.get('/', async (req, res) => {
   try {
-    const { q, type, sort = 'relevance', limit = 50, lang = 'fr' } = req.query;
+    const { q, type, limit = 50, lang = 'fr' } = req.query;
 
     // --- Validation ---
     if (!q || q.trim().length < 2) {

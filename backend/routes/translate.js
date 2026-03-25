@@ -4,7 +4,7 @@ const router = express.Router();
 const pool = require('../config/database');
 const translationService = require('../services/translationService');
 const { createUniqueSlug } = require('../utils/slugify');
-const { isWriter } = require('../middleware/auth'); // Optional: restrict if needed, but "first user translates" implies public access? 
+// Optional: restrict if needed, but "first user translates" implies public access?
 // Waiting: logic "First user translates" implies any user can trigger it? 
 // Implementation plan says: "User 1 clicks Translate -> Backend calls DeepL".
 // So it seems public users can trigger it. I will NOT use isWriter for the trigger, BUT I might need to protect against abuse.
@@ -141,7 +141,7 @@ router.get('/article/:id', async (req, res) => {
             res.json({ has_translation: false });
         }
 
-    } catch (err) {
+    } catch {
         res.status(500).json({ success: false, error: 'Server error' });
     }
 });

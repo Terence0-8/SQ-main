@@ -49,7 +49,7 @@ function getCountryFromReq(req) {
       const geo = geoip.lookup(rawIp.replace('::ffff:', ''));
       if (geo?.country) return geo.country;
     }
-  } catch (e) { /* geoip indisponible */ }
+  } catch { /* geoip indisponible */ }
   return null;
 }
 

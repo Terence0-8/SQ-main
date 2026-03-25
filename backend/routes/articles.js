@@ -1,13 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
-const multer = require('multer');
 const cloudinary = require('../config/cloudinary');
 const fs = require('fs');
 const Joi = require('joi');
 const { isWriter } = require('../middleware/auth');
 const { createUniqueSlug } = require('../utils/slugify');
-const translationService = require('../services/translationService');
 const { sanitizeHTML, sanitizeText, sanitizeArray } = require('../middleware/sanitize');
 
 
@@ -324,7 +322,7 @@ router.post('/', isWriter, imageUpload.single('image'), async (req, res) => {
       if (typeof tags === 'string') {
         try {
           tagsArray = JSON.parse(tags);
-        } catch (e) {
+        } catch {
           tagsArray = tags.split(',').map(t => t.trim());
         }
       } else if (Array.isArray(tags)) {
@@ -341,8 +339,8 @@ router.post('/', isWriter, imageUpload.single('image'), async (req, res) => {
         });
         finalImageUrl = result.secure_url;
         fs.unlinkSync(req.file.path);
-      } catch (e) {
-        console.error("❌ Erreur Cloudinary:", e);
+      } catch {
+        console.error("❌ Erreur Cloudinary");
         return res.status(500).json({
           success: false,
           error: 'Erreur lors de l\'upload de l\'image'
@@ -473,7 +471,7 @@ router.put('/:id', isWriter, imageUpload.single('image'), async (req, res) => {
       if (typeof tags === 'string') {
         try {
           tagsArray = JSON.parse(tags);
-        } catch (e) {
+        } catch {
           tagsArray = tags.split(',').map(t => t.trim());
         }
       } else if (Array.isArray(tags)) {
@@ -490,8 +488,8 @@ router.put('/:id', isWriter, imageUpload.single('image'), async (req, res) => {
         });
         finalImageUrl = result.secure_url;
         fs.unlinkSync(req.file.path);
-      } catch (e) {
-        console.error("❌ Erreur Cloudinary:", e);
+      } catch {
+        console.error("❌ Erreur Cloudinary");
       }
     }
 
@@ -592,8 +590,6 @@ router.delete('/:id', isWriter, async (req, res) => {
 // ==========================================
 const PDFDocument = require('pdfkit');
 const { isSubscriber } = require('../middleware/auth');
-const https = require('https');
-const http = require('http');
 
 router.get('/:slug/download', isSubscriber, async (req, res) => {
   try {

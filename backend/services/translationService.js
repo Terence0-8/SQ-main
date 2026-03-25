@@ -100,7 +100,7 @@ class TranslationService {
 
         } catch (error) {
             console.error('❌ DeepL API Error:', error.response?.data || error.message);
-            throw new Error('Translation service unavailable');
+            throw new Error('Translation service unavailable', { cause: error });
         }
     }
 
