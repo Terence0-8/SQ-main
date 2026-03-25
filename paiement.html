@@ -245,7 +245,7 @@
         document.getElementById('cancelledMsg').style.display = 'block';
       }
 
-      // ─── 1. Récupérer pricing géo ────────────────────────────────
+      // ─── 1. Récupérer pricing géo depuis le backend ──────────────
       let pricing = null;
       try {
         const pricingUrl = testCountry
@@ -261,15 +261,13 @@
 
       const currency = pricing.currency || 'USD';
 
-      // Montants canoniques par devise (vérité côté frontend uniquement pour l'affichage)
-      const AMOUNTS = {
-        XAF: { monthly: 3000, yearly: 30000 },
-        EUR: { monthly: 6.99 },
-        GBP: { monthly: 6.99 },
-        USD: { monthly: 7.99 },
-        CAD: { monthly: 9.99 },
-      };
-      const planAmount = (AMOUNTS[currency] || AMOUNTS['USD'])[plan] || pricing.amount;
+      // ─── Montant : on utilise directement le prix renvoyé par le backend.
+      // Pour le plan annuel XAF, le backend renvoie xaf_amount via PLAN_CONFIG.
+      // Pour les autres devises, le plan annuel n'existe pas (carte annuelle masquée),
+      // donc pricing.amount est toujours le montant mensuel correct.
+      const planAmount = (plan === 'yearly' && currency === 'XAF')
+        ? 30000
+        : pricing.amount;
       const priceFormatted = formatPrice(currency, planAmount);
 
       // ─── 2. Récapitulatif ────────────────────────────────────────
