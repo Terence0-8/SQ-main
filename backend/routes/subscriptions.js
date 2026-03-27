@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
-const { FedaPay, Customer, Transaction } = require('fedapay');
+const { FedaPay, Customer, Transaction } = require('../utils/fedapay');
 const { isAuthenticated } = require('../middleware/auth');
 const { verifyCsrf } = require('../middleware/csrf');
 

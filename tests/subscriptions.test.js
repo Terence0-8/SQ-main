@@ -21,9 +21,9 @@ describe('GET /api/subscriptions/pricing', () => {
     assert.ok(res.body.provider, 'provider manquant');
   });
 
-  test('provider est stripe ou cinetpay', async () => {
+  test('provider est stripe ou fedapay', async () => {
     const res = await request(app).get('/api/subscriptions/pricing');
-    assert.ok(['stripe', 'cinetpay'].includes(res.body.provider));
+    assert.ok(['stripe', 'fedapay'].includes(res.body.provider));
   });
 });
 
