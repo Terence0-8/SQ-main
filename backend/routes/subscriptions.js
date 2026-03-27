@@ -2,14 +2,19 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
-const axios = require('axios');
+const { FedaPay, Customer, Transaction } = require('fedapay');
 const { isAuthenticated } = require('../middleware/auth');
 const { verifyCsrf } = require('../middleware/csrf');
 
 // ==========================================
+// INIT FEDAPAY
+// ==========================================
+FedaPay.setApiKey(process.env.FEDAPAY_SECRET_KEY);
+FedaPay.setEnvironment(process.env.FEDAPAY_ENVIRONMENT || 'sandbox'); // 'sandbox' ou 'live'
+
+// ==========================================
 // GEO-PRICING CONFIGURATION
 // ==========================================
-
 const EU_COUNTRIES = [
   'AT','BE','BG','CY','CZ','DE','DK','EE','ES','FI',
   'FR','GR','HR','HU','IE','IT','LT','LU','LV','MT',
@@ -17,16 +22,17 @@ const EU_COUNTRIES = [
 ];
 
 const CURRENCY_PRICING = {
-  'XAF': { symbol: 'FCFA', amount: 3000,  stripe_cents: null, provider: 'cinetpay' },
-  'EUR': { symbol: '€',    amount: 6.99,  stripe_cents: 699,  provider: 'stripe'   },
-  'GBP': { symbol: '£',    amount: 6.99,  stripe_cents: 699,  provider: 'stripe'   },
-  'USD': { symbol: '$',    amount: 7.99,  stripe_cents: 799,  provider: 'stripe'   },
-  'CAD': { symbol: 'CA$',  amount: 9.99,  stripe_cents: 999,  provider: 'stripe'   },
+  'XOF': { symbol: 'FCFA', amount: 3000,  stripe_cents: null, provider: 'fedapay' },
+  'XAF': { symbol: 'FCFA', amount: 3000,  stripe_cents: null, provider: 'fedapay' }, // compatibilité Cameroun
+  'EUR': { symbol: '€',    amount: 6.99,  stripe_cents: 699,  provider: 'stripe'  },
+  'GBP': { symbol: '£',    amount: 6.99,  stripe_cents: 699,  provider: 'stripe'  },
+  'USD': { symbol: '$',    amount: 7.99,  stripe_cents: 799,  provider: 'stripe'  },
+  'CAD': { symbol: 'CA$',  amount: 9.99,  stripe_cents: 999,  provider: 'stripe'  },
 };
 
 function getPricingForCountry(countryCode) {
-  if (countryCode === 'CM')
-    return { country: 'CM', currency: 'XAF', ...CURRENCY_PRICING['XAF'] };
+  if (['CM', 'BJ', 'TG', 'SN', 'CI'].includes(countryCode))
+    return { country: countryCode, currency: 'XOF', ...CURRENCY_PRICING['XOF'] };
   if (EU_COUNTRIES.includes(countryCode))
     return { country: countryCode, currency: 'EUR', ...CURRENCY_PRICING['EUR'] };
   if (countryCode === 'GB')
@@ -64,7 +70,7 @@ const PLAN_CONFIG = {
   'yearly': {
     interval: '1 year',
     description: 'Abonnement Annuel Solitiquo',
-    xaf_amount: 30000
+    xof_amount: 30000
   }
 };
 
@@ -72,11 +78,6 @@ function validatePlan(plan) {
   return PLAN_CONFIG[plan] || null;
 }
 
-// ==========================================
-// CONFIG CINETPAY
-// ==========================================
-const CINETPAY_API_KEY = process.env.CINETPAY_API_KEY;
-const CINETPAY_SITE_ID = process.env.CINETPAY_SITE_ID;
 const BASE_URL = process.env.NODE_ENV === 'production'
   ? 'https://solitiquo.com'
   : 'http://localhost:5000';
@@ -105,11 +106,15 @@ router.get('/pricing', async (req, res) => {
 });
 
 // ==========================================
-// 1. INIT PAIEMENT — CinetPay (XAF)
+// 1. INIT PAIEMENT — FedaPay (XOF)
 // POST /api/subscriptions/init-payment
 // ==========================================
 router.post('/init-payment', isAuthenticated, verifyCsrf, async (req, res) => {
   try {
+    if (!process.env.FEDAPAY_SECRET_KEY || process.env.FEDAPAY_SECRET_KEY.startsWith('sk_sandbox_REMPLACER')) {
+      return res.status(503).json({ success: false, error: "FedaPay non configuré — ajoutez FEDAPAY_SECRET_KEY dans .env" });
+    }
+
     const userId = req.session.user.id;
     const { plan } = req.body;
 
@@ -127,87 +132,109 @@ router.post('/init-payment', isAuthenticated, verifyCsrf, async (req, res) => {
     }
 
     const amount = plan === 'yearly'
-      ? PLAN_CONFIG['yearly'].xaf_amount
-      : CURRENCY_PRICING['XAF'].amount;
+      ? PLAN_CONFIG['yearly'].xof_amount
+      : CURRENCY_PRICING['XOF'].amount;
 
     const transactionId = `SOL-${Date.now()}-${userId}`;
 
+    // 1. Créer le client FedaPay
+    const customer = await Customer.create({
+      firstname: req.session.user.username || 'Client',
+      lastname: 'Solitiquo',
+      email: req.session.user.email || 'client@solitiquo.com',
+    });
+
+    // 2. Créer la transaction FedaPay
+    const transaction = await Transaction.create({
+      description: planConfig.description,
+      amount: amount,
+      currency: { iso: 'XOF' },
+      callback_url: `${BASE_URL}/paiement-success.html?transaction_id=${transactionId}`,
+      customer: { id: customer.id },
+      custom_metadata: {
+        internal_transaction_id: transactionId,
+        user_id: userId.toString(),
+        plan: plan
+      }
+    });
+
+    // 3. Générer le lien de paiement
+    const token = await transaction.generateToken();
+
+    // 4. Enregistrer en BDD
     await pool.query(
       `INSERT INTO subscriptions (user_id, plan, amount, currency, transaction_id, status, starts_at, ends_at)
-       VALUES ($1, $2, $3, 'XAF', $4, 'pending', NOW(), NOW())`,
+       VALUES ($1, $2, $3, 'XOF', $4, 'pending', NOW(), NOW())`,
       [userId, plan, amount, transactionId]
     );
 
-    const payload = {
-      apikey: CINETPAY_API_KEY,
-      site_id: CINETPAY_SITE_ID,
-      transaction_id: transactionId,
-      amount: amount,
-      currency: 'XAF',
-      channels: 'ALL',
-      description: planConfig.description,
-      customer_id: userId.toString(),
-      customer_name: req.session.user.username || 'Client',
-      customer_email: req.session.user.email || 'client@solitiquo.com',
-      return_url: `${BASE_URL}/paiement-success.html?transaction_id=${transactionId}`,
-      notify_url: `${BASE_URL}/api/subscriptions/webhook`
-    };
+    // Stocker le fedapay_id pour le webhook (silencieux si colonne absente)
+    await pool.query(
+      `UPDATE subscriptions SET fedapay_id = $1 WHERE transaction_id = $2`,
+      [transaction.id.toString(), transactionId]
+    ).catch(() => {
+      console.warn('⚠️ Colonne fedapay_id absente — exécuter la migration SQL');
+    });
 
-    const response = await axios.post(`${process.env.CINETPAY_BASE_URL}`, payload);
+    res.json({ success: true, payment_url: token.url });
 
-    if (response.data.code === '201') {
-      res.json({ success: true, payment_url: response.data.data.payment_url });
-    } else {
-      console.error('❌ Erreur CinetPay:', response.data);
-      res.status(500).json({ success: false, error: "Erreur initialisation paiement" });
-    }
   } catch (err) {
-    console.error('❌ Erreur init-payment:', err);
-    res.status(500).json({ success: false, error: "Erreur serveur" });
+    console.error('❌ Erreur init-payment FedaPay:', err.message);
+    res.status(500).json({ success: false, error: "Erreur initialisation paiement" });
   }
 });
 
 // ==========================================
-// 2. WEBHOOK CINETPAY
+// 2. WEBHOOK FEDAPAY
 // POST /api/subscriptions/webhook
 // ==========================================
-router.post('/webhook', async (req, res) => {
+router.post('/webhook', express.json(), async (req, res) => {
   try {
-    const { cpm_trans_id, cpm_site_id } = req.body;
+    const event = req.body;
+    const fedapayTransaction = event.entity;
 
-    if (cpm_site_id !== CINETPAY_SITE_ID) {
-      return res.status(400).send("Invalid Site ID");
+    if (!fedapayTransaction) {
+      return res.status(400).send('Payload invalide');
     }
 
-    const checkPayload = {
-      apikey: CINETPAY_API_KEY,
-      site_id: CINETPAY_SITE_ID,
-      transaction_id: cpm_trans_id
-    };
+    const fedapayId = fedapayTransaction.id?.toString();
+    const eventName = event.name; // ex: "transaction.approved"
 
-    const checkRes = await axios.post(`${process.env.CINETPAY_BASE_URL}/check`, checkPayload);
-    const data = checkRes.data.data;
+    // Retrouver la subscription interne via fedapay_id
+    const subInfo = await pool.query(
+      'SELECT user_id, plan, transaction_id FROM subscriptions WHERE fedapay_id = $1',
+      [fedapayId]
+    );
 
-    if (data.payment_method && data.status === 'ACCEPTED') {
-      console.log('✅ Paiement CinetPay validé');
+    let row = subInfo.rows[0];
 
-      const subInfo = await pool.query(
-        'SELECT user_id, plan FROM subscriptions WHERE transaction_id = $1',
-        [cpm_trans_id]
+    // Fallback via custom_metadata si fedapay_id pas encore stocké
+    if (!row && fedapayTransaction.custom_metadata?.internal_transaction_id) {
+      const fallback = await pool.query(
+        'SELECT user_id, plan, transaction_id FROM subscriptions WHERE transaction_id = $1',
+        [fedapayTransaction.custom_metadata.internal_transaction_id]
       );
+      row = fallback.rows[0];
+    }
 
-      if (subInfo.rows.length === 0) return res.status(404).send('Transaction introuvable');
+    if (!row) {
+      console.error('❌ Transaction FedaPay introuvable en BDD:', fedapayId);
+      return res.status(404).send('Transaction introuvable');
+    }
 
-      const { user_id, plan } = subInfo.rows[0];
-      const planConfig = validatePlan(plan);
-      if (!planConfig) return res.status(400).send('Plan invalide');
+    const { user_id, plan, transaction_id } = row;
+    const planConfig = validatePlan(plan);
+    if (!planConfig) return res.status(400).send('Plan invalide');
+
+    if (eventName === 'transaction.approved') {
+      console.log('✅ Paiement FedaPay validé — transaction:', transaction_id);
 
       await pool.query(
         `UPDATE subscriptions
          SET status = 'active', payment_method = $1, updated_at = NOW(),
              starts_at = NOW(), ends_at = NOW() + $2::INTERVAL
          WHERE transaction_id = $3`,
-        [data.payment_method, planConfig.interval, cpm_trans_id]
+        [fedapayTransaction.mode || 'fedapay_momo', planConfig.interval, transaction_id]
       );
       await pool.query(
         `UPDATE users
@@ -216,17 +243,19 @@ router.post('/webhook', async (req, res) => {
          WHERE id = $2`,
         [planConfig.interval, user_id]
       );
-      res.status(200).send('OK');
-    } else {
-      console.log(`⚠️ Paiement CinetPay échoué : ${data.status}`);
+
+    } else if (eventName === 'transaction.declined' || eventName === 'transaction.canceled') {
+      console.log(`⚠️ Paiement FedaPay ${eventName} — transaction:`, transaction_id);
       await pool.query(
         "UPDATE subscriptions SET status = 'failed' WHERE transaction_id = $1",
-        [cpm_trans_id]
+        [transaction_id]
       );
-      res.status(200).send('OK (Failed)');
     }
+
+    res.status(200).json({ received: true });
+
   } catch (err) {
-    console.error('❌ Erreur Webhook CinetPay:', err);
+    console.error('❌ Erreur Webhook FedaPay:', err.message);
     res.status(500).send('Webhook Error');
   }
 });
@@ -265,7 +294,6 @@ router.post('/init-stripe-payment', isAuthenticated, verifyCsrf, async (req, res
       return res.status(400).json({ success: false, error: "Vous avez déjà un abonnement actif" });
     }
 
-    // Dériver la devise depuis l'IP serveur — le client ne peut pas l'influencer
     const country = getCountryFromReq(req);
     const geoPricing = getPricingForCountry(country);
     const currency = geoPricing.currency;
@@ -277,7 +305,6 @@ router.post('/init-stripe-payment', isAuthenticated, verifyCsrf, async (req, res
 
     const transactionId = `STR-${Date.now()}-${userId}`;
 
-    // Créer le PaymentIntent — active automatiquement carte, Apple Pay, Google Pay, PayPal
     const paymentIntent = await stripe.paymentIntents.create({
       amount: currencyConfig.stripe_cents,
       currency: currency.toLowerCase(),
@@ -329,7 +356,6 @@ router.post('/stripe-webhook', async (req, res) => {
     return res.status(400).send('Webhook signature invalide');
   }
 
-  // Payment Element → payment_intent.succeeded
   if (event.type === 'payment_intent.succeeded') {
     const pi = event.data.object;
     const { userId, plan, transactionId } = pi.metadata || {};
@@ -357,7 +383,6 @@ router.post('/stripe-webhook', async (req, res) => {
 // ==========================================
 // 5. CONFIRM STRIPE (fallback depuis paiement-success.html)
 // GET /api/subscriptions/confirm-stripe
-// Accepte ?payment_intent=pi_... (Payment Element)
 // ==========================================
 router.get('/confirm-stripe', isAuthenticated, async (req, res) => {
   try {
@@ -383,7 +408,6 @@ router.get('/confirm-stripe', isAuthenticated, async (req, res) => {
       return res.status(400).json({ success: false, error: "Metadata manquante" });
     }
 
-    // Sécurité : la transaction doit appartenir à l'utilisateur connecté
     if (parseInt(userId) !== req.session.user.id) {
       return res.status(403).json({ success: false, error: "Accès refusé" });
     }
@@ -391,7 +415,6 @@ router.get('/confirm-stripe', isAuthenticated, async (req, res) => {
     const planConfig = validatePlan(plan);
     if (!planConfig) return res.status(400).json({ success: false, error: "Plan invalide" });
 
-    // Vérifier si déjà activé (le webhook a peut-être déjà agi)
     const existing = await pool.query(
       'SELECT status FROM subscriptions WHERE transaction_id = $1',
       [transactionId]
@@ -402,7 +425,6 @@ router.get('/confirm-stripe', isAuthenticated, async (req, res) => {
 
     await _activateStripeSubscription(userId, transactionId, planConfig);
 
-    // Mettre à jour la session immédiatement
     if (req.session?.user) {
       req.session.user.is_subscriber = true;
       await new Promise((resolve, reject) =>
@@ -417,7 +439,7 @@ router.get('/confirm-stripe', isAuthenticated, async (req, res) => {
   }
 });
 
-// Helper partagé
+// Helper partagé Stripe
 async function _activateStripeSubscription(userId, transactionId, planConfig) {
   await pool.query(
     `UPDATE subscriptions
@@ -445,7 +467,7 @@ router.post('/simulate-payment', isAuthenticated, verifyCsrf, async (req, res) =
   }
 
   const userId = req.session.user.id;
-  const { plan, currency = 'XAF' } = req.body;
+  const { plan, currency = 'XOF' } = req.body;
 
   const planConfig = validatePlan(plan);
   if (!planConfig) return res.status(400).json({ success: false, error: "Plan invalide" });
@@ -453,8 +475,8 @@ router.post('/simulate-payment', isAuthenticated, verifyCsrf, async (req, res) =
   const currencyConfig = CURRENCY_PRICING[currency];
   if (!currencyConfig) return res.status(400).json({ success: false, error: "Devise invalide" });
 
-  const amount = (currency === 'XAF' && plan === 'yearly')
-    ? PLAN_CONFIG['yearly'].xaf_amount
+  const amount = (currency === 'XOF' && plan === 'yearly')
+    ? PLAN_CONFIG['yearly'].xof_amount
     : currencyConfig.amount;
 
   const transactionId = `MOCK-${Date.now()}-${userId}`;
