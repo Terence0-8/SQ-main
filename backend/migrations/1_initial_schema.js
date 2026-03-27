@@ -7,7 +7,7 @@
 //   - ADD COLUMN IF NOT EXISTS pour toutes les colonnes ajoutées depuis
 //   - Idempotent sur serveurs existants, complet sur serveurs neufs
 
-/* eslint-disable camelcase */
+
 
 exports.up = (pgm) => {
   // ============================================================

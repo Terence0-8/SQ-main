@@ -1,4 +1,4 @@
-/* eslint-disable camelcase */
+
 // Ajoute is_featured sur podcasts (anciennement géré par ALTER TABLE au runtime dans podcasts.js)
 
 exports.shorthands = undefined;

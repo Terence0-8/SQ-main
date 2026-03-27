@@ -1,4 +1,4 @@
-/* eslint-disable camelcase */
+
 /**
  * Ajoute les colonnes de suivi de lecture par milestone
  * Utilisées par POST /api/analytics/track et GET /api/analytics/reading-progress

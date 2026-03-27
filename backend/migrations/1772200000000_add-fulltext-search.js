@@ -1,4 +1,4 @@
-/* eslint-disable camelcase */
+
 // Full-Text Search : colonnes tsvector + index GIN + triggers
 // Idempotent — peut tourner sur une DB qui a déjà les colonnes (ADD COLUMN IF NOT EXISTS, CREATE OR REPLACE)
 

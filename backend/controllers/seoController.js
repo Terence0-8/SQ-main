@@ -56,7 +56,7 @@ exports.handleSeoRoute = async (req, res, next) => {
         let templateFile, data, alternates = [];
 
         switch (type) {
-            case 'article':
+            case 'article': {
                 templateFile = 'article.html';
                 const articleRes = await pool.query(
                     'SELECT a.title, a.excerpt, a.featured_image, a.language, a.category, a.slug, ' +
@@ -84,8 +84,9 @@ exports.handleSeoRoute = async (req, res, next) => {
                     }
                 });
                 break;
+            }
 
-            case 'podcast':
+            case 'podcast': {
                 templateFile = 'podcast.html';
                 const podcastRes = await pool.query(
                     'SELECT title, description, cover_image, language, slug FROM podcasts WHERE id = $1',
@@ -97,8 +98,9 @@ exports.handleSeoRoute = async (req, res, next) => {
                     alternates.push({ lang: data.language, url: `/${data.language}/podcasts/${data.slug}` });
                 }
                 break;
+            }
 
-            case 'emission':
+            case 'emission': {
                 templateFile = 'emissions.html';
                 const emissionRes = await pool.query(
                     'SELECT title, description, thumbnail_url, slug FROM emissions WHERE id = $1',
@@ -108,8 +110,9 @@ exports.handleSeoRoute = async (req, res, next) => {
                 data = emissionRes.rows[0];
                 alternates.push({ lang: 'fr', url: `/fr/emissions/${data.slug}` });
                 break;
+            }
 
-            case 'party':
+            case 'party': {
                 templateFile = 'partis.html';
                 const partyRes = await pool.query(
                     'SELECT name, description, logo_url, slug_en FROM parties WHERE id = $1',
@@ -126,6 +129,7 @@ exports.handleSeoRoute = async (req, res, next) => {
                     alternates.push({ lang: 'en', url: `/en/parties` });
                 }
                 break;
+            }
 
             default:
                 return next();
