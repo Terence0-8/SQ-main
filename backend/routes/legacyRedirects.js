@@ -29,7 +29,7 @@ router.get('/article.html', async (req, res) => {
     if (!id) return res.redirect(301, '/fr/politique');
 
     try {
-        constresult = await pool.query(
+        const result = await pool.query(
             'SELECT slug, language, category FROM articles WHERE id = $1 AND status = $2',
             [id, 'published']
         );
