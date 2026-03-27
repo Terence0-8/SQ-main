@@ -201,12 +201,12 @@
 
         <form id="loginForm">
           <div class="form-group">
-            <label>Email ou Nom d'utilisateur</label>
+            <label for="loginIdentifier">Email ou Nom d'utilisateur</label>
             <input type="text" id="loginIdentifier" class="form-input" required placeholder="votre@email.com ou Pseudo">
           </div>
 
           <div class="form-group">
-            <label>Mot de passe</label>
+            <label for="loginPwd">Mot de passe</label>
             <div class="password-wrapper">
               <input type="password" id="loginPwd" class="form-input" required placeholder="••••••••">
               <button type="button" id="toggle-login-pwd" class="btn-toggle-pass" aria-label="Afficher le mot de passe">
@@ -227,16 +227,16 @@
 
         <form id="registerForm" style="display:none;">
           <div class="form-group">
-            <label>Nom d'utilisateur</label>
+            <label for="regUser">Nom d'utilisateur</label>
             <input type="text" id="regUser" class="form-input" required placeholder="Ex: JeanDupont">
           </div>
           <div class="form-group">
-            <label>Adresse Email</label>
+            <label for="regEmail">Adresse Email</label>
             <input type="email" id="regEmail" class="form-input" required placeholder="votre@email.com">
           </div>
 
           <div class="form-group">
-            <label>Mot de passe</label>
+            <label for="regPwd">Mot de passe</label>
             <div class="password-wrapper">
               <input type="password" id="regPwd" class="form-input" required placeholder="Minimum 6 caractères">
               <button type="button" id="toggle-reg-pwd" class="btn-toggle-pass" aria-label="Afficher le mot de passe">
