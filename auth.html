@@ -374,7 +374,21 @@
             const result = await SolitiquoAPI.login({ email: identifier, password });
             if (result.success) {
               const params = new URLSearchParams(window.location.search);
-              const redirect = params.get('redirect') || 'index.html';
+              let redirect = params.get('redirect') || 'index.html';
+
+              // Sécurité: Validation du redirect (Open Redirect fix)
+              const isValidRedirect = (url) => {
+                try {
+                  const target = new URL(url, window.location.origin);
+                  return target.origin === window.location.origin;
+                } catch (e) {
+                  return false;
+                }
+              };
+
+              if (!isValidRedirect(redirect)) {
+                redirect = 'index.html';
+              }
               window.location.href = redirect;
             } else {
               msgBox.textContent = result.error || "Identifiants incorrects.";
