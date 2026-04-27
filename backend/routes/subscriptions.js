@@ -2,15 +2,10 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
-const { FedaPay, Customer, Transaction } = require('../utils/fedapay');
 const { isAuthenticated } = require('../middleware/auth');
 const { verifyCsrf } = require('../middleware/csrf');
-
-// ==========================================
-// INIT FEDAPAY
-// ==========================================
-FedaPay.setApiKey(process.env.FEDAPAY_SECRET_KEY);
-FedaPay.setEnvironment(process.env.FEDAPAY_ENVIRONMENT || 'sandbox'); // 'sandbox' ou 'live'
+const axios = require('axios');
+const crypto = require('crypto');
 
 // ==========================================
 // GEO-PRICING CONFIGURATION
@@ -22,12 +17,12 @@ const EU_COUNTRIES = [
 ];
 
 const CURRENCY_PRICING = {
-  'XOF': { symbol: 'FCFA', amount: 3000,  stripe_cents: null, provider: 'fedapay' },
-  'XAF': { symbol: 'FCFA', amount: 3000,  stripe_cents: null, provider: 'fedapay' }, // compatibilité Cameroun
-  'EUR': { symbol: '€',    amount: 6.99,  stripe_cents: 699,  provider: 'stripe'  },
-  'GBP': { symbol: '£',    amount: 6.99,  stripe_cents: 699,  provider: 'stripe'  },
-  'USD': { symbol: '$',    amount: 7.99,  stripe_cents: 799,  provider: 'stripe'  },
-  'CAD': { symbol: 'CA$',  amount: 9.99,  stripe_cents: 999,  provider: 'stripe'  },
+  'XOF': { symbol: 'FCFA', amount: 3000,  stripe_cents: null, provider: 'flutterwave' },
+  'XAF': { symbol: 'FCFA', amount: 3000,  stripe_cents: null, provider: 'flutterwave' },
+  'EUR': { symbol: '€',    amount: 6.99,  stripe_cents: 699,  provider: 'stripe'      },
+  'GBP': { symbol: '£',    amount: 6.99,  stripe_cents: 699,  provider: 'stripe'      },
+  'USD': { symbol: '$',    amount: 7.99,  stripe_cents: 799,  provider: 'stripe'      },
+  'CAD': { symbol: 'CA$',  amount: 9.99,  stripe_cents: 999,  provider: 'stripe'      },
 };
 
 function getPricingForCountry(countryCode) {
@@ -83,6 +78,34 @@ const BASE_URL = process.env.NODE_ENV === 'production'
   : 'http://localhost:5000';
 
 // ==========================================
+// FLUTTERWAVE HELPERS
+// ==========================================
+
+/**
+ * Vérifie que les clés Flutterwave sont bien configurées dans .env
+ */
+function isFlutterwaveConfigured() {
+  return (
+    process.env.FLUTTERWAVE_SECRET_KEY &&
+    !process.env.FLUTTERWAVE_SECRET_KEY.startsWith('FLWSECK_TEST-REMPLACER') &&
+    process.env.FLUTTERWAVE_PUBLIC_KEY &&
+    !process.env.FLUTTERWAVE_PUBLIC_KEY.startsWith('FLWPUBK_TEST-REMPLACER')
+  );
+}
+
+/**
+ * Vérifie la signature du webhook Flutterwave
+ * Flutterwave envoie le header "verif-hash" contenant le hash secret configuré
+ * dans le dashboard Flutterwave (champ "Secret Hash")
+ */
+function verifyFlutterwaveWebhook(req) {
+  const secretHash = process.env.FLUTTERWAVE_WEBHOOK_SECRET;
+  if (!secretHash) return true; // En dev sans secret configuré, on laisse passer
+  const signature = req.headers['verif-hash'];
+  return signature === secretHash;
+}
+
+// ==========================================
 // 0. GEO PRICING ENDPOINT
 // GET /api/subscriptions/pricing
 // ==========================================
@@ -98,6 +121,12 @@ router.get('/pricing', async (req, res) => {
       response.publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
     }
 
+    // Exposer la clé publique Flutterwave côté front (clé publique = safe)
+    if (pricing.provider === 'flutterwave' && process.env.FLUTTERWAVE_PUBLIC_KEY &&
+        !process.env.FLUTTERWAVE_PUBLIC_KEY.startsWith('FLWPUBK_TEST-REMPLACER')) {
+      response.publishableKey = process.env.FLUTTERWAVE_PUBLIC_KEY;
+    }
+
     res.json(response);
   } catch (err) {
     console.error('❌ Erreur pricing:', err);
@@ -106,13 +135,18 @@ router.get('/pricing', async (req, res) => {
 });
 
 // ==========================================
-// 1. INIT PAIEMENT — FedaPay (XOF)
+// 1. INIT PAIEMENT — Flutterwave (XOF/XAF)
 // POST /api/subscriptions/init-payment
+// Retourne un payment_link vers la page de paiement Flutterwave
+// Compatible Orange Money, MTN MoMo, Visa (Cameroun + UEMOA)
 // ==========================================
 router.post('/init-payment', isAuthenticated, verifyCsrf, async (req, res) => {
   try {
-    if (!process.env.FEDAPAY_SECRET_KEY || process.env.FEDAPAY_SECRET_KEY.startsWith('sk_sandbox_REMPLACER')) {
-      return res.status(503).json({ success: false, error: "FedaPay non configuré — ajoutez FEDAPAY_SECRET_KEY dans .env" });
+    if (!isFlutterwaveConfigured()) {
+      return res.status(503).json({
+        success: false,
+        error: 'Flutterwave non configuré — ajoutez FLUTTERWAVE_SECRET_KEY et FLUTTERWAVE_PUBLIC_KEY dans .env'
+      });
     }
 
     const userId = req.session.user.id;
@@ -120,148 +154,267 @@ router.post('/init-payment', isAuthenticated, verifyCsrf, async (req, res) => {
 
     const planConfig = validatePlan(plan);
     if (!planConfig) {
-      return res.status(400).json({ success: false, error: "Plan invalide" });
+      return res.status(400).json({ success: false, error: 'Plan invalide' });
     }
 
+    // Vérifier abonnement actif existant
     const activeCheck = await pool.query(
       "SELECT id FROM subscriptions WHERE user_id = $1 AND status = 'active' AND ends_at > NOW()",
       [userId]
     );
     if (activeCheck.rows.length > 0) {
-      return res.status(400).json({ success: false, error: "Vous avez déjà un abonnement actif" });
+      return res.status(400).json({ success: false, error: 'Vous avez déjà un abonnement actif' });
     }
+
+    // Détecter le pays pour choisir la devise (XOF ou XAF)
+    const country = getCountryFromReq(req);
+    const pricing = getPricingForCountry(country);
+    const currency = pricing.currency; // 'XOF' pour Cameroun/UEMOA
 
     const amount = plan === 'yearly'
       ? PLAN_CONFIG['yearly'].xof_amount
-      : CURRENCY_PRICING['XOF'].amount;
+      : CURRENCY_PRICING[currency].amount;
 
-    const transactionId = `SOL-${Date.now()}-${userId}`;
+    const transactionId = `FLW-${Date.now()}-${userId}`;
 
-    // 1. Créer le client FedaPay
-    const customer = await Customer.create({
-      firstname: req.session.user.username || 'Client',
-      lastname: 'Solitiquo',
-      email: req.session.user.email || 'client@solitiquo.com',
-    });
-
-    // 2. Créer la transaction FedaPay
-    const transaction = await Transaction.create({
-      description: planConfig.description,
+    // Appel API Flutterwave — Standard Payment (hosted page)
+    // Docs: https://developer.flutterwave.com/reference/endpoints/collect-payments
+    const flwPayload = {
+      tx_ref: transactionId,
       amount: amount,
-      currency: { iso: 'XOF' },
-      callback_url: `${BASE_URL}/paiement-success.html?transaction_id=${transactionId}`,
-      customer: { id: customer.id },
-      custom_metadata: {
-        internal_transaction_id: transactionId,
+      currency: currency,
+      redirect_url: `${BASE_URL}/paiement-success.html?transaction_id=${transactionId}&provider=flutterwave`,
+      meta: {
         user_id: userId.toString(),
         plan: plan
+      },
+      customer: {
+        email: req.session.user.email || 'client@solitiquo.com',
+        name: req.session.user.username || 'Client Solitiquo',
+      },
+      customizations: {
+        title: 'Solitiquo',
+        description: planConfig.description,
+        logo: `${BASE_URL}/assets/logo.png`
+      },
+      payment_options: 'mobilemoneyfranco,card', // Orange Money + MTN MoMo + Visa
+    };
+
+    const flwResponse = await axios.post(
+      'https://api.flutterwave.com/v3/payments',
+      flwPayload,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
+          'Content-Type': 'application/json'
+        }
       }
-    });
-
-    // 3. Générer le lien de paiement
-    const token = await transaction.generateToken();
-
-    // 4. Enregistrer en BDD
-    await pool.query(
-      `INSERT INTO subscriptions (user_id, plan, amount, currency, transaction_id, status, starts_at, ends_at)
-       VALUES ($1, $2, $3, 'XOF', $4, 'pending', NOW(), NOW())`,
-      [userId, plan, amount, transactionId]
     );
 
-    // Stocker le fedapay_id pour le webhook (silencieux si colonne absente)
-    await pool.query(
-      `UPDATE subscriptions SET fedapay_id = $1 WHERE transaction_id = $2`,
-      [transaction.id.toString(), transactionId]
-    ).catch(() => {
-      console.warn('⚠️ Colonne fedapay_id absente — exécuter la migration SQL');
-    });
+    if (flwResponse.data.status !== 'success') {
+      console.error('❌ Flutterwave API error:', flwResponse.data.message);
+      return res.status(500).json({ success: false, error: 'Erreur initialisation paiement Flutterwave' });
+    }
 
-    res.json({ success: true, payment_url: token.url });
+    const paymentLink = flwResponse.data.data.link;
+
+    // Enregistrer en BDD
+    await pool.query(
+      `INSERT INTO subscriptions (user_id, plan, amount, currency, transaction_id, status, starts_at, ends_at)
+       VALUES ($1, $2, $3, $4, $5, 'pending', NOW(), NOW())`,
+      [userId, plan, amount, currency, transactionId]
+    );
+
+    console.log(`✅ Flutterwave payment link créé — tx: ${transactionId}`);
+    res.json({ success: true, payment_url: paymentLink });
 
   } catch (err) {
-    console.error('❌ Erreur init-payment FedaPay:', err.message);
-    res.status(500).json({ success: false, error: "Erreur initialisation paiement" });
+    console.error('❌ Erreur init-payment Flutterwave:', err.response?.data || err.message);
+    res.status(500).json({ success: false, error: 'Erreur initialisation paiement' });
   }
 });
 
 // ==========================================
-// 2. WEBHOOK FEDAPAY
+// 2. CONFIRM FLUTTERWAVE (retour depuis redirect_url)
+// GET /api/subscriptions/confirm-flutterwave
+// Appelé depuis paiement-success.html quand provider=flutterwave
+// Vérifie le statut du paiement via l'API Flutterwave
+// ==========================================
+router.get('/confirm-flutterwave', isAuthenticated, async (req, res) => {
+  try {
+    if (!isFlutterwaveConfigured()) {
+      return res.status(503).json({ success: false, error: 'Flutterwave non configuré' });
+    }
+
+    const { transaction_id, tx_ref, status } = req.query;
+
+    // Flutterwave passe status=successful et tx_ref dans l'URL de redirect
+    if (status === 'cancelled') {
+      return res.json({ success: false, error: 'Paiement annulé' });
+    }
+
+    if (!tx_ref && !transaction_id) {
+      return res.status(400).json({ success: false, error: 'tx_ref requis' });
+    }
+
+    const txRef = tx_ref || transaction_id;
+
+    // Vérifier côté BDD si déjà activé (idempotence)
+    const existing = await pool.query(
+      'SELECT status, user_id, plan FROM subscriptions WHERE transaction_id = $1',
+      [txRef]
+    );
+    if (existing.rows[0]?.status === 'active') {
+      return res.json({ success: true, already_active: true });
+    }
+
+    // Vérifier le paiement via l'API Flutterwave (source de vérité)
+    const verifyResponse = await axios.get(
+      `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${txRef}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`
+        }
+      }
+    );
+
+    const flwData = verifyResponse.data?.data;
+
+    if (!flwData || flwData.status !== 'successful') {
+      return res.json({ success: false, error: `Paiement non confirmé (status: ${flwData?.status || 'unknown'})` });
+    }
+
+    // Double vérification du montant (sécurité anti-fraude)
+    const expectedAmount = CURRENCY_PRICING[flwData.currency]?.amount;
+    if (expectedAmount && flwData.amount < expectedAmount) {
+      console.error('❌ Montant Flutterwave incorrect:', flwData.amount, 'vs attendu:', expectedAmount);
+      return res.status(400).json({ success: false, error: 'Montant incorrect' });
+    }
+
+    const row = existing.rows[0];
+    if (!row) return res.status(404).json({ success: false, error: 'Transaction introuvable' });
+
+    const userId = row.user_id;
+    const planConfig = validatePlan(row.plan);
+    if (!planConfig) return res.status(400).json({ success: false, error: 'Plan invalide' });
+
+    // Sécurité : l'utilisateur connecté doit être le propriétaire
+    if (parseInt(userId) !== req.session.user.id) {
+      return res.status(403).json({ success: false, error: 'Accès refusé' });
+    }
+
+    await _activateFlutterwaveSubscription(userId, txRef, flwData.payment_type || 'flutterwave', planConfig);
+
+    if (req.session?.user) {
+      req.session.user.is_subscriber = true;
+      await new Promise((resolve, reject) =>
+        req.session.save(err => err ? reject(err) : resolve())
+      );
+    }
+
+    console.log(`✅ Abonnement Flutterwave activé — user ${userId}, tx: ${txRef}`);
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error('❌ Erreur confirm-flutterwave:', err.response?.data || err.message);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
+// ==========================================
+// 3. WEBHOOK FLUTTERWAVE
 // POST /api/subscriptions/webhook
+// Flutterwave envoie l'événement charge.completed quand un paiement aboutit
+// Configurer dans le dashboard Flutterwave → Webhooks
 // ==========================================
 router.post('/webhook', express.json(), async (req, res) => {
   try {
-    const event = req.body;
-    const fedapayTransaction = event.entity;
+    // Vérification de la signature webhook
+    if (!verifyFlutterwaveWebhook(req)) {
+      console.error('❌ Signature webhook Flutterwave invalide');
+      return res.status(401).send('Unauthorized');
+    }
 
-    if (!fedapayTransaction) {
+    const event = req.body;
+
+    // Flutterwave envoie l'objet "data" dans le body pour charge.completed
+    const flwTx = event.data;
+
+    if (!flwTx) {
       return res.status(400).send('Payload invalide');
     }
 
-    const fedapayId = fedapayTransaction.id?.toString();
-    const eventName = event.name; // ex: "transaction.approved"
+    const txRef = flwTx.tx_ref;
+    const eventType = event.event; // ex: "charge.completed"
 
-    // Retrouver la subscription interne via fedapay_id
-    const subInfo = await pool.query(
-      'SELECT user_id, plan, transaction_id FROM subscriptions WHERE fedapay_id = $1',
-      [fedapayId]
-    );
+    if (eventType === 'charge.completed') {
 
-    let row = subInfo.rows[0];
+      if (flwTx.status !== 'successful') {
+        console.log(`⚠️ Webhook Flutterwave — paiement non successful (${flwTx.status}) pour tx: ${txRef}`);
+        return res.status(200).json({ received: true });
+      }
 
-    // Fallback via custom_metadata si fedapay_id pas encore stocké
-    if (!row && fedapayTransaction.custom_metadata?.internal_transaction_id) {
-      const fallback = await pool.query(
-        'SELECT user_id, plan, transaction_id FROM subscriptions WHERE transaction_id = $1',
-        [fedapayTransaction.custom_metadata.internal_transaction_id]
-      );
-      row = fallback.rows[0];
-    }
-
-    if (!row) {
-      console.error('❌ Transaction FedaPay introuvable en BDD:', fedapayId);
-      return res.status(404).send('Transaction introuvable');
-    }
-
-    const { user_id, plan, transaction_id } = row;
-    const planConfig = validatePlan(plan);
-    if (!planConfig) return res.status(400).send('Plan invalide');
-
-    if (eventName === 'transaction.approved') {
-      console.log('✅ Paiement FedaPay validé — transaction:', transaction_id);
-
-      await pool.query(
-        `UPDATE subscriptions
-         SET status = 'active', payment_method = $1, updated_at = NOW(),
-             starts_at = NOW(), ends_at = NOW() + $2::INTERVAL
-         WHERE transaction_id = $3`,
-        [fedapayTransaction.mode || 'fedapay_momo', planConfig.interval, transaction_id]
-      );
-      await pool.query(
-        `UPDATE users
-         SET is_subscriber = TRUE, subscription_start_date = NOW(),
-             subscription_end_date = NOW() + $1::INTERVAL, updated_at = NOW()
-         WHERE id = $2`,
-        [planConfig.interval, user_id]
+      // Retrouver la subscription en BDD
+      const subInfo = await pool.query(
+        'SELECT user_id, plan, status FROM subscriptions WHERE transaction_id = $1',
+        [txRef]
       );
 
-    } else if (eventName === 'transaction.declined' || eventName === 'transaction.canceled') {
-      console.log(`⚠️ Paiement FedaPay ${eventName} — transaction:`, transaction_id);
-      await pool.query(
-        "UPDATE subscriptions SET status = 'failed' WHERE transaction_id = $1",
-        [transaction_id]
+      const row = subInfo.rows[0];
+      if (!row) {
+        console.error('❌ Transaction Flutterwave introuvable en BDD:', txRef);
+        return res.status(404).send('Transaction introuvable');
+      }
+
+      if (row.status === 'active') {
+        // Déjà activé (webhook en double) — répondre OK pour ne pas bloquer Flutterwave
+        return res.status(200).json({ received: true, note: 'already_active' });
+      }
+
+      const planConfig = validatePlan(row.plan);
+      if (!planConfig) return res.status(400).send('Plan invalide');
+
+      await _activateFlutterwaveSubscription(
+        row.user_id,
+        txRef,
+        flwTx.payment_type || 'flutterwave',
+        planConfig
       );
+
+      console.log(`✅ Webhook Flutterwave — abonnement activé, tx: ${txRef}`);
+
+    } else {
+      console.log(`ℹ️ Webhook Flutterwave — événement ignoré: ${eventType}`);
     }
 
     res.status(200).json({ received: true });
 
   } catch (err) {
-    console.error('❌ Erreur Webhook FedaPay:', err.message);
+    console.error('❌ Erreur Webhook Flutterwave:', err.message);
     res.status(500).send('Webhook Error');
   }
 });
 
+// Helper activation abonnement Flutterwave
+async function _activateFlutterwaveSubscription(userId, transactionId, paymentMethod, planConfig) {
+  await pool.query(
+    `UPDATE subscriptions
+     SET status = 'active', payment_method = $1, updated_at = NOW(),
+         starts_at = NOW(), ends_at = NOW() + $2::INTERVAL
+     WHERE transaction_id = $3`,
+    [paymentMethod, planConfig.interval, transactionId]
+  );
+  await pool.query(
+    `UPDATE users
+     SET is_subscriber = TRUE, subscription_start_date = NOW(),
+         subscription_end_date = NOW() + $1::INTERVAL, updated_at = NOW()
+     WHERE id = $2`,
+    [planConfig.interval, userId]
+  );
+}
+
 // ==========================================
-// 3. INIT PAIEMENT — Stripe Payment Element
+// 4. INIT PAIEMENT — Stripe Payment Element
 // POST /api/subscriptions/init-stripe-payment
 // Retourne un clientSecret pour monter le Payment Element côté front.
 // Apple Pay, Google Pay et PayPal sont automatiquement inclus via
@@ -270,7 +423,7 @@ router.post('/webhook', express.json(), async (req, res) => {
 router.post('/init-stripe-payment', isAuthenticated, verifyCsrf, async (req, res) => {
   try {
     if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.startsWith('sk_test_REMPLACER')) {
-      return res.status(503).json({ success: false, error: "Stripe non configuré — ajoutez STRIPE_SECRET_KEY dans .env" });
+      return res.status(503).json({ success: false, error: 'Stripe non configuré — ajoutez STRIPE_SECRET_KEY dans .env' });
     }
 
     const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
@@ -278,12 +431,12 @@ router.post('/init-stripe-payment', isAuthenticated, verifyCsrf, async (req, res
     const { plan } = req.body;
 
     if (!plan) {
-      return res.status(400).json({ success: false, error: "plan requis" });
+      return res.status(400).json({ success: false, error: 'plan requis' });
     }
 
     const planConfig = validatePlan(plan);
     if (!planConfig) {
-      return res.status(400).json({ success: false, error: "Plan invalide" });
+      return res.status(400).json({ success: false, error: 'Plan invalide' });
     }
 
     const activeCheckStripe = await pool.query(
@@ -291,7 +444,7 @@ router.post('/init-stripe-payment', isAuthenticated, verifyCsrf, async (req, res
       [userId]
     );
     if (activeCheckStripe.rows.length > 0) {
-      return res.status(400).json({ success: false, error: "Vous avez déjà un abonnement actif" });
+      return res.status(400).json({ success: false, error: 'Vous avez déjà un abonnement actif' });
     }
 
     const country = getCountryFromReq(req);
@@ -300,7 +453,7 @@ router.post('/init-stripe-payment', isAuthenticated, verifyCsrf, async (req, res
 
     const currencyConfig = CURRENCY_PRICING[currency];
     if (!currencyConfig || currencyConfig.provider !== 'stripe') {
-      return res.status(400).json({ success: false, error: "Devise invalide pour Stripe" });
+      return res.status(400).json({ success: false, error: 'Devise invalide pour Stripe' });
     }
 
     const transactionId = `STR-${Date.now()}-${userId}`;
@@ -331,12 +484,12 @@ router.post('/init-stripe-payment', isAuthenticated, verifyCsrf, async (req, res
     });
   } catch (err) {
     console.error('❌ Erreur init-stripe-payment:', err);
-    res.status(500).json({ success: false, error: "Erreur serveur Stripe" });
+    res.status(500).json({ success: false, error: 'Erreur serveur Stripe' });
   }
 });
 
 // ==========================================
-// 4. WEBHOOK STRIPE
+// 5. WEBHOOK STRIPE
 // POST /api/subscriptions/stripe-webhook
 // Corps = Buffer raw (géré par express.raw() dans server.js)
 // ==========================================
@@ -381,20 +534,20 @@ router.post('/stripe-webhook', async (req, res) => {
 });
 
 // ==========================================
-// 5. CONFIRM STRIPE (fallback depuis paiement-success.html)
+// 6. CONFIRM STRIPE (fallback depuis paiement-success.html)
 // GET /api/subscriptions/confirm-stripe
 // ==========================================
 router.get('/confirm-stripe', isAuthenticated, async (req, res) => {
   try {
     if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.startsWith('sk_test_REMPLACER')) {
-      return res.status(503).json({ success: false, error: "Stripe non configuré" });
+      return res.status(503).json({ success: false, error: 'Stripe non configuré' });
     }
 
     const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
     const { payment_intent } = req.query;
 
     if (!payment_intent) {
-      return res.status(400).json({ success: false, error: "payment_intent requis" });
+      return res.status(400).json({ success: false, error: 'payment_intent requis' });
     }
 
     const pi = await stripe.paymentIntents.retrieve(payment_intent);
@@ -405,15 +558,15 @@ router.get('/confirm-stripe', isAuthenticated, async (req, res) => {
 
     const { userId, plan, transactionId } = pi.metadata || {};
     if (!userId || !plan || !transactionId) {
-      return res.status(400).json({ success: false, error: "Metadata manquante" });
+      return res.status(400).json({ success: false, error: 'Metadata manquante' });
     }
 
     if (parseInt(userId) !== req.session.user.id) {
-      return res.status(403).json({ success: false, error: "Accès refusé" });
+      return res.status(403).json({ success: false, error: 'Accès refusé' });
     }
 
     const planConfig = validatePlan(plan);
-    if (!planConfig) return res.status(400).json({ success: false, error: "Plan invalide" });
+    if (!planConfig) return res.status(400).json({ success: false, error: 'Plan invalide' });
 
     const existing = await pool.query(
       'SELECT status FROM subscriptions WHERE transaction_id = $1',
@@ -435,7 +588,7 @@ router.get('/confirm-stripe', isAuthenticated, async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error('❌ Erreur confirm-stripe:', err);
-    res.status(500).json({ success: false, error: "Erreur serveur" });
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 });
 
@@ -458,22 +611,22 @@ async function _activateStripeSubscription(userId, transactionId, planConfig) {
 }
 
 // ==========================================
-// 6. SIMULATEUR (MODE DEV)
+// 7. SIMULATEUR (MODE DEV)
 // POST /api/subscriptions/simulate-payment
 // ==========================================
 router.post('/simulate-payment', isAuthenticated, verifyCsrf, async (req, res) => {
   if (process.env.NODE_ENV === 'production') {
-    return res.status(403).json({ success: false, error: "Interdit en production" });
+    return res.status(403).json({ success: false, error: 'Interdit en production' });
   }
 
   const userId = req.session.user.id;
   const { plan, currency = 'XOF' } = req.body;
 
   const planConfig = validatePlan(plan);
-  if (!planConfig) return res.status(400).json({ success: false, error: "Plan invalide" });
+  if (!planConfig) return res.status(400).json({ success: false, error: 'Plan invalide' });
 
   const currencyConfig = CURRENCY_PRICING[currency];
-  if (!currencyConfig) return res.status(400).json({ success: false, error: "Devise invalide" });
+  if (!currencyConfig) return res.status(400).json({ success: false, error: 'Devise invalide' });
 
   const amount = (currency === 'XOF' && plan === 'yearly')
     ? PLAN_CONFIG['yearly'].xof_amount
@@ -498,7 +651,7 @@ router.post('/simulate-payment', isAuthenticated, verifyCsrf, async (req, res) =
     if (req.session?.user) {
       req.session.user.is_subscriber = true;
       req.session.save((err) => {
-        if (err) return res.status(500).json({ success: false, error: "Erreur session" });
+        if (err) return res.status(500).json({ success: false, error: 'Erreur session' });
         console.log(`🚀 Abonnement SIMULÉ activé — user ${userId} (${currency})`);
         res.json({
           success: true,
@@ -513,12 +666,12 @@ router.post('/simulate-payment', isAuthenticated, verifyCsrf, async (req, res) =
     }
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, error: "Erreur simulateur" });
+    res.status(500).json({ success: false, error: 'Erreur simulateur' });
   }
 });
 
 // ==========================================
-// 7. RÉSILIER ABONNEMENT
+// 8. RÉSILIER ABONNEMENT
 // POST /api/subscriptions/cancel
 // ==========================================
 router.post('/cancel', isAuthenticated, verifyCsrf, async (req, res) => {
@@ -535,16 +688,16 @@ router.post('/cancel', isAuthenticated, verifyCsrf, async (req, res) => {
     if (req.session?.user) {
       req.session.user.is_subscriber = false;
       req.session.save((err) => {
-        if (err) return res.status(500).json({ success: false, error: "Erreur session" });
+        if (err) return res.status(500).json({ success: false, error: 'Erreur session' });
         console.log('❌ Abonnement résilié');
-        res.json({ success: true, message: "Votre abonnement a été résilié avec succès." });
+        res.json({ success: true, message: 'Votre abonnement a été résilié avec succès.' });
       });
     } else {
-      res.json({ success: true, message: "Votre abonnement a été résilié avec succès." });
+      res.json({ success: true, message: 'Votre abonnement a été résilié avec succès.' });
     }
   } catch (err) {
     console.error('Erreur résiliation:', err);
-    res.status(500).json({ success: false, error: "Erreur serveur" });
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 });
 
