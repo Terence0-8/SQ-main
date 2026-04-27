@@ -1,19 +1,19 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
   <meta charset="UTF-8">
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#37463D">
-  <meta name="description" content="Éditeur d'article  Publiez du contenu sur Solitiquo.">
-  <meta property="og:title" content="Solitiquo  L'Actualité Premium" />
+  <meta name="description" content="Éditeur d'article — Publiez du contenu sur Solitiquo.">
+  <meta property="og:title" content="Solitiquo — L'Actualité Premium" />
   <meta property="og:description" content="Le média de référence pour l'analyse politique et sociale au Cameroun." />
   <meta property="og:image" content="https://solitiquo.com/logo.png" />
   <meta property="og:url" content="https://solitiquo.com" />
   <meta property="og:type" content="website" />
-    <link rel="alternate" hreflang="fr" href="https://solitiquo.com/fr/" />
-    <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
-    <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
+  <link rel="alternate" hreflang="fr" href="https://solitiquo.com/fr/" />
+  <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
+  <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
   <!-- Preconnect to external servers -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -26,7 +26,6 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
     rel="stylesheet">
-
   <!-- Favicon & icônes app -->
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png">
@@ -51,7 +50,6 @@
           <div class="burger-line"></div>
         </button>
       </div>
-
       <a href="index.html" class="ph-brand">
         <img src="logo.svg" alt="S">
         <div class="brand-sep"></div>
@@ -84,29 +82,25 @@
           </button>
           <span class="search-label" id="searchLabel">Rechercher</span>
         </div>
-
         <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
-
           <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput"
             autocomplete="off" required />
-
           <button class="search-submit" type="submit" aria-label="Lancer">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
-
         </form>
       </div>
       <a href="auth.html" class="ph-btn-auth" data-i18n="nav_login">S'identifier</a>
     </div>
-  
-      <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <circle cx="11" cy="11" r="7"/>
-          <path d="M21 21l-4.35-4.35"/>
-        </svg>
-      </button>
+
+    <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="11" cy="11" r="7"/>
+        <path d="M21 21l-4.35-4.35"/>
+      </svg>
+    </button>
   </header>
 
   <form id="articleForm" class="workspace">
@@ -117,7 +111,7 @@
       <div class="tool-separator"></div>
       <button type="button" class="tool-btn" onclick="format('formatBlock', 'h2')">H2</button>
       <button type="button" class="tool-btn" style="font-family:'Playfair Display'; color:#C82823;"
-        onclick="format('formatBlock', 'blockquote')">“ ”</button>
+        onclick="format('formatBlock', 'blockquote')">“”</button>
       <div class="tool-separator"></div>
       <button type="button" class="tool-btn" onclick="format('insertUnorderedList')">•—</button>
       <button type="button" class="tool-btn" onclick="format('removeFormat')">✕</button>
@@ -190,13 +184,6 @@
     </aside>
   </form>
 
-  <!-- AJOUTER CES 2 LIGNES AVANT   <script src="/js/lazyload.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js');
-    }
-  </script>
-</body> -->
   <script src="js/i18n.js"></script>
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
@@ -211,10 +198,8 @@
     const tagsContainer = document.getElementById('tags-container');
 
     function renderTags() {
-      // On garde l'input, on supprime les anciennes chips
       const chips = tagsContainer.querySelectorAll('.tag-chip');
       chips.forEach(c => c.remove());
-
       currentTags.forEach((tag, index) => {
         const chip = document.createElement('div');
         chip.className = 'tag-chip';
@@ -253,6 +238,7 @@
         reader.readAsDataURL(input.files[0]);
       }
     }
+
     function updatePreviewFromUrl(url) {
       if (url) {
         const img = document.getElementById('current-image-preview');
@@ -265,7 +251,10 @@
     // Slug auto
     document.getElementById('title').addEventListener('input', e => {
       if (!window.isEditing) {
-        document.getElementById('slug').value = e.target.value.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-');
+        document.getElementById('slug').value = e.target.value
+          .toLowerCase().trim()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/[\s_-]+/g, '-');
       }
     });
 
@@ -277,7 +266,7 @@
 
     if (editId) {
       window.isEditing = true;
-      submitBtn.textContent = "Mettre à jour";
+      submitBtn.textContent = 'Mettre à jour';
       loadArticleData(editId);
     }
 
@@ -295,8 +284,6 @@
           document.getElementById('image_url').value = art.image_url || '';
           document.getElementById('image_caption').value = art.image_caption || '';
           if (art.image_url) updatePreviewFromUrl(art.image_url);
-
-          // Charger les tags
           if (art.tags && Array.isArray(art.tags)) {
             currentTags = art.tags;
             renderTags();
@@ -314,19 +301,16 @@
       statusDiv.textContent = '';
 
       const formData = new FormData();
-      formData.append('title', document.getElementById('title').value);
-      formData.append('slug', document.getElementById('slug').value);
-      formData.append('content', document.getElementById('editor-content').innerHTML);
-      formData.append('excerpt', document.getElementById('excerpt').value);
-      formData.append('category', document.getElementById('category').value);
-      formData.append('image_url', document.getElementById('image_url').value);
+      formData.append('title',         document.getElementById('title').value);
+      formData.append('slug',          document.getElementById('slug').value);
+      formData.append('content',       document.getElementById('editor-content').innerHTML);
+      formData.append('excerpt',       document.getElementById('excerpt').value);
+      formData.append('category',      document.getElementById('category').value);
+      formData.append('image_url',     document.getElementById('image_url').value);
       formData.append('image_caption', document.getElementById('image_caption').value);
-
-      // Envoi des tags comme chaîne JSON
-      formData.append('tags', JSON.stringify(currentTags));
-
-      formData.append('lang', 'fr');
-      formData.append('author_id', 1);
+      formData.append('tags',          JSON.stringify(currentTags));
+      formData.append('lang',          'fr');
+      formData.append('author_id',     1);
 
       const fileInput = document.getElementById('image_file');
       if (fileInput.files[0]) formData.append('image_file', fileInput.files[0]);
@@ -337,7 +321,15 @@
           : `${window.API_URL}/articles`;
         const method = window.isEditing ? 'PUT' : 'POST';
 
-        const res = await fetch(url, { method: method, body: formData });
+        // ✅ credentials: 'include' pour envoyer le cookie de session
+        // ✅ X-CSRF-Token pour passer le middleware verifyCsrf du backend
+        const res = await fetch(url, {
+          method,
+          body: formData,
+          credentials: 'include',
+          headers: { 'X-CSRF-Token': SolitiquoAPI.csrfToken }
+        });
+
         const json = await res.json();
 
         if (json.success) {
@@ -355,6 +347,7 @@
       }
     });
   </script>
+
   <script src="/js/lazyload.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
