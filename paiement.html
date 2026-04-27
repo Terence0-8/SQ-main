@@ -61,7 +61,7 @@
     }
     #stripe-submit-btn:hover:not(:disabled) { background: #4f46e5; }
     #stripe-submit-btn:disabled { opacity: 0.65; cursor: not-allowed; }
-    #fedapay-pay-btn {
+    #flutterwave-pay-btn {
       width: 100%;
       padding: 14px 20px;
       background: #00AA55;
@@ -73,8 +73,8 @@
       cursor: pointer;
       transition: background 0.2s, opacity 0.2s;
     }
-    #fedapay-pay-btn:hover:not(:disabled) { background: #008844; }
-    #fedapay-pay-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+    #flutterwave-pay-btn:hover:not(:disabled) { background: #008844; }
+    #flutterwave-pay-btn:disabled { opacity: 0.65; cursor: not-allowed; }
     .payment-logos {
       display: flex;
       gap: 10px;
@@ -156,20 +156,20 @@
       </div>
 
       <!-- ══════════════════════════════════════
-           SECTION FEDAPAY — Mobile Money / Carte (XOF)
-           Orange Money, MTN MoMo, Visa via FedaPay
+           SECTION FLUTTERWAVE — Mobile Money / Carte (XOF/XAF)
+           Orange Money, MTN MoMo, Visa via Flutterwave
            ══════════════════════════════════════ -->
-      <div id="fedapay-section" style="display:none;">
-        <button id="fedapay-pay-btn">
-          Payer <span id="fedapay-btn-amount">…</span>
+      <div id="flutterwave-section" style="display:none;">
+        <button id="flutterwave-pay-btn">
+          Payer <span id="flutterwave-btn-amount">…</span>
         </button>
-        <p style="text-align:center; font-size:0.8rem; color:#999; margin-top:15px;" data-i18n="payment_fedapay_note">
-          En cliquant, vous serez redirigé vers le guichet sécurisé FedaPay.
+        <p style="text-align:center; font-size:0.8rem; color:#999; margin-top:15px;" data-i18n="payment_flutterwave_note">
+          En cliquant, vous serez redirigé vers le guichet sécurisé Flutterwave.
           Aucune donnée bancaire n'est stockée par Solitiquo.
         </p>
         <!-- Panneau dev — visible uniquement en localhost -->
         <div id="dev-panel" style="display:none;">
-          <strong>🔧 Mode dev</strong> — FedaPay sandbox actif<br>
+          <strong>🔧 Mode dev</strong> — Flutterwave test actif<br>
           <span id="dev-country-info"></span>
         </div>
       </div>
@@ -268,14 +268,10 @@
         pricing = { currency: 'USD', symbol: '$', amount: 7.99, provider: 'stripe', publishableKey: '' };
       }
 
-      const currency   = pricing.currency || 'USD';
-      const provider   = pricing.provider || 'stripe';
+      const currency = pricing.currency || 'USD';
+      const provider = pricing.provider || 'stripe';
 
       // ─── GEO-LOCK : protection croisée ──────────────────────────
-      // Si un paramètre ?currency= est passé manuellement dans l'URL
-      // et qu'il ne correspond pas au provider détecté par le backend,
-      // on redirige vers la page d'abonnement pour éviter toute erreur
-      // de facturation géographique.
       const urlCurrency = params.get('currency');
       if (urlCurrency && urlCurrency.toUpperCase() !== currency) {
         console.warn(`GEO-LOCK: devise URL (${urlCurrency}) ≠ devise géo (${currency}). Redirection.`);
@@ -291,9 +287,9 @@
 
       // ─── 3. Récapitulatif ────────────────────────────────────────
       const planLabels = { monthly: t('payment_plan_monthly'), yearly: t('payment_plan_yearly') };
-      document.getElementById('planName').textContent    = planLabels[plan] || t('payment_plan_monthly');
-      document.getElementById('planPrice').textContent   = priceFormatted;
-      document.getElementById('totalPrice').textContent  = priceFormatted;
+      document.getElementById('planName').textContent   = planLabels[plan] || t('payment_plan_monthly');
+      document.getElementById('planPrice').textContent  = priceFormatted;
+      document.getElementById('totalPrice').textContent = priceFormatted;
       document.getElementById('taxes-display').textContent =
         (currency === 'XOF' || currency === 'XAF') ? '0 FCFA' : '0,00';
 
@@ -301,8 +297,8 @@
       const badgeEl = document.getElementById('secure-badge');
       const logosEl = document.getElementById('payment-logos');
 
-      if (provider === 'fedapay') {
-        badgeEl.innerHTML = '🔒 Paiement sécurisé par <strong>FedaPay</strong>';
+      if (provider === 'flutterwave') {
+        badgeEl.innerHTML = '🔒 Paiement sécurisé par <strong>Flutterwave</strong>';
         logosEl.innerHTML = `
           <span style="display:inline-flex;align-items:center;gap:4px;background:#FF6600;color:#fff;font-weight:700;font-size:12px;padding:3px 8px;border-radius:4px;">Orange Money</span>
           <span style="display:inline-flex;align-items:center;gap:4px;background:#FFCC00;color:#000;font-weight:700;font-size:12px;padding:3px 8px;border-radius:4px;">MTN MoMo</span>
@@ -339,15 +335,16 @@
       }
 
       // ══════════════════════════════════════════════════════════════
-      // 6A. FLOW FEDAPAY — Mobile Money XOF/XAF
+      // 6A. FLOW FLUTTERWAVE — Mobile Money XOF/XAF
       // Appelle /init-payment → reçoit payment_url → redirige vers
-      // le guichet FedaPay (externe). Le retour se fait via
-      // callback_url défini côté backend → paiement-success.html
+      // la page de paiement Flutterwave hébergée (externe).
+      // Le retour se fait via redirect_url → paiement-success.html
+      // qui appelle ensuite /confirm-flutterwave pour activer l'abo.
       // ══════════════════════════════════════════════════════════════
-      if (provider === 'fedapay') {
+      if (provider === 'flutterwave') {
         initLoader.style.display = 'none';
-        document.getElementById('fedapay-section').style.display = 'block';
-        document.getElementById('fedapay-btn-amount').textContent = priceFormatted;
+        document.getElementById('flutterwave-section').style.display = 'block';
+        document.getElementById('flutterwave-btn-amount').textContent = priceFormatted;
 
         // Panneau dev uniquement en localhost
         const isLocalDev = ['localhost', '127.0.0.1'].includes(window.location.hostname);
@@ -355,16 +352,15 @@
           const devPanel = document.getElementById('dev-panel');
           devPanel.style.display = 'block';
           document.getElementById('dev-country-info').textContent =
-            `Pays: ${pricing.country || '?'} — Devise: ${currency} — Provider: FedaPay`;
+            `Pays: ${pricing.country || '?'} — Devise: ${currency} — Provider: Flutterwave`;
         }
 
-        document.getElementById('fedapay-pay-btn').addEventListener('click', async () => {
-          const btn = document.getElementById('fedapay-pay-btn');
+        document.getElementById('flutterwave-pay-btn').addEventListener('click', async () => {
+          const btn = document.getElementById('flutterwave-pay-btn');
           btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 50 50" style="animation:spin 1s linear infinite;vertical-align:middle;margin-right:8px;"><circle cx="25" cy="25" r="20" fill="none" stroke="#fff" stroke-width="6" stroke-dasharray="80 20"/></svg>${t('payment_processing') || 'Traitement…'}`;
           btn.disabled = true;
 
           try {
-            // ✅ CORRECTION B : appel au vrai endpoint FedaPay (init-payment)
             const res = await fetch(`${window.API_URL}/subscriptions/init-payment`, {
               method: 'POST',
               headers: {
@@ -376,7 +372,7 @@
             });
             const json = await res.json();
             if (json.success && json.payment_url) {
-              // Redirection vers le guichet sécurisé FedaPay
+              // Redirection vers le guichet sécurisé Flutterwave
               window.location.href = json.payment_url;
             } else {
               throw new Error(json.error || 'Erreur inconnue');
@@ -384,7 +380,7 @@
           } catch (err) {
             btn.textContent = `Payer ${priceFormatted}`;
             btn.disabled = false;
-            showGlobalError('Erreur : ' + (err.message || 'Impossible de joindre FedaPay.'));
+            showGlobalError('Erreur : ' + (err.message || 'Impossible de joindre Flutterwave.'));
           }
         });
         return;
