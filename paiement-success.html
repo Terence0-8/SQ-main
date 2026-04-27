@@ -1,9 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
     <meta charset="UTF-8">
-  <!-- Preconnect to external servers -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://res.cloudinary.com" />
@@ -13,8 +12,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#37463D">
-  <meta name="description" content="Paiement confirmé  Bienvenue parmi les membres Premium de Solitiquo.">
-  <meta property="og:title" content="Solitiquo  L'Actualité Premium" />
+  <meta name="description" content="Paiement confirmé — Bienvenue parmi les membres Premium de Solitiquo.">
+  <meta property="og:title" content="Solitiquo — L'Actualité Premium" />
   <meta property="og:description" content="Le média de référence pour l'analyse politique et sociale au Cameroun." />
   <meta property="og:image" content="https://solitiquo.com/logo.png" />
   <meta property="og:url" content="https://solitiquo.com" />
@@ -26,11 +25,9 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
         rel="stylesheet">
-  <!-- Favicon & icônes app -->
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png">
   <link rel="icon" href="/favicon.ico">
-  <!-- Apple / iOS -->
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png">
   <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
   <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-167x167.png">
@@ -76,16 +73,18 @@
     <script src="js/api.js"></script>
     <script>
         const params = new URLSearchParams(window.location.search);
-        const transactionId   = params.get('transaction_id'); // CinetPay / simulateur
+        const transactionId   = params.get('transaction_id'); // Flutterwave / simulateur
         const paymentIntentId = params.get('payment_intent'); // Stripe Payment Element
-        const redirectStatus  = params.get('redirect_status');
-        const isMock = params.get('mock') === 'true';
+        const redirectStatus  = params.get('redirect_status'); // Stripe
+        const provider        = params.get('provider');        // 'flutterwave' si retour FLW
+        const flwStatus       = params.get('status');          // 'successful' | 'cancelled' si retour FLW
+        const isMock          = params.get('mock') === 'true';
 
         const transIdEl     = document.getElementById('transId');
         const syncMessageEl = document.getElementById('syncMessage');
         const syncSuccessEl = document.getElementById('syncSuccess');
 
-        // ── Afficher l'ID ──────────────────────────────────────────────
+        // ── Afficher l'ID ─────────────────────────────────────────────────────
         if (transactionId) {
             transIdEl.textContent = transactionId;
         } else if (paymentIntentId) {
@@ -94,13 +93,44 @@
             transIdEl.textContent = 'Inconnu';
         }
 
-        // ── Synchronisation du statut abonné ───────────────────────────
+        // ── Paiement annulé Flutterwave ───────────────────────────────────
+        if (provider === 'flutterwave' && flwStatus === 'cancelled') {
+            window.location.href = 'paiement.html?cancelled=true&plan=monthly';
+        }
+
+        // ── Synchronisation du statut abonné ───────────────────────────────
         async function syncAndRedirect() {
             syncMessageEl.style.display = 'block';
 
             try {
-                // Stripe Payment Element → confirmer via /confirm-stripe?payment_intent=...
-                // (le webhook peut arriver légèrement après la redirection du navigateur)
+
+                // ══════════════════════════════════════════════════════════════
+                // CAS 1 : Retour Flutterwave
+                // Flutterwave redirige vers :
+                // /paiement-success.html?transaction_id=FLW-xxx&provider=flutterwave&status=successful
+                // On appelle /confirm-flutterwave pour vérifier le paiement et activer l'abo.
+                // ══════════════════════════════════════════════════════════════
+                if (provider === 'flutterwave' && transactionId && !isMock) {
+                    try {
+                        const flwRes = await fetch(
+                            `${window.API_URL}/subscriptions/confirm-flutterwave?tx_ref=${encodeURIComponent(transactionId)}&status=${encodeURIComponent(flwStatus || 'successful')}`,
+                            { credentials: 'include' }
+                        );
+                        const flwData = await flwRes.json();
+                        if (!flwData.success) {
+                            console.warn('confirm-flutterwave en attente:', flwData.error);
+                        }
+                    } catch (flwErr) {
+                        console.warn('Erreur confirm-flutterwave (non bloquant):', flwErr);
+                    }
+                }
+
+                // ══════════════════════════════════════════════════════════════
+                // CAS 2 : Retour Stripe Payment Element
+                // Stripe redirige vers :
+                // /paiement-success.html?payment_intent=pi_xxx&redirect_status=succeeded
+                // On appelle /confirm-stripe pour activer l'abo si le webhook n'est pas encore passé.
+                // ══════════════════════════════════════════════════════════════
                 if (paymentIntentId && !isMock && redirectStatus === 'succeeded') {
                     try {
                         const confirmRes = await fetch(
@@ -109,14 +139,14 @@
                         );
                         const confirmData = await confirmRes.json();
                         if (!confirmData.success) {
-                            console.warn('Confirm-stripe en attente:', confirmData.error);
+                            console.warn('confirm-stripe en attente:', confirmData.error);
                         }
                     } catch (confirmErr) {
                         console.warn('Erreur confirm-stripe (non bloquant):', confirmErr);
                     }
                 }
 
-                // Synchroniser la session utilisateur
+                // ── Synchroniser la session utilisateur (commun aux deux providers) ──
                 const refreshRes = await fetch(`${window.API_URL}/auth/refresh-user`, {
                     method: 'POST',
                     credentials: 'include',
