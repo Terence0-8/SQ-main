@@ -24,7 +24,6 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <style>
-    /* Payment Element container */
     #payment-element {
       margin-bottom: 1.5rem;
       min-height: 80px;
@@ -62,6 +61,20 @@
     }
     #stripe-submit-btn:hover:not(:disabled) { background: #4f46e5; }
     #stripe-submit-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+    #fedapay-pay-btn {
+      width: 100%;
+      padding: 14px 20px;
+      background: #00AA55;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    #fedapay-pay-btn:hover:not(:disabled) { background: #008844; }
+    #fedapay-pay-btn:disabled { opacity: 0.65; cursor: not-allowed; }
     .payment-logos {
       display: flex;
       gap: 10px;
@@ -81,6 +94,7 @@
       font-size: 0.8rem;
       color: #0369a1;
     }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 
@@ -113,7 +127,7 @@
         Paiement annulé. Vous pouvez réessayer quand vous voulez.
       </div>
 
-      <!-- Erreur globale (auth, réseau) -->
+      <!-- Erreur globale (auth, réseau, geo-lock) -->
       <div id="globalErrorMsg" style="display:none; background:#fef2f2; color:#c0392b; padding:12px 16px; border-radius:8px; margin-bottom:1.2rem; font-size:0.9rem;"></div>
 
       <!-- ══════════════════════════════════════
@@ -121,7 +135,6 @@
            Carte + Apple Pay + Google Pay + PayPal (si activé)
            ══════════════════════════════════════ -->
       <div id="stripe-section" style="display:none;">
-        <!-- Zone de chargement initiale -->
         <div id="payment-element-loading">
           <svg width="20" height="20" viewBox="0 0 50 50" style="animation:spin 1s linear infinite">
             <circle cx="25" cy="25" r="20" fill="none" stroke="#635BFF" stroke-width="5" stroke-linecap="round" stroke-dasharray="80 20"/>
@@ -130,7 +143,6 @@
         </div>
 
         <form id="stripe-payment-form" style="display:none;">
-          <!-- Stripe.js monte le Payment Element ici (carte, Apple Pay, Google Pay, PayPal…) -->
           <div id="payment-element"></div>
           <div id="stripe-error-msg"></div>
           <button id="stripe-submit-btn" type="submit">
@@ -144,19 +156,20 @@
       </div>
 
       <!-- ══════════════════════════════════════
-           SECTION CINETPAY — Mobile Money / Carte (XAF)
+           SECTION FEDAPAY — Mobile Money / Carte (XOF)
+           Orange Money, MTN MoMo, Visa via FedaPay
            ══════════════════════════════════════ -->
-      <div id="cinetpay-section" style="display:none;">
-        <button id="payBtn" class="btn-pay" style="background:#00AA55;">
-          Payer <span id="btnAmount">…</span>
+      <div id="fedapay-section" style="display:none;">
+        <button id="fedapay-pay-btn">
+          Payer <span id="fedapay-btn-amount">…</span>
         </button>
-        <p style="text-align:center; font-size:0.8rem; color:#999; margin-top:15px;" data-i18n="payment_cinetpay_note">
-          En cliquant, vous serez redirigé vers le guichet sécurisé CinetPay.
+        <p style="text-align:center; font-size:0.8rem; color:#999; margin-top:15px;" data-i18n="payment_fedapay_note">
+          En cliquant, vous serez redirigé vers le guichet sécurisé FedaPay.
           Aucune donnée bancaire n'est stockée par Solitiquo.
         </p>
         <!-- Panneau dev — visible uniquement en localhost -->
         <div id="dev-panel" style="display:none;">
-          <strong>🔧 Mode dev</strong> — Simulateur activé<br>
+          <strong>🔧 Mode dev</strong> — FedaPay sandbox actif<br>
           <span id="dev-country-info"></span>
         </div>
       </div>
@@ -200,10 +213,6 @@
 
   </div><!-- /.checkout-container -->
 
-  <style>
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
-
   <script src="js/i18n.js"></script>
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
@@ -221,7 +230,8 @@
     }
 
     function formatPrice(currency, amount) {
-      if (currency === 'XAF') return `${Number(amount).toLocaleString('fr-FR')} FCFA`;
+      if (currency === 'XOF' || currency === 'XAF')
+        return `${Number(amount).toLocaleString('fr-FR')} FCFA`;
       return new Intl.NumberFormat('fr-FR', {
         style: 'currency', currency, minimumFractionDigits: 2
       }).format(amount);
@@ -255,41 +265,50 @@
         pricing = await r.json();
       } catch (e) {
         console.warn('Pricing indisponible, fallback USD');
-        pricing = { currency: 'USD', symbol: '$', amount: 7.99, provider: 'stripe',
-                    publishableKey: '' };
+        pricing = { currency: 'USD', symbol: '$', amount: 7.99, provider: 'stripe', publishableKey: '' };
       }
 
-      const currency = pricing.currency || 'USD';
+      const currency   = pricing.currency || 'USD';
+      const provider   = pricing.provider || 'stripe';
 
-      // ─── Montant : on utilise directement le prix renvoyé par le backend.
-      // Pour le plan annuel XAF, le backend renvoie xaf_amount via PLAN_CONFIG.
-      // Pour les autres devises, le plan annuel n'existe pas (carte annuelle masquée),
-      // donc pricing.amount est toujours le montant mensuel correct.
-      const planAmount = (plan === 'yearly' && currency === 'XAF')
+      // ─── GEO-LOCK : protection croisée ──────────────────────────
+      // Si un paramètre ?currency= est passé manuellement dans l'URL
+      // et qu'il ne correspond pas au provider détecté par le backend,
+      // on redirige vers la page d'abonnement pour éviter toute erreur
+      // de facturation géographique.
+      const urlCurrency = params.get('currency');
+      if (urlCurrency && urlCurrency.toUpperCase() !== currency) {
+        console.warn(`GEO-LOCK: devise URL (${urlCurrency}) ≠ devise géo (${currency}). Redirection.`);
+        window.location.href = `abonnement.html?geolock=1`;
+        return;
+      }
+
+      // ─── 2. Montant selon plan ───────────────────────────────────
+      const planAmount = (plan === 'yearly' && (currency === 'XOF' || currency === 'XAF'))
         ? 30000
         : pricing.amount;
       const priceFormatted = formatPrice(currency, planAmount);
 
-      // ─── 2. Récapitulatif ────────────────────────────────────────
+      // ─── 3. Récapitulatif ────────────────────────────────────────
       const planLabels = { monthly: t('payment_plan_monthly'), yearly: t('payment_plan_yearly') };
-      document.getElementById('planName').textContent = planLabels[plan] || t('payment_plan_monthly');
-      document.getElementById('planPrice').textContent = priceFormatted;
-      document.getElementById('totalPrice').textContent = priceFormatted;
-      document.getElementById('taxes-display').textContent = currency === 'XAF' ? '0 FCFA' : '0,00';
+      document.getElementById('planName').textContent    = planLabels[plan] || t('payment_plan_monthly');
+      document.getElementById('planPrice').textContent   = priceFormatted;
+      document.getElementById('totalPrice').textContent  = priceFormatted;
+      document.getElementById('taxes-display').textContent =
+        (currency === 'XOF' || currency === 'XAF') ? '0 FCFA' : '0,00';
 
-      // ─── 3. Badge & logos selon provider ────────────────────────
+      // ─── 4. Badge & logos selon provider ────────────────────────
       const badgeEl = document.getElementById('secure-badge');
       const logosEl = document.getElementById('payment-logos');
 
-      if (pricing.provider === 'cinetpay') {
-        badgeEl.innerHTML = '🔒 Paiement sécurisé par <strong>CinetPay</strong>';
+      if (provider === 'fedapay') {
+        badgeEl.innerHTML = '🔒 Paiement sécurisé par <strong>FedaPay</strong>';
         logosEl.innerHTML = `
           <span style="display:inline-flex;align-items:center;gap:4px;background:#FF6600;color:#fff;font-weight:700;font-size:12px;padding:3px 8px;border-radius:4px;">Orange Money</span>
           <span style="display:inline-flex;align-items:center;gap:4px;background:#FFCC00;color:#000;font-weight:700;font-size:12px;padding:3px 8px;border-radius:4px;">MTN MoMo</span>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 22" height="22" aria-label="Visa" style="background:#1A1F71;border-radius:3px;padding:1px 5px;vertical-align:middle;">
             <text x="2" y="15" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="15" fill="#fff">VISA</text>
-          </svg>
-        `;
+          </svg>`;
       } else {
         badgeEl.innerHTML = '🔒 Paiement sécurisé par <strong>Stripe</strong>';
         logosEl.innerHTML = `
@@ -306,64 +325,75 @@
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 58 22" height="22" aria-label="PayPal" style="vertical-align:middle;">
             <text x="0" y="16" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="14" fill="#003087">Pay</text>
             <text x="27" y="16" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="14" fill="#009CDE">Pal</text>
-          </svg>
-        `;
+          </svg>`;
       }
 
-      // ─── 4. Vérifier connexion ───────────────────────────────────
+      // ─── 5. Vérifier connexion ───────────────────────────────────
       const user = await SolitiquoAPI.getProfile().catch(() => null);
       if (!user) {
         initLoader.style.display = 'none';
         showGlobalError(t('payment_not_logged_in'));
         const el = document.getElementById('globalErrorMsg');
-        el.innerHTML += ` <a href="auth.html?redirect=paiement.html?plan=${plan}&currency=${currency}" style="color:#635BFF;font-weight:700;">${t('auth_login')} →</a>`;
+        el.innerHTML += ` <a href="auth.html?redirect=paiement.html?plan=${plan}" style="color:#635BFF;font-weight:700;">${t('auth_login')} →</a>`;
         return;
       }
 
-      // ─── 5A. FLOW CINETPAY ───────────────────────────────────────
-      if (pricing.provider === 'cinetpay') {
+      // ══════════════════════════════════════════════════════════════
+      // 6A. FLOW FEDAPAY — Mobile Money XOF/XAF
+      // Appelle /init-payment → reçoit payment_url → redirige vers
+      // le guichet FedaPay (externe). Le retour se fait via
+      // callback_url défini côté backend → paiement-success.html
+      // ══════════════════════════════════════════════════════════════
+      if (provider === 'fedapay') {
         initLoader.style.display = 'none';
-        document.getElementById('cinetpay-section').style.display = 'block';
-        document.getElementById('btnAmount').textContent = priceFormatted;
+        document.getElementById('fedapay-section').style.display = 'block';
+        document.getElementById('fedapay-btn-amount').textContent = priceFormatted;
 
-        const isLocalDev = ['localhost','127.0.0.1'].includes(window.location.hostname);
+        // Panneau dev uniquement en localhost
+        const isLocalDev = ['localhost', '127.0.0.1'].includes(window.location.hostname);
         if (isLocalDev) {
           const devPanel = document.getElementById('dev-panel');
           devPanel.style.display = 'block';
           document.getElementById('dev-country-info').textContent =
-            `Pays: ${pricing.country || '?'} — Devise: ${currency} — Provider: CinetPay`;
+            `Pays: ${pricing.country || '?'} — Devise: ${currency} — Provider: FedaPay`;
         }
 
-        document.getElementById('payBtn').addEventListener('click', async () => {
-          const btn = document.getElementById('payBtn');
-          btn.innerHTML = `<span class="loader"></span> ${t('payment_processing')}`;
+        document.getElementById('fedapay-pay-btn').addEventListener('click', async () => {
+          const btn = document.getElementById('fedapay-pay-btn');
+          btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 50 50" style="animation:spin 1s linear infinite;vertical-align:middle;margin-right:8px;"><circle cx="25" cy="25" r="20" fill="none" stroke="#fff" stroke-width="6" stroke-dasharray="80 20"/></svg>${t('payment_processing') || 'Traitement…'}`;
           btn.disabled = true;
+
           try {
-            const res = await fetch(`${window.API_URL}/subscriptions/simulate-payment`, {
+            // ✅ CORRECTION B : appel au vrai endpoint FedaPay (init-payment)
+            const res = await fetch(`${window.API_URL}/subscriptions/init-payment`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': SolitiquoAPI.csrfToken },
-              body: JSON.stringify({ plan, currency }),
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': SolitiquoAPI.csrfToken
+              },
+              body: JSON.stringify({ plan }),
               credentials: 'include'
             });
             const json = await res.json();
             if (json.success && json.payment_url) {
+              // Redirection vers le guichet sécurisé FedaPay
               window.location.href = json.payment_url;
             } else {
               throw new Error(json.error || 'Erreur inconnue');
             }
           } catch (err) {
-            btn.innerHTML = t('payment_retry');
+            btn.textContent = `Payer ${priceFormatted}`;
             btn.disabled = false;
-            showGlobalError('Erreur : ' + (err.message || 'Impossible de joindre CinetPay.'));
+            showGlobalError('Erreur : ' + (err.message || 'Impossible de joindre FedaPay.'));
           }
         });
         return;
       }
 
-      // ─── 5B. FLOW STRIPE — Payment Element embarqué ─────────────
-      // Apple Pay, Google Pay et PayPal sont automatiquement inclus
-      // via automatic_payment_methods: { enabled: true } côté backend.
-      // PayPal nécessite d'être activé dans le Dashboard Stripe.
+      // ══════════════════════════════════════════════════════════════
+      // 6B. FLOW STRIPE — Payment Element embarqué
+      // Apple Pay, Google Pay et PayPal inclus automatiquement.
+      // ══════════════════════════════════════════════════════════════
       if (!pricing.publishableKey) {
         initLoader.style.display = 'none';
         showGlobalError('Stripe non configuré — vérifiez STRIPE_PUBLISHABLE_KEY dans .env.');
@@ -373,21 +403,21 @@
       document.getElementById('stripe-section').style.display = 'block';
 
       try {
-        // Créer le PaymentIntent côté backend
         const piRes = await fetch(`${window.API_URL}/subscriptions/init-stripe-payment`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': SolitiquoAPI.csrfToken },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': SolitiquoAPI.csrfToken
+          },
           body: JSON.stringify({ plan }),
           credentials: 'include'
         });
         const piData = await piRes.json();
         if (!piData.success) throw new Error(piData.error || 'Erreur initialisation');
 
-        // Charger Stripe.js dynamiquement
         await loadStripeJs();
         const stripe = Stripe(pricing.publishableKey);
 
-        // Initialiser les Elements avec le clientSecret du PaymentIntent
         const elements = stripe.elements({
           clientSecret: piData.clientSecret,
           appearance: {
@@ -401,7 +431,6 @@
           }
         });
 
-        // Monter le Payment Element (carte + wallets + PayPal selon dispo)
         const paymentElement = elements.create('payment', {
           layout: { type: 'tabs', defaultCollapsed: false }
         });
@@ -412,21 +441,16 @@
         });
         paymentElement.mount('#payment-element');
 
-        // Bouton de confirmation
         document.getElementById('stripe-btn-amount').textContent = priceFormatted;
         initLoader.style.display = 'none';
 
-        // Soumission du formulaire
         document.getElementById('stripe-payment-form').addEventListener('submit', async (e) => {
           e.preventDefault();
           const submitBtn = document.getElementById('stripe-submit-btn');
-          const errorEl = document.getElementById('stripe-error-msg');
+          const errorEl  = document.getElementById('stripe-error-msg');
 
           submitBtn.disabled = true;
-          submitBtn.innerHTML = `
-            <svg width="16" height="16" viewBox="0 0 50 50" style="animation:spin 1s linear infinite;vertical-align:middle;margin-right:8px;">
-              <circle cx="25" cy="25" r="20" fill="none" stroke="#fff" stroke-width="6" stroke-dasharray="80 20"/>
-            </svg>${t('payment_processing')}`;
+          submitBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 50 50" style="animation:spin 1s linear infinite;vertical-align:middle;margin-right:8px;"><circle cx="25" cy="25" r="20" fill="none" stroke="#fff" stroke-width="6" stroke-dasharray="80 20"/></svg>${t('payment_processing') || 'Traitement…'}`;
           errorEl.style.display = 'none';
 
           const { error } = await stripe.confirmPayment({
@@ -436,7 +460,6 @@
             },
           });
 
-          // On n'arrive ici que si Stripe ne redirige pas (erreur)
           if (error) {
             errorEl.textContent = error.message;
             errorEl.style.display = 'block';
