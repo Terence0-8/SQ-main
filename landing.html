@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Solitiquo — Média d'analyse politique et sociale au Cameroun. Dossiers complets, analyse claire, suivi dans le temps." />
+  <title>Solitiquo — Comprendre enfin la politique camerounaise</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet" />
+
+  <style>
+    /* =============================================
+       RESET & BASE
+    ============================================= */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg:        #0f1114;
+      --bg-card:   #161a1f;
+      --bg-hover:  #1c2127;
+      --text:      #ffffff;
+      --muted:     #bbbbbb;
+      --accent:    #C82823;
+      --accent-dk: #a01f1a;
+      --green:     #37463D;
+      --border:    rgba(255,255,255,0.08);
+      --radius:    12px;
+      --ff-body:   'Inter', sans-serif;
+      --ff-title:  'Playfair Display', serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--ff-body);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    img { max-width: 100%; display: block; }
+    a   { color: inherit; text-decoration: none; }
+
+    /* =============================================
+       LAYOUT HELPERS
+    ============================================= */
+    .lp-container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .lp-section {
+      padding: 96px 0;
+    }
+
+    .lp-section--alt {
+      background-color: var(--bg-card);
+    }
+
+    .lp-label {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    .lp-title {
+      font-family: var(--ff-title);
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--text);
+    }
+
+    .lp-title em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .lp-subtitle {
+      font-size: clamp(15px, 2vw, 18px);
+      color: var(--muted);
+      margin-top: 16px;
+      max-width: 640px;
+    }
+
+    .lp-divider {
+      width: 48px;
+      height: 3px;
+      background: var(--accent);
+      border: none;
+      margin: 24px 0;
+    }
+
+    /* =============================================
+       BOUTONS
+    ============================================= */
+    .lp-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 15px 32px;
+      border-radius: 50px;
+      font-family: var(--ff-body);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .lp-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(200, 40, 35, 0.35);
+    }
+
+    .lp-btn--primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .lp-btn--outline {
+      background: transparent;
+      color: var(--text);
+      border: 1.5px solid var(--border);
+    }
+
+    .lp-btn--outline:hover {
+      border-color: var(--accent);
+      box-shadow: 0 8px 24px rgba(200, 40, 35, 0.2);
+    }
+
+    /* Badge Premium */
+    .lp-badge {
+      background: linear-gradient(135deg, #f5c842, #e09e20);
+      color: #1a1200;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 50px;
+    }
+
+    /* =============================================
+       NAV (minimal)
+    ============================================= */
+    .lp-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(15, 17, 20, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .lp-nav__logo {
+      font-family: var(--ff-title);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .lp-nav__logo span {
+      color: var(--accent);
+    }
+
+    .lp-nav__cta {
+      font-size: 13px;
+      padding: 10px 22px;
+    }
+
+    /* =============================================
+       HERO
+    ============================================= */
+    .lp-hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Fond décoratif abstrait */
+    .lp-hero::before {
+      content: '';
+      position: absolute;
+      top: -200px; right: -200px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(200,40,35,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .lp-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -100px; left: -100px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(55,70,61,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .lp-hero__inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .lp-hero__kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(200, 40, 35, 0.12);
+      border: 1px solid rgba(200, 40, 35, 0.3);
+      border-radius: 50px;
+      padding: 6px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #e86060;
+      margin-bottom: 28px;
+    }
+
+    .lp-hero__kicker::before {
+      content: '●';
+      font-size: 8px;
+      color: var(--accent);
+      animation: lp-pulse 2s infinite;
+    }
+
+    @keyframes lp-pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+
+    .lp-hero__title {
+      font-family: var(--ff-title);
+      font-size: clamp(32px, 5.5vw, 62px);
+      font-weight: 700;
+      line-height: 1.15;
+      max-width: 820px;
+    }
+
+    .lp-hero__title .lp-accent-line {
+      color: var(--accent);
+      display: block;
+    }
+
+    .lp-hero__subtitle {
+      font-size: clamp(16px, 2vw, 20px);
+      color: var(--muted);
+      margin-top: 20px;
+      max-width: 580px;
+      line-height: 1.65;
+    }
+
+    .lp-hero__actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+      margin-top: 40px;
+    }
+
+    .lp-hero__trust {
+      margin-top: 56px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .lp-hero__trust-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .lp-hero__trust-item svg {
+      flex-shrink: 0;
+      color: var(--accent);
+    }
+
+    /* =============================================
+       SECTION PROBLÈME
+    ============================================= */
+    .lp-problem__grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+      margin-top: 48px;
+    }
+
+    .lp-problem__points {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .lp-problem__points li {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .lp-problem__icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(200, 40, 35, 0.12);
+      border: 1px solid rgba(200, 40, 35, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+      font-size: 13px;
+    }
+
+    .lp-problem__quote {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 32px;
+    }
+
+    .lp-problem__quote p {
+      font-family: var(--ff-title);
+      font-style: italic;
+      font-size: clamp(18px, 2.5vw, 24px);
+      line-height: 1.5;
+      color: var(--text);
+    }
+
+    .lp-problem__quote footer {
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* =============================================
+       SECTION SOLUTION — 3 cartes
+    ============================================= */
+    .lp-solution__cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 48px;
+    }
+
+    .lp-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px 28px;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .lp-card:hover {
+      border-color: rgba(200, 40, 35, 0.4);
+      transform: translateY(-4px);
+    }
+
+    .lp-card__icon {
+      width: 52px;
+      height: 52px;
+      background: rgba(200, 40, 35, 0.1);
+      border: 1px solid rgba(200, 40, 35, 0.2);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      font-size: 22px;
+    }
+
+    .lp-card__title {
+      font-family: var(--ff-title);
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+
+    .lp-card__text {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .lp-card__tag {
+      display: inline-block;
+      margin-top: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    /* =============================================
+       SECTION MÉTHODE — steps
+    ============================================= */
+    .lp-method__steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      margin-top: 56px;
+      position: relative;
+    }
+
+    /* Ligne de connexion */
+    .lp-method__steps::before {
+      content: '';
+      position: absolute;
+      top: 26px;
+      left: 10%;
+      right: 10%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--border), var(--border), transparent);
+    }
+
+    .lp-step {
+      text-align: center;
+      padding: 0 16px;
+      position: relative;
+    }
+
+    .lp-step__num {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--ff-title);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 0 auto 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .lp-step__title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .lp-step__desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* =============================================
+       SECTION APERÇU — dossier mock
+    ============================================= */
+    .lp-preview__wrapper {
+      margin-top: 56px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--bg-card);
+    }
+
+    .lp-preview__topbar {
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .lp-preview__dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+
+    .lp-preview__dot:nth-child(1) { background: #ff5f57; }
+    .lp-preview__dot:nth-child(2) { background: #ffbd2e; }
+    .lp-preview__dot:nth-child(3) { background: #28c840; }
+
+    .lp-preview__url {
+      flex: 1;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      font-family: monospace;
+    }
+
+    .lp-preview__body {
+      padding: 40px;
+    }
+
+    .lp-preview__header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .lp-preview__parti-name {
+      font-family: var(--ff-title);
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .lp-preview__parti-full {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .lp-preview__badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .lp-preview__chip {
+      padding: 5px 14px;
+      border-radius: 50px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid;
+    }
+
+    .lp-preview__chip--green {
+      background: rgba(55,70,61,0.3);
+      border-color: rgba(55,70,61,0.6);
+      color: #7dab8c;
+    }
+
+    .lp-preview__chip--red {
+      background: rgba(200,40,35,0.12);
+      border-color: rgba(200,40,35,0.3);
+      color: #e06060;
+    }
+
+    .lp-preview__chip--gold {
+      background: rgba(200,160,40,0.12);
+      border-color: rgba(200,160,40,0.3);
+      color: #c8a828;
+    }
+
+    .lp-preview__grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .lp-preview__stat {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .lp-preview__stat-val {
+      font-family: var(--ff-title);
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .lp-preview__stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .lp-preview__history {
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+    }
+
+    .lp-preview__history-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .lp-preview__timeline {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .lp-preview__timeline li {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .lp-preview__timeline-year {
+      min-width: 40px;
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 12px;
+    }
+
+    .lp-preview__blur-wrap {
+      position: relative;
+      margin-top: 8px;
+    }
+
+    .lp-preview__blur-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 0%, var(--bg-card) 60%);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 24px;
+      border-radius: 0 0 12px 12px;
+    }
+
+    .lp-preview__lock {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    /* =============================================
+       SECTION "POURQUOI NOUS"
+    ============================================= */
+    .lp-why__list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 48px;
+    }
+
+    .lp-why__item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .lp-why__check {
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+      background: rgba(55,70,61,0.3);
+      border: 1px solid rgba(55,70,61,0.5);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      margin-top: 2px;
+    }
+
+    .lp-why__text h4 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .lp-why__text p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* =============================================
+       SECTION ACCÈS PRIORITAIRE — formulaire
+    ============================================= */
+    .lp-access {
+      text-align: center;
+    }
+
+    .lp-access .lp-subtitle {
+      margin: 16px auto 0;
+    }
+
+    .lp-access__form {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      gap: 12px;
+      max-width: 520px;
+      margin: 40px auto 0;
+    }
+
+    .lp-access__input {
+      flex: 1;
+      min-width: 240px;
+      padding: 15px 22px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: 50px;
+      color: var(--text);
+      font-family: var(--ff-body);
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .lp-access__input::placeholder {
+      color: #666;
+    }
+
+    .lp-access__input:focus {
+      border-color: var(--accent);
+    }
+
+    .lp-access__note {
+      margin-top: 16px;
+      font-size: 12px;
+      color: #555;
+    }
+
+    .lp-access__counter {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(200, 40, 35, 0.08);
+      border: 1px solid rgba(200, 40, 35, 0.2);
+      border-radius: 50px;
+      padding: 8px 20px;
+      font-size: 13px;
+      color: #e06060;
+      margin-bottom: 32px;
+    }
+
+    .lp-access__counter span {
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    /* =============================================
+       FOOTER
+    ============================================= */
+    .lp-footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 24px;
+    }
+
+    .lp-footer__inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .lp-footer__logo {
+      font-family: var(--ff-title);
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .lp-footer__logo span { color: var(--accent); }
+
+    .lp-footer__links {
+      display: flex;
+      gap: 24px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .lp-footer__links a:hover { color: var(--text); }
+
+    .lp-footer__copy {
+      font-size: 12px;
+      color: #444;
+      width: 100%;
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    /* =============================================
+       RESPONSIVE
+    ============================================= */
+    @media (max-width: 900px) {
+      .lp-solution__cards,
+      .lp-why__list {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .lp-method__steps {
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+      }
+
+      .lp-method__steps::before { display: none; }
+
+      .lp-problem__grid {
+        grid-template-columns: 1fr;
+      }
+
+      .lp-preview__grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .lp-section { padding: 64px 0; }
+
+      .lp-solution__cards,
+      .lp-why__list,
+      .lp-method__steps {
+        grid-template-columns: 1fr;
+      }
+
+      .lp-hero__actions { flex-direction: column; align-items: flex-start; }
+
+      .lp-preview__grid { grid-template-columns: 1fr 1fr; }
+
+      .lp-preview__body { padding: 24px 20px; }
+
+      .lp-footer__inner { flex-direction: column; text-align: center; }
+      .lp-footer__links { flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ============================================
+       NAVIGATION
+  ============================================= -->
+  <nav class="lp-nav">
+    <div class="lp-nav__logo">Soliti<span>quo</span></div>
+    <a href="#lp-access" class="lp-btn lp-btn--primary lp-nav__cta">
+      Accès prioritaire
+    </a>
+  </nav>
+
+
+  <!-- ============================================
+       HERO
+  ============================================= -->
+  <section class="lp-hero">
+    <div class="lp-container lp-hero__inner">
+
+      <div class="lp-hero__kicker">Lancement bientôt — Cameroun</div>
+
+      <h1 class="lp-hero__title">
+        Comprendre enfin la politique camerounaise
+        <span class="lp-accent-line">— sans jargon, sans bruit.</span>
+      </h1>
+
+      <p class="lp-hero__subtitle">
+        Solitiquo est un média d'analyse politique et sociale qui rend l'information accessible, structurée et vérifiable. Parce que comprendre son pays est un droit fondamental.
+      </p>
+
+      <div class="lp-hero__actions">
+        <a href="#lp-access" class="lp-btn lp-btn--primary">
+          Rejoindre les premiers lecteurs
+          <span class="lp-badge">Premium</span>
+        </a>
+        <a href="#lp-solution" class="lp-btn lp-btn--outline">
+          Découvrir le projet
+        </a>
+      </div>
+
+      <div class="lp-hero__trust">
+        <div class="lp-hero__trust-item">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Analyse sans parti pris
+        </div>
+        <div class="lp-hero__trust-item">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Données vérifiées
+        </div>
+        <div class="lp-hero__trust-item">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Format accessible à tous
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ============================================
+       SECTION 1 — LE PROBLÈME
+  ============================================= -->
+  <section class="lp-section lp-section--alt">
+    <div class="lp-container">
+      <span class="lp-label">Le problème</span>
+      <h2 class="lp-title">Une information politique <em>fragmentée et opaque</em></h2>
+      <hr class="lp-divider" />
+
+      <div class="lp-problem__grid">
+        <ul class="lp-problem__points">
+          <li>
+            <div class="lp-problem__icon">✕</div>
+            Les médias locaux privilégient le sensationnel au détriment de l'analyse de fond.
+          </li>
+          <li>
+            <div class="lp-problem__icon">✕</div>
+            Les partis politiques n'ont pas de fiche synthétique, lisible et à jour.
+          </li>
+          <li>
+            <div class="lp-problem__icon">✕</div>
+            Le suivi des promesses électorales et des votes est quasi inexistant.
+          </li>
+          <li>
+            <div class="lp-problem__icon">✕</div>
+            Les réseaux sociaux amplifient la désinformation, pas la compréhension.
+          </li>
+          <li>
+            <div class="lp-problem__icon">✕</div>
+            Le citoyen ordinaire n'a pas accès à une source fiable, centralisée et neutre.
+          </li>
+        </ul>
+
+        <blockquote class="lp-problem__quote">
+          <p>"On a des opinions tranchées sur des sujets qu'on comprend à moitié, parce que personne ne nous a expliqué simplement."</p>
+          <footer>— Un lecteur type de Solitiquo</footer>
+        </blockquote>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================
+       SECTION 2 — NOTRE SOLUTION
+  ============================================= -->
+  <section id="lp-solution" class="lp-section">
+    <div class="lp-container">
+      <span class="lp-label">Notre solution</span>
+      <h2 class="lp-title">L'essentiel, <em>enfin structuré</em></h2>
+      <p class="lp-subtitle">Trois piliers pour transformer la façon dont vous lisez la politique camerounaise.</p>
+      <hr class="lp-divider" />
+
+      <div class="lp-solution__cards">
+
+        <!-- Carte 1 -->
+        <article class="lp-card">
+          <div class="lp-card__icon">📂</div>
+          <h3 class="lp-card__title">Dossiers complets</h3>
+          <p class="lp-card__text">Chaque sujet — parti, élu, loi, scrutin — fait l'objet d'un dossier détaillé, mis à jour, avec sources vérifiées. Rien n'est laissé au hasard.</p>
+          <span class="lp-card__tag">→ Profondeur</span>
+        </article>
+
+        <!-- Carte 2 -->
+        <article class="lp-card">
+          <div class="lp-card__icon">🔍</div>
+          <h3 class="lp-card__title">Analyse claire</h3>
+          <p class="lp-card__text">Pas de jargon. Pas de biais assumés. Des faits, des chiffres, un contexte. Une écriture simple pour que tout le monde comprenne — pas seulement les initiés.</p>
+          <span class="lp-card__tag">→ Clarté</span>
+        </article>
+
+        <!-- Carte 3 -->
+        <article class="lp-card">
+          <div class="lp-card__icon">📈</div>
+          <h3 class="lp-card__title">Suivi dans le temps</h3>
+          <p class="lp-card__text">L'information politique est vivante. On trace les évolutions, les revirements, les promesses tenues ou brisées. Vous avez toujours la vue d'ensemble.</p>
+          <span class="lp-card__tag">→ Continuité</span>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================
+       SECTION 3 — NOTRE MÉTHODE
+  ============================================= -->
+  <section class="lp-section lp-section--alt">
+    <div class="lp-container">
+      <span class="lp-label">Notre méthode</span>
+      <h2 class="lp-title">Une approche <em>structurée, documentée et comparable</em></h2>
+      <p class="lp-subtitle">Chaque dossier suit un protocole rigoureux, de la collecte à la publication.</p>
+      <hr class="lp-divider" />
+
+      <div class="lp-method__steps">
+
+        <div class="lp-step">
+          <div class="lp-step__num">01</div>
+          <h4 class="lp-step__title">Collecte</h4>
+          <p class="lp-step__desc">Sources officielles, déclarations publiques, archives et données électorales vérifiées à la source.</p>
+        </div>
+
+        <div class="lp-step">
+          <div class="lp-step__num">02</div>
+          <h4 class="lp-step__title">Structuration</h4>
+          <p class="lp-step__desc">Chaque information est catégorisée, datée et reliée à d'autres dossiers pour une vision transversale.</p>
+        </div>
+
+        <div class="lp-step">
+          <div class="lp-step__num">03</div>
+          <h4 class="lp-step__title">Analyse</h4>
+          <p class="lp-step__desc">Mise en contexte sans prise de position partisane. On explique les faits, les enjeux, les tensions réelles.</p>
+        </div>
+
+        <div class="lp-step">
+          <div class="lp-step__num">04</div>
+          <h4 class="lp-step__title">Mise à jour</h4>
+          <p class="lp-step__desc">Le contenu est révisé régulièrement. L'information vieillit — nos dossiers évoluent avec elle.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================
+       SECTION 4 — APERÇU (mock dossier)
+  ============================================= -->
+  <section class="lp-section">
+    <div class="lp-container">
+      <span class="lp-label">Aperçu</span>
+      <h2 class="lp-title">À quoi ressemble <em>un dossier Solitiquo ?</em></h2>
+      <p class="lp-subtitle">Voici un exemple de fiche parti — le type de contenu structuré que vous trouverez sur la plateforme.</p>
+      <hr class="lp-divider" />
+
+      <div class="lp-preview__wrapper">
+
+        <!-- Barre de navigateur simulée -->
+        <div class="lp-preview__topbar">
+          <div class="lp-preview__dot"></div>
+          <div class="lp-preview__dot"></div>
+          <div class="lp-preview__dot"></div>
+          <div class="lp-preview__url">solitiquo.com / partis / rdpc</div>
+        </div>
+
+        <div class="lp-preview__body">
+
+          <!-- En-tête fiche -->
+          <div class="lp-preview__header">
+            <div>
+              <h3 class="lp-preview__parti-name">RDPC</h3>
+              <p class="lp-preview__parti-full">Rassemblement Démocratique du Peuple Camerounais</p>
+            </div>
+            <div class="lp-preview__badges">
+              <span class="lp-preview__chip lp-preview__chip--red">Parti au pouvoir</span>
+              <span class="lp-preview__chip lp-preview__chip--green">Centre-droit</span>
+              <span class="lp-preview__chip lp-preview__chip--gold">Fondé en 1985</span>
+            </div>
+          </div>
+
+          <!-- Stats clés -->
+          <div class="lp-preview__grid">
+            <div class="lp-preview__stat">
+              <div class="lp-preview__stat-val">152</div>
+              <div class="lp-preview__stat-label">Sièges Assemblée</div>
+            </div>
+            <div class="lp-preview__stat">
+              <div class="lp-preview__stat-val">39</div>
+              <div class="lp-preview__stat-label">Ans au pouvoir</div>
+            </div>
+            <div class="lp-preview__stat">
+              <div class="lp-preview__stat-val">P. Biya</div>
+              <div class="lp-preview__stat-label">Leader actuel</div>
+            </div>
+            <div class="lp-preview__stat">
+              <div class="lp-preview__stat-val">71%</div>
+              <div class="lp-preview__stat-label">Score 2018</div>
+            </div>
+          </div>
+
+          <!-- Historique partiel avec flou -->
+          <div class="lp-preview__history">
+            <p class="lp-preview__history-title">Historique clé</p>
+
+            <div class="lp-preview__blur-wrap">
+              <ul class="lp-preview__timeline">
+                <li>
+                  <span class="lp-preview__timeline-year">1985</span>
+                  Création du RDPC en remplacement de l'Union Nationale Camerounaise (UNC).
+                </li>
+                <li>
+                  <span class="lp-preview__timeline-year">1990</span>
+                  Réintroduction du multipartisme sous pression populaire. Début de la concurrence électorale.
+                </li>
+                <li>
+                  <span class="lp-preview__timeline-year">2004</span>
+                  Élection présidentielle — Paul Biya réélu avec 70,9% des voix. Opposition conteste les résultats.
+                </li>
+                <li>
+                  <span class="lp-preview__timeline-year">2018</span>
+                  Biya réélu pour un 7e mandat dans un contexte de crise anglophone et de faible participation.
+                </li>
+                <li>
+                  <span class="lp-preview__timeline-year">2025</span>
+                  Incertitudes autour de la succession et de la transition interne au parti…
+                </li>
+              </ul>
+
+              <!-- Overlay flou = contenu réservé aux abonnés -->
+              <div class="lp-preview__blur-overlay">
+                <div class="lp-preview__lock">
+                  🔒 Suite réservée aux abonnés — Accès prioritaire
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================
+       SECTION 5 — POURQUOI NOUS ?
+  ============================================= -->
+  <section class="lp-section lp-section--alt">
+    <div class="lp-container">
+      <span class="lp-label">Pourquoi nous ?</span>
+      <h2 class="lp-title">Ce qui nous rend <em>différents</em></h2>
+      <hr class="lp-divider" />
+
+      <div class="lp-why__list">
+
+        <div class="lp-why__item">
+          <div class="lp-why__check">⚖️</div>
+          <div class="lp-why__text">
+            <h4>Analyse sans parti pris</h4>
+            <p>Pas d'agenda politique, pas de financements partisans. On rapporte les faits, vous tirez vos propres conclusions.</p>
+          </div>
+        </div>
+
+        <div class="lp-why__item">
+          <div class="lp-why__check">✅</div>
+          <div class="lp-why__text">
+            <h4>Données vérifiées</h4>
+            <p>Chaque chiffre, chaque citation est sourcé. On cite nos références et on distingue les faits des interprétations.</p>
+          </div>
+        </div>
+
+        <div class="lp-why__item">
+          <div class="lp-why__check">📱</div>
+          <div class="lp-why__text">
+            <h4>Format accessible</h4>
+            <p>Une politique de clarté radicale. Des fiches courtes, des tableaux, des timelines. L'information est faite pour être comprise — pas impressionnante.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================
+       SECTION 6 — ACCÈS PRIORITAIRE
+  ============================================= -->
+  <section id="lp-access" class="lp-section lp-access">
+    <div class="lp-container">
+
+      <div class="lp-access__counter">
+        🔴 <span>247</span> personnes déjà inscrites — Places limitées au lancement
+      </div>
+
+      <span class="lp-label">Accès prioritaire</span>
+      <h2 class="lp-title">Rejoindre les <em>premiers lecteurs</em></h2>
+      <p class="lp-subtitle">Inscrivez-vous pour accéder à Solitiquo avant tout le monde — tarif de lancement, dossiers exclusifs et influence sur les thèmes couverts en priorité.</p>
+      <hr class="lp-divider" style="margin: 24px auto;" />
+
+      <!-- Formulaire -->
+      <form class="lp-access__form" action="#" method="post" onsubmit="handleLPSubmit(event)">
+        <input
+          class="lp-access__input"
+          type="email"
+          name="email"
+          placeholder="Votre adresse email"
+          required
+          autocomplete="email"
+        />
+        <button type="submit" class="lp-btn lp-btn--primary">
+          Rejoindre — Accès prioritaire
+          <span class="lp-badge">Premium</span>
+        </button>
+      </form>
+
+      <p class="lp-access__note">Aucun spam. Désabonnement en un clic. Lancement prévu prochainement.</p>
+
+    </div>
+  </section>
+
+
+  <!-- ============================================
+       FOOTER
+  ============================================= -->
+  <footer class="lp-footer">
+    <div class="lp-footer__inner">
+      <div class="lp-footer__logo">Soliti<span>quo</span></div>
+      <nav class="lp-footer__links">
+        <a href="mentions-legales.html">Mentions légales</a>
+        <a href="politique-confidentialite.html">Confidentialité</a>
+        <a href="contact.html">Contact</a>
+        <a href="index.html">Accéder au site</a>
+      </nav>
+    </div>
+    <p class="lp-footer__copy">© 2025 Solitiquo — Média d'analyse politique et sociale. Tous droits réservés.</p>
+  </footer>
+
+
+  <!-- ============================================
+       JS MINIMAL — Gestion formulaire
+  ============================================= -->
+  <script>
+    function handleLPSubmit(e) {
+      e.preventDefault();
+      var email = e.target.querySelector('input[type="email"]').value;
+      if (!email) return;
+      // TODO: connecter à votre endpoint /api/waitlist ou service email (Mailchimp, Brevo…)
+      alert('✅ Inscription enregistrée ! Vous serez parmi les premiers avertis au lancement.');
+      e.target.reset();
+    }
+  </script>
+
+</body>
+</html>
