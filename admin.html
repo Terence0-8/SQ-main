@@ -499,8 +499,8 @@
                         const ctx1 = document.getElementById('chart-reading-progress').getContext('2d');
                         if (chartReadingProgress) chartReadingProgress.destroy();
                         
-                        const labels = readingProgress.data.labels || ['Non ouvert (0%)', 'Début (Ouvert)', '25%', '50%', '75%', '100%'];
-                        const pValues = readingProgress.data.percentageValues || [0, 100, 0, 0, 0, 0];
+                        const labels = readingProgress.data.labels || ['Début', '25% de lecture', '50% de lecture', '75% de lecture', '100% (Terminé)'];
+                        const pValues = readingProgress.data.percentageValues || [100, 0, 0, 0, 0];
                         const rawValues = readingProgress.data.rawValues || [];
 
                         chartReadingProgress = new Chart(ctx1, {
@@ -508,7 +508,7 @@
                             data: {
                                 labels: labels,
                                 datasets: [{
-                                    label: '% des articles du site',
+                                    label: 'Taux de rétention de lecture (%)',
                                     data: pValues,
                                     borderColor: '#C82823',
                                     backgroundColor: 'rgba(200, 40, 35, 0.12)',
@@ -530,7 +530,7 @@
                                         callbacks: {
                                             label: (context) => {
                                                 const count = rawValues[context.dataIndex] || 0;
-                                                return `${context.parsed.y}% des articles (${count.toLocaleString()} articles)`;
+                                                return `${context.parsed.y}% des lecteurs (${count.toLocaleString()} lectures)`;
                                             }
                                         }
                                     }
@@ -545,7 +545,7 @@
                                         },
                                         title: {
                                             display: true,
-                                            text: '% du catalogue total'
+                                            text: '% de rétention de lecture'
                                         }
                                     }
                                 }
