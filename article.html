@@ -758,24 +758,35 @@
       const bar = document.getElementById('progressBar');
       if (!bar) return;
 
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-      const scrollHeight = Math.max(
-        document.body.scrollHeight, document.documentElement.scrollHeight,
-        document.body.offsetHeight, document.documentElement.offsetHeight
-      );
-      const clientHeight = window.innerHeight || document.documentElement.clientHeight || 0;
-      const totalScrollable = scrollHeight - clientHeight;
+      const artContent = document.getElementById('art-content') || document.getElementById('page-article');
+      let pct = 0;
 
-      const pct = totalScrollable > 0 ? Math.min(100, Math.max(0, (scrollTop / totalScrollable) * 100)) : 0;
+      if (artContent && artContent.offsetHeight > 0) {
+        const rect = artContent.getBoundingClientRect();
+        const winHeight = window.innerHeight;
+        const totalHeight = rect.height;
+        const scrolled = winHeight - rect.top;
+        pct = Math.max(0, Math.min(100, (scrolled / totalHeight) * 100));
+      } else {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+        const scrollHeight = Math.max(
+          document.body.scrollHeight, document.documentElement.scrollHeight,
+          document.body.offsetHeight, document.documentElement.offsetHeight
+        );
+        const clientHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+        const totalScrollable = scrollHeight - clientHeight;
+        pct = totalScrollable > 0 ? Math.max(0, Math.min(100, (scrollTop / totalScrollable) * 100)) : 0;
+      }
+
       bar.style.width = pct.toFixed(1) + '%';
 
       const artId = window._currentArticleId || (window._currentArticle && window._currentArticle.id);
       if (artId) {
         trackMilestone(artId, 'start');
-        if (pct >= 25) trackMilestone(artId, 25);
-        if (pct >= 50) trackMilestone(artId, 50);
-        if (pct >= 75) trackMilestone(artId, 75);
-        if (pct >= 85) trackMilestone(artId, 100);
+        if (pct >= 20) trackMilestone(artId, 25);
+        if (pct >= 40) trackMilestone(artId, 50);
+        if (pct >= 60) trackMilestone(artId, 75);
+        if (pct >= 75) trackMilestone(artId, 100);
       }
     }
 

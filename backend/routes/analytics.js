@@ -140,6 +140,10 @@ router.get('/top-articles', isAdmin, async (req, res) => {
         title,
         category,
         COALESCE(views_count, 0) as views_count,
+        COALESCE(reads_start, 0) as reads_start,
+        COALESCE(reads_25, 0) as reads_25,
+        COALESCE(reads_50, 0) as reads_50,
+        COALESCE(reads_75, 0) as reads_75,
         COALESCE(reads_100, 0) as reads_100,
         created_at
       FROM articles
@@ -152,13 +156,26 @@ router.get('/top-articles', isAdmin, async (req, res) => {
     res.json({
       success: true,
       data: topArticles.map(art => {
-        const views = parseInt(art.views_count || 0);
-        const reads100 = parseInt(art.reads_100 || 0);
+        const views = Math.max(parseInt(art.views_count || 0), parseInt(art.reads_start || 0));
+        const r100 = parseInt(art.reads_100 || 0);
+        const r75 = parseInt(art.reads_75 || 0);
+        const r50 = parseInt(art.reads_50 || 0);
+        const r25 = parseInt(art.reads_25 || 0);
+
+        let rate = 0;
+        if (views > 0) {
+          if (r100 > 0) rate = (r100 / views) * 100;
+          else if (r75 > 0) rate = (r75 / views) * 75;
+          else if (r50 > 0) rate = (r50 / views) * 50;
+          else if (r25 > 0) rate = (r25 / views) * 25;
+        }
+        rate = Math.min(100, Math.max(0, rate));
+
         return {
           ...art,
           views_count: views,
-          reads_100: reads100,
-          completionRate: views > 0 ? ((reads100 / views) * 100).toFixed(1) : 0
+          reads_100: r100,
+          completionRate: rate.toFixed(1)
         };
       })
     });
