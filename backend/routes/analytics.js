@@ -117,7 +117,8 @@ router.get('/reading-progress', isAdmin, async (req, res) => {
     res.json({
       success: true,
       data: {
-        totalViews,
+        totalViews: valViews,
+        totalStarts: valStart,
         labels: ['Début', '25% de lecture', '50% de lecture', '75% de lecture', '100% (Terminé)'],
         percentageValues: [pctStart, pct25, pct50, pct75, pct100],
         rawValues: [valStart, val25, val50, val75, val100],
