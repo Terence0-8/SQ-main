@@ -199,8 +199,8 @@ router.get('/by-slug/:slug', async (req, res) => {
     }
 
     // Incrémenter les vues (seulement pour articles publiés)
-    if (article.status === 'published') {
-      await pool.query('UPDATE articles SET views_count = views_count + 1 WHERE id = $1', [article.id]);
+    if (article.status === 'published' || !article.status) {
+      await pool.query('UPDATE articles SET views_count = COALESCE(views_count, 0) + 1, reads_start = COALESCE(reads_start, 0) + 1 WHERE id = $1', [article.id]);
     }
 
     res.json({ success: true, article: article });
@@ -275,8 +275,8 @@ router.get('/:id', async (req, res) => {
     }
 
     // Incrémenter les vues (seulement pour articles publiés)
-    if (article.status === 'published') {
-      await pool.query('UPDATE articles SET views_count = views_count + 1 WHERE id = $1', [id]);
+    if (article.status === 'published' || !article.status) {
+      await pool.query('UPDATE articles SET views_count = COALESCE(views_count, 0) + 1, reads_start = COALESCE(reads_start, 0) + 1 WHERE id = $1', [id]);
     }
 
     res.json({ success: true, article: article });

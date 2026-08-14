@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -551,6 +551,7 @@
         const user = await SolitiquoAPI.getProfile();
 
         if (article) {
+          window._currentArticle = article;
           document.title = `${article.title} — Solitiquo`;
           document.getElementById('art-title').textContent = article.title;
           const badge = document.getElementById('art-category-badge');
@@ -736,12 +737,32 @@
       _ttsPlaying = true; icon.innerHTML = pauseSvg; label.textContent = 'Pause';
     }
 
-    // --- BARRE DE PROGRESSION ---
+    // --- BARRE DE PROGRESSION & ANALYTICS TRACKING ---
+    const trackedMilestones = { 25: false, 50: false, 75: false, 100: false };
+    function trackMilestone(articleId, milestone) {
+      if (!articleId || trackedMilestones[milestone]) return;
+      trackedMilestones[milestone] = true;
+      fetch(`${window.API_URL}/analytics/track`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ article_id: articleId, milestone: milestone })
+      }).catch(() => {});
+    }
+
     window.addEventListener('scroll', () => {
       const ac = document.getElementById('art-content'), bar = document.getElementById('progressBar');
       if (!ac || !bar) return;
       const rect = ac.getBoundingClientRect();
-      bar.style.width = Math.max(0, Math.min(100, ((window.innerHeight - rect.top - window.innerHeight / 3) / rect.height) * 100)) + '%';
+      const pct = Math.max(0, Math.min(100, ((window.innerHeight - rect.top - window.innerHeight / 3) / rect.height) * 100));
+      bar.style.width = pct + '%';
+
+      const artId = window._currentArticleId || (window._currentArticle && window._currentArticle.id);
+      if (artId) {
+        if (pct >= 25) trackMilestone(artId, 25);
+        if (pct >= 50) trackMilestone(artId, 50);
+        if (pct >= 75) trackMilestone(artId, 75);
+        if (pct >= 95) trackMilestone(artId, 100);
+      }
     });
 
     // --- COMMENTAIRES ---

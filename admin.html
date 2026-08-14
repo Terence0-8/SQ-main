@@ -407,7 +407,12 @@
 
                 if (viewName === 'analytics') {
                     header.innerHTML = `<i data-lucide="line-chart"></i> Tableau de Bord Analytics`;
+                    actions.innerHTML = `<button class="action-btn" id="btn-refresh-analytics"><i data-lucide="refresh-cw"></i> Rafraîchir les données</button>`;
                     loadAnalytics();
+                    setTimeout(() => {
+                        const btn = document.getElementById('btn-refresh-analytics');
+                        if (btn) btn.addEventListener('click', () => loadAnalytics());
+                    }, 50);
                 } else if (viewName === 'articles') {
                     header.innerHTML = `<i data-lucide="file-text"></i> Gestion des Articles`;
                     actions.innerHTML = `<a href="editeur-article.html" class="action-btn"><i data-lucide="plus"></i> Nouvel Article</a>`;

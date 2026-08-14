@@ -13,25 +13,23 @@ const { isAdmin } = require('../middleware/auth');
  */
 router.get('/overview', isAdmin, async (req, res) => {
   try {
-    // 1. Articles total + vues
-    // Utilisation de db.query() au lieu de db.get()
+    // 1. Articles total + vues (avec COALESCE pour éviter les valeurs NULL)
     const articlesRes = await db.query(`
       SELECT 
         COUNT(*) as total_articles,
-        SUM(views_count) as total_views,
-        AVG(views_count) as avg_views_per_article
+        COALESCE(SUM(views_count), 0) as total_views,
+        COALESCE(AVG(views_count), 0) as avg_views_per_article
       FROM articles
-      WHERE status = 'published'
+      WHERE LOWER(status) = 'published' OR status IS NULL
     `);
     const articlesStats = articlesRes.rows[0];
 
-    // 2. Utilisateurs
-    // CASE WHEN is_subscriber = true (ou 1) fonctionne en PG si boolean
+    // 2. Utilisateurs (avec vérification souple de boolean/status)
     const usersRes = await db.query(`
       SELECT 
         COUNT(*) as total_users,
         SUM(CASE WHEN is_subscriber = true THEN 1 ELSE 0 END) as total_subscribers,
-        SUM(CASE WHEN is_active = true THEN 1 ELSE 0 END) as active_users
+        SUM(CASE WHEN is_active = true OR is_active IS NULL THEN 1 ELSE 0 END) as active_users
       FROM users
     `);
     const usersStats = usersRes.rows[0];
@@ -42,15 +40,17 @@ router.get('/overview', isAdmin, async (req, res) => {
       : 0;
 
     // 4. Contenus total
-    const [podcastsRes, emissionsRes, partiesRes] = await Promise.all([
+    const [podcastsRes, emissionsRes, partiesRes, pollsRes] = await Promise.all([
       db.query('SELECT COUNT(*) as total FROM podcasts'),
       db.query('SELECT COUNT(*) as total FROM emissions'),
-      db.query('SELECT COUNT(*) as total FROM parties')
+      db.query('SELECT COUNT(*) as total FROM parties'),
+      db.query('SELECT COUNT(*) as total FROM polls')
     ]);
 
     const podcasts = podcastsRes.rows[0];
     const emissions = emissionsRes.rows[0];
     const parties = partiesRes.rows[0];
+    const polls = pollsRes.rows[0];
 
     res.json({
       success: true,
@@ -69,7 +69,8 @@ router.get('/overview', isAdmin, async (req, res) => {
         content: {
           podcasts: parseInt(podcasts.total || 0),
           emissions: parseInt(emissions.total || 0),
-          parties: parseInt(parties.total || 0)
+          parties: parseInt(parties.total || 0),
+          polls: parseInt(polls.total || 0)
         }
       }
     });
@@ -85,38 +86,39 @@ router.get('/overview', isAdmin, async (req, res) => {
  */
 router.get('/reading-progress', isAdmin, async (req, res) => {
   try {
-    // Déjà compatible (db.query utilisé)
     const result = await db.query(`
       SELECT 
-        SUM(reads_start) as total_starts,
-        SUM(reads_25) as total_25,
-        SUM(reads_50) as total_50,
-        SUM(reads_75) as total_75,
-        SUM(reads_100) as total_100
+        COALESCE(SUM(reads_start), 0) as total_starts,
+        COALESCE(SUM(views_count), 0) as total_views,
+        COALESCE(SUM(reads_25), 0) as total_25,
+        COALESCE(SUM(reads_50), 0) as total_50,
+        COALESCE(SUM(reads_75), 0) as total_75,
+        COALESCE(SUM(reads_100), 0) as total_100
       FROM articles
-      WHERE status = 'published'
+      WHERE LOWER(status) = 'published' OR status IS NULL
     `);
     const stats = result.rows[0];
 
-    // Calcul des taux d'abandon
-    const totalStarts = parseInt(stats.total_starts || 0) || 1; // Éviter division par 0
+    // Utiliser le max entre reads_start et views_count pour garantir la cohérence des ouvertures
+    const totalStarts = Math.max(parseInt(stats.total_starts || 0), parseInt(stats.total_views || 0));
+    const safeStarts = totalStarts > 0 ? totalStarts : 1;
+
+    const startsVal = totalStarts;
+    const val25 = parseInt(stats.total_25 || 0);
+    const val50 = parseInt(stats.total_50 || 0);
+    const val75 = parseInt(stats.total_75 || 0);
+    const val100 = parseInt(stats.total_100 || 0);
 
     res.json({
       success: true,
       data: {
         labels: ['Début', '25%', '50%', '75%', '100%'],
-        values: [
-          parseInt(stats.total_starts || 0),
-          parseInt(stats.total_25 || 0),
-          parseInt(stats.total_50 || 0),
-          parseInt(stats.total_75 || 0),
-          parseInt(stats.total_100 || 0)
-        ],
+        values: [startsVal, val25, val50, val75, val100],
         rates: {
-          retention_25: ((stats.total_25 / totalStarts) * 100).toFixed(1),
-          retention_50: ((stats.total_50 / totalStarts) * 100).toFixed(1),
-          retention_75: ((stats.total_75 / totalStarts) * 100).toFixed(1),
-          completion: ((stats.total_100 / totalStarts) * 100).toFixed(1)
+          retention_25: ((val25 / safeStarts) * 100).toFixed(1),
+          retention_50: ((val50 / safeStarts) * 100).toFixed(1),
+          retention_75: ((val75 / safeStarts) * 100).toFixed(1),
+          completion: ((val100 / safeStarts) * 100).toFixed(1)
         }
       }
     });
@@ -132,17 +134,16 @@ router.get('/reading-progress', isAdmin, async (req, res) => {
  */
 router.get('/top-articles', isAdmin, async (req, res) => {
   try {
-    // db.all -> db.query
     const result = await db.query(`
       SELECT 
         id,
         title,
         category,
-        views_count,
-        reads_100,
+        COALESCE(views_count, 0) as views_count,
+        COALESCE(reads_100, 0) as reads_100,
         created_at
       FROM articles
-      WHERE status = 'published'
+      WHERE LOWER(status) = 'published' OR status IS NULL
       ORDER BY views_count DESC
       LIMIT 10
     `);
@@ -150,12 +151,16 @@ router.get('/top-articles', isAdmin, async (req, res) => {
 
     res.json({
       success: true,
-      data: topArticles.map(art => ({
-        ...art,
-        completionRate: art.views_count > 0
-          ? ((art.reads_100 / art.views_count) * 100).toFixed(1)
-          : 0
-      }))
+      data: topArticles.map(art => {
+        const views = parseInt(art.views_count || 0);
+        const reads100 = parseInt(art.reads_100 || 0);
+        return {
+          ...art,
+          views_count: views,
+          reads_100: reads100,
+          completionRate: views > 0 ? ((reads100 / views) * 100).toFixed(1) : 0
+        };
+      })
     });
   } catch (err) {
     console.error('❌ Erreur top articles:', err);
@@ -169,22 +174,17 @@ router.get('/top-articles', isAdmin, async (req, res) => {
  */
 router.get('/timeline', isAdmin, async (req, res) => {
   try {
-    // Articles publiés sur les 7 derniers jours
-    // SQLite: DATE('now', '-7 days') -> PG: CURRENT_DATE - INTERVAL '7 days'
-    // SQLite: DATE(created_at) -> PG: created_at::DATE
     const articlesRes = await db.query(`
       SELECT 
         created_at::DATE as date,
         COUNT(*) as count
       FROM articles
       WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
-      AND status = 'published'
       GROUP BY created_at::DATE
       ORDER BY date ASC
     `);
     const articles = articlesRes.rows;
 
-    // Nouveaux utilisateurs sur les 7 derniers jours
     const usersRes = await db.query(`
       SELECT 
         created_at::DATE as date,
@@ -196,31 +196,32 @@ router.get('/timeline', isAdmin, async (req, res) => {
     `);
     const users = usersRes.rows;
 
-    // Générer les 7 derniers jours
+    // Générer les 7 derniers jours en format ISO local YYYY-MM-DD
     const last7Days = [];
     for (let i = 6; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      last7Days.push(date.toISOString().split('T')[0]); // YYYY-MM-DD
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      last7Days.push(`${year}-${month}-${day}`);
     }
 
-    // Mapper les données
-    // Attention: PG node renvoie des objets Date pour les colonnes date
+    // Helper anti-décalage de fuseau horaire
+    const formatDateLocal = (val) => {
+      if (!val) return '';
+      if (val instanceof Date) {
+        const year = val.getFullYear();
+        const month = String(val.getMonth() + 1).padStart(2, '0');
+        const day = String(val.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+      const str = String(val);
+      return str.includes('T') ? str.split('T')[0] : str.slice(0, 10);
+    };
 
-    // Fonction helper pour comparer les dates
     const findCount = (dataArray, targetDateStr) => {
-      const found = dataArray.find(item => {
-        let d = item.date;
-        // Convertir en string YYYY-MM-DD si c'est un objet Date
-        if (d instanceof Date) {
-          d = d.toISOString().split('T')[0];
-        }
-        // Si c'est déjà une string (certains drivers ou config)
-        if (typeof d === 'string' && d.includes('T')) {
-          d = d.split('T')[0];
-        }
-        return d === targetDateStr;
-      });
+      const found = dataArray.find(item => formatDateLocal(item.date) === targetDateStr);
       return found ? parseInt(found.count || 0) : 0;
     };
 
@@ -231,8 +232,9 @@ router.get('/timeline', isAdmin, async (req, res) => {
       success: true,
       data: {
         labels: last7Days.map(d => {
-          const date = new Date(d);
-          return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+          const parts = d.split('-');
+          const dateObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+          return dateObj.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
         }),
         articles: articlesData,
         users: usersData
