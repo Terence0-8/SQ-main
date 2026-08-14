@@ -500,7 +500,7 @@
                         if (chartReadingProgress) chartReadingProgress.destroy();
                         
                         const labels = readingProgress.data.labels || ['Début', '25% de lecture', '50% de lecture', '75% de lecture', '100% (Terminé)'];
-                        const pValues = readingProgress.data.percentageValues || [100, 0, 0, 0, 0];
+                        const pValues = readingProgress.data.percentageValues || [0, 0, 0, 0, 0];
                         const rawValues = readingProgress.data.rawValues || [];
 
                         chartReadingProgress = new Chart(ctx1, {

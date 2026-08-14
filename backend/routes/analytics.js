@@ -99,27 +99,30 @@ router.get('/reading-progress', isAdmin, async (req, res) => {
     `);
     const stats = result.rows[0];
 
-    const totalStarts = Math.max(parseInt(stats.total_starts || 0), parseInt(stats.total_views || 0));
-    const safeStarts = totalStarts > 0 ? totalStarts : 1;
+    const totalViews = Math.max(parseInt(stats.total_views || 0), parseInt(stats.total_starts || 0));
+    const safeDenominator = totalViews > 0 ? totalViews : 1;
 
+    const valStart = parseInt(stats.total_starts || 0);
     const val25 = parseInt(stats.total_25 || 0);
     const val50 = parseInt(stats.total_50 || 0);
     const val75 = parseInt(stats.total_75 || 0);
     const val100 = parseInt(stats.total_100 || 0);
 
-    const pct25 = parseFloat(Math.min(100, (val25 / safeStarts) * 100).toFixed(1));
-    const pct50 = parseFloat(Math.min(100, (val50 / safeStarts) * 100).toFixed(1));
-    const pct75 = parseFloat(Math.min(100, (val75 / safeStarts) * 100).toFixed(1));
-    const pct100 = parseFloat(Math.min(100, (val100 / safeStarts) * 100).toFixed(1));
+    const pctStart = totalViews > 0 ? parseFloat(Math.min(100, (valStart / safeDenominator) * 100).toFixed(1)) : 0;
+    const pct25 = totalViews > 0 ? parseFloat(Math.min(100, (val25 / safeDenominator) * 100).toFixed(1)) : 0;
+    const pct50 = totalViews > 0 ? parseFloat(Math.min(100, (val50 / safeDenominator) * 100).toFixed(1)) : 0;
+    const pct75 = totalViews > 0 ? parseFloat(Math.min(100, (val75 / safeDenominator) * 100).toFixed(1)) : 0;
+    const pct100 = totalViews > 0 ? parseFloat(Math.min(100, (val100 / safeDenominator) * 100).toFixed(1)) : 0;
 
     res.json({
       success: true,
       data: {
-        totalStarts,
+        totalViews,
         labels: ['Début', '25% de lecture', '50% de lecture', '75% de lecture', '100% (Terminé)'],
-        percentageValues: [100, pct25, pct50, pct75, pct100],
-        rawValues: [totalStarts, val25, val50, val75, val100],
+        percentageValues: [pctStart, pct25, pct50, pct75, pct100],
+        rawValues: [valStart, val25, val50, val75, val100],
         rates: {
+          retention_start: pctStart,
           retention_25: pct25,
           retention_50: pct50,
           retention_75: pct75,
