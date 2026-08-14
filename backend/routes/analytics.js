@@ -86,6 +86,18 @@ router.get('/overview', isAdmin, async (req, res) => {
  */
 router.get('/reading-progress', isAdmin, async (req, res) => {
   try {
+    const totalArtRes = await db.query(`
+      SELECT 
+        COUNT(*) as total_articles,
+        COUNT(*) FILTER (WHERE COALESCE(views_count, 0) = 0 AND COALESCE(reads_start, 0) = 0) as unopened_articles
+      FROM articles
+      WHERE LOWER(status) = 'published' OR status IS NULL
+    `);
+
+    const totalArticles = parseInt(totalArtRes.rows[0].total_articles || 0);
+    const unopenedArticles = parseInt(totalArtRes.rows[0].unopened_articles || 0);
+    const openedArticles = Math.max(0, totalArticles - unopenedArticles);
+
     const result = await db.query(`
       SELECT 
         COALESCE(SUM(reads_start), 0) as total_starts,
@@ -99,26 +111,37 @@ router.get('/reading-progress', isAdmin, async (req, res) => {
     `);
     const stats = result.rows[0];
 
-    // Utiliser le max entre reads_start et views_count pour garantir la cohérence des ouvertures
-    const totalStarts = Math.max(parseInt(stats.total_starts || 0), parseInt(stats.total_views || 0));
-    const safeStarts = totalStarts > 0 ? totalStarts : 1;
+    const safeTotal = totalArticles > 0 ? totalArticles : 1;
 
-    const startsVal = totalStarts;
+    const pctUnopened = parseFloat(((unopenedArticles / safeTotal) * 100).toFixed(1));
+    const pctOpened = parseFloat(((openedArticles / safeTotal) * 100).toFixed(1));
+
     const val25 = parseInt(stats.total_25 || 0);
     const val50 = parseInt(stats.total_50 || 0);
     const val75 = parseInt(stats.total_75 || 0);
     const val100 = parseInt(stats.total_100 || 0);
 
+    const pct25 = parseFloat((Math.min(openedArticles, val25) / safeTotal * 100).toFixed(1));
+    const pct50 = parseFloat((Math.min(openedArticles, val50) / safeTotal * 100).toFixed(1));
+    const pct75 = parseFloat((Math.min(openedArticles, val75) / safeTotal * 100).toFixed(1));
+    const pct100 = parseFloat((Math.min(openedArticles, val100) / safeTotal * 100).toFixed(1));
+
     res.json({
       success: true,
       data: {
-        labels: ['Début', '25%', '50%', '75%', '100%'],
-        values: [startsVal, val25, val50, val75, val100],
+        totalArticles,
+        unopenedArticles,
+        openedArticles,
+        labels: ['Non ouvert (0%)', 'Début (Ouvert)', '25% de lecture', '50% de lecture', '75% de lecture', '100% (Terminé)'],
+        percentageValues: [pctUnopened, pctOpened, pct25, pct50, pct75, pct100],
+        rawValues: [unopenedArticles, openedArticles, val25, val50, val75, val100],
         rates: {
-          retention_25: ((val25 / safeStarts) * 100).toFixed(1),
-          retention_50: ((val50 / safeStarts) * 100).toFixed(1),
-          retention_75: ((val75 / safeStarts) * 100).toFixed(1),
-          completion: ((val100 / safeStarts) * 100).toFixed(1)
+          unopened: pctUnopened,
+          opened: pctOpened,
+          retention_25: pct25,
+          retention_50: pct50,
+          retention_75: pct75,
+          completion: pct100
         }
       }
     });

@@ -498,21 +498,17 @@
                     if (readingProgress.success && readingProgress.data) {
                         const ctx1 = document.getElementById('chart-reading-progress').getContext('2d');
                         if (chartReadingProgress) chartReadingProgress.destroy();
-                        const rate = readingProgress.data.rates || {};
-                        const pValues = [
-                            100,
-                            parseFloat(rate.retention_25 || 0),
-                            parseFloat(rate.retention_50 || 0),
-                            parseFloat(rate.retention_75 || 0),
-                            parseFloat(rate.completion || 0)
-                        ];
+                        
+                        const labels = readingProgress.data.labels || ['Non ouvert (0%)', 'Début (Ouvert)', '25%', '50%', '75%', '100%'];
+                        const pValues = readingProgress.data.percentageValues || [0, 100, 0, 0, 0, 0];
+                        const rawValues = readingProgress.data.rawValues || [];
 
                         chartReadingProgress = new Chart(ctx1, {
                             type: 'line',
                             data: {
-                                labels: ['Début', '25% de lecture', '50% de lecture', '75% de lecture', '100% (Terminé)'],
+                                labels: labels,
                                 datasets: [{
-                                    label: 'Taux de rétention moyen (%)',
+                                    label: '% des articles du site',
                                     data: pValues,
                                     borderColor: '#C82823',
                                     backgroundColor: 'rgba(200, 40, 35, 0.12)',
@@ -533,9 +529,8 @@
                                     tooltip: {
                                         callbacks: {
                                             label: (context) => {
-                                                const raw = readingProgress.data.values || [];
-                                                const count = raw[context.dataIndex] || 0;
-                                                return `${context.parsed.y}% des lecteurs (${count.toLocaleString()} lectures)`;
+                                                const count = rawValues[context.dataIndex] || 0;
+                                                return `${context.parsed.y}% des articles (${count.toLocaleString()} articles)`;
                                             }
                                         }
                                     }
@@ -550,7 +545,7 @@
                                         },
                                         title: {
                                             display: true,
-                                            text: '% d\'articles lus'
+                                            text: '% du catalogue total'
                                         }
                                     }
                                 }
