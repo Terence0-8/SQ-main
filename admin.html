@@ -411,8 +411,8 @@
                         <button class="action-btn" id="btn-refresh-analytics"><i data-lucide="refresh-cw"></i> Rafraîchir</button>
                         <button class="action-btn" id="btn-reset-views" style="background:#dc2626; margin-left:8px;"><i data-lucide="trash-2"></i> Remettre à 0 les vues</button>
                     `;
-                    loadAnalytics();
                     setTimeout(() => {
+                        loadAnalytics();
                         const btnR = document.getElementById('btn-refresh-analytics');
                         if (btnR) btnR.addEventListener('click', () => loadAnalytics());
 
