@@ -407,11 +407,43 @@
 
                 if (viewName === 'analytics') {
                     header.innerHTML = `<i data-lucide="line-chart"></i> Tableau de Bord Analytics`;
-                    actions.innerHTML = `<button class="action-btn" id="btn-refresh-analytics"><i data-lucide="refresh-cw"></i> Rafraîchir les données</button>`;
+                    actions.innerHTML = `
+                        <button class="action-btn" id="btn-refresh-analytics"><i data-lucide="refresh-cw"></i> Rafraîchir</button>
+                        <button class="action-btn" id="btn-reset-views" style="background:#dc2626; margin-left:8px;"><i data-lucide="trash-2"></i> Remettre à 0 les vues</button>
+                    `;
                     loadAnalytics();
                     setTimeout(() => {
-                        const btn = document.getElementById('btn-refresh-analytics');
-                        if (btn) btn.addEventListener('click', () => loadAnalytics());
+                        const btnR = document.getElementById('btn-refresh-analytics');
+                        if (btnR) btnR.addEventListener('click', () => loadAnalytics());
+
+                        const btnZ = document.getElementById('btn-reset-views');
+                        if (btnZ) btnZ.addEventListener('click', async () => {
+                            const conf = await Swal.fire({
+                                title: 'Réinitialiser toutes les vues ?',
+                                text: 'Toutes les vues d\'articles et statistiques de lecture fictives seront remises à 0.',
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonText: 'Oui, réinitialiser',
+                                cancelButtonText: 'Annuler',
+                                confirmButtonColor: '#dc2626'
+                            });
+                            if (conf.isConfirmed) {
+                                try {
+                                    const r = await fetch(API_URL + '/analytics/reset-views', {
+                                        method: 'POST',
+                                        headers: { 'X-CSRF-Token': SolitiquoAPI.csrfToken },
+                                        credentials: 'include'
+                                    });
+                                    const d = await r.json();
+                                    if (d.success) {
+                                        Swal.fire('Réinitialisé !', d.message, 'success');
+                                        loadAnalytics();
+                                    }
+                                } catch (e) {
+                                    Swal.fire('Erreur', 'Impossible de réinitialiser', 'error');
+                                }
+                            }
+                        });
                     }, 50);
                 } else if (viewName === 'articles') {
                     header.innerHTML = `<i data-lucide="file-text"></i> Gestion des Articles`;

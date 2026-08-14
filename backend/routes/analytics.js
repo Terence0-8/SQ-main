@@ -315,4 +315,29 @@ router.post('/track', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/analytics/reset-views
+ * Réinitialise tous les compteurs de vues et de progression de lecture à 0
+ */
+router.post('/reset-views', isAdmin, async (req, res) => {
+  try {
+    await db.query(`
+      UPDATE articles 
+      SET views_count = 0, 
+          reads_start = 0, 
+          reads_25 = 0, 
+          reads_50 = 0, 
+          reads_75 = 0, 
+          reads_100 = 0
+    `);
+    res.json({
+      success: true,
+      message: 'Toutes les vues et données de lecture ont été réinitialisées à 0.'
+    });
+  } catch (err) {
+    console.error('❌ Erreur reset-views:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;
