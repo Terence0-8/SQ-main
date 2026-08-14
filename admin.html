@@ -498,29 +498,31 @@
                     if (readingProgress.success && readingProgress.data) {
                         const ctx1 = document.getElementById('chart-reading-progress').getContext('2d');
                         if (chartReadingProgress) chartReadingProgress.destroy();
+                        const rate = readingProgress.data.rates || {};
+                        const pValues = [
+                            100,
+                            parseFloat(rate.retention_25 || 0),
+                            parseFloat(rate.retention_50 || 0),
+                            parseFloat(rate.retention_75 || 0),
+                            parseFloat(rate.completion || 0)
+                        ];
+
                         chartReadingProgress = new Chart(ctx1, {
-                            type: 'bar',
+                            type: 'line',
                             data: {
-                                labels: readingProgress.data.labels,
+                                labels: ['Début', '25% de lecture', '50% de lecture', '75% de lecture', '100% (Terminé)'],
                                 datasets: [{
-                                    label: 'Nombre de lectures',
-                                    data: readingProgress.data.values,
-                                    backgroundColor: [
-                                        'rgba(59, 130, 246, 0.8)',
-                                        'rgba(34, 197, 94, 0.8)',
-                                        'rgba(251, 191, 36, 0.8)',
-                                        'rgba(249, 115, 22, 0.8)',
-                                        'rgba(239, 68, 68, 0.8)'
-                                    ],
-                                    borderColor: [
-                                        'rgb(59, 130, 246)',
-                                        'rgb(34, 197, 94)',
-                                        'rgb(251, 191, 36)',
-                                        'rgb(249, 115, 22)',
-                                        'rgb(239, 68, 68)'
-                                    ],
-                                    borderWidth: 2,
-                                    borderRadius: 8
+                                    label: 'Taux de rétention moyen (%)',
+                                    data: pValues,
+                                    borderColor: '#C82823',
+                                    backgroundColor: 'rgba(200, 40, 35, 0.12)',
+                                    fill: true,
+                                    tension: 0.35,
+                                    pointRadius: 6,
+                                    pointHoverRadius: 8,
+                                    pointBackgroundColor: '#C82823',
+                                    pointBorderColor: '#ffffff',
+                                    pointBorderWidth: 2
                                 }]
                             },
                             options: {
@@ -531,15 +533,26 @@
                                     tooltip: {
                                         callbacks: {
                                             label: (context) => {
-                                                const rate = readingProgress.data.rates;
-                                                const rates = [100, rate.retention_25, rate.retention_50, rate.retention_75, rate.completion];
-                                                return `${context.parsed.y.toLocaleString()} lectures (${rates[context.dataIndex]}%)`;
+                                                const raw = readingProgress.data.values || [];
+                                                const count = raw[context.dataIndex] || 0;
+                                                return `${context.parsed.y}% des lecteurs (${count.toLocaleString()} lectures)`;
                                             }
                                         }
                                     }
                                 },
                                 scales: {
-                                    y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString() } }
+                                    y: {
+                                        min: 0,
+                                        max: 100,
+                                        ticks: {
+                                            stepSize: 20,
+                                            callback: v => v + '%'
+                                        },
+                                        title: {
+                                            display: true,
+                                            text: '% d\'articles lus'
+                                        }
+                                    }
                                 }
                             }
                         });
