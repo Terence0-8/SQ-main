@@ -477,80 +477,94 @@
             // ========================================================
             async function loadAnalytics() {
                 try {
+                    const safeFetchJSON = async (endpoint) => {
+                        try {
+                            const res = await fetch(API_URL + endpoint, { credentials: 'include' });
+                            if (!res.ok) return { success: false };
+                            return await res.json();
+                        } catch (e) {
+                            return { success: false };
+                        }
+                    };
+
                     // 1. Charger toutes les données en parallèle
                     const [overview, readingProgress, topArticles, timeline, categories] = await Promise.all([
-                        fetch(API_URL + '/analytics/overview', { credentials: 'include' }).then(r => r.json()),
-                        fetch(API_URL + '/analytics/reading-progress', { credentials: 'include' }).then(r => r.json()),
-                        fetch(API_URL + '/analytics/top-articles', { credentials: 'include' }).then(r => r.json()),
-                        fetch(API_URL + '/analytics/timeline', { credentials: 'include' }).then(r => r.json()),
-                        fetch(API_URL + '/analytics/categories', { credentials: 'include' }).then(r => r.json())
+                        safeFetchJSON('/analytics/overview'),
+                        safeFetchJSON('/analytics/reading-progress'),
+                        safeFetchJSON('/analytics/top-articles'),
+                        safeFetchJSON('/analytics/timeline'),
+                        safeFetchJSON('/analytics/categories')
                     ]);
 
                     // 2. Mettre à jour les statistiques
-                    if (overview.success) {
-                        document.getElementById('stat-total-articles').textContent = overview.data.articles.total.toLocaleString();
-                        document.getElementById('stat-total-views').textContent = overview.data.articles.totalViews.toLocaleString();
-                        document.getElementById('stat-total-users').textContent = overview.data.users.total.toLocaleString();
-                        document.getElementById('stat-total-subs').textContent = overview.data.users.subscribers.toLocaleString();
+                    if (overview && overview.success && overview.data) {
+                        if (document.getElementById('stat-total-articles')) document.getElementById('stat-total-articles').textContent = (overview.data.articles?.total || 0).toLocaleString();
+                        if (document.getElementById('stat-total-views')) document.getElementById('stat-total-views').textContent = (overview.data.articles?.totalViews || 0).toLocaleString();
+                        if (document.getElementById('stat-total-users')) document.getElementById('stat-total-users').textContent = (overview.data.users?.total || 0).toLocaleString();
+                        if (document.getElementById('stat-total-subs')) document.getElementById('stat-total-subs').textContent = (overview.data.users?.subscribers || 0).toLocaleString();
                     }
 
                     // 3. Graphique Progression de Lecture (Funnel)
-                    if (readingProgress.success && readingProgress.data) {
-                        const ctx1 = document.getElementById('chart-reading-progress').getContext('2d');
-                        if (chartReadingProgress) chartReadingProgress.destroy();
-                        
-                        const labels = readingProgress.data.labels || ['Début', '25% de lecture', '50% de lecture', '75% de lecture', '100% (Terminé)'];
-                        const pValues = readingProgress.data.percentageValues || [0, 0, 0, 0, 0];
-                        const rawValues = readingProgress.data.rawValues || [];
+                    if (readingProgress && readingProgress.success && readingProgress.data) {
+                        const canvas1 = document.getElementById('chart-reading-progress');
+                        if (canvas1) {
+                            const oldChart = Chart.getChart(canvas1);
+                            if (oldChart) oldChart.destroy();
+                            if (chartReadingProgress) { chartReadingProgress.destroy(); chartReadingProgress = null; }
+                            
+                            const labels = readingProgress.data.labels || ['Début', '25% de lecture', '50% de lecture', '75% de lecture', '100% (Terminé)'];
+                            const pValues = (readingProgress.data.percentageValues || [0, 0, 0, 0, 0]).map(v => Number(v) || 0);
+                            const rawValues = (readingProgress.data.rawValues || []).map(v => Number(v) || 0);
 
-                        chartReadingProgress = new Chart(ctx1, {
-                            type: 'line',
-                            data: {
-                                labels: labels,
-                                datasets: [{
-                                    label: 'Taux de rétention de lecture (%)',
-                                    data: pValues,
-                                    borderColor: '#C82823',
-                                    backgroundColor: 'rgba(200, 40, 35, 0.12)',
-                                    fill: true,
-                                    tension: 0.35,
-                                    pointRadius: 6,
-                                    pointHoverRadius: 8,
-                                    pointBackgroundColor: '#C82823',
-                                    pointBorderColor: '#ffffff',
-                                    pointBorderWidth: 2
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                    legend: { display: false },
-                                    tooltip: {
-                                        callbacks: {
-                                            label: (context) => {
-                                                const count = rawValues[context.dataIndex] || 0;
-                                                return `${context.parsed.y}% des lecteurs (${count.toLocaleString()} lectures)`;
+                            chartReadingProgress = new Chart(canvas1, {
+                                type: 'line',
+                                data: {
+                                    labels: labels,
+                                    datasets: [{
+                                        label: 'Taux de rétention de lecture (%)',
+                                        data: pValues,
+                                        borderColor: '#C82823',
+                                        backgroundColor: 'rgba(200, 40, 35, 0.12)',
+                                        fill: true,
+                                        tension: 0.35,
+                                        pointRadius: 6,
+                                        pointHoverRadius: 8,
+                                        pointBackgroundColor: '#C82823',
+                                        pointBorderColor: '#ffffff',
+                                        pointBorderWidth: 2
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: { display: false },
+                                        tooltip: {
+                                            callbacks: {
+                                                label: (context) => {
+                                                    const count = rawValues[context.dataIndex] || 0;
+                                                    return `${context.parsed.y}% des lecteurs (${count.toLocaleString()} lectures)`;
+                                                }
+                                            }
+                                        }
+                                    },
+                                    scales: {
+                                        y: {
+                                            min: 0,
+                                            max: 100,
+                                            ticks: {
+                                                stepSize: 20,
+                                                callback: v => v + '%'
+                                            },
+                                            title: {
+                                                display: true,
+                                                text: '% de rétention de lecture'
                                             }
                                         }
                                     }
-                                },
-                                scales: {
-                                    y: {
-                                        min: 0,
-                                        max: 100,
-                                        ticks: {
-                                            stepSize: 20,
-                                            callback: v => v + '%'
-                                        },
-                                        title: {
-                                            display: true,
-                                            text: '% de rétention de lecture'
-                                        }
-                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
 
                     // 4. Graphique Catégories (Donut)
