@@ -290,15 +290,17 @@ router.post('/track', async (req, res) => {
     return res.status(400).json({ success: false, error: 'article_id et milestone requis' });
   }
 
+  const milestoneKey = String(milestone).trim().toLowerCase();
+
   const colMap = {
-    start: 'reads_start',
-    25:    'reads_25',
-    50:    'reads_50',
-    75:    'reads_75',
-    100:   'reads_100',
+    'start': 'reads_start',
+    '25':    'reads_25',
+    '50':    'reads_50',
+    '75':    'reads_75',
+    '100':   'reads_100',
   };
 
-  const col = colMap[milestone];
+  const col = colMap[milestoneKey];
   if (!col) {
     return res.status(400).json({ success: false, error: `Milestone invalide : ${milestone}` });
   }

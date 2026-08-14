@@ -615,6 +615,7 @@
           }
           loadingDiv.style.display = 'none';
           mainArticle.style.display = 'block';
+          updateReadingProgressBar();
           updateOGTags(article);
           initShareButtons(article.title, window.location.href);
 
@@ -737,36 +738,50 @@
       _ttsPlaying = true; icon.innerHTML = pauseSvg; label.textContent = 'Pause';
     }
 
-    // --- BARRE DE PROGRESSION & ANALYTICS TRACKING ---
-    const trackedMilestones = { 25: false, 50: false, 75: false, 100: false };
+    // --- BARRE DE PROGRESSION ET SUIVI DES LECTURES (ANALYTICS) ---
+    const trackedMilestones = {};
     function trackMilestone(articleId, milestone) {
-      if (!articleId || trackedMilestones[milestone]) return;
-      trackedMilestones[milestone] = true;
-      fetch(`${window.API_URL}/analytics/track`, {
+      if (!articleId) return;
+      const key = `${articleId}_${milestone}`;
+      if (trackedMilestones[key]) return;
+      trackedMilestones[key] = true;
+
+      const apiUrl = window.API_URL || (typeof SolitiquoAPI !== 'undefined' ? SolitiquoAPI.baseUrl : '/api');
+      fetch(`${apiUrl}/analytics/track`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ article_id: articleId, milestone: milestone })
+        body: JSON.stringify({ article_id: parseInt(articleId), milestone: String(milestone) })
       }).catch(() => {});
     }
 
-    window.addEventListener('scroll', () => {
+    function updateReadingProgressBar() {
       const bar = document.getElementById('progressBar');
       if (!bar) return;
 
-      const totalScrollable = document.documentElement.scrollHeight - window.innerHeight;
-      const scrollPos = window.scrollY || document.documentElement.scrollTop;
-      const pct = totalScrollable > 0 ? Math.min(100, Math.max(0, (scrollPos / totalScrollable) * 100)) : 0;
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+      const scrollHeight = Math.max(
+        document.body.scrollHeight, document.documentElement.scrollHeight,
+        document.body.offsetHeight, document.documentElement.offsetHeight
+      );
+      const clientHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+      const totalScrollable = scrollHeight - clientHeight;
 
-      bar.style.width = Math.round(pct) + '%';
+      const pct = totalScrollable > 0 ? Math.min(100, Math.max(0, (scrollTop / totalScrollable) * 100)) : 0;
+      bar.style.width = pct.toFixed(1) + '%';
 
       const artId = window._currentArticleId || (window._currentArticle && window._currentArticle.id);
       if (artId) {
+        trackMilestone(artId, 'start');
         if (pct >= 25) trackMilestone(artId, 25);
         if (pct >= 50) trackMilestone(artId, 50);
         if (pct >= 75) trackMilestone(artId, 75);
         if (pct >= 85) trackMilestone(artId, 100);
       }
-    });
+    }
+
+    window.addEventListener('scroll', updateReadingProgressBar, { passive: true });
+    window.addEventListener('resize', updateReadingProgressBar);
+    window.addEventListener('DOMContentLoaded', updateReadingProgressBar);
 
     // --- COMMENTAIRES ---
     const commentForm = document.getElementById('commentForm'), commentsList = document.getElementById('commentsList');
