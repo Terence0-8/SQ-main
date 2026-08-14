@@ -754,33 +754,51 @@
       }).catch(() => {});
     }
 
-    function calculateScrollPercentage() {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-      const bodyH = document.body ? document.body.scrollHeight : 0;
-      const docH = document.documentElement ? document.documentElement.scrollHeight : 0;
-      const mainElem = document.querySelector('main') || document.getElementById('page-article');
-      const mainH = mainElem ? mainElem.scrollHeight : 0;
-      const winH = window.innerHeight || document.documentElement.clientHeight || 800;
-
-      const maxScroll = Math.max(bodyH, docH, mainH) - winH;
-      if (maxScroll > 50) {
-        return Math.min(100, Math.max(0, (scrollTop / maxScroll) * 100));
-      }
-
-      const artContent = document.getElementById('art-content') || mainElem;
-      if (artContent && artContent.offsetHeight > 0) {
-        const rect = artContent.getBoundingClientRect();
-        const scrolled = winH - rect.top;
-        return Math.max(0, Math.min(100, (scrolled / rect.height) * 100));
-      }
-      return 0;
-    }
-
-    function updateReadingProgressBar() {
+    function updateReadingProgressBar(e) {
       const bar = document.getElementById('progressBar');
       if (!bar) return;
 
-      const pct = calculateScrollPercentage();
+      let pct = 0;
+
+      // 1. Target element scroll (if an internal overflow container is scrolling)
+      if (e && e.target && e.target.scrollTop !== undefined && e.target.scrollHeight > e.target.clientHeight) {
+        const max = e.target.scrollHeight - e.target.clientHeight;
+        if (max > 0) {
+          pct = (e.target.scrollTop / max) * 100;
+        }
+      }
+
+      // 2. Global window & document scroll positions
+      const winScroll = Math.max(
+        window.pageYOffset || 0,
+        window.scrollY || 0,
+        document.documentElement ? document.documentElement.scrollTop : 0,
+        document.body ? document.body.scrollTop : 0
+      );
+
+      const maxWinScroll = Math.max(
+        document.body ? document.body.scrollHeight : 0,
+        document.documentElement ? document.documentElement.scrollHeight : 0,
+        document.body ? document.body.offsetHeight : 0
+      ) - (window.innerHeight || 800);
+
+      if (maxWinScroll > 50) {
+        const winPct = (winScroll / maxWinScroll) * 100;
+        if (winPct > pct) pct = winPct;
+      }
+
+      // 3. Geometry Bounding Rect of Article Container
+      const art = document.getElementById('art-content') || document.querySelector('.article-detail-container') || document.querySelector('main');
+      if (art && art.offsetHeight > 0) {
+        const rect = art.getBoundingClientRect();
+        const winH = window.innerHeight || 800;
+        const total = rect.height;
+        const scrolled = winH - rect.top;
+        const rectPct = (scrolled / total) * 100;
+        if (rectPct > pct) pct = rectPct;
+      }
+
+      pct = Math.min(100, Math.max(0, pct));
       bar.style.width = pct.toFixed(1) + '%';
 
       const artId = window._currentArticleId || (window._currentArticle && window._currentArticle.id);
@@ -793,7 +811,9 @@
       }
     }
 
-    window.addEventListener('scroll', updateReadingProgressBar, { passive: true });
+    // Capture ALL scroll events across the entire DOM tree
+    window.addEventListener('scroll', updateReadingProgressBar, true);
+    document.addEventListener('scroll', updateReadingProgressBar, true);
     window.addEventListener('resize', updateReadingProgressBar);
     window.addEventListener('DOMContentLoaded', updateReadingProgressBar);
 
