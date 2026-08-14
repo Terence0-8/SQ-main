@@ -394,8 +394,8 @@
     </section>
   </main>
 
-  <div id="progressBarWrapper" style="position:fixed;bottom:0;left:0;width:100%;height:5px;z-index:9999;">
-    <div id="progressBar" style="height:100%;width:0%;background:var(--accent-red);transition:width .1s;"></div>
+  <div id="progressBarWrapper" style="position:fixed;top:0;left:0;width:100%;height:4px;z-index:10000;background:rgba(0,0,0,0.06);pointer-events:none;">
+    <div id="progressBar" style="height:100%;width:0%;background:linear-gradient(90deg, #C82823, #e11d48);box-shadow:0 1px 3px rgba(200,40,35,0.5);transition:width .1s ease-out;"></div>
   </div>
 
   <footer class="premium-footer">
@@ -751,10 +751,21 @@
 
     window.addEventListener('scroll', () => {
       const ac = document.getElementById('art-content'), bar = document.getElementById('progressBar');
-      if (!ac || !bar) return;
-      const rect = ac.getBoundingClientRect();
-      const pct = Math.max(0, Math.min(100, ((window.innerHeight - rect.top - window.innerHeight / 3) / rect.height) * 100));
-      bar.style.width = pct + '%';
+      if (!bar) return;
+
+      let pct = 0;
+      if (ac && ac.offsetHeight > 0) {
+        const rect = ac.getBoundingClientRect();
+        const winHeight = window.innerHeight;
+        const totalHeight = rect.height;
+        const scrolled = winHeight - rect.top;
+        pct = Math.max(0, Math.min(100, (scrolled / totalHeight) * 100));
+      } else {
+        const total = document.documentElement.scrollHeight - window.innerHeight;
+        pct = total > 0 ? (window.scrollY / total) * 100 : 0;
+      }
+
+      bar.style.width = Math.round(pct) + '%';
 
       const artId = window._currentArticleId || (window._currentArticle && window._currentArticle.id);
       if (artId) {
