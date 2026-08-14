@@ -99,20 +99,20 @@ router.get('/reading-progress', isAdmin, async (req, res) => {
     `);
     const stats = result.rows[0];
 
-    const totalViews = Math.max(parseInt(stats.total_views || 0), parseInt(stats.total_starts || 0));
-    const safeDenominator = totalViews > 0 ? totalViews : 1;
-
     const valStart = parseInt(stats.total_starts || 0);
+    const valViews = parseInt(stats.total_views || 0);
+    const safeDenominator = valStart > 0 ? valStart : (valViews > 0 ? valViews : 1);
+
     const val25 = parseInt(stats.total_25 || 0);
     const val50 = parseInt(stats.total_50 || 0);
     const val75 = parseInt(stats.total_75 || 0);
     const val100 = parseInt(stats.total_100 || 0);
 
-    const pctStart = totalViews > 0 ? parseFloat(Math.min(100, (valStart / safeDenominator) * 100).toFixed(1)) : 0;
-    const pct25 = totalViews > 0 ? parseFloat(Math.min(100, (val25 / safeDenominator) * 100).toFixed(1)) : 0;
-    const pct50 = totalViews > 0 ? parseFloat(Math.min(100, (val50 / safeDenominator) * 100).toFixed(1)) : 0;
-    const pct75 = totalViews > 0 ? parseFloat(Math.min(100, (val75 / safeDenominator) * 100).toFixed(1)) : 0;
-    const pct100 = totalViews > 0 ? parseFloat(Math.min(100, (val100 / safeDenominator) * 100).toFixed(1)) : 0;
+    const pctStart = (valStart > 0 || valViews > 0) ? 100 : 0;
+    const pct25 = parseFloat(Math.min(100, (val25 / safeDenominator) * 100).toFixed(1));
+    const pct50 = parseFloat(Math.min(100, (val50 / safeDenominator) * 100).toFixed(1));
+    const pct75 = parseFloat(Math.min(100, (val75 / safeDenominator) * 100).toFixed(1));
+    const pct100 = parseFloat(Math.min(100, (val100 / safeDenominator) * 100).toFixed(1));
 
     res.json({
       success: true,

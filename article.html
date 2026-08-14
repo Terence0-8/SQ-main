@@ -847,22 +847,6 @@
           if (json.success) { document.getElementById('commentInput').value = ''; if (json.modere) { msgDiv.style.color = 'orange'; msgDiv.textContent = 'En attente de validation.'; } else { msgDiv.style.color = 'green'; msgDiv.textContent = 'Publié !'; loadComments(articleId); } setTimeout(() => msgDiv.textContent = '', 3000); }
           else { msgDiv.style.color = 'red'; msgDiv.textContent = 'Erreur.'; }
         } catch (err) { }
-      });
-    }
-
-    // --- ANALYTICS ---
-    function initAnalytics(articleId) {
-      const milestones = { 25: false, 50: false, 75: false, 100: false };
-      const sendPing = (p) => fetch(`${window.API_URL}/analytics/track`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ article_id: articleId, milestone: p }) }).catch(() => { });
-      sendPing('start');
-      window.addEventListener('scroll', () => {
-        const ac = document.getElementById('art-content'); if (!ac) return;
-        const pct = Math.min(100, Math.round(((window.innerHeight - ac.getBoundingClientRect().top) / ac.getBoundingClientRect().height) * 100));
-        if (pct >= 25 && !milestones[25]) { sendPing(25); milestones[25] = true; }
-        if (pct >= 50 && !milestones[50]) { sendPing(50); milestones[50] = true; }
-        if (pct >= 75 && !milestones[75]) { sendPing(75); milestones[75] = true; }
-        if (pct >= 95 && !milestones[100]) { sendPing(100); milestones[100] = true; }
-      });
     }
   </script>
   <script src="/js/lazyload.js"></script>
