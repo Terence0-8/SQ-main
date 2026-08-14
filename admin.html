@@ -378,8 +378,8 @@
                 if (action === 'toggle-premium') await togglePremium(type, id, btn.dataset.isprem === 'true');
                 if (action === 'approve-art') await workflow(id, 'approve');
                 if (action === 'set-featured') await setFeatured(id);
-                if (action === 'toggle-poll') await togglePollStatus(id, btn.dataset.active === 'true');
                 if (action === 'edit-poll') openPollModal(id);
+                if (action === 'reset-poll-votes') await resetPollVotes(id);
                 if (action === 'visualize-poll') showPollChart(id);
                 if (action === 'mod-approve') await modComment(id, 'approve');
                 if (action === 'mod-delete') await modComment(id, 'delete');
@@ -780,12 +780,48 @@
                                 <button class="btn-icon-sm view" data-action="visualize-poll" data-id="${p.id}" title="Voir les stats"><i data-lucide="bar-chart"></i></button>
                                 <button class="btn-icon-sm edit" data-action="toggle-poll" data-id="${p.id}" data-active="${p.is_active}" title="${p.is_active ? 'Mettre en pause' : 'Réactiver'}"><i data-lucide="${p.is_active ? 'pause' : 'play'}"></i></button>
                                 <button class="btn-icon-sm edit" data-action="edit-poll" data-id="${p.id}" title="Éditer"><i data-lucide="pencil"></i></button>
+                                <button class="btn-icon-sm del" data-action="reset-poll-votes" data-id="${p.id}" title="Réinitialiser les votes à 0"><i data-lucide="rotate-ccw"></i></button>
                                 <button class="btn-icon-sm del" data-action="delete" data-type="poll" data-id="${p.id}" title="Supprimer"><i data-lucide="trash-2"></i></button>
                             </td>
                          </tr>`;
                     }).join(''));
                     setTimeout(() => lucide.createIcons(), 50);
                 } catch (e) { tbody.innerHTML = '<tr><td colspan="6">Erreur</td></tr>'; }
+            }
+
+            async function resetPollVotes(id) {
+                const confirmRes = await Swal.fire({
+                    title: 'Réinitialiser les votes ?',
+                    text: 'Tous les votes enregistrés pour ce sondage seront remis à 0.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Oui, réinitialiser',
+                    cancelButtonText: 'Annuler',
+                    confirmButtonColor: '#C82823'
+                });
+
+                if (!confirmRes.isConfirmed) return;
+
+                try {
+                    const res = await fetch(`${API_URL}/admin/polls/${id}/reset-votes`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': SolitiquoAPI.csrfToken
+                        },
+                        credentials: 'include'
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                        Toast.fire({ icon: 'success', title: data.message });
+                        loadPolls();
+                    } else {
+                        Swal.fire('Erreur', data.error || 'Impossible de réinitialiser', 'error');
+                    }
+                } catch (e) {
+                    Swal.fire('Erreur', 'Erreur serveur', 'error');
+                }
             }
 
             async function deleteItem(type, id) {

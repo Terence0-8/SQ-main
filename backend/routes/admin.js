@@ -482,6 +482,42 @@ router.put('/polls/:id/toggle', isAdmin, async (req, res) => {
   }
 });
 
+router.post('/polls/:id/reset-votes', isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (isNaN(id)) {
+      return res.status(400).json({ success: false, error: 'ID invalide' });
+    }
+
+    // 1. Vider les votes de la table poll_votes
+    await pool.query('DELETE FROM poll_votes WHERE poll_id = $1', [id]);
+
+    // 2. Réinitialiser les compteurs de votes dans la colonne options
+    const pollRes = await pool.query('SELECT options FROM polls WHERE id = $1', [id]);
+    if (pollRes.rows.length > 0) {
+      let options = pollRes.rows[0].options;
+      if (typeof options === 'string') {
+        try { options = JSON.parse(options); } catch (e) {}
+      }
+      if (Array.isArray(options)) {
+        options = options.map(opt => ({
+          text: typeof opt === 'string' ? opt : (opt.text || 'Option'),
+          votes: 0
+        }));
+        await pool.query('UPDATE polls SET options = $1 WHERE id = $2', [JSON.stringify(options), id]);
+      }
+    }
+
+    res.json({
+      success: true,
+      message: 'Tous les votes de ce sondage ont été réinitialisés à 0'
+    });
+  } catch (err) {
+    console.error('❌ Erreur réinitialisation votes:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
 router.delete('/polls/:id', isAdmin, async (req, res) => {
   const client = await pool.connect();
   try {
