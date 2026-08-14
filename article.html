@@ -847,6 +847,7 @@
           if (json.success) { document.getElementById('commentInput').value = ''; if (json.modere) { msgDiv.style.color = 'orange'; msgDiv.textContent = 'En attente de validation.'; } else { msgDiv.style.color = 'green'; msgDiv.textContent = 'Publié !'; loadComments(articleId); } setTimeout(() => msgDiv.textContent = '', 3000); }
           else { msgDiv.style.color = 'red'; msgDiv.textContent = 'Erreur.'; }
         } catch (err) { }
+      });
     }
   </script>
   <script src="/js/lazyload.js"></script>
