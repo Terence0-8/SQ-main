@@ -21,8 +21,8 @@
   <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
   <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
   <title>Chargement... — Solitiquo</title>
-  <link rel="stylesheet" href="/css/shared.css" />
-  <link rel="stylesheet" href="/css/pages/article.css" />
+  <link rel="stylesheet" href="css/shared.css" />
+  <link rel="stylesheet" href="css/pages/article.css" />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
     rel="stylesheet" />
@@ -394,8 +394,8 @@
     </section>
   </main>
 
-  <div id="progressBarWrapper">
-    <div id="progressBar"></div>
+  <div id="progressBarWrapper" style="position:fixed !important;bottom:0 !important;left:0 !important;width:100% !important;height:8px !important;z-index:2147483647 !important;background:#e2e8f0 !important;pointer-events:none !important;display:block !important;">
+    <div id="progressBar" style="height:100% !important;width:0%;background:#C82823 !important;transition:width .05s linear !important;display:block !important;"></div>
   </div>
 
   <footer class="premium-footer">
@@ -754,30 +754,33 @@
       }).catch(() => {});
     }
 
+    function calculateScrollPercentage() {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+      const bodyH = document.body ? document.body.scrollHeight : 0;
+      const docH = document.documentElement ? document.documentElement.scrollHeight : 0;
+      const mainElem = document.querySelector('main') || document.getElementById('page-article');
+      const mainH = mainElem ? mainElem.scrollHeight : 0;
+      const winH = window.innerHeight || document.documentElement.clientHeight || 800;
+
+      const maxScroll = Math.max(bodyH, docH, mainH) - winH;
+      if (maxScroll > 50) {
+        return Math.min(100, Math.max(0, (scrollTop / maxScroll) * 100));
+      }
+
+      const artContent = document.getElementById('art-content') || mainElem;
+      if (artContent && artContent.offsetHeight > 0) {
+        const rect = artContent.getBoundingClientRect();
+        const scrolled = winH - rect.top;
+        return Math.max(0, Math.min(100, (scrolled / rect.height) * 100));
+      }
+      return 0;
+    }
+
     function updateReadingProgressBar() {
       const bar = document.getElementById('progressBar');
       if (!bar) return;
 
-      const artContent = document.getElementById('art-content') || document.getElementById('page-article');
-      let pct = 0;
-
-      if (artContent && artContent.offsetHeight > 0) {
-        const rect = artContent.getBoundingClientRect();
-        const winHeight = window.innerHeight;
-        const totalHeight = rect.height;
-        const scrolled = winHeight - rect.top;
-        pct = Math.max(0, Math.min(100, (scrolled / totalHeight) * 100));
-      } else {
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-        const scrollHeight = Math.max(
-          document.body.scrollHeight, document.documentElement.scrollHeight,
-          document.body.offsetHeight, document.documentElement.offsetHeight
-        );
-        const clientHeight = window.innerHeight || document.documentElement.clientHeight || 0;
-        const totalScrollable = scrollHeight - clientHeight;
-        pct = totalScrollable > 0 ? Math.max(0, Math.min(100, (scrollTop / totalScrollable) * 100)) : 0;
-      }
-
+      const pct = calculateScrollPercentage();
       bar.style.width = pct.toFixed(1) + '%';
 
       const artId = window._currentArticleId || (window._currentArticle && window._currentArticle.id);
