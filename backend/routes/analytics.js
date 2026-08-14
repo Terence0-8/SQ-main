@@ -331,10 +331,17 @@ router.post('/track', async (req, res) => {
   }
 
   try {
-    await db.query(
-      `UPDATE articles SET ${col} = COALESCE(${col}, 0) + 1 WHERE id = $1`,
-      [article_id]
-    );
+    if (milestoneKey === 'start') {
+      await db.query(
+        `UPDATE articles SET views_count = COALESCE(views_count, 0) + 1, reads_start = COALESCE(reads_start, 0) + 1 WHERE id = $1`,
+        [article_id]
+      );
+    } else {
+      await db.query(
+        `UPDATE articles SET ${col} = COALESCE(${col}, 0) + 1 WHERE id = $1`,
+        [article_id]
+      );
+    }
     res.json({ success: true });
   } catch (err) {
     console.error('❌ Erreur analytics/track:', err);
