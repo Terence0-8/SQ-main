@@ -86,18 +86,34 @@ router.get('/overview', isAdmin, async (req, res) => {
  */
 router.get('/reading-progress', isAdmin, async (req, res) => {
   try {
-    const result = await db.query(`
-      SELECT 
-        COALESCE(SUM(reads_start), 0) as total_starts,
-        COALESCE(SUM(views_count), 0) as total_views,
-        COALESCE(SUM(reads_25), 0) as total_25,
-        COALESCE(SUM(reads_50), 0) as total_50,
-        COALESCE(SUM(reads_75), 0) as total_75,
-        COALESCE(SUM(reads_100), 0) as total_100
-      FROM articles
-      WHERE LOWER(status) = 'published' OR status IS NULL
-    `);
-    const stats = result.rows[0];
+    let stats = {};
+    try {
+      const result = await db.query(`
+        SELECT 
+          COALESCE(SUM(reads_start), 0) as total_starts,
+          COALESCE(SUM(views_count), 0) as total_views,
+          COALESCE(SUM(reads_25), 0) as total_25,
+          COALESCE(SUM(reads_50), 0) as total_50,
+          COALESCE(SUM(reads_75), 0) as total_75,
+          COALESCE(SUM(reads_100), 0) as total_100
+        FROM articles
+        WHERE LOWER(status) = 'published' OR status IS NULL
+      `);
+      stats = result.rows[0] || {};
+    } catch (queryErr) {
+      console.warn('⚠️ Fallback query pour reading-progress:', queryErr.message);
+      const fallbackResult = await db.query(`
+        SELECT COALESCE(SUM(views_count), 0) as total_views FROM articles
+      `);
+      stats = {
+        total_starts: fallbackResult.rows[0]?.total_views || 0,
+        total_views: fallbackResult.rows[0]?.total_views || 0,
+        total_25: 0,
+        total_50: 0,
+        total_75: 0,
+        total_100: 0
+      };
+    }
 
     const valStart = parseInt(stats.total_starts || 0);
     const valViews = parseInt(stats.total_views || 0);
@@ -147,28 +163,40 @@ router.get('/reading-progress', isAdmin, async (req, res) => {
 
 /**
  * GET /api/analytics/top-articles
- * Top 10 des articles les plus lus
+ * Top 10 des articles les plus consultés
  */
 router.get('/top-articles', isAdmin, async (req, res) => {
   try {
-    const result = await db.query(`
-      SELECT 
-        id,
-        title,
-        category,
-        COALESCE(views_count, 0) as views_count,
-        COALESCE(reads_start, 0) as reads_start,
-        COALESCE(reads_25, 0) as reads_25,
-        COALESCE(reads_50, 0) as reads_50,
-        COALESCE(reads_75, 0) as reads_75,
-        COALESCE(reads_100, 0) as reads_100,
-        created_at
-      FROM articles
-      WHERE LOWER(status) = 'published' OR status IS NULL
-      ORDER BY views_count DESC
-      LIMIT 10
-    `);
-    const topArticles = result.rows;
+    let topArticles = [];
+    try {
+      const result = await db.query(`
+        SELECT 
+          id,
+          title,
+          slug,
+          category,
+          COALESCE(views_count, 0) as views_count,
+          COALESCE(reads_start, 0) as reads_start,
+          COALESCE(reads_25, 0) as reads_25,
+          COALESCE(reads_50, 0) as reads_50,
+          COALESCE(reads_75, 0) as reads_75,
+          COALESCE(reads_100, 0) as reads_100,
+          created_at
+        FROM articles
+        WHERE LOWER(status) = 'published' OR status IS NULL
+        ORDER BY views_count DESC
+        LIMIT 10
+      `);
+      topArticles = result.rows;
+    } catch (qErr) {
+      console.warn('⚠️ Fallback query pour top-articles:', qErr.message);
+      const fb = await db.query(`
+        SELECT id, title, slug, category, COALESCE(views_count, 0) as views_count, created_at
+        FROM articles WHERE LOWER(status) = 'published' OR status IS NULL
+        ORDER BY views_count DESC LIMIT 10
+      `);
+      topArticles = fb.rows;
+    }
 
     res.json({
       success: true,
@@ -199,7 +227,7 @@ router.get('/top-articles', isAdmin, async (req, res) => {
       })
     });
   } catch (err) {
-    console.error('❌ Erreur top articles:', err);
+    console.error('❌ Erreur top-articles:', err);
     res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 });
