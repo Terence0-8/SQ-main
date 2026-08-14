@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -385,7 +385,10 @@
         }
 
         const { poll, hasVoted, userVote } = data;
-        const options = poll.options;
+        let options = poll.options;
+        if (typeof options === 'string') {
+          try { options = JSON.parse(options); } catch (e) {}
+        }
 
         if (!options || !Array.isArray(options) || options.length === 0) {
           container.innerHTML = '<p style="text-align:center;color:#999;">Sondage en préparation...</p>';

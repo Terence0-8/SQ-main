@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -403,7 +403,11 @@
     document.getElementById('btn-logout').addEventListener('click', async (e) => {
       e.preventDefault();
       try {
-        await fetch('/api/auth/logout', { method: 'POST' });
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: { 'X-CSRF-Token': SolitiquoAPI.csrfToken },
+          credentials: 'include'
+        });
         localStorage.removeItem('user_data');
         window.location.href = 'index.html';
       } catch (err) {

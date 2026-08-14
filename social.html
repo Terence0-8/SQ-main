@@ -301,52 +301,50 @@
     }
 
     function renderSmartPoll(forceEdit) {
-      if (!smartPollData) return;
+      if (!smartPollData || !smartPollData.poll) return;
       const { poll, hasVoted } = smartPollData;
-      const options = poll.options;
-      const mainArea = document.getElementById('main-poll-area');
-      const sidebarArea = document.getElementById('sidebar-poll-result-area');
+      let options = poll.options;
+      if (typeof options === 'string') {
+        try { options = JSON.parse(options); } catch (e) {}
+      }
+      if (!Array.isArray(options)) options = [];
+
       const showResults = hasVoted && !forceEdit;
 
+      const mainArea = document.getElementById('main-poll-area');
+      const sidebarArea = document.getElementById('sidebar-poll-result-area');
+
+      // Masquer la sidebar si la zone principale est présente
+      const targetArea = mainArea || sidebarArea;
+      if (mainArea && sidebarArea) sidebarArea.style.display = 'none';
+
+      if (!targetArea) return;
+      targetArea.style.display = 'block';
+
+      const isMain = targetArea === mainArea;
+      const qElem = document.getElementById(isMain ? 'poll-question-main' : 'poll-question-sidebar');
+      if (qElem) qElem.textContent = poll.question;
+
+      const optElem = document.getElementById(isMain ? 'poll-options-main' : 'poll-results-sidebar');
+      if (!optElem) return;
+
       if (showResults) {
-        if (mainArea) mainArea.style.display = 'none';
-        if (sidebarArea) {
-          sidebarArea.style.display = 'block';
-          document.getElementById('poll-question-sidebar').textContent = poll.question;
-          const total = options.reduce((a, b) => a + (parseInt(b.votes) || 0), 0);
-          const max = Math.max(...options.map(o => (parseInt(o.votes) || 0)));
-          document.getElementById('poll-results-sidebar').innerHTML = options.map(opt => {
-            const c = parseInt(opt.votes) || 0;
-            const pct = total === 0 ? 0 : Math.round((c / total) * 100);
-            const barColor = (c === max && total > 0) ? '#C82823' : '#cbd5e1';
-            const weight = (c === max && total > 0) ? '700' : '400';
-            return `<div style="margin-bottom:12px;"><div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:${weight}; margin-bottom:4px;"><span>${opt.text}</span><span>${pct}%</span></div><div style="height:5px; background:rgba(255,255,255,0.15); border-radius:3px; overflow:hidden;"><div style="width:${pct}%; background:${barColor}; height:100%; border-radius:3px; transition:width 0.5s;"></div></div></div>`;
-          }).join('');
-          const container = document.createElement('div');
-          container.style.textAlign = 'center';
-          container.style.marginTop = '15px';
-          container.innerHTML = `<button class="btn-modify-vote js-poll-edit" style="color:#aaa; border-color:#444;">Modifier mon vote</button>`;
-          const existingBtn = document.getElementById('sidebar-edit-wrapper');
-          if (existingBtn) existingBtn.remove();
-          container.id = 'sidebar-edit-wrapper';
-          document.getElementById('poll-results-sidebar').appendChild(container);
-        }
+        const total = options.reduce((a, b) => a + (parseInt(b.votes) || 0), 0);
+        const max = Math.max(...options.map(o => (parseInt(o.votes) || 0)));
+        const bars = options.map(opt => {
+          const c = parseInt(opt.votes) || 0;
+          const pct = total === 0 ? 0 : Math.round((c / total) * 100);
+          const barColor = (c === max && total > 0) ? '#C82823' : '#cbd5e1';
+          const weight = (c === max && total > 0) ? '700' : '400';
+          return `<div style="margin-bottom:12px;"><div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:${weight}; margin-bottom:4px; color:#334155;"><span>${opt.text}</span><span>${pct}%</span></div><div style="height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;"><div style="width:${pct}%; background:${barColor}; height:100%; border-radius:3px; transition:width 0.5s;"></div></div></div>`;
+        }).join('');
+        const totalText = `<div style="text-align:right; font-size:0.75rem; color:#94a3b8; margin-top:6px;">${total} vote${total !== 1 ? 's' : ''}</div>`;
+        const editBtn = `<div style="text-align:center; margin-top:15px;"><button class="btn-modify-vote js-poll-edit">Modifier mon vote</button></div>`;
+        optElem.innerHTML = bars + totalText + editBtn;
       } else {
-        if (sidebarArea) sidebarArea.style.display = 'none';
-        if (mainArea) {
-          mainArea.style.display = 'block';
-          document.getElementById('poll-question-main').textContent = poll.question;
-          document.getElementById('poll-options-main').innerHTML = options.map((opt, index) => `<button class="poll-option-btn js-poll-vote" data-index="${index}">${opt.text}</button>`).join('');
-          if (hasVoted) {
-            const cancelDiv = document.createElement('div');
-            cancelDiv.style.textAlign = 'center';
-            cancelDiv.style.marginTop = '10px';
-            cancelDiv.innerHTML = `<a href="#" class="js-poll-cancel" style="color:#999; font-size:0.8rem; text-decoration:none;">Annuler</a>`;
-            document.getElementById('poll-options-main').appendChild(cancelDiv);
-          }
-          const inner = document.getElementById('poll-card-inner');
-          if (inner) { inner.classList.remove('fade-out'); inner.classList.add('poll-fade-enter'); }
-        }
+        const btns = options.map((opt, index) => `<button class="poll-option-btn js-poll-vote" data-index="${index}">${opt.text}</button>`).join('');
+        const cancelBtn = hasVoted ? `<div style="text-align:center; margin-top:10px;"><a href="#" class="js-poll-cancel" style="color:#94a3b8; font-size:0.8rem; text-decoration:none;">Annuler la modification</a></div>` : '';
+        optElem.innerHTML = btns + cancelBtn;
       }
     }
 
@@ -365,12 +363,12 @@
           smartPollData.hasVoted = true;
           if (json.options) smartPollData.poll.options = json.options;
           renderSmartPoll(false);
+        } else if (res.status === 401) {
+          showAuthRequiredModal(json.error || 'Vous devez être connecté pour participer au vote.');
         } else {
-          console.warn('Erreur vote:', json.error);
-          alert(json.error || 'Vote impossible');
-          renderSmartPoll(false);
+          showGeneralErrorModal('Information', json.error || 'Impossible d\'enregistrer votre vote.');
         }
-      } catch (e) { console.error(e); alert('Erreur de connexion au serveur.'); }
+      } catch (e) { console.error(e); showGeneralErrorModal('Erreur', 'Une erreur réseau s\'est produite.'); }
     }
 
     // --- 3. UI (Menu Mobile & Recherche) ---

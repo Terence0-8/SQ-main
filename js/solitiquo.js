@@ -202,3 +202,50 @@ function hideBanner(banner) {
   banner.classList.remove('show');
   setTimeout(() => banner.remove(), 500); // Supprimer du DOM après l'anim
 }
+
+// ============================================================
+// MODALES D'INCITATION À LA CONNEXION ET D'INFORMATION (MODERN GLASS)
+// ============================================================
+window.showAuthRequiredModal = function(message = "Vous devez être connecté pour participer à ce sondage.") {
+  let existingModal = document.getElementById('auth-prompt-modal');
+  if (existingModal) existingModal.remove();
+
+  const modalHtml = `
+    <div id="auth-prompt-modal" class="auth-modal-overlay">
+      <div class="auth-modal-card">
+        <button class="auth-modal-close" onclick="document.getElementById('auth-prompt-modal').remove()" aria-label="Fermer">×</button>
+        <div class="auth-modal-icon">🔐</div>
+        <h3 class="auth-modal-title">Connexion requise</h3>
+        <p class="auth-modal-desc">${message}</p>
+        <div class="auth-modal-actions">
+          <a href="auth.html#register" class="auth-btn-primary">
+            <span>S'inscrire</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+          <a href="auth.html" class="auth-btn-secondary">J'ai déjà un compte</a>
+        </div>
+      </div>
+    </div>`;
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+};
+
+window.showGeneralErrorModal = function(title = "Information", message = "") {
+  let existingModal = document.getElementById('general-error-modal');
+  if (existingModal) existingModal.remove();
+
+  const modalHtml = `
+    <div id="general-error-modal" class="auth-modal-overlay">
+      <div class="auth-modal-card">
+        <button class="auth-modal-close" onclick="document.getElementById('general-error-modal').remove()" aria-label="Fermer">×</button>
+        <div class="auth-modal-icon">⚠️</div>
+        <h3 class="auth-modal-title">${title}</h3>
+        <p class="auth-modal-desc">${message}</p>
+        <div class="auth-modal-actions">
+          <button class="auth-btn-primary" onclick="document.getElementById('general-error-modal').remove()" style="cursor:pointer; justify-content:center;">Compris</button>
+        </div>
+      </div>
+    </div>`;
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+};

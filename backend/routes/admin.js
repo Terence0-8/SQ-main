@@ -12,7 +12,8 @@ const { sanitizeText, sanitizeArray } = require('../middleware/sanitize');
 const pollSchema = Joi.object({
   question: Joi.string().min(10).max(500).required(),
   options: Joi.array().items(Joi.string().min(1).max(200)).min(2).max(10).required(),
-  ends_at: Joi.date().iso().optional()
+  ends_at: Joi.date().iso().optional(),
+  category: Joi.string().allow('', null).optional()
 });
 
 const partySchema = Joi.object({
@@ -330,10 +331,19 @@ router.post('/comments/:id/:action', isAdmin, async (req, res) => {
 // 7. GESTION SONDAGES
 // ==========================================
 // À insérer dans la section GESTION SONDAGES de admin.js
+function normalizePollCategory(cat) {
+  if (!cat || typeof cat !== 'string') return 'Politique';
+  const trimmed = cat.trim().toLowerCase();
+  if (trimmed === 'social') return 'Social';
+  return 'Politique';
+}
+
 router.put('/polls/:id', isAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { question, options } = req.body; // Options arrive en tableau de strings ["Oui", "Non"]
+    const { question, options, category } = req.body; // Options arrive en tableau de strings ["Oui", "Non"]
+
+    const cleanCategory = normalizePollCategory(category);
 
     // Reformatage pour le JSONB : on garde les votes existants si possible, sinon 0
     // Note: C'est complexe de mapper les anciens votes aux nouvelles options.
@@ -341,15 +351,24 @@ router.put('/polls/:id', isAdmin, async (req, res) => {
     // ✅ SANITISATION XSS
     const safeQuestion = sanitizeText(question);
     const safeOptions = sanitizeArray(options);
+
+    if (!safeQuestion || safeQuestion.length < 5) {
+      return res.status(400).json({ success: false, error: 'La question est obligatoire (minimum 5 caractères).' });
+    }
+
+    if (!safeOptions || safeOptions.length < 2) {
+      return res.status(400).json({ success: false, error: 'Au moins 2 options valides sont requises.' });
+    }
     const optionsJson = safeOptions.map(text => ({ text, votes: 0 }));
 
     const query = `
       UPDATE polls 
-      SET question = $1, options = $2, updated_at = NOW() 
-      WHERE id = $3 
+      SET question = $1, options = $2, category = $3 
+      WHERE id = $4 
       RETURNING id
     `;
-    await pool.query(query, [safeQuestion, JSON.stringify(optionsJson), id]);
+    await pool.query(query, [safeQuestion, JSON.stringify(optionsJson), cleanCategory, id]);
+    await pool.query('DELETE FROM poll_votes WHERE poll_id = $1', [id]);
 
     res.json({ success: true, message: "Sondage mis à jour (Votes réinitialisés)" });
   } catch (err) {
@@ -368,6 +387,7 @@ router.get('/polls/stats', isAdmin, async (req, res) => {
         p.options,
         p.is_active,
         p.ends_at,
+        p.category,
         p.created_at,
         (SELECT COUNT(*) FROM poll_votes WHERE poll_id = p.id) as total_votes
       FROM polls p
@@ -393,7 +413,8 @@ router.post('/polls', isAdmin, async (req, res) => {
       });
     }
 
-    const { question, options, ends_at } = value;
+    const { question, options, ends_at, category } = value;
+    const cleanCategory = normalizePollCategory(category);
 
     // ✅ SANITISATION XSS
     const safeQuestion = sanitizeText(question);
@@ -403,8 +424,8 @@ router.post('/polls', isAdmin, async (req, res) => {
     const optionsJson = safeOptions.map(text => ({ text, votes: 0 }));
 
     const query = `
-      INSERT INTO polls (question, options, created_by, is_active, ends_at, created_at)
-      VALUES ($1, $2, $3, TRUE, $4, NOW())
+      INSERT INTO polls (question, options, created_by, is_active, ends_at, category, created_at)
+      VALUES ($1, $2, $3, TRUE, $4, $5, NOW())
       RETURNING id, question
     `;
 
@@ -412,7 +433,8 @@ router.post('/polls', isAdmin, async (req, res) => {
       safeQuestion,
       JSON.stringify(optionsJson),
       req.session.user.id,
-      ends_at || null
+      ends_at || null,
+      cleanCategory
     ]);
 
     res.json({

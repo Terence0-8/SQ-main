@@ -20,23 +20,22 @@ router.get('/active', async (req, res) => {
     try {
         const userId = req.session && req.session.user ? req.session.user.id : null;
 
-        // Trouver le sondage actif (le plus récent)
-        const pollQuery = `
-      SELECT 
-        id,
-        question,
-        options,
-        is_active,
-        ends_at,
-        created_at
-      FROM polls 
-      WHERE is_active = TRUE 
-        AND (ends_at IS NULL OR ends_at > NOW())
-      ORDER BY created_at DESC 
-      LIMIT 1
-    `;
+        // 1. Chercher un sondage actif
+        let pollRes = await pool.query(`
+          SELECT id, question, options, category, is_active, ends_at, created_at
+          FROM polls 
+          WHERE is_active = TRUE AND (ends_at IS NULL OR ends_at > NOW())
+          ORDER BY created_at DESC LIMIT 1
+        `);
 
-        const pollRes = await pool.query(pollQuery);
+        // 2. Repli : prendre le dernier sondage existant
+        if (pollRes.rows.length === 0) {
+            pollRes = await pool.query(`
+              SELECT id, question, options, category, is_active, ends_at, created_at
+              FROM polls 
+              ORDER BY created_at DESC LIMIT 1
+            `);
+        }
 
         if (pollRes.rows.length === 0) {
             return res.json({
@@ -46,6 +45,24 @@ router.get('/active', async (req, res) => {
         }
 
         const poll = pollRes.rows[0];
+        let options = [];
+        try {
+            options = typeof poll.options === 'string' ? JSON.parse(poll.options) : poll.options;
+        } catch (e) { options = poll.options; }
+        if (!Array.isArray(options)) options = [];
+
+        // Calculer les votes exacts par option depuis poll_votes
+        const countsRes = await pool.query(
+            'SELECT option_index, COUNT(*)::int as count FROM poll_votes WHERE poll_id = $1 GROUP BY option_index',
+            [poll.id]
+        );
+        const countsMap = {};
+        countsRes.rows.forEach(r => { countsMap[r.option_index] = r.count; });
+
+        options = options.map((opt, idx) => ({
+            text: typeof opt === 'string' ? opt : (opt.text || `Option ${idx + 1}`),
+            votes: countsMap[idx] || 0
+        }));
 
         // Vérifier si l'utilisateur a déjà voté
         let hasVoted = false;
@@ -75,7 +92,8 @@ router.get('/active', async (req, res) => {
             poll: {
                 id: poll.id,
                 question: poll.question,
-                options: poll.options,
+                options: options,
+                category: poll.category,
                 is_active: poll.is_active,
                 ends_at: poll.ends_at,
                 total_votes: totalVotes
@@ -98,37 +116,64 @@ router.get('/active/:category', async (req, res) => {
         const { category } = req.params;
         const userId = req.session && req.session.user ? req.session.user.id : null;
 
-        // Normaliser la catégorie (Politique, Social, etc.)
-        const normalizedCategory = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
+        const normalizedCategory = category.trim().toLowerCase();
 
-        // Trouver le sondage actif pour cette catégorie
-        const pollQuery = `
-      SELECT 
-        id,
-        question,
-        options,
-        category,
-        is_active,
-        ends_at,
-        created_at
-      FROM polls 
-      WHERE is_active = TRUE 
-        AND (ends_at IS NULL OR ends_at > NOW())
-        AND category = $1
-      ORDER BY created_at DESC 
-      LIMIT 1
-    `;
+        // 1. Chercher le sondage actif pour cette catégorie
+        let pollRes = await pool.query(`
+          SELECT id, question, options, category, is_active, ends_at, created_at
+          FROM polls 
+          WHERE is_active = TRUE 
+            AND (ends_at IS NULL OR ends_at > NOW())
+            AND LOWER(category) = $1
+          ORDER BY created_at DESC LIMIT 1
+        `, [normalizedCategory]);
 
-        const pollRes = await pool.query(pollQuery, [normalizedCategory]);
+        // 2. Si non trouvé, chercher un sondage actif dans n'importe quelle catégorie ou sans catégorie
+        if (pollRes.rows.length === 0) {
+            pollRes = await pool.query(`
+              SELECT id, question, options, category, is_active, ends_at, created_at
+              FROM polls 
+              WHERE is_active = TRUE 
+                AND (ends_at IS NULL OR ends_at > NOW())
+              ORDER BY created_at DESC LIMIT 1
+            `);
+        }
+
+        // 3. Si toujours non trouvé, prendre le dernier sondage existant en base
+        if (pollRes.rows.length === 0) {
+            pollRes = await pool.query(`
+              SELECT id, question, options, category, is_active, ends_at, created_at
+              FROM polls 
+              ORDER BY created_at DESC LIMIT 1
+            `);
+        }
 
         if (pollRes.rows.length === 0) {
             return res.json({
                 success: false,
-                message: `Aucun sondage actif pour la catégorie ${normalizedCategory}`
+                message: `Aucun sondage actif`
             });
         }
 
         const poll = pollRes.rows[0];
+        let options = [];
+        try {
+            options = typeof poll.options === 'string' ? JSON.parse(poll.options) : poll.options;
+        } catch (e) { options = poll.options; }
+        if (!Array.isArray(options)) options = [];
+
+        // Calculer les votes exacts par option depuis poll_votes
+        const countsRes = await pool.query(
+            'SELECT option_index, COUNT(*)::int as count FROM poll_votes WHERE poll_id = $1 GROUP BY option_index',
+            [poll.id]
+        );
+        const countsMap = {};
+        countsRes.rows.forEach(r => { countsMap[r.option_index] = r.count; });
+
+        options = options.map((opt, idx) => ({
+            text: typeof opt === 'string' ? opt : (opt.text || `Option ${idx + 1}`),
+            votes: countsMap[idx] || 0
+        }));
 
         // Vérifier si l'utilisateur a déjà voté
         let hasVoted = false;
@@ -158,7 +203,7 @@ router.get('/active/:category', async (req, res) => {
             poll: {
                 id: poll.id,
                 question: poll.question,
-                options: poll.options,
+                options: options,
                 category: poll.category,
                 is_active: poll.is_active,
                 ends_at: poll.ends_at,
@@ -260,7 +305,6 @@ router.post('/vote', async (req, res) => {
     const client = await pool.connect();
 
     try {
-        // Vérifier authentification
         if (!req.session || !req.session.user) {
             return res.status(401).json({
                 success: false,
@@ -270,9 +314,7 @@ router.post('/vote', async (req, res) => {
 
         const userId = req.session.user.id;
 
-        // Validation
         const { error, value } = voteSchema.validate(req.body);
-
         if (error) {
             return res.status(400).json({
                 success: false,
@@ -284,117 +326,66 @@ router.post('/vote', async (req, res) => {
 
         await client.query('BEGIN');
 
-        // A. Vérifier que le sondage existe et est actif
         const pollCheck = await client.query(
-            `SELECT id, options, is_active, ends_at 
-       FROM polls 
-       WHERE id = $1`,
+            `SELECT id, options, is_active, ends_at FROM polls WHERE id = $1`,
             [poll_id]
         );
 
         if (pollCheck.rows.length === 0) {
             await client.query('ROLLBACK');
-            return res.status(404).json({
-                success: false,
-                error: 'Sondage introuvable'
-            });
+            return res.status(404).json({ success: false, error: 'Sondage introuvable' });
         }
 
         const poll = pollCheck.rows[0];
-
         if (!poll.is_active) {
             await client.query('ROLLBACK');
-            return res.status(400).json({
-                success: false,
-                error: 'Ce sondage est fermé'
-            });
+            return res.status(400).json({ success: false, error: 'Ce sondage est actuellement fermé' });
         }
 
-        if (poll.ends_at && new Date(poll.ends_at) < new Date()) {
-            await client.query('ROLLBACK');
-            return res.status(400).json({
-                success: false,
-                error: 'Ce sondage est expiré'
-            });
-        }
+        let options = [];
+        try {
+            options = typeof poll.options === 'string' ? JSON.parse(poll.options) : poll.options;
+        } catch (e) { options = poll.options; }
+        if (!Array.isArray(options)) options = [];
 
-        // B. Vérifier que l'index est valide
-        const options = poll.options;
         if (option_index < 0 || option_index >= options.length) {
             await client.query('ROLLBACK');
-            return res.status(400).json({
-                success: false,
-                error: 'Option invalide'
-            });
+            return res.status(400).json({ success: false, error: 'Option invalide' });
         }
 
-        // C. Vérifier si l'utilisateur a déjà voté
+        // Insérer ou mettre à jour le vote dans poll_votes
         const existingVote = await client.query(
-            'SELECT id, option_index FROM poll_votes WHERE poll_id = $1 AND user_id = $2',
+            'SELECT id FROM poll_votes WHERE poll_id = $1 AND user_id = $2',
             [poll_id, userId]
         );
 
-        // --- CAS 1 : MODIFIER SON VOTE ---
         if (existingVote.rows.length > 0) {
-            const oldOptionIndex = existingVote.rows[0].option_index;
-
-            // Si c'est le même choix, on ne fait rien
-            if (oldOptionIndex === option_index) {
-                await client.query('ROLLBACK');
-                return res.json({
-                    success: true,
-                    message: 'Vote inchangé'
-                });
-            }
-
-            // Décrémenter l'ancienne option (initialiser si undefined)
-            if (typeof options[oldOptionIndex].votes !== 'number') {
-                options[oldOptionIndex].votes = 0;
-            }
-            options[oldOptionIndex].votes = Math.max(0, options[oldOptionIndex].votes - 1);
-
-            // Incrémenter la nouvelle option (initialiser si undefined)
-            if (typeof options[option_index].votes !== 'number') {
-                options[option_index].votes = 0;
-            }
-            options[option_index].votes += 1;
-
-            // Mettre à jour le vote
             await client.query(
                 'UPDATE poll_votes SET option_index = $1, voted_at = NOW() WHERE id = $2',
                 [option_index, existingVote.rows[0].id]
             );
-
-            // Mettre à jour les options dans le poll
+        } else {
             await client.query(
-                'UPDATE polls SET options = $1 WHERE id = $2',
-                [JSON.stringify(options), poll_id]
+                'INSERT INTO poll_votes (poll_id, user_id, option_index, voted_at) VALUES ($1, $2, $3, NOW())',
+                [poll_id, userId, option_index]
             );
-
-            await client.query('COMMIT');
-
-            return res.json({
-                success: true,
-                message: 'Vote modifié',
-                options: options
-            });
         }
 
-        // --- CAS 2 : PREMIER VOTE ---
-
-        // Incrémenter l'option choisie (initialiser si undefined)
-        if (typeof options[option_index].votes !== 'number') {
-            options[option_index].votes = 0;
-        }
-        options[option_index].votes += 1;
-
-        // Insérer le vote
-        await client.query(
-            'INSERT INTO poll_votes (poll_id, user_id, option_index, voted_at) VALUES ($1, $2, $3, NOW())',
-            [poll_id, userId, option_index]
+        // Calculer les votes exacts par option à partir de poll_votes
+        const countsRes = await client.query(
+            'SELECT option_index, COUNT(*)::int as count FROM poll_votes WHERE poll_id = $1 GROUP BY option_index',
+            [poll_id]
         );
 
-        // Mettre à jour les options dans le poll
+        const countsMap = {};
+        countsRes.rows.forEach(r => { countsMap[r.option_index] = r.count; });
+
+        options = options.map((opt, idx) => ({
+            text: typeof opt === 'string' ? opt : (opt.text || `Option ${idx + 1}`),
+            votes: countsMap[idx] || 0
+        }));
+
+        // Mettre à jour les options dans la table polls
         await client.query(
             'UPDATE polls SET options = $1 WHERE id = $2',
             [JSON.stringify(options), poll_id]
@@ -402,7 +393,7 @@ router.post('/vote', async (req, res) => {
 
         await client.query('COMMIT');
 
-        res.json({
+        return res.json({
             success: true,
             message: 'Vote enregistré',
             options: options

@@ -267,6 +267,7 @@
                         <thead>
                             <tr>
                                 <th>Question</th>
+                                <th>Catégorie</th>
                                 <th>Statut</th>
                                 <th>Votes Total</th>
                                 <th>Résultats</th>
@@ -771,6 +772,7 @@
                         return `
                          <tr>
                             <td><strong>${p.question}</strong></td>
+                            <td><span class="badge" style="background-color:#444;color:#fff;">${p.category || 'Aucune'}</span></td>
                             <td>${activeBadge}</td>
                             <td>${p.total_votes}</td>
                             <td style="font-size:0.8rem;">${results}</td>
@@ -782,7 +784,8 @@
                             </td>
                          </tr>`;
                     }).join(''));
-                } catch (e) { tbody.innerHTML = '<tr><td colspan="5">Erreur</td></tr>'; }
+                    setTimeout(() => lucide.createIcons(), 50);
+                } catch (e) { tbody.innerHTML = '<tr><td colspan="6">Erreur</td></tr>'; }
             }
 
             async function deleteItem(type, id) {
@@ -792,12 +795,39 @@
                     if (type === 'article') endpoint = `/articles/${id}`;
                     if (type === 'poll') endpoint = `/admin/polls/${id}`;
 
-                    await fetch(API_URL + endpoint, { method: 'DELETE', credentials: 'include' });
+                    await fetch(API_URL + endpoint, {
+                        method: 'DELETE',
+                        headers: { 'X-CSRF-Token': SolitiquoAPI.csrfToken },
+                        credentials: 'include'
+                    });
                     if (type === 'article') loadAllData();
                     else if (type === 'party') loadParties();
                     else if (type === 'poll') loadPolls();
                     else loadOtherContent();
                 } catch (e) { alert("Erreur suppression"); }
+            }
+
+            async function togglePollStatus(id, currentActive) {
+                try {
+                    const res = await fetch(`${API_URL}/admin/polls/${id}/toggle`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': SolitiquoAPI.csrfToken
+                        },
+                        credentials: 'include'
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                        Toast.fire({ icon: 'success', title: data.message });
+                        loadPolls();
+                    } else {
+                        Swal.fire('Erreur', data.error || 'Impossible de changer le statut', 'error');
+                    }
+                } catch (e) {
+                    Swal.fire('Erreur', 'Erreur serveur', 'error');
+                }
             }
 
             async function togglePremium(type, id, currentStatus) {
@@ -860,6 +890,13 @@
                             <label class="glass-label">Question du sondage</label>
                             <input id="poll-question" class="glass-input" placeholder="Ex: Quel est votre avis sur..." value="${isEdit ? poll.question : ''}">
                         </div>
+                        <div style="text-align: left; margin-bottom: 1.5rem;">
+                            <label class="glass-label">Catégorie</label>
+                            <select id="poll-category" class="glass-input" style="background-color: #1a1a1a; color: white;">
+                                <option value="Politique" ${isEdit && (poll.category || '').toLowerCase() === 'politique' ? 'selected' : ''}>Politique</option>
+                                <option value="Social" ${isEdit && (poll.category || '').toLowerCase() === 'social' ? 'selected' : ''}>Social</option>
+                            </select>
+                        </div>
                         <div style="text-align: left;">
                             <label class="glass-label">Options de réponse</label>
                             <div id="options-container"></div>
@@ -901,7 +938,15 @@
                         if (isEdit) {
                             try {
                                 const existingOpts = typeof poll.options === 'string' ? JSON.parse(poll.options) : poll.options;
-                                existingOpts.forEach(opt => addOption(opt.text));
+                                if (Array.isArray(existingOpts) && existingOpts.length > 0) {
+                                    existingOpts.forEach(opt => {
+                                        const txt = typeof opt === 'object' && opt !== null ? (opt.text || '') : String(opt || '');
+                                        addOption(txt);
+                                    });
+                                } else {
+                                    addOption();
+                                    addOption();
+                                }
                             } catch (e) {
                                 addOption();
                                 addOption();
@@ -920,6 +965,8 @@
                             return false;
                         }
 
+                        const category = document.getElementById('poll-category').value;
+
                         const optionInputs = document.querySelectorAll('.option-input');
                         const options = Array.from(optionInputs)
                             .map(input => input.value.trim())
@@ -930,29 +977,34 @@
                             return false;
                         }
 
-                        return { question, options };
+                        return { question, options, category };
                     }
                 });
 
-                if (result) {
-                    const { question, options } = result;
+                if (result.isConfirmed && result.value) {
+                    const { question, options, category } = result.value;
                     try {
                         const res = await fetch(isEdit ? `${API_URL}/admin/polls/${pollId}` : `${API_URL}/admin/polls`, {
                             method: isEdit ? 'PUT' : 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ question, options }),
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-Token': SolitiquoAPI.csrfToken
+                            },
+                            body: JSON.stringify({ question, options, category }),
                             credentials: 'include'
                         });
 
-                        if (res.ok) {
+                        const json = await res.json();
+
+                        if (res.ok && json.success) {
                             const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
                             Toast.fire({ icon: 'success', title: isEdit ? 'Sondage modifié' : 'Sondage créé' });
                             loadPolls();
                         } else {
-                            throw new Error('Erreur serveur');
+                            throw new Error(json.error || 'Erreur serveur');
                         }
                     } catch (err) {
-                        Swal.fire('Erreur', 'Impossible de sauvegarder le sondage', 'error');
+                        Swal.fire('Erreur', err.message || 'Impossible de sauvegarder le sondage', 'error');
                     }
                 }
             }
