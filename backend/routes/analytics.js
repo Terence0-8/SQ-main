@@ -164,24 +164,26 @@ router.get('/top-articles', isAdmin, async (req, res) => {
     res.json({
       success: true,
       data: topArticles.map(art => {
-        const views = Math.max(parseInt(art.views_count || 0), parseInt(art.reads_start || 0));
+        const views = parseInt(art.views_count || 0);
+        const rStart = parseInt(art.reads_start || 0);
         const r100 = parseInt(art.reads_100 || 0);
         const r75 = parseInt(art.reads_75 || 0);
         const r50 = parseInt(art.reads_50 || 0);
         const r25 = parseInt(art.reads_25 || 0);
 
+        const sessions = rStart > 0 ? rStart : (views > 0 ? views : 1);
+
         let rate = 0;
-        if (views > 0) {
-          if (r100 > 0) rate = (r100 / views) * 100;
-          else if (r75 > 0) rate = (r75 / views) * 75;
-          else if (r50 > 0) rate = (r50 / views) * 50;
-          else if (r25 > 0) rate = (r25 / views) * 25;
-        }
+        if (r100 > 0) rate = (r100 / sessions) * 100;
+        else if (r75 > 0) rate = (r75 / sessions) * 75;
+        else if (r50 > 0) rate = (r50 / sessions) * 50;
+        else if (r25 > 0) rate = (r25 / sessions) * 25;
+
         rate = Math.min(100, Math.max(0, rate));
 
         return {
           ...art,
-          views_count: views,
+          views_count: Math.max(views, rStart),
           reads_100: r100,
           completionRate: rate.toFixed(1)
         };
