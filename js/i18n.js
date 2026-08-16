@@ -708,8 +708,8 @@ async function loadArticles(lang) {
       `;
       attachImageErrorHandlers(document.getElementById('hero-dynamic'));
 
-      // 2. MAGAZINE LIST (Tous les articles suivants)
-      const mainList = articles.slice(1);
+      // 2. MAGAZINE LIST (Un peu moins d'une dizaine : articles 1 à 8)
+      const mainList = articles.slice(1, 9);
       document.getElementById('magazine-feed').innerHTML = mainList.map(art => {
         const linkArt = `article.html?id=${art.id}`;
         const langBadge = art.language !== lang
@@ -737,21 +737,29 @@ async function loadArticles(lang) {
 
       attachImageErrorHandlers(document.getElementById('magazine-feed'));
 
-      // 3. SIDEBAR DISCOVERY (Section À Découvrir)
-      const discoList = articles.length > 5 ? articles.slice(5) : articles.slice(1);
+      // 3. SIDEBAR DISCOVERY (Le reste des articles : article 9 et suivants)
+      const discoList = articles.slice(9);
       const discoverGrid = document.getElementById('discover-grid');
-      if (discoverGrid) {
-        discoverGrid.innerHTML = discoList.map(art => {
-          const linkDisco = `article.html?id=${art.id}`;
-          return `
-          <a href="${linkDisco}" class="disco-card">
-            <img src="${art.image_url}" class="disco-img" loading="lazy">
-            <h4 class="disco-title">${art.title} ${art.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">' : ''}</h4>
-            <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
-          </a>
-        `}).join('');
+      const discoverSection = document.querySelector('.discover-section');
 
-        attachImageErrorHandlers(discoverGrid);
+      if (discoverGrid) {
+        if (discoList.length > 0) {
+          if (discoverSection) discoverSection.style.display = 'block';
+          discoverGrid.innerHTML = discoList.map(art => {
+            const linkDisco = `article.html?id=${art.id}`;
+            return `
+            <a href="${linkDisco}" class="disco-card">
+              <img src="${art.image_url}" class="disco-img" loading="lazy">
+              <h4 class="disco-title">${art.title} ${art.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">' : ''}</h4>
+              <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
+            </a>
+          `}).join('');
+
+          attachImageErrorHandlers(discoverGrid);
+        } else {
+          if (discoverSection) discoverSection.style.display = 'none';
+          discoverGrid.innerHTML = '';
+        }
       }
     } else {
       console.warn(`⚠️ Aucun article trouvé`);
