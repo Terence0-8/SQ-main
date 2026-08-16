@@ -194,6 +194,8 @@
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script>
+    const API_URL = window.API_URL || (typeof SolitiquoAPI !== 'undefined' ? SolitiquoAPI.baseUrl : 'http://localhost:5000/api');
+
     (async function init() {
       await initLanguageSwitcher({ reloadPage: true });
 
@@ -204,22 +206,31 @@
         return;
       }
 
-      // S'assurer que le token CSRF est chargé
+      // S'assurer que le token CSRF est frais
       if (!SolitiquoAPI.csrfToken) {
         await SolitiquoAPI.fetchCsrfToken();
       }
 
       // Aperçus en direct des URLs d'images
-      document.getElementById('logo_url').addEventListener('input', (e) => {
-        if (e.target.value) document.getElementById('preview-logo').src = e.target.value;
-      });
-      document.getElementById('leader_url').addEventListener('input', (e) => {
-        if (e.target.value) document.getElementById('preview-leader').src = e.target.value;
-      });
+      const logoUrlInput = document.getElementById('logo_url');
+      if (logoUrlInput) {
+        logoUrlInput.addEventListener('input', (e) => {
+          if (e.target.value) document.getElementById('preview-logo').src = e.target.value;
+        });
+      }
+      const leaderUrlInput = document.getElementById('leader_url');
+      if (leaderUrlInput) {
+        leaderUrlInput.addEventListener('input', (e) => {
+          if (e.target.value) document.getElementById('preview-leader').src = e.target.value;
+        });
+      }
 
-      // Mode Édition
+      // Mode Édition (Chargement explicite si ID présent)
       const params = new URLSearchParams(window.location.search);
-      if (params.get('id')) loadParty(params.get('id'));
+      const partyId = params.get('id');
+      if (partyId) {
+        await loadParty(partyId);
+      }
     })();
 
     function format(cmd, val = null) { document.execCommand(cmd, false, val); }
@@ -242,9 +253,12 @@
     // Chargement des données pour modification
     async function loadParty(id) {
       try {
-        const res = await fetch(`${API_URL}/parties/${id}`);
+        const baseUrl = window.API_URL || API_URL;
+        console.log(`📂 Chargement du parti ID ${id} depuis ${baseUrl}/parties/${id}`);
+        const res = await fetch(`${baseUrl}/parties/${id}`);
         const json = await res.json();
-        if (json.success) {
+        console.log(`📦 Données parti reçues:`, json);
+        if (json.success && json.data) {
           const p = json.data;
           document.getElementById('party-name').value = p.name || '';
           document.getElementById('party-acronym').value = p.acronym || '';
@@ -263,7 +277,7 @@
           }
         }
       } catch (e) {
-        console.error("Erreur chargement parti:", e);
+        console.error("❌ Erreur chargement parti:", e);
       }
     }
 
@@ -311,7 +325,8 @@
 
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
-      const url = id ? `${API_URL}/parties/${id}` : API_URL + '/parties';
+      const baseUrl = window.API_URL || API_URL;
+      const url = id ? `${baseUrl}/parties/${id}` : `${baseUrl}/parties`;
       const method = id ? 'PUT' : 'POST';
 
       // S'assurer que le token CSRF est frais
