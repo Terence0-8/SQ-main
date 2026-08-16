@@ -1,40 +1,32 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
-    <meta charset="UTF-8">
+  <meta charset="UTF-8">
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#37463D">
-  <meta name="description" content="Éditeur de parti  Gérez les fiches des partis politiques.">
-  <meta property="og:title" content="Solitiquo  L'Actualité Premium" />
+  <meta name="description" content="Éditeur de parti — Gérez les fiches des partis politiques.">
+  <meta property="og:title" content="Solitiquo — L'Actualité Premium" />
   <meta property="og:description" content="Le média de référence pour l'analyse politique et sociale au Cameroun." />
   <meta property="og:image" content="https://solitiquo.com/logo.png" />
   <meta property="og:url" content="https://solitiquo.com" />
   <meta property="og:type" content="website" />
-    <link rel="alternate" hreflang="fr" href="https://solitiquo.com/fr/" />
-    <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
-    <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
-  <!-- Preconnect to external servers -->
+  <link rel="alternate" hreflang="fr" href="https://solitiquo.com/fr/" />
+  <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
+  <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://res.cloudinary.com" />
   <link rel="dns-prefetch" href="https://www.youtube.com" />
   <link rel="dns-prefetch" href="https://img.youtube.com" />
-    <title>Studio Partis — Solitiquo</title>
-    <link rel="stylesheet" href="css/shared.css" />
+  <title>Studio Partis — Solitiquo</title>
+  <link rel="stylesheet" href="css/shared.css" />
   <link rel="stylesheet" href="css/pages/editeur-parti.css" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
-        rel="stylesheet">
-
-  <!-- Favicon & icônes app -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext" rel="stylesheet">
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png">
   <link rel="icon" href="/favicon.ico">
-  <!-- Apple / iOS -->
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
-  <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-167x167.png">
   <meta name="apple-mobile-web-app-title" content="Solitiquo">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -42,7 +34,7 @@
 
 <body id="page-editeur-parti">
 
-    <header class="premium-header">
+  <header class="premium-header">
     <div class="ph-left">
       <div class="burger-container">
         <button class="burger-btn" id="burgerBtn">
@@ -86,280 +78,273 @@
         </div>
 
         <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
-
-          <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput"
-            autocomplete="off" required />
-
+          <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput" autocomplete="off" required />
           <button class="search-submit" type="submit" aria-label="Lancer">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
-
         </form>
       </div>
       <a href="auth.html" class="ph-btn-auth" data-i18n="nav_login">S'identifier</a>
     </div>
-  
-      <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <circle cx="11" cy="11" r="7"/>
-          <path d="M21 21l-4.35-4.35"/>
-        </svg>
-      </button>
+
+    <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="11" cy="11" r="7"/>
+        <path d="M21 21l-4.35-4.35"/>
+      </svg>
+    </button>
   </header>
 
-    <form id="partyForm" class="workspace">
+  <form id="partyForm" class="workspace">
+    <aside class="toolbar-left">
+      <button type="button" class="tool-btn" onclick="format('bold')"><b>B</b></button>
+      <button type="button" class="tool-btn" onclick="format('italic')"><i>I</i></button>
+      <div class="tool-separator"></div>
+      <button type="button" class="tool-btn" onclick="format('formatBlock', 'h2')">H2</button>
+      <button type="button" class="tool-btn" onclick="format('insertUnorderedList')">•—</button>
+    </aside>
 
-        <aside class="toolbar-left">
-            <button type="button" class="tool-btn" onclick="format('bold')"><b>B</b></button>
-            <button type="button" class="tool-btn" onclick="format('italic')"><i>I</i></button>
-            <div class="tool-separator"></div>
-            <button type="button" class="tool-btn" onclick="format('formatBlock', 'h2')">H2</button>
-            <button type="button" class="tool-btn" onclick="format('insertUnorderedList')">•—</button>
-        </aside>
+    <div class="paper-zone">
+      <div class="paper-sheet">
+        <input type="text" id="party-name" placeholder="Nom complet du Parti..." autocomplete="off" required>
+        <input type="text" id="party-acronym" placeholder="ACRONYME (ex: RDPC)" required>
+        <div id="editor-content" contenteditable="true">
+          <p>Histoire, idéologie et fondements...</p>
+        </div>
+      </div>
+    </div>
 
-        <div class="paper-zone">
-            <div class="paper-sheet">
-                <input type="text" id="party-name" placeholder="Nom complet du Parti..." autocomplete="off" required>
-                <input type="text" id="party-acronym" placeholder="ACRONYME (ex: RDPC)" required>
-                <div id="editor-content" contenteditable="true">
-                    <p>Histoire, idéologie et fondements...</p>
-                </div>
-            </div>
+    <aside class="settings-right">
+      <div class="settings-scroll">
+
+        <h3 class="panel-title">Identité Visuelle</h3>
+        <div class="field-group">
+          <label>Logo du Parti</label>
+          <div class="mini-upload" onclick="document.getElementById('logo_file').click()">
+            <img id="preview-logo" class="preview-circle" src="https://placehold.co/50?text=Logo" loading="lazy">
+            <span class="upload-btn-text">Choisir image...</span>
+          </div>
+          <input type="file" id="logo_file" hidden accept="image/*" onchange="preview(this, 'preview-logo')">
+          <input type="text" id="logo_url" class="sidebar-input" placeholder="Ou URL..." style="margin-top:5px; font-size:0.8rem;">
         </div>
 
-        <aside class="settings-right">
-            <div class="settings-scroll">
+        <div class="field-group">
+          <label>Photo du Leader</label>
+          <div class="mini-upload" onclick="document.getElementById('leader_file').click()">
+            <img id="preview-leader" class="preview-circle" src="https://placehold.co/50?text=Chef" loading="lazy">
+            <span class="upload-btn-text">Choisir photo...</span>
+          </div>
+          <input type="file" id="leader_file" hidden accept="image/*" onchange="preview(this, 'preview-leader')">
+          <input type="text" id="leader_url" class="sidebar-input" placeholder="Ou URL..." style="margin-top:5px; font-size:0.8rem;">
+        </div>
 
-                <h3 class="panel-title">Identité Visuelle</h3>
-                <div class="field-group">
-                    <label>Logo du Parti</label>
-                    <div class="mini-upload" onclick="document.getElementById('logo_file').click()">
-                        <img id="preview-logo" class="preview-circle" src="https://placehold.co/50?text=Logo" loading="lazy">
-                        <span class="upload-btn-text">Choisir image...</span>
-                    </div>
-                    <input type="file" id="logo_file" hidden accept="image/*" onchange="preview(this, 'preview-logo')">
-                    <input type="text" id="logo_url" class="sidebar-input" placeholder="Ou URL..."
-                        style="margin-top:5px; font-size:0.8rem;">
-                </div>
+        <h3 class="panel-title">Fiche Technique</h3>
+        <div class="field-group">
+          <label>Nom du Leader</label>
+          <input type="text" id="leader_name" class="sidebar-input" placeholder="Prénom Nom">
+        </div>
+        <div class="field-group">
+          <label>Positionnement</label>
+          <select id="type" class="sidebar-input">
+            <option value="majorite">Majorité Présidentielle</option>
+            <option value="opposition">Opposition</option>
+            <option value="historique">Historique / Non-actif</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div>
+              <label>Fondation</label>
+              <input type="text" id="creation_date" class="sidebar-input" placeholder="1985">
+            </div>
+            <div>
+              <label>Sièges AN</label>
+              <input type="number" id="seats" class="sidebar-input" value="0">
+            </div>
+          </div>
+        </div>
 
-                <div class="field-group">
-                    <label>Photo du Leader</label>
-                    <div class="mini-upload" onclick="document.getElementById('leader_file').click()">
-                        <img id="preview-leader" class="preview-circle" src="https://placehold.co/50?text=Chef" loading="lazy">
-                        <span class="upload-btn-text">Choisir photo...</span>
-                    </div>
-                    <input type="file" id="leader_file" hidden accept="image/*"
-                        onchange="preview(this, 'preview-leader')">
-                    <input type="text" id="leader_url" class="sidebar-input" placeholder="Ou URL..."
-                        style="margin-top:5px; font-size:0.8rem;">
-                </div>
+        <h3 class="panel-title">Contenu Exclusif</h3>
+        <div class="field-group">
+          <label>Podcast du Dossier</label>
+          <input type="text" id="podcast_title" class="sidebar-input" placeholder="Titre de l'épisode (ex: L'histoire du parti)" style="margin-bottom:10px;">
 
-                <h3 class="panel-title">Fiche Technique</h3>
-                <div class="field-group">
-                    <label>Nom du Leader</label>
-                    <input type="text" id="leader_name" class="sidebar-input" placeholder="Prénom Nom">
-                </div>
-                <div class="field-group">
-                    <label>Positionnement</label>
-                    <select id="type" class="sidebar-input">
-                        <option value="majorite">Majorité Présidentielle</option>
-                        <option value="opposition">Opposition</option>
-                        <option value="historique">Historique / Non-actif</option>
-                    </select>
-                </div>
-                <div class="field-group">
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                        <div>
-                            <label>Fondation</label>
-                            <input type="text" id="creation_date" class="sidebar-input" placeholder="1985">
-                        </div>
-                        <div>
-                            <label>Sièges AN</label>
-                            <input type="number" id="seats" class="sidebar-input" value="0">
-                        </div>
-                    </div>
-                </div>
+          <div class="mini-upload" onclick="document.getElementById('audio_file').click()" style="background:#f8f9fa; border-style:dashed;">
+            <div style="width:40px; height:40px; background:#e2e8f0; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:1.2rem;">🎙️</div>
+            <div>
+              <span class="upload-btn-text" id="audio-label">Uploader l'audio (MP3)...</span>
+            </div>
+          </div>
 
-                <h3 class="panel-title">Contenu Exclusif</h3>
-                <div class="field-group">
-                    <label>Podcast du Dossier</label>
-                    <input type="text" id="podcast_title" class="sidebar-input"
-                        placeholder="Titre de l'épisode (ex: L'histoire du parti)" style="margin-bottom:10px;">
+          <input type="file" id="audio_file" hidden accept="audio/*" onchange="previewAudio(this)">
+          <input type="hidden" id="linked_podcast_id">
+        </div>
 
-                    <div class="mini-upload" onclick="document.getElementById('audio_file').click()"
-                        style="background:#f8f9fa; border-style:dashed;">
-                        <div
-                            style="width:40px; height:40px; background:#e2e8f0; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:1.2rem;">
-                            🎙️</div>
-                        <div>
-                            <span class="upload-btn-text" id="audio-label">Uploader l'audio (MP3)...</span>
-                        </div>
-                    </div>
+        <div class="settings-footer">
+          <button type="submit" class="btn-save">Enregistrer le dossier</button>
+          <div id="msg" style="text-align:center; margin-top:10px; font-size:0.85rem;"></div>
+        </div>
+      </div>
+    </aside>
+  </form>
 
-                    <input type="file" id="audio_file" hidden accept="audio/*" onchange="previewAudio(this)">
-                    <input type="hidden" id="linked_podcast_id">
-                </div>
+  <script src="js/i18n.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    (async function init() {
+      await initLanguageSwitcher({ reloadPage: true });
 
-                <div class="settings-footer">
-                    <button type="submit" class="btn-save">Enregistrer le dossier</button>
-                    <div id="msg" style="text-align:center; margin-top:10px; font-size:0.85rem;"></div>
-                </div>
-        </aside>
-    </form>
+      // 1. Vérification Auth & CSRF Token
+      const user = await SolitiquoAPI.getProfile();
+      if (!user || (user.role !== 'admin' && user.role !== 'writer')) {
+        window.location.href = 'auth.html';
+        return;
+      }
 
-    <script src="js/i18n.js"></script>
-    <script src="js/config.js"></script>
-    <script src="js/api.js"></script>
-    <script>
-        (async function init() {
-            await initLanguageSwitcher({ reloadPage: true });
-            // 1. Vérif Auth
-            const user = await SolitiquoAPI.getProfile();
-            if (!user || (user.role !== 'admin' && user.role !== 'writer')) window.location.href = 'auth.html';
+      // S'assurer que le token CSRF est chargé
+      if (!SolitiquoAPI.csrfToken) {
+        await SolitiquoAPI.fetchCsrfToken();
+      }
 
-            // 2. Charger la liste des Podcasts
-            try {
-                const res = await fetch(API_URL + '/podcasts');
-                const json = await res.json();
-                if (json.success) {
-                    const select = document.getElementById('linked_podcast');
-                    json.data.forEach(pod => {
-                        const opt = document.createElement('option');
-                        opt.value = pod.id;
-                        opt.textContent = pod.title;
-                        select.appendChild(opt);
-                    });
-                }
-            } catch (e) { }
+      // Aperçus en direct des URLs d'images
+      document.getElementById('logo_url').addEventListener('input', (e) => {
+        if (e.target.value) document.getElementById('preview-logo').src = e.target.value;
+      });
+      document.getElementById('leader_url').addEventListener('input', (e) => {
+        if (e.target.value) document.getElementById('preview-leader').src = e.target.value;
+      });
 
-            // 3. Si Mode Modification (ID dans l'URL)
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('id')) loadParty(params.get('id'));
-        })();
+      // Mode Édition
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('id')) loadParty(params.get('id'));
+    })();
 
-        // ATTENTION: document.execCommand est déprécié (Fix #15)
-        // TODO: Migrer vers TipTap, Quill ou ProseMirror pour un éditeur moderne
-        function format(cmd, val = null) { document.execCommand(cmd, false, val); }
+    function format(cmd, val = null) { document.execCommand(cmd, false, val); }
 
-        function preview(input, imgId) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = e => document.getElementById(imgId).src = e.target.result;
-                reader.readAsDataURL(input.files[0]);
-            }
+    function preview(input, imgId) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => document.getElementById(imgId).src = e.target.result;
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function previewAudio(input) {
+      if (input.files && input.files[0]) {
+        document.getElementById('audio-label').textContent = "Fichier sélectionné : " + input.files[0].name;
+        document.getElementById('audio-label').style.color = "green";
+      }
+    }
+
+    // Chargement des données pour modification
+    async function loadParty(id) {
+      try {
+        const res = await fetch(`${API_URL}/parties/${id}`);
+        const json = await res.json();
+        if (json.success) {
+          const p = json.data;
+          document.getElementById('party-name').value = p.name || '';
+          document.getElementById('party-acronym').value = p.acronym || '';
+          if (p.description) document.getElementById('editor-content').innerHTML = p.description;
+          document.getElementById('leader_name').value = p.leader_name || '';
+          if (p.type) document.getElementById('type').value = p.type;
+          document.getElementById('creation_date').value = p.creation_date || p.founded_year || '';
+          document.getElementById('seats').value = p.seats_assembly !== undefined ? p.seats_assembly : 0;
+          document.getElementById('logo_url').value = p.logo_url || '';
+          document.getElementById('leader_url').value = p.leader_photo_url || '';
+          if (p.logo_url) document.getElementById('preview-logo').src = p.logo_url;
+          if (p.leader_photo_url) document.getElementById('preview-leader').src = p.leader_photo_url;
+          if (p.podcast_id) {
+            document.getElementById('linked_podcast_id').value = p.podcast_id;
+            document.getElementById('audio-label').textContent = "✅ Podcast actif (Uploader pour remplacer)";
+          }
         }
+      } catch (e) {
+        console.error("Erreur chargement parti:", e);
+      }
+    }
 
-        function previewAudio(input) {
-            if (input.files && input.files[0]) {
-                document.getElementById('audio-label').textContent = "Fichier sélectionné : " + input.files[0].name;
-                document.getElementById('audio-label').style.color = "green";
-            }
-        }
+    // Soumission du formulaire (Création / Modification)
+    document.getElementById('partyForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.querySelector('.btn-save');
+      const msg = document.getElementById('msg');
+      btn.textContent = "Enregistrement en cours..."; 
+      btn.disabled = true;
 
-        // CHARGEMENT POUR EDIT
-        async function loadParty(id) {
-            const res = await fetch(`${API_URL}/parties/${id}`);
-            const json = await res.json();
-            if (json.success) {
-                const p = json.data;
-                document.getElementById('party-name').value = p.name;
-                document.getElementById('party-acronym').value = p.acronym;
-                document.getElementById('editor-content').innerHTML = p.description;
-                document.getElementById('leader_name').value = p.leader_name;
-                document.getElementById('type').value = p.type;
-                document.getElementById('creation_date').value = p.creation_date;
-                document.getElementById('seats').value = p.seats_assembly;
-                document.getElementById('logo_url').value = p.logo_url;
-                document.getElementById('leader_url').value = p.leader_photo_url;
-                if (p.logo_url) document.getElementById('preview-logo').src = p.logo_url;
-                if (p.leader_photo_url) document.getElementById('preview-leader').src = p.leader_photo_url;
-                if (p.podcast_id) {
-                    document.getElementById('linked_podcast_id').value = p.podcast_id;
-                    document.getElementById('audio-label').textContent = "✅ Podcast actif (Uploader pour remplacer)";
-                }
-            }
-        }
+      const formData = new FormData();
+      formData.append('name', document.getElementById('party-name').value);
+      formData.append('acronym', document.getElementById('party-acronym').value);
+      formData.append('description', document.getElementById('editor-content').innerHTML);
+      formData.append('leader_name', document.getElementById('leader_name').value);
+      formData.append('type', document.getElementById('type').value);
+      formData.append('creation_date', document.getElementById('creation_date').value);
+      formData.append('seats_assembly', document.getElementById('seats').value);
 
-        // SAUVEGARDE (Version compatible Upload Fichiers & Audio)
-        document.getElementById('partyForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.querySelector('.btn-save');
-            const msg = document.getElementById('msg');
-            btn.textContent = "Enregistrement..."; btn.disabled = true;
+      // Logo File / URL
+      const logoFile = document.getElementById('logo_file').files[0];
+      if (logoFile) {
+        formData.append('logo_file', logoFile);
+      } else {
+        formData.append('logo_url', document.getElementById('logo_url').value);
+      }
 
-            // 1. Utilisation de FormData pour envoyer des fichiers
-            const formData = new FormData();
+      // Leader Photo File / URL
+      const leaderFile = document.getElementById('leader_file').files[0];
+      if (leaderFile) {
+        formData.append('leader_file', leaderFile);
+      } else {
+        formData.append('leader_photo_url', document.getElementById('leader_url').value);
+      }
 
-            // Champs texte
-            formData.append('name', document.getElementById('party-name').value);
-            formData.append('acronym', document.getElementById('party-acronym').value);
-            formData.append('description', document.getElementById('editor-content').innerHTML);
-            formData.append('leader_name', document.getElementById('leader_name').value);
-            formData.append('type', document.getElementById('type').value);
-            formData.append('creation_date', document.getElementById('creation_date').value);
-            formData.append('seats_assembly', document.getElementById('seats').value);
+      // Podcast Audio
+      const audioFile = document.getElementById('audio_file').files[0];
+      if (audioFile) {
+        formData.append('audio_file', audioFile);
+      }
+      formData.append('podcast_title', document.getElementById('podcast_title').value);
+      const existingPodcastId = document.getElementById('linked_podcast_id').value;
+      formData.append('podcast_id', existingPodcastId || '');
 
-            // Note: On n'ajoute plus 'podcast_id' ici, on le gère plus bas avec l'audio
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      const url = id ? `${API_URL}/parties/${id}` : API_URL + '/parties';
+      const method = id ? 'PUT' : 'POST';
 
-            // 2. Gestion intelligente des images
-            // LOGO
-            const logoFile = document.getElementById('logo_file').files[0];
-            if (logoFile) {
-                formData.append('logo_file', logoFile);
-            } else {
-                formData.append('logo_url', document.getElementById('logo_url').value);
-            }
+      // S'assurer que le token CSRF est frais
+      if (!SolitiquoAPI.csrfToken) {
+        await SolitiquoAPI.fetchCsrfToken();
+      }
 
-            // LEADER
-            const leaderFile = document.getElementById('leader_file').files[0];
-            if (leaderFile) {
-                formData.append('leader_file', leaderFile);
-            } else {
-                formData.append('leader_photo_url', document.getElementById('leader_url').value);
-            }
-
-            // ... (Gestion images) ...
-
-            // 3. GESTION PODCAST
-            const audioFile = document.getElementById('audio_file').files[0];
-            if (audioFile) {
-                formData.append('audio_file', audioFile);
-            }
-
-            // AJOUT DU TITRE ICI
-            formData.append('podcast_title', document.getElementById('podcast_title').value);
-
-            const existingPodcastId = document.getElementById('linked_podcast_id').value;
-            formData.append('podcast_id', existingPodcastId || '');
-
-            // ... (Reste du code fetch) ...
-
-            // 4. Envoi au serveur
-            const params = new URLSearchParams(window.location.search);
-            const id = params.get('id');
-            const url = id ? `${API_URL}/parties/${id}` : API_URL + '/parties';
-            const method = id ? 'PUT' : 'POST';
-
-            try {
-                const res = await fetch(url, {
-                    method: method,
-                    body: formData
-                });
-                const json = await res.json();
-
-                if (json.success) {
-                    msg.style.color = "green"; msg.textContent = "✅ Dossier enregistré !";
-                    // Redirection vers le dossier public
-                    setTimeout(() => window.location.href = `dossier.html?id=${json.id || id}`, 1500);
-                } else throw new Error(json.error);
-            } catch (err) {
-                msg.style.color = "red"; msg.textContent = "Erreur : " + err.message;
-                btn.textContent = "Enregistrer le dossier"; btn.disabled = false;
-            }
+      try {
+        const res = await fetch(url, {
+          method: method,
+          headers: {
+            'X-CSRF-Token': SolitiquoAPI.csrfToken || ''
+          },
+          credentials: 'include',
+          body: formData
         });
-    </script>
+        const json = await res.json();
+
+        if (json.success) {
+          msg.style.color = "green"; 
+          msg.textContent = "✅ Dossier enregistré avec succès !";
+          setTimeout(() => window.location.href = `dossier.html?id=${json.id || id}`, 1200);
+        } else {
+          throw new Error(json.error || 'Erreur lors de la sauvegarde');
+        }
+      } catch (err) {
+        msg.style.color = "red"; 
+        msg.textContent = "Erreur : " + err.message;
+        btn.textContent = "Enregistrer le dossier"; 
+        btn.disabled = false;
+      }
+    });
+  </script>
   <script src="/js/lazyload.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
