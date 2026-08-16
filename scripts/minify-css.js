@@ -72,7 +72,7 @@ function collectCSSFiles(dir) {
         const full = path.join(dir, entry.name);
         if (entry.isDirectory()) {
             results.push(...collectCSSFiles(full));
-        } else if (entry.isFile() && entry.name.endsWith('.css')) {
+        } else if (entry.isFile() && entry.name.endsWith('.css') && entry.name !== 'shared.css') {
             results.push(full);
         }
     }

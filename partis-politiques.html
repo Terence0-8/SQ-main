@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -10,7 +10,7 @@
   <link rel="dns-prefetch" href="https://www.youtube.com" />
   <link rel="dns-prefetch" href="https://img.youtube.com" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="manifest" href="/manifest.json">
+  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#37463D">
   <meta name="description"
     content="Partis politiques du Cameroun  Fiches, programmes et actualités des partis sur Solitiquo.">
@@ -29,8 +29,8 @@
   <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
   <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
   <title>L'Échiquier Politique — Solitiquo</title>
-  <link rel="stylesheet" href="/css/shared.css" />
-  <link rel="stylesheet" href="/css/pages/partis-politiques.css" />
+  <link rel="stylesheet" href="css/shared.css" />
+  <link rel="stylesheet" href="css/pages/partis-politiques.css" />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
     rel="stylesheet" />
@@ -43,16 +43,21 @@
     }
   </script>
   <!-- Favicon & icônes app -->
-  <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png">
-  <link rel="icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16x16.png">
+  <link rel="icon" href="favicon.ico">
   <!-- Apple / iOS -->
-  <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
-  <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-167x167.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180x180.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-167x167.png">
   <meta name="apple-mobile-web-app-title" content="Solitiquo">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <script src="js/config.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/solitiquo.js"></script>
 </head>
 
 <body id="page-partis-politiques">
@@ -178,7 +183,7 @@
     <div class="footer-grid">
       <div class="footer-col">
         <div style="display:flex; gap:10px; align-items:center; margin-bottom:1.5rem;">
-          <img src="/logo.svg" class="footer-logo" alt="S" onerror="handleImgError(this)">
+          <img src="logo.svg" class="footer-logo" alt="S" onerror="handleImgError(this)">
           <span style="font-family:'Playfair Display'; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
         </div>
         <p style="font-size:0.9rem; opacity:0.7;">Le média de référence.</p>
@@ -203,9 +208,6 @@
     <div class="footer-bottom">&copy; 2025 Solitiquo. Tous droits réservés.</div>
   </footer>
 
-  <script src="/js/i18n.js"></script>
-  <script src="/js/config.js"></script>
-  <script src="/js/api.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       await initLanguageSwitcher({ reloadPage: true });
@@ -241,9 +243,7 @@
                 <a href="dossier.html?id=${p.id}" class="party-card">
                     <div class="party-tag" style="background:${tagColor};">${orientation}</div>
                     
-                    <div class="party-logo-container">
                     <img src="${logoSrc}" class="party-logo" alt="${p.acronym}" onerror="handleImgError(this)" loading="lazy">
-                    </div>
                     
                     <h3 class="party-name">${p.acronym}</h3>
                     <p class="party-full-name">${p.name}</p>
@@ -329,50 +329,14 @@
         }
       }
 
-      // --- MENU MOBILE & SEARCH (Logique identique à auth.html) ---
-      const burger = document.getElementById('burgerBtn');
-      const mobileNav = document.getElementById('mobileNav');
-      const mobileClose = document.getElementById('mobileNavClose');
-      const overlay = document.getElementById('mobileNavOverlay');
-      const searchBtn = document.getElementById('searchBtn');
-      const searchContainer = document.getElementById('searchContainer');
-      const searchInput = document.getElementById('searchInput');
-      const searchLabel = document.getElementById('searchLabel');
-
-      function toggleMenu(show) {
-        if (show) { mobileNav.classList.add('nav-open'); overlay.classList.add('active'); document.body.classList.add('menu-open'); }
-        else { mobileNav.classList.remove('nav-open'); overlay.classList.remove('active'); document.body.classList.remove('menu-open'); }
-      }
-      if (burger) burger.addEventListener('click', () => toggleMenu(true));
-      if (mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
-      if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
-
-      function toggleSearch(e) {
-        e.stopPropagation();
-        searchContainer.classList.toggle('active');
-        if (searchContainer.classList.contains('active')) {
-          setTimeout(() => searchInput.focus(), 100);
-        }
-      }
-      if (searchBtn) searchBtn.addEventListener('click', toggleSearch);
-      if (searchLabel) searchLabel.addEventListener('click', toggleSearch);
-
-      document.addEventListener('click', (e) => {
-        if (searchContainer && searchContainer.classList.contains('active')) {
-          if (!searchContainer.contains(e.target) && !searchBtn.contains(e.target) && (!searchLabel || !searchLabel.contains(e.target))) {
-            searchContainer.classList.remove('active');
-          }
-        }
-      });
-
       // Lancement
       initPage();
     });
   </script>
-  <script src="/js/lazyload.js"></script>
+  <script src="js/lazyload.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js');
+      navigator.serviceWorker.register('sw.js');
     }
   </script>
 </body>

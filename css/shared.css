@@ -3847,9 +3847,9 @@ a[class*="btn"] {
 }
 
 .filter-bar .party-filter-btn.active {
-    background: var(--accent-red);
-    border-color: var(--accent-red);
-    box-shadow: 0 4px 16px rgba(200, 40, 35, .4)
+    background: rgba(255, 255, 255, .25);
+    border-color: rgba(255, 255, 255, .6);
+    box-shadow: 0 4px 16px rgba(255, 255, 255, .1)
 }
 
 @media (max-width:768px) {
