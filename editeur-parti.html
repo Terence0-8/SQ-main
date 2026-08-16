@@ -194,94 +194,128 @@
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script>
-    const API_URL = window.API_URL || (typeof SolitiquoAPI !== 'undefined' ? SolitiquoAPI.baseUrl : 'http://localhost:5000/api');
-
-    (async function init() {
-      await initLanguageSwitcher({ reloadPage: true });
-
-      // 1. Vérification Auth & CSRF Token
-      const user = await SolitiquoAPI.getProfile();
-      if (!user || (user.role !== 'admin' && user.role !== 'writer')) {
-        window.location.href = 'auth.html';
-        return;
-      }
-
-      // S'assurer que le token CSRF est frais
-      if (!SolitiquoAPI.csrfToken) {
-        await SolitiquoAPI.fetchCsrfToken();
-      }
-
-      // Aperçus en direct des URLs d'images
-      const logoUrlInput = document.getElementById('logo_url');
-      if (logoUrlInput) {
-        logoUrlInput.addEventListener('input', (e) => {
-          if (e.target.value) document.getElementById('preview-logo').src = e.target.value;
-        });
-      }
-      const leaderUrlInput = document.getElementById('leader_url');
-      if (leaderUrlInput) {
-        leaderUrlInput.addEventListener('input', (e) => {
-          if (e.target.value) document.getElementById('preview-leader').src = e.target.value;
-        });
-      }
-
-      // Mode Édition (Chargement explicite si ID présent)
-      const params = new URLSearchParams(window.location.search);
-      const partyId = params.get('id');
-      if (partyId) {
-        await loadParty(partyId);
-      }
-    })();
+    // Helpers sûrs pour l'élément DOM
+    function setVal(id, val) {
+      const el = document.getElementById(id);
+      if (el) el.value = (val !== null && val !== undefined) ? val : '';
+    }
+    function setHtml(id, val) {
+      const el = document.getElementById(id);
+      if (el && val) el.innerHTML = val;
+    }
+    function setSrc(id, val) {
+      const el = document.getElementById(id);
+      if (el && val) el.src = val;
+    }
 
     function format(cmd, val = null) { document.execCommand(cmd, false, val); }
 
     function preview(input, imgId) {
       if (input.files && input.files[0]) {
         const reader = new FileReader();
-        reader.onload = e => document.getElementById(imgId).src = e.target.result;
+        reader.onload = e => setSrc(imgId, e.target.result);
         reader.readAsDataURL(input.files[0]);
       }
     }
 
     function previewAudio(input) {
       if (input.files && input.files[0]) {
-        document.getElementById('audio-label').textContent = "Fichier sélectionné : " + input.files[0].name;
-        document.getElementById('audio-label').style.color = "green";
+        const label = document.getElementById('audio-label');
+        if (label) {
+          label.textContent = "Fichier sélectionné : " + input.files[0].name;
+          label.style.color = "green";
+        }
       }
     }
 
-    // Chargement des données pour modification
-    async function loadParty(id) {
+    // Chargement instantané des données du parti
+    async function loadPartyData(id) {
       try {
-        const baseUrl = window.API_URL || API_URL;
-        console.log(`📂 Chargement du parti ID ${id} depuis ${baseUrl}/parties/${id}`);
+        const baseUrl = window.API_URL || (typeof SolitiquoAPI !== 'undefined' ? SolitiquoAPI.baseUrl : '/api');
+        console.log(`📂 Chargement instantané du parti ID ${id} depuis ${baseUrl}/parties/${id}`);
         const res = await fetch(`${baseUrl}/parties/${id}`);
         const json = await res.json();
         console.log(`📦 Données parti reçues:`, json);
+
         if (json.success && json.data) {
           const p = json.data;
-          document.getElementById('party-name').value = p.name || '';
-          document.getElementById('party-acronym').value = p.acronym || '';
-          if (p.description) document.getElementById('editor-content').innerHTML = p.description;
-          document.getElementById('leader_name').value = p.leader_name || '';
-          if (p.type) document.getElementById('type').value = p.type;
-          document.getElementById('creation_date').value = p.creation_date || p.founded_year || '';
-          document.getElementById('seats').value = p.seats_assembly !== undefined ? p.seats_assembly : 0;
-          document.getElementById('logo_url').value = p.logo_url || '';
-          document.getElementById('leader_url').value = p.leader_photo_url || '';
-          if (p.logo_url) document.getElementById('preview-logo').src = p.logo_url;
-          if (p.leader_photo_url) document.getElementById('preview-leader').src = p.leader_photo_url;
+          setVal('party-name', p.name);
+          setVal('party-acronym', p.acronym);
+          setHtml('editor-content', p.description);
+          setVal('leader_name', p.leader_name);
+          if (p.type) setVal('type', p.type);
+          setVal('creation_date', p.creation_date || p.founded_year);
+          setVal('seats', p.seats_assembly !== undefined ? p.seats_assembly : 0);
+          setVal('logo_url', p.logo_url);
+          setVal('leader_url', p.leader_photo_url);
+          if (p.logo_url) setSrc('preview-logo', p.logo_url);
+          if (p.leader_photo_url) setSrc('preview-leader', p.leader_photo_url);
+
           if (p.podcast_id) {
-            document.getElementById('linked_podcast_id').value = p.podcast_id;
-            document.getElementById('audio-label').textContent = "✅ Podcast actif (Uploader pour remplacer)";
+            setVal('linked_podcast_id', p.podcast_id);
+            const label = document.getElementById('audio-label');
+            if (label) label.textContent = "✅ Podcast actif (Uploader pour remplacer)";
+            // Récupérer le titre du podcast si possible
+            try {
+              const podRes = await fetch(`${baseUrl}/podcasts/${p.podcast_id}`);
+              const podJson = await podRes.json();
+              if (podJson.success && podJson.data) {
+                setVal('podcast_title', podJson.data.title);
+              }
+            } catch (e) {}
           }
         }
       } catch (e) {
-        console.error("❌ Erreur chargement parti:", e);
+        console.error("❌ Erreur lors du chargement des données parti:", e);
       }
     }
 
-    // Soumission du formulaire (Création / Modification)
+    // 1. DÉMARRAGE IMMÉDIAT DU CHARGEMENT DES DONNÉES EN MODE ÉDITION
+    const params = new URLSearchParams(window.location.search);
+    const editId = params.get('id');
+    const btnSave = document.querySelector('.btn-save');
+
+    if (editId) {
+      if (btnSave) btnSave.textContent = "Mettre à jour le dossier";
+      loadPartyData(editId);
+    }
+
+    // 2. INITIALISATION ASYNCHRONE DE L'AUTH ET CSRF (EN PARALLÈLE)
+    (async function initAuth() {
+      try {
+        if (typeof initLanguageSwitcher === 'function') {
+          await initLanguageSwitcher({ reloadPage: false });
+        }
+        const user = await SolitiquoAPI.getProfile();
+        if (!user || (user.role !== 'admin' && user.role !== 'writer')) {
+          window.location.href = 'auth.html';
+          return;
+        }
+        if (!SolitiquoAPI.csrfToken) {
+          await SolitiquoAPI.fetchCsrfToken();
+        }
+      } catch (e) {
+        console.warn("Avertissement auth/i18n:", e);
+      }
+    })();
+
+    // Live preview URL inputs
+    document.addEventListener('DOMContentLoaded', () => {
+      const logoUrlInput = document.getElementById('logo_url');
+      if (logoUrlInput) {
+        logoUrlInput.addEventListener('input', (e) => {
+          if (e.target.value) setSrc('preview-logo', e.target.value);
+        });
+      }
+      const leaderUrlInput = document.getElementById('leader_url');
+      if (leaderUrlInput) {
+        leaderUrlInput.addEventListener('input', (e) => {
+          if (e.target.value) setSrc('preview-leader', e.target.value);
+        });
+      }
+    });
+
+    // 3. SOUMISSION DU FORMULAIRE
     document.getElementById('partyForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.querySelector('.btn-save');
@@ -323,13 +357,10 @@
       const existingPodcastId = document.getElementById('linked_podcast_id').value;
       formData.append('podcast_id', existingPodcastId || '');
 
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get('id');
-      const baseUrl = window.API_URL || API_URL;
-      const url = id ? `${baseUrl}/parties/${id}` : `${baseUrl}/parties`;
-      const method = id ? 'PUT' : 'POST';
+      const baseUrl = window.API_URL || (typeof SolitiquoAPI !== 'undefined' ? SolitiquoAPI.baseUrl : '/api');
+      const url = editId ? `${baseUrl}/parties/${editId}` : `${baseUrl}/parties`;
+      const method = editId ? 'PUT' : 'POST';
 
-      // S'assurer que le token CSRF est frais
       if (!SolitiquoAPI.csrfToken) {
         await SolitiquoAPI.fetchCsrfToken();
       }
@@ -348,14 +379,14 @@
         if (json.success) {
           msg.style.color = "green"; 
           msg.textContent = "✅ Dossier enregistré avec succès !";
-          setTimeout(() => window.location.href = `dossier.html?id=${json.id || id}`, 1200);
+          setTimeout(() => window.location.href = `dossier.html?id=${json.id || editId}`, 1200);
         } else {
           throw new Error(json.error || 'Erreur lors de la sauvegarde');
         }
       } catch (err) {
         msg.style.color = "red"; 
         msg.textContent = "Erreur : " + err.message;
-        btn.textContent = "Enregistrer le dossier"; 
+        btn.textContent = editId ? "Mettre à jour le dossier" : "Enregistrer le dossier"; 
         btn.disabled = false;
       }
     });
