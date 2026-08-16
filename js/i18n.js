@@ -745,13 +745,31 @@ async function loadArticles(lang) {
       if (discoverGrid) {
         if (discoList.length > 0) {
           if (discoverSection) discoverSection.style.display = 'block';
-          discoverGrid.innerHTML = discoList.map(art => {
+          discoverGrid.innerHTML = discoList.map((art, idx) => {
+            let cardClass = 'disco-card';
+            const patternIndex = idx % 10;
+            if (patternIndex === 4) {
+              cardClass += ' disco-card-wide';
+            } else if (patternIndex === 9) {
+              cardClass += ' disco-card-full';
+            }
+
+            const excerptHtml = (patternIndex === 4 || patternIndex === 9) && (art.excerpt || art.slug)
+              ? `<p class="disco-excerpt">${art.excerpt || ''}</p>`
+              : '';
+
             const linkDisco = `article.html?id=${art.id}`;
             return `
-            <a href="${linkDisco}" class="disco-card">
-              <img src="${art.image_url}" class="disco-img" loading="lazy">
-              <h4 class="disco-title">${art.title} ${art.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">' : ''}</h4>
-              <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
+            <a href="${linkDisco}" class="${cardClass}">
+              <div class="disco-img-wrap">
+                <img src="${art.image_url}" class="disco-img" loading="lazy">
+              </div>
+              <div class="disco-body">
+                <span class="art-cat" style="font-size:0.65rem; margin-bottom:4px;">${art.category}</span>
+                <h4 class="disco-title">${art.title} ${art.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">' : ''}</h4>
+                ${excerptHtml}
+                <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
+              </div>
             </a>
           `}).join('');
 
