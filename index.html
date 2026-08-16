@@ -245,7 +245,7 @@
         <p style="text-align:center; color:#888;">Chargement...</p>
       </div>
 
-      <div class="section-label" style="border-color:var(--primary-dark); color:var(--primary-dark); margin-top:2rem;" data-i18n="section_party">Découvrir un parti</div>
+      <div class="section-label" style="border-color:#C82823; color:#C82823; margin-top:2rem;" data-i18n="section_party">Découvrir un parti</div>
       <div id="home-party-card">
         <p style="text-align:center; color:#888;">Chargement...</p>
       </div>
@@ -488,14 +488,16 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C82823" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 <span>Fondé en <strong>${yearOnly}</strong></span>
               </div>` : ''}
-
-              ${party.leader_name ? `
-              <div class="party-meta-item">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C82823" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                <span>Dirigeant : <strong>${party.leader_name}</strong></span>
-                <img src="${party.leader_photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(party.leader_name)}&background=C82823&color=fff`}" class="party-leader-avatar" alt="${party.leader_name}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(party.leader_name)}&background=C82823&color=fff'">
-              </div>` : ''}
             </div>
+
+            ${party.leader_name ? `
+            <div class="party-leader-card">
+              <img src="${party.leader_photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(party.leader_name)}&background=C82823&color=fff`}" class="party-leader-card-avatar" alt="${party.leader_name}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(party.leader_name)}&background=C82823&color=fff'">
+              <div class="party-leader-card-info">
+                <span class="party-leader-card-label">Dirigeant du Parti</span>
+                <span class="party-leader-card-name">${party.leader_name}</span>
+              </div>
+            </div>` : ''}
 
             ${desc ? `
             <div class="party-card-excerpt">

@@ -5945,6 +5945,45 @@ a.art-link {
     flex-shrink: 0;
     background: #ffffff;
 }
+.party-leader-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 12px;
+    margin-bottom: 0.9rem;
+    background: #ffffff;
+    border: 1px solid rgba(200, 40, 35, 0.2);
+    border-left: 3px solid #C82823;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+.party-leader-card-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid #C82823;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(200, 40, 35, 0.15);
+    background: #ffffff;
+}
+.party-leader-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+.party-leader-card-label {
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #C82823;
+    text-transform: uppercase;
+}
+.party-leader-card-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1e293b;
+}
 .party-card-excerpt {
     margin-bottom: 1.1rem;
     padding: 8px 10px;
