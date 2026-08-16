@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -298,12 +298,23 @@
     document.addEventListener('DOMContentLoaded', async () => {
       await initLanguageSwitcher({ reloadPage: true });
       try {
+        const lang = localStorage.getItem('siteLanguage') || 'fr';
         const podcasts = await SolitiquoAPI.getPodcasts();
 
+        let featuredPod = null;
+        try {
+          const resFeat = await fetch(`${API_URL}/podcasts/featured?lang=${lang}`);
+          const jsonFeat = await resFeat.json();
+          if (jsonFeat.success && jsonFeat.data) {
+            featuredPod = jsonFeat.data;
+          }
+        } catch (e) { console.error('Erreur fetch featured podcast:', e); }
+
         if (podcasts.length > 0) {
-          const une = podcasts[0];
-          const highlights = podcasts.slice(1, 3);
-          const list = podcasts.slice(3);
+          const une = featuredPod || podcasts[0];
+          const remaining = podcasts.filter(p => p.id !== une.id);
+          const highlights = remaining.slice(0, 2);
+          const list = remaining.slice(2);
 
           document.getElementById('hero-pod-dynamic').innerHTML = `
             <div class="hero-pod-container">
