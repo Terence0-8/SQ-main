@@ -212,13 +212,14 @@
                             <tr>
                                 <th>Podcast</th>
                                 <th>Catégorie</th>
+                                <th>Mise en Avant (À la Une)</th>
                                 <th>Date</th>
                                 <th style="text-align:right;">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="list-podcasts">
                             <tr>
-                                <td colspan="4" style="text-align:center;">Chargement...</td>
+                                <td colspan="5" style="text-align:center;">Chargement...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -377,7 +378,7 @@
                 if (action === 'delete') await deleteItem(type, id);
                 if (action === 'toggle-premium') await togglePremium(type, id, btn.dataset.isprem === 'true');
                 if (action === 'approve-art') await workflow(id, 'approve');
-                if (action === 'set-featured') await setFeatured(id);
+                if (action === 'set-featured' || action === 'toggle-featured-podcast') await toggleFeaturedPodcast(id);
                 if (action === 'edit-poll') openPollModal(id);
                 if (action === 'reset-poll-votes') await resetPollVotes(id);
                 if (action === 'visualize-poll') showPollChart(id);
@@ -750,18 +751,76 @@
 
             function renderPodcasts(data) {
                 const tbody = document.getElementById('list-podcasts');
-                tbody.innerHTML = safeHTML(data.map(p => `
-                <tr>
-                    <td><div class="title-row"><img src="${p.image_url}" class="mini-thumb" loading="lazy"><div><strong>${p.title}</strong></div></div></td>
-                    <td>${p.category}</td>
-                    <td>${new Date(p.created_at).toLocaleDateString()}</td>
-                    <td style="text-align:right;">
-                        <button class="btn-icon-sm" data-action="set-featured" data-id="${p.id}" style="color:#EAB308;" title="Mettre en avant"><i data-lucide="star"></i></button>
-                        <a href="editeur-podcast.html?id=${p.id}" class="btn-icon-sm edit" title="Éditer"><i data-lucide="pencil"></i></a>
-                        <button class="btn-icon-sm del" data-action="delete" data-type="podcast" data-id="${p.id}" title="Supprimer"><i data-lucide="trash-2"></i></button>
-                    </td>
-                </tr>`).join(''));
+                if (!data || !data.length) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:2rem; color:#888;">Aucun podcast disponible.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = safeHTML(data.map(p => {
+                    const isFeat = (p.is_featured === true || p.is_featured === 1 || p.is_featured === 'true');
+                    const featBadge = isFeat
+                        ? '<span class="badge" style="background:#fef3c7; color:#d97706; border:1px solid #fde68a; font-weight:700; display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:20px;">⭐ À la Une</span>'
+                        : '<span style="color:#94a3b8; font-size:0.85rem;">Standard</span>';
+
+                    const featBtnStyle = isFeat
+                        ? 'background:#fef3c7; color:#b45309; border:1.5px solid #fde68a; font-weight:700; box-shadow:0 1px 3px rgba(217,119,6,.15);'
+                        : 'background:#f8fafc; color:#64748b; border:1px solid #cbd5e1;';
+
+                    return `
+                    <tr style="${isFeat ? 'background:rgba(254, 243, 199, 0.15);' : ''}">
+                        <td>
+                            <div class="title-row">
+                                <img src="${p.image_url || 'https://placehold.co/50'}" class="mini-thumb" loading="lazy">
+                                <div>
+                                    <strong style="font-size:0.95rem;">${p.title}</strong>
+                                    ${isFeat ? '<span style="margin-left:6px; color:#d97706; font-size:0.9rem;" title="Podcast mis en avant">⭐</span>' : ''}
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge" style="background:#f1f5f9; color:#64748b;">${p.category || 'Général'}</span></td>
+                        <td>${featBadge}</td>
+                        <td style="font-size:0.85rem; color:#64748b;">${new Date(p.created_at).toLocaleDateString('fr-FR')}</td>
+                        <td style="text-align:right;">
+                            <button class="btn-sm" data-action="toggle-featured-podcast" data-id="${p.id}" style="${featBtnStyle} cursor:pointer; padding:6px 14px; border-radius:6px; margin-right:6px; transition:all 0.2s;" title="Basculer la mise en avant de ce podcast">
+                                ${isFeat ? '⭐ À la Une' : '☆ Mettre à la Une'}
+                            </button>
+                            <a href="editeur-podcast.html?id=${p.id}" class="btn-icon-sm edit" title="Éditer"><i data-lucide="pencil"></i></a>
+                            <button class="btn-icon-sm del" data-action="delete" data-type="podcast" data-id="${p.id}" title="Supprimer"><i data-lucide="trash-2"></i></button>
+                        </td>
+                    </tr>`;
+                }).join(''));
             }
+
+            async function toggleFeaturedPodcast(id) {
+                try {
+                    const res = await fetch(`${API_URL}/podcasts/${id}/toggle-featured`, {
+                        method: 'POST',
+                        headers: { 
+                            'X-CSRF-Token': SolitiquoAPI.csrfToken || '',
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include'
+                    });
+                    const json = await res.json();
+                    if (json.success) {
+                        const isFeat = json.is_featured;
+                        Swal.fire({
+                            icon: 'success',
+                            title: isFeat ? '⭐ Podcast mis en avant !' : 'Mise à la une retirée',
+                            text: isFeat ? 'Ce podcast est désormais affiché en vedette sur la plateforme.' : 'Ce podcast n\'est plus mis en avant.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        loadOtherContent();
+                    } else {
+                        Swal.fire('Erreur', json.error || 'Impossible de modifier la mise en avant', 'error');
+                    }
+                } catch (err) {
+                    console.error('Erreur toggle-featured:', err);
+                    Swal.fire('Erreur', 'Erreur de connexion au serveur', 'error');
+                }
+            }
+            window.setFeatured = toggleFeaturedPodcast;
 
             function renderEmissions(data) {
                 const tbody = document.getElementById('list-emissions');

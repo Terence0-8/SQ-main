@@ -50,6 +50,7 @@ router.get('/', async (req, res) => {
         p.category,
         p.status,
         p.is_premium,
+        p.is_featured,
         p.play_count,
         p.created_at,
         u.username as author_name
@@ -588,15 +589,23 @@ router.post('/:id/toggle-featured', isAdmin, async (req, res) => {
     const { id } = req.params;
     if (isNaN(id)) return res.status(400).json({ success: false, error: 'ID invalide' });
 
-    // Unfeature all, then feature this one (only one featured at a time)
-    await pool.query('UPDATE podcasts SET is_featured = FALSE WHERE is_featured = TRUE');
-    const result = await pool.query(
-      'UPDATE podcasts SET is_featured = NOT is_featured WHERE id = $1 RETURNING is_featured',
-      [id]
-    );
-    if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'Podcast introuvable' });
+    // Check current state of the podcast
+    const checkRes = await pool.query('SELECT is_featured FROM podcasts WHERE id = $1', [id]);
+    if (checkRes.rows.length === 0) return res.status(404).json({ success: false, error: 'Podcast introuvable' });
 
-    res.json({ success: true, is_featured: result.rows[0].is_featured });
+    const isCurrentlyFeatured = checkRes.rows[0].is_featured === true;
+
+    // Reset all podcasts to FALSE (only one podcast featured at a time)
+    await pool.query('UPDATE podcasts SET is_featured = FALSE');
+
+    let newStatus = false;
+    if (!isCurrentlyFeatured) {
+      // If it wasn't featured, set this podcast to TRUE
+      await pool.query('UPDATE podcasts SET is_featured = TRUE WHERE id = $1', [id]);
+      newStatus = true;
+    }
+
+    res.json({ success: true, is_featured: newStatus });
   } catch (err) {
     console.error('❌ Erreur toggle featured:', err);
     res.status(500).json({ success: false, error: 'Erreur serveur' });
