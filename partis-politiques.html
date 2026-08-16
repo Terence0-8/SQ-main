@@ -238,6 +238,10 @@
           const tagColor = (orientation === 'Majorité') ? '#C82823' : '#37463D';
           const logoSrc = p.logo_url || `https://placehold.co/150x150?text=${p.acronym}`;
 
+          const leaderPhotoHtml = p.leader_photo_url
+            ? `<img src="${p.leader_photo_url}" class="pf-leader-img" alt="${p.leader_name}" onerror="this.style.display='none'">`
+            : '';
+
           // Attention: handleImgError est global (dans <head>) donc accessible
           return `
                 <a href="dossier.html?id=${p.id}" class="party-card">
@@ -245,18 +249,21 @@
                     
                     <img src="${logoSrc}" class="party-logo" alt="${p.acronym}" onerror="handleImgError(this)" loading="lazy">
                     
-                    <h3 class="party-name">${p.acronym}</h3>
-                    <p class="party-full-name">${p.name}</p>
+                    <h3 class="party-full-name">${p.name}</h3>
+                    <p class="party-acronym">${p.acronym}</p>
                     
                     <div class="party-footer">
-                    <div class="pf-info">
-                        <span class="pf-label">Leader</span>
-                        <span class="pf-value">${p.leader_name ? p.leader_name.split(' ').pop() : 'N/A'}</span>
-                    </div>
-                    <div class="pf-info">
-                        <span class="pf-label">Sièges</span>
-                        <span class="pf-value">${p.seats_assembly || '0'}</span>
-                    </div>
+                      <div class="pf-info pf-leader-info">
+                          ${leaderPhotoHtml}
+                          <div class="pf-leader-text">
+                              <span class="pf-label">Leader</span>
+                              <span class="pf-value">${p.leader_name ? p.leader_name.split(' ').pop() : 'N/A'}</span>
+                          </div>
+                      </div>
+                      <div class="pf-info">
+                          <span class="pf-label">Sièges</span>
+                          <span class="pf-value">${p.seats_assembly || '0'}</span>
+                      </div>
                     </div>
                 </a>
                 `;
@@ -321,7 +328,7 @@
           allParties = [
             { id: 1, acronym: "RDPC", name: "Rassemblement Démocratique du Peuple Camerounais", orientation: "Majorité", leader_name: "Paul Biya", logo_url: "https://placehold.co/150x150?text=RDPC", seats_assembly: 152 },
             { id: 2, acronym: "MRC", name: "Mouvement pour la Renaissance du Cameroun", orientation: "Opposition", leader_name: "Maurice Kamto", logo_url: "https://placehold.co/150x150?text=MRC", seats_assembly: 0 },
-            { id: 3, acronym: "SDF", name: "Social Democratic Front", orientation: "Opposition", leader_name: "Joshua Osih", logo_url: "https://placehold.co/150x150?text=SDF", seats_assembly: 5 },
+            { id: 3, acronym: "SDF", name: "Social Democratic Front", orientation: "Opposition", leader_name: "Joshua Osih", logo_url: "https://placehold.co/150x150?text=SDF", leader_photo_url: "https://res.cloudinary.com/doa4gov1w/image/upload/v1786891816/solitiquo_leaders/qro7scqfhju9ceytywbl.png", seats_assembly: 5 },
             { id: 4, acronym: "PCRN", name: "Parti Camerounais pour la Réconciliation Nationale", orientation: "Opposition", leader_name: "Cabral Libii", logo_url: "https://placehold.co/150x150?text=PCRN", seats_assembly: 5 },
             { id: 5, acronym: "UDC", name: "Union Démocratique du Cameroun", orientation: "Opposition", leader_name: "Tomaïno Ndam Njoya", logo_url: "https://placehold.co/150x150?text=UDC", seats_assembly: 4 }
           ];
