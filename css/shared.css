@@ -5821,7 +5821,7 @@ a.art-link {
     border-radius: 12px;
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-left: 3.5px solid #C82823;
+    border-left: 4px solid #C82823 !important;
     box-shadow: 0 4px 18px rgba(200, 40, 35, 0.05);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     display: flex;
@@ -5829,7 +5829,7 @@ a.art-link {
 }
 .party-glass-card:hover {
     border-color: #cbd5e1;
-    border-left-color: #b91c1c;
+    border-left-color: #b91c1c !important;
     box-shadow: 0 8px 24px rgba(200, 40, 35, 0.1);
 }
 .party-glass-glow {
@@ -5933,56 +5933,21 @@ a.art-link {
     color: #475569;
     font-weight: 500;
 }
-.party-leader-avatar {
+.party-meta-leader {
+    justify-content: space-between;
+}
+.party-meta-leader-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.party-leader-inline-avatar {
     width: 22px;
     height: 22px;
     border-radius: 50%;
     object-fit: cover;
-    border: 1.5px solid #C82823;
-    margin-left: 6px;
-    display: inline-block;
-    vertical-align: middle;
+    border: 1px solid #C82823;
     flex-shrink: 0;
-    background: #ffffff;
-}
-.party-leader-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 9px 12px;
-    margin-bottom: 0.9rem;
-    background: #ffffff;
-    border: 1px solid rgba(200, 40, 35, 0.2);
-    border-left: 3px solid #C82823;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-}
-.party-leader-card-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 1.5px solid #C82823;
-    flex-shrink: 0;
-    box-shadow: 0 2px 6px rgba(200, 40, 35, 0.15);
-    background: #ffffff;
-}
-.party-leader-card-info {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-}
-.party-leader-card-label {
-    font-size: 0.62rem;
-    font-weight: 800;
-    letter-spacing: 1px;
-    color: #C82823;
-    text-transform: uppercase;
-}
-.party-leader-card-name {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #1e293b;
 }
 .party-card-excerpt {
     margin-bottom: 1.1rem;
