@@ -29,8 +29,8 @@
   <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
   <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
   <title>L'Échiquier Politique — Solitiquo</title>
-  <link rel="stylesheet" href="css/shared.css" />
-  <link rel="stylesheet" href="css/pages/partis-politiques.css" />
+  <link rel="stylesheet" href="css/shared.css?v=2" />
+  <link rel="stylesheet" href="css/pages/partis-politiques.css?v=2" />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
     rel="stylesheet" />
@@ -257,10 +257,10 @@
                           ${leaderPhotoHtml}
                           <div class="pf-leader-text">
                               <span class="pf-label">Leader</span>
-                              <span class="pf-value">${p.leader_name ? p.leader_name.split(' ').pop() : 'N/A'}</span>
+                              <span class="pf-value">${p.leader_name || 'N/A'}</span>
                           </div>
                       </div>
-                      <div class="pf-info">
+                      <div class="pf-info pf-seats-info">
                           <span class="pf-label">Sièges</span>
                           <span class="pf-value">${p.seats_assembly || '0'}</span>
                       </div>

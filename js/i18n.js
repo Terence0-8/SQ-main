@@ -708,8 +708,8 @@ async function loadArticles(lang) {
       `;
       attachImageErrorHandlers(document.getElementById('hero-dynamic'));
 
-      // 2. MAGAZINE LIST (Articles 1 à 4)
-      const mainList = articles.slice(1, 5);
+      // 2. MAGAZINE LIST (Tous les articles suivants)
+      const mainList = articles.slice(1);
       document.getElementById('magazine-feed').innerHTML = mainList.map(art => {
         const linkArt = `article.html?id=${art.id}`;
         const langBadge = art.language !== lang
@@ -737,8 +737,8 @@ async function loadArticles(lang) {
 
       attachImageErrorHandlers(document.getElementById('magazine-feed'));
 
-      // 3. SIDEBAR DISCOVERY (Articles 5 à 8)
-      const discoList = articles.slice(5, 9);
+      // 3. SIDEBAR DISCOVERY (Section À Découvrir)
+      const discoList = articles.length > 5 ? articles.slice(5) : articles.slice(1);
       const discoverGrid = document.getElementById('discover-grid');
       if (discoverGrid) {
         discoverGrid.innerHTML = discoList.map(art => {
