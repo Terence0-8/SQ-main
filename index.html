@@ -462,7 +462,7 @@
         container.className = 'party-glass-card';
         container.innerHTML = `
           <div class="party-glass-glow"></div>
-          <a href="partis-politiques.html" class="party-glass-inner">
+          <a href="dossier.html?id=${party.id}" class="party-glass-inner">
             <div class="party-card-badge-row">
               <span class="party-card-badge">⭐ PARTI DU MOMENT</span>
               ${party.acronym ? `<span class="party-card-acronym">${party.acronym}</span>` : ''}
@@ -502,7 +502,7 @@
             </div>` : ''}
 
             <div class="party-glass-cta">
-              <span>Découvrir la fiche du parti</span>
+              <span>Consulter le dossier du parti</span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </div>
           </a>`;
