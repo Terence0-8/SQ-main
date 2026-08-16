@@ -5814,22 +5814,22 @@ a.art-link {
    🏛️  PARTY CARD — Glassmorphism / Liquid Glass
    =================================================== */
 /* ===================================================
-   🏛️  PARTY CARD — Sobriété & Direction Artistique Presse
+   🏛️  PARTY CARD — Sobriété & Direction Artistique Presse (Nuances de Rouge)
    =================================================== */
 .party-glass-card {
     position: relative;
     border-radius: 12px;
     background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-top: 3px solid var(--primary-dark, #37463D);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(200, 40, 35, 0.2);
+    border-top: 3.5px solid #C82823;
+    box-shadow: 0 4px 18px rgba(200, 40, 35, 0.05);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
 }
 .party-glass-card:hover {
-    border-color: #cbd5e1;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    border-color: rgba(200, 40, 35, 0.4);
+    box-shadow: 0 8px 24px rgba(200, 40, 35, 0.1);
 }
 .party-glass-glow {
     display: none;
@@ -5837,25 +5837,31 @@ a.art-link {
 .party-glass-inner {
     display: flex;
     flex-direction: column;
-    padding: 1.2rem 1.2rem 1.1rem;
+    align-items: stretch;
+    padding: 1.25rem 1.25rem 1.15rem;
     text-decoration: none;
     color: inherit;
     box-sizing: border-box;
+    width: 100%;
 }
 .party-card-badge-row {
     display: flex;
     align-items: center;
     justify-content: center;
+    text-align: center;
+    width: 100%;
     margin-bottom: 0.9rem;
 }
 .party-card-badge {
+    display: inline-block;
+    margin: 0 auto;
     font-size: 0.65rem;
     font-weight: 800;
     letter-spacing: 1.5px;
-    color: #64748b;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    padding: 3px 10px;
+    color: #C82823;
+    background: rgba(200, 40, 35, 0.04);
+    border: 1px solid rgba(200, 40, 35, 0.2);
+    padding: 4px 12px;
     border-radius: 4px;
     text-transform: uppercase;
 }
@@ -5890,7 +5896,7 @@ a.art-link {
     font-weight: 800;
     font-size: 1.1rem;
     color: #ffffff;
-    background: var(--primary-dark, #37463D);
+    background: #C82823;
     letter-spacing: 0.5px;
 }
 .party-card-title {
@@ -5904,7 +5910,7 @@ a.art-link {
 .party-card-sub {
     font-size: 0.75rem;
     font-weight: 700;
-    color: #64748b;
+    color: #C82823;
     letter-spacing: 0.5px;
 }
 .party-card-meta-list {
@@ -5928,8 +5934,8 @@ a.art-link {
 .party-card-excerpt {
     margin-bottom: 1.1rem;
     padding: 8px 10px;
-    border-left: 2.5px solid var(--primary-dark, #37463D);
-    background: #fafafa;
+    border-left: 3px solid #C82823;
+    background: rgba(200, 40, 35, 0.02);
     border-radius: 0 6px 6px 0;
 }
 .party-excerpt-text {
@@ -5948,20 +5954,19 @@ a.art-link {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    color: var(--primary-dark, #37463D);
-    background: #ffffff;
-    border: 1px solid #cbd5e1;
+    color: #C82823;
+    background: transparent;
+    border: 1.5px solid #C82823;
     font-size: 0.82rem;
     font-weight: 700;
     padding: 9px 16px;
     border-radius: 8px;
     transition: all 0.2s ease;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 .party-glass-card:hover .party-glass-cta {
-    background: var(--primary-dark, #37463D);
-    color: #ffffff;
-    border-color: var(--primary-dark, #37463D);
+    background: rgba(200, 40, 35, 0.06);
+    color: #b91c1c;
+    border-color: #b91c1c;
 }
 
 /* --- Premium Poll Card & Sidebar Component --- */
