@@ -493,6 +493,7 @@
               <div class="party-meta-item">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C82823" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 <span>Dirigeant : <strong>${party.leader_name}</strong></span>
+                <img src="${party.leader_photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(party.leader_name)}&background=C82823&color=fff`}" class="party-leader-avatar" alt="${party.leader_name}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(party.leader_name)}&background=C82823&color=fff'">
               </div>` : ''}
             </div>
 

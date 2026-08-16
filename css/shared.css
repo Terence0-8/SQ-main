@@ -5820,15 +5820,16 @@ a.art-link {
     position: relative;
     border-radius: 12px;
     background: #ffffff;
-    border: 1px solid rgba(200, 40, 35, 0.2);
-    border-top: 3.5px solid #C82823;
+    border: 1px solid #e2e8f0;
+    border-left: 3.5px solid #C82823;
     box-shadow: 0 4px 18px rgba(200, 40, 35, 0.05);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
 }
 .party-glass-card:hover {
-    border-color: rgba(200, 40, 35, 0.4);
+    border-color: #cbd5e1;
+    border-left-color: #b91c1c;
     box-shadow: 0 8px 24px rgba(200, 40, 35, 0.1);
 }
 .party-glass-glow {
@@ -5850,19 +5851,20 @@ a.art-link {
     justify-content: center;
     text-align: center;
     width: 100%;
-    margin-bottom: 0.9rem;
+    margin-top: -2px;
+    margin-bottom: 0.8rem;
 }
 .party-card-badge {
     display: inline-block;
     margin: 0 auto;
-    font-size: 0.65rem;
+    font-size: 0.72rem;
     font-weight: 800;
     letter-spacing: 1.5px;
     color: #C82823;
-    background: rgba(200, 40, 35, 0.04);
-    border: 1px solid rgba(200, 40, 35, 0.2);
-    padding: 4px 12px;
-    border-radius: 4px;
+    background: rgba(200, 40, 35, 0.05);
+    border: 1px solid rgba(200, 40, 35, 0.25);
+    padding: 5px 14px;
+    border-radius: 6px;
     text-transform: uppercase;
 }
 .party-card-hero {
@@ -5931,10 +5933,22 @@ a.art-link {
     color: #475569;
     font-weight: 500;
 }
+.party-leader-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid #C82823;
+    margin-left: 6px;
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+    background: #ffffff;
+}
 .party-card-excerpt {
     margin-bottom: 1.1rem;
     padding: 8px 10px;
-    border-left: 3px solid #C82823;
+    border-left: 3.5px solid #C82823;
     background: rgba(200, 40, 35, 0.02);
     border-radius: 0 6px 6px 0;
 }
