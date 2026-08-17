@@ -709,9 +709,63 @@ async function loadArticles(lang) {
       `;
       attachImageErrorHandlers(document.getElementById('hero-dynamic'));
 
-      // 2. MAGAZINE LIST (Un peu moins d'une dizaine : articles 1 à 8)
-      const mainList = articles.slice(1, 9);
-      document.getElementById('magazine-feed').innerHTML = mainList.map(art => {
+      // 2. RENDER THEME FILTERS & ARTICLES FEED
+      renderThemeFilterBar(articles, lang);
+      renderArticlesFeed(articles, 'all', lang);
+
+    } else {
+      console.warn(`⚠️ Aucun article trouvé`);
+      document.getElementById('magazine-feed').innerHTML = `<p style="text-align:center; padding:2rem; color:#888;">${t('msg_no_data')}</p>`;
+    }
+  } catch (e) {
+    console.error('❌ Erreur chargement articles:', e);
+  }
+}
+
+/**
+ * 🏷️ Génère dynamiquement la barre de filtres par thème
+ */
+function renderThemeFilterBar(allArticles, lang) {
+  const container = document.getElementById('theme-filter-bar');
+  if (!container) return;
+
+  // Extraire les catégories uniques présentes dans les articles
+  const categories = Array.from(new Set(allArticles.map(a => a.category).filter(Boolean)));
+
+  let html = `<button class="theme-pill active" data-cat="all">Tous</button>`;
+  categories.forEach(cat => {
+    html += `<button class="theme-pill" data-cat="${cat}">${cat}</button>`;
+  });
+
+  container.innerHTML = html;
+
+  container.querySelectorAll('.theme-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('.theme-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const cat = btn.dataset.cat;
+      renderArticlesFeed(allArticles, cat, lang);
+    });
+  });
+}
+
+/**
+ * 📰 Affiche les articles filtrés dans le flux magazine et la grille à découvrir
+ */
+function renderArticlesFeed(allArticles, activeCategory, lang) {
+  const filtered = activeCategory === 'all'
+    ? allArticles
+    : allArticles.filter(a => (a.category || '').toLowerCase() === activeCategory.toLowerCase());
+
+  // 1. Flux Magazine (8 articles max)
+  const mainList = activeCategory === 'all' ? filtered.slice(1, 9) : filtered.slice(0, 8);
+  const magFeed = document.getElementById('magazine-feed');
+
+  if (magFeed) {
+    if (mainList.length === 0) {
+      magFeed.innerHTML = `<p style="text-align:center; padding:2rem; color:#888;">Aucun article dans le thème "${activeCategory}".</p>`;
+    } else {
+      magFeed.innerHTML = mainList.map(art => {
         const linkArt = `article.html?id=${art.id}`;
         const langBadge = art.language !== lang
           ? `<span class="lang-badge-small">🇫🇷</span>`
@@ -735,57 +789,51 @@ async function loadArticles(lang) {
           </div>
         </article>
       `}).join('');
-
-      attachImageErrorHandlers(document.getElementById('magazine-feed'));
-
-      // 3. SIDEBAR DISCOVERY (Le reste des articles : article 9 et suivants)
-      const discoList = articles.slice(9);
-      const discoverGrid = document.getElementById('discover-grid');
-      const discoverSection = document.querySelector('.discover-section');
-
-      if (discoverGrid) {
-        if (discoList.length > 0) {
-          if (discoverSection) discoverSection.style.display = 'block';
-          discoverGrid.innerHTML = discoList.map((art, idx) => {
-            let cardClass = 'disco-card';
-            const patternIndex = idx % 10;
-            if (patternIndex === 4) {
-              cardClass += ' disco-card-wide';
-            } else if (patternIndex === 9) {
-              cardClass += ' disco-card-full';
-            }
-
-            const excerptHtml = (patternIndex === 4 || patternIndex === 9) && (art.excerpt || art.slug)
-              ? `<p class="disco-excerpt">${art.excerpt || ''}</p>`
-              : '';
-
-            const linkDisco = `article.html?id=${art.id}`;
-            return `
-            <a href="${linkDisco}" class="${cardClass}">
-              <div class="disco-img-wrap">
-                <img src="${art.image_url}" class="disco-img" loading="lazy">
-              </div>
-              <div class="disco-body">
-                <span class="art-cat" style="font-size:0.65rem; margin-bottom:4px;">${art.category}</span>
-                <h4 class="disco-title">${art.title} ${art.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">' : ''}</h4>
-                ${excerptHtml}
-                <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
-              </div>
-            </a>
-          `}).join('');
-
-          attachImageErrorHandlers(discoverGrid);
-        } else {
-          if (discoverSection) discoverSection.style.display = 'none';
-          discoverGrid.innerHTML = '';
-        }
-      }
-    } else {
-      console.warn(`⚠️ Aucun article trouvé`);
-      document.getElementById('magazine-feed').innerHTML = `<p style="text-align:center; padding:2rem; color:#888;">${t('msg_no_data')}</p>`;
+      attachImageErrorHandlers(magFeed);
     }
-  } catch (e) {
-    console.error('❌ Erreur chargement articles:', e);
+  }
+
+  // 2. Grille À Découvrir
+  const discoList = activeCategory === 'all' ? filtered.slice(9) : filtered.slice(8);
+  const discoverGrid = document.getElementById('discover-grid');
+  const discoverSection = document.querySelector('.discover-section');
+
+  if (discoverGrid) {
+    if (discoList.length > 0) {
+      if (discoverSection) discoverSection.style.display = 'block';
+      discoverGrid.innerHTML = discoList.map((art, idx) => {
+        let cardClass = 'disco-card';
+        const patternIndex = idx % 10;
+        if (patternIndex === 4) {
+          cardClass += ' disco-card-wide';
+        } else if (patternIndex === 9) {
+          cardClass += ' disco-card-full';
+        }
+
+        const excerptHtml = (patternIndex === 4 || patternIndex === 9) && (art.excerpt || art.slug)
+          ? `<p class="disco-excerpt">${art.excerpt || ''}</p>`
+          : '';
+
+        const linkDisco = `article.html?id=${art.id}`;
+        return `
+        <a href="${linkDisco}" class="${cardClass}">
+          <div class="disco-img-wrap">
+            <img src="${art.image_url}" class="disco-img" loading="lazy">
+          </div>
+          <div class="disco-body">
+            <span class="art-cat" style="font-size:0.65rem; margin-bottom:4px;">${art.category}</span>
+            <h4 class="disco-title">${art.title} ${art.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">' : ''}</h4>
+            ${excerptHtml}
+            <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
+          </div>
+        </a>
+      `}).join('');
+
+      attachImageErrorHandlers(discoverGrid);
+    } else {
+      if (discoverSection) discoverSection.style.display = 'none';
+      discoverGrid.innerHTML = '';
+    }
   }
 }
 

@@ -132,13 +132,25 @@
         <h3 class="panel-title">Publication</h3>
 
         <div class="field-group">
-          <label>Catégorie</label>
-          <select id="category" class="sidebar-input">
-            <option>Politique</option>
-            <option>Social</option>
-            <option>Économie</option>
-            <option>Partis</option>
+          <label>Catégorie / Thème</label>
+          <select id="category" class="sidebar-input" onchange="toggleCustomCategory(this.value)">
+            <option value="Politique">Politique</option>
+            <option value="Social">Social</option>
+            <option value="Économie">Économie</option>
+            <option value="Culture">Culture</option>
+            <option value="International">International</option>
+            <option value="Société">Société</option>
+            <option value="Éducation">Éducation</option>
+            <option value="Santé">Santé</option>
+            <option value="Sport">Sport</option>
+            <option value="Environnement">Environnement</option>
+            <option value="Technologie">Technologie</option>
+            <option value="Opinions">Opinions</option>
+            <option value="Partis">Partis</option>
+            <option value="Général">Général</option>
+            <option value="custom">✏️ Thème personnalisé...</option>
           </select>
+          <input type="text" id="custom_category" class="sidebar-input" placeholder="Saisissez votre thème personnalisé..." style="display:none; margin-top:8px;" />
         </div>
 
         <div class="field-group">
@@ -248,6 +260,16 @@
       }
     }
 
+    function toggleCustomCategory(val) {
+      const customInput = document.getElementById('custom_category');
+      if (val === 'custom') {
+        customInput.style.display = 'block';
+        customInput.focus();
+      } else {
+        customInput.style.display = 'none';
+      }
+    }
+
     // Slug auto
     document.getElementById('title').addEventListener('input', e => {
       if (!window.isEditing) {
@@ -280,7 +302,19 @@
           document.getElementById('slug').value = art.slug;
           document.getElementById('editor-content').innerHTML = art.content;
           document.getElementById('excerpt').value = art.excerpt || '';
-          document.getElementById('category').value = art.category;
+          
+          const catSelect = document.getElementById('category');
+          const customInput = document.getElementById('custom_category');
+          const hasOption = Array.from(catSelect.options).some(o => o.value.toLowerCase() === (art.category || '').toLowerCase());
+          if (hasOption) {
+            catSelect.value = art.category;
+            customInput.style.display = 'none';
+          } else if (art.category) {
+            catSelect.value = 'custom';
+            customInput.value = art.category;
+            customInput.style.display = 'block';
+          }
+
           document.getElementById('image_url').value = art.image_url || '';
           document.getElementById('image_caption').value = art.image_caption || '';
           if (art.image_url) updatePreviewFromUrl(art.image_url);
@@ -300,12 +334,16 @@
       submitBtn.disabled = true;
       statusDiv.textContent = '';
 
+      const catSelectVal = document.getElementById('category').value;
+      const customCatVal = document.getElementById('custom_category').value.trim();
+      const finalCategory = (catSelectVal === 'custom' && customCatVal) ? customCatVal : catSelectVal;
+
       const formData = new FormData();
       formData.append('title',         document.getElementById('title').value);
       formData.append('slug',          document.getElementById('slug').value);
       formData.append('content',       document.getElementById('editor-content').innerHTML);
       formData.append('excerpt',       document.getElementById('excerpt').value);
-      formData.append('category',      document.getElementById('category').value);
+      formData.append('category',      finalCategory);
       formData.append('image_url',     document.getElementById('image_url').value);
       formData.append('image_caption', document.getElementById('image_caption').value);
       formData.append('tags',          JSON.stringify(currentTags));
