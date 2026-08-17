@@ -679,7 +679,8 @@ async function loadArticles(lang) {
     const json = await res.json();
 
     if (json.success && json.data.length > 0) {
-      const articles = json.data;
+      // 📌 Limite la page d'accueil aux 25 articles les plus récents
+      const articles = json.data.slice(0, 25);
 
       console.log(`📰 ${articles.length} articles chargés (langue préférée: ${lang})`);
 
