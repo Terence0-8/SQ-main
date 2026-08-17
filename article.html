@@ -696,7 +696,8 @@
             btn.style.display = 'none'; pc.style.display = 'flex'; setProgress(10);
             try {
               setTimeout(() => setProgress(30), 300);
-              const tp = fetch(`${window.API_URL}/translate/article/${article.id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ targetLang }) });
+              const csrfHeader = (window.SolitiquoAPI && SolitiquoAPI.csrfToken) ? { 'X-CSRF-Token': SolitiquoAPI.csrfToken } : {};
+              const tp = fetch(`${window.API_URL}/translate/article/${article.id}`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', ...csrfHeader }, body: JSON.stringify({ targetLang }) });
               const si = setInterval(() => { const c = parseInt(document.getElementById('progress-text').textContent); if (c < 80) { setProgress(c + Math.floor(Math.random() * 5)); if (c > 30) lbl.textContent = (targetLang === 'fr') ? 'Traduction en cours...' : 'Translating...'; } }, 200);
               const result = await (await tp).json(); clearInterval(si);
               if (result.success) { setProgress(100); lbl.textContent = (targetLang === 'fr') ? 'Finalisation...' : 'Finalizing...'; updateHreflang(article, result.translation.id); setTimeout(() => { window.location.href = `article.html?id=${result.translation.id}`; }, 500); }

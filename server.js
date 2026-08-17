@@ -192,12 +192,13 @@ const csrfExemptPaths = [
   '/api/subscriptions/stripe-webhook',
   '/api/language/preference',
   '/api/analytics/track',
+  '/api/translate',
 ];
 
 app.use('/api', (req, res, next) => {
   if (['GET', 'OPTIONS', 'HEAD'].includes(req.method)) return next();
   const fullPath = req.originalUrl.split('?')[0];
-  if (csrfExemptPaths.some(exempt => fullPath === exempt)) return next();
+  if (csrfExemptPaths.some(exempt => fullPath === exempt || fullPath.startsWith(exempt))) return next();
   verifyCsrf(req, res, next);
 });
 
