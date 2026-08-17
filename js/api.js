@@ -92,46 +92,44 @@ const SolitiquoAPI = {
 
   // --- UI MANAGEMENT (Cerveau Interface) ---
   initUserInterface: async () => {
+    if (document.body.dataset.uiInited === 'true') return;
     const user = await SolitiquoAPI.getProfile();
-    const authBtns = document.querySelectorAll('.ph-btn-auth, .mobile-auth a');
+    if (!user) return;
 
-    if (user) {
-      // 1. Changer le bouton connexion
-      authBtns.forEach(btn => {
-        btn.textContent = `👤 ${user.username}`;
-        btn.href = "#";
-        btn.style.backgroundColor = "#f0f0f0";
-        btn.style.color = "#37463D";
-        btn.style.border = "1px solid #ddd";
+    document.body.dataset.uiInited = 'true';
+    const nav = document.querySelector('.ph-right');
 
+    // 1. Bouton Profil (ciblé spécifiquement sans toucher au Dashboard)
+    const profileBtn = nav ? nav.querySelector('.ph-btn-auth:not(#nav-dash-btn)') : document.querySelector('.ph-btn-auth');
+    if (profileBtn) {
+      profileBtn.id = 'nav-profile-btn';
+      profileBtn.textContent = `👤 ${user.username}`;
+      profileBtn.href = "profil.html";
+      profileBtn.style.backgroundColor = "#f0f0f0";
+      profileBtn.style.color = "#37463D";
+      profileBtn.style.border = "1px solid #ddd";
+      profileBtn.onclick = (e) => {
+        e.preventDefault();
+        window.location.href = "profil.html";
+      };
+    }
 
-        // Modification du comportement au clic
-        btn.onclick = (e) => {
-          e.preventDefault();
-          // Redirection vers la page profil au lieu de déconnecter direct
-          window.location.href = "profil.html";
-        };
-      });
+    // 2. SI ADMIN : Ajouter le bouton Dashboard (une seule fois)
+    if ((user.role === 'admin' || user.role === 'writer') && nav && !document.getElementById('nav-dash-btn')) {
+      document.body.classList.add('is-admin');
+      const dashBtn = document.createElement('a');
+      dashBtn.id = 'nav-dash-btn';
+      dashBtn.href = "admin.html";
+      dashBtn.className = "ph-btn-auth";
+      dashBtn.innerHTML = "⚙️ Dashboard";
+      dashBtn.style.marginRight = "10px";
+      dashBtn.style.backgroundColor = "#37463D";
+      dashBtn.style.color = "white";
 
-      // 2. SI ADMIN : Ajouter le bouton Dashboard
-      if (user.role === 'admin' || user.role === 'writer') {
-        document.body.classList.add('is-admin');
-
-        // Création du bouton Dashboard dans le header
-        const nav = document.querySelector('.ph-right'); // Zone droite du header
-        if (nav) {
-          const dashBtn = document.createElement('a');
-          dashBtn.href = "admin.html";
-          dashBtn.className = "ph-btn-auth"; // Même style
-          dashBtn.innerHTML = "⚙️ Dashboard";
-          dashBtn.style.marginRight = "10px";
-          dashBtn.style.backgroundColor = "#37463D";
-          dashBtn.style.color = "white";
-
-          // Insérer avant le bouton profil
-          const profileBtn = nav.querySelector('.ph-btn-auth');
-          nav.insertBefore(dashBtn, profileBtn);
-        }
+      if (profileBtn) {
+        nav.insertBefore(dashBtn, profileBtn);
+      } else {
+        nav.appendChild(dashBtn);
       }
     }
   },
