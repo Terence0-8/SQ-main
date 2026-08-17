@@ -24,6 +24,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ============================================================
+  // 0.6. FOOTER GLOBAL UNIFIÉ ET COMPLET
+  // ============================================================
+  renderGlobalFooter();
+
+  // ============================================================
   // 1. GESTION DU MENU MOBILE (Burger)
   // ============================================================
   const burger = document.getElementById('burgerBtn') || document.getElementById('burgerMenu');
@@ -249,3 +254,60 @@ window.showGeneralErrorModal = function(title = "Information", message = "") {
 
   document.body.insertAdjacentHTML('beforeend', modalHtml);
 };
+
+// ============================================================
+// 📍 FONCTION FOOTER GLOBAL UNIFIÉ ET COMPLET
+// ============================================================
+function renderGlobalFooter() {
+  const footer = document.querySelector('footer.premium-footer');
+  if (!footer) return;
+
+  const currentLang = localStorage.getItem('siteLanguage') || 'fr';
+  const isEn = currentLang === 'en';
+
+  footer.innerHTML = `
+    <div class="footer-grid">
+      <div class="footer-col footer-brand-col">
+        <div style="display:flex; gap:10px; align-items:center; margin-bottom:1.25rem;">
+          <img src="/logo.svg" class="footer-logo" alt="Solitiquo Logo" style="height:36px; margin-bottom:0; filter:brightness(0) invert(1);">
+          <span style="font-family:'Playfair Display', serif; font-size:1.5rem; font-weight:700; color:white;">Solitiquo</span>
+        </div>
+        <p style="font-size:0.9rem; opacity:0.75; line-height:1.6; margin-bottom:1.25rem;">
+          ${isEn ? 'The benchmark media for political, economic and social analysis in Cameroon.' : 'Le média de référence pour l\'analyse politique, économique et sociale au Cameroun.'}
+        </p>
+        <div style="font-size:0.8rem; opacity:0.5;">
+          &copy; 2026 Solitiquo. ${isEn ? 'All rights reserved.' : 'Tous droits réservés.'}
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>${isEn ? 'Sections' : 'Rubriques'}</h4>
+        <a href="index.html" class="footer-link" data-i18n="nav_home">${isEn ? 'Home' : 'Accueil'}</a>
+        <a href="politique.html" class="footer-link" data-i18n="nav_pol">${isEn ? 'Politics' : 'Politique'}</a>
+        <a href="social.html" class="footer-link" data-i18n="nav_soc">${isEn ? 'Social & Society' : 'Social & Société'}</a>
+        <a href="partis-politiques.html" class="footer-link" data-i18n="nav_parties">${isEn ? 'Political Parties' : 'Partis Politiques'}</a>
+        <a href="podcasts.html" class="footer-link" data-i18n="nav_podcasts">${isEn ? 'Podcasts' : 'Podcasts'}</a>
+        <a href="emissions.html" class="footer-link" data-i18n="nav_emissions">${isEn ? 'Shows' : 'Émissions'}</a>
+        <a href="recherche.html" class="footer-link" data-i18n="nav_search">${isEn ? 'Search' : 'Recherche'}</a>
+      </div>
+
+      <div class="footer-col">
+        <h4>${isEn ? 'Account & Offers' : 'Espace & Offres'}</h4>
+        <a href="abonnement.html" class="footer-link" data-i18n="nav_sub">${isEn ? 'Subscribe' : 'S\'abonner'}</a>
+        <a href="auth.html" class="footer-link" data-i18n="nav_login">${isEn ? 'Login / Register' : 'Connexion / Inscription'}</a>
+        <a href="profil.html" class="footer-link" data-i18n="nav_profile">${isEn ? 'My Account' : 'Mon Compte'}</a>
+        <a href="admin.html" class="footer-link" data-i18n="nav_admin">${isEn ? 'Admin Space' : 'Espace Admin'}</a>
+      </div>
+
+      <div class="footer-col">
+        <h4>${isEn ? 'Legal & Contact' : 'Légal & Contact'}</h4>
+        <a href="contact.html" class="footer-link" data-i18n="footer_contact">${isEn ? 'Contact Us' : 'Nous écrire / Contact'}</a>
+        <a href="mentions-legales.html" class="footer-link" data-i18n="footer_legal">${isEn ? 'Legal Notice' : 'Mentions légales'}</a>
+        <a href="conditions-utilisation.html" class="footer-link" data-i18n="footer_terms">${isEn ? 'Terms of Use (CGU)' : 'Conditions d\'utilisation (CGU)'}</a>
+        <a href="politique-confidentialite.html" class="footer-link" data-i18n="footer_privacy">${isEn ? 'Privacy Policy' : 'Politique de confidentialité'}</a>
+        <a href="cookies.html" class="footer-link" data-i18n="footer_cookies">${isEn ? 'Cookie Management' : 'Gestion des cookies'}</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 Solitiquo. ${isEn ? 'The analysis & news media. All rights reserved.' : 'Le média d\'analyse et d\'information. Tous droits réservés.'}</div>
+  `;
+}

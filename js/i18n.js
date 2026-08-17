@@ -665,6 +665,10 @@ function updateInterfaceText(lang) {
     searchLabel.textContent = translations.search_label;
   }
 
+  if (typeof renderGlobalFooter === 'function') {
+    renderGlobalFooter();
+  }
+
   console.log(`✅ Interface mise à jour en ${lang.toUpperCase()}`);
 }
 
