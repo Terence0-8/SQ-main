@@ -217,10 +217,7 @@
 
   <div class="main-container" id="main-content-anchor">
     <main>
-      <div class="feed-header-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:2rem;">
-        <div class="section-label" data-i18n="section_essentiel" style="margin-bottom:0;">L'Essentiel de l'info</div>
-        <div id="theme-filter-bar" class="theme-filter-bar"></div>
-      </div>
+      <div class="section-label" data-i18n="section_essentiel">L'Essentiel de l'info</div>
       <div id="magazine-feed">
         <div class="article-magazine" style="border:none; box-shadow:none; background:transparent; padding:0;">
           <div class="skeleton" style="width:120px; height:80px; border-radius:8px;"></div>
@@ -257,7 +254,10 @@
 
   <section class="discover-section">
     <div class="discover-container">
-      <div class="section-label" style="border-color:#ccc; color:#888; margin-bottom:2rem;">À Découvrir</div>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:2rem;">
+        <div class="section-label" style="border-color:#ccc; color:#888; margin-bottom:0;">À Découvrir</div>
+        <div id="theme-filter-bar" class="theme-filter-bar"></div>
+      </div>
       <div id="discover-grid" class="discover-grid"></div>
     </div>
   </section>
@@ -295,7 +295,7 @@
   </footer>
 
   <script src="/js/config.js"></script>
-  <script src="/js/i18n.js?v=6"></script>
+  <script src="/js/i18n.js?v=7"></script>
   <script src="/js/api.js"></script>
   <script src="/js/solitiquo.js"></script>
   <script>

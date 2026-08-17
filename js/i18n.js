@@ -709,9 +709,40 @@ async function loadArticles(lang) {
       `;
       attachImageErrorHandlers(document.getElementById('hero-dynamic'));
 
-      // 2. RENDER THEME FILTERS & ARTICLES FEED
+      // 2. MAGAZINE LIST (L'Essentiel de l'info : fixe, articles 1 à 8)
+      const mainList = articles.slice(1, 9);
+      const magFeed = document.getElementById('magazine-feed');
+      if (magFeed) {
+        magFeed.innerHTML = mainList.map(art => {
+          const linkArt = `article.html?id=${art.id}`;
+          const langBadge = art.language !== lang
+            ? `<span class="lang-badge-small">🇫🇷</span>`
+            : '';
+
+          return `
+          <article class="article-row">
+            <div style="overflow:hidden; border-radius:4px; height:220px;">
+              <a href="${linkArt}">
+                <img src="${art.image_url}" class="art-img" loading="lazy">
+              </a>
+            </div>
+            <div class="art-info">
+              <span class="art-cat">${art.category}</span>
+              ${langBadge}
+              <a href="${linkArt}" style="text-decoration:none;">
+                <h3 class="art-title">${art.title} ${art.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">' : ''}</h3>
+              </a>
+              <p class="art-desc">${art.excerpt || art.slug}</p>
+              <div style="font-size:0.8rem; color:#999; margin-top:8px;">${SolitiquoAPI.formatDate(art.published_at)}</div>
+            </div>
+          </article>
+        `}).join('');
+        attachImageErrorHandlers(magFeed);
+      }
+
+      // 3. SECTION À DÉCOUVRIR AVEC FILTRES DYNAMIQUES PAR THÈME
       renderThemeFilterBar(articles, lang);
-      renderArticlesFeed(articles, 'all', lang);
+      renderDiscoverGrid(articles, 'all', lang);
 
     } else {
       console.warn(`⚠️ Aucun article trouvé`);
@@ -723,17 +754,19 @@ async function loadArticles(lang) {
 }
 
 /**
- * 🏷️ Génère dynamiquement la barre de filtres par thème
+ * 🏷️ Génère la barre de filtres par thème (catégories de l'éditeur + personnalisées)
  */
 function renderThemeFilterBar(allArticles, lang) {
   const container = document.getElementById('theme-filter-bar');
   if (!container) return;
 
-  // Extraire les catégories uniques présentes dans les articles
-  const categories = Array.from(new Set(allArticles.map(a => a.category).filter(Boolean)));
+  // Thèmes standards de l'éditeur + thèmes personnalisés présents dans les articles
+  const defaultThemes = ['Politique', 'Social', 'Économie', 'Culture', 'International', 'Société', 'Opinions', 'Partis', 'Général'];
+  const customThemes = allArticles.map(a => a.category).filter(c => c && !defaultThemes.includes(c));
+  const allThemes = Array.from(new Set([...defaultThemes, ...customThemes]));
 
   let html = `<button class="theme-pill active" data-cat="all">Tous</button>`;
-  categories.forEach(cat => {
+  allThemes.forEach(cat => {
     html += `<button class="theme-pill" data-cat="${cat}">${cat}</button>`;
   });
 
@@ -744,96 +777,58 @@ function renderThemeFilterBar(allArticles, lang) {
       container.querySelectorAll('.theme-pill').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       const cat = btn.dataset.cat;
-      renderArticlesFeed(allArticles, cat, lang);
+      renderDiscoverGrid(allArticles, cat, lang);
     });
   });
 }
 
 /**
- * 📰 Affiche les articles filtrés dans le flux magazine et la grille à découvrir
+ * 📰 Filtre et affiche la grille "À Découvrir" selon le thème sélectionné
  */
-function renderArticlesFeed(allArticles, activeCategory, lang) {
-  const filtered = activeCategory === 'all'
-    ? allArticles
-    : allArticles.filter(a => (a.category || '').toLowerCase() === activeCategory.toLowerCase());
-
-  // 1. Flux Magazine (8 articles max)
-  const mainList = activeCategory === 'all' ? filtered.slice(1, 9) : filtered.slice(0, 8);
-  const magFeed = document.getElementById('magazine-feed');
-
-  if (magFeed) {
-    if (mainList.length === 0) {
-      magFeed.innerHTML = `<p style="text-align:center; padding:2rem; color:#888;">Aucun article dans le thème "${activeCategory}".</p>`;
-    } else {
-      magFeed.innerHTML = mainList.map(art => {
-        const linkArt = `article.html?id=${art.id}`;
-        const langBadge = art.language !== lang
-          ? `<span class="lang-badge-small">🇫🇷</span>`
-          : '';
-
-        return `
-        <article class="article-row">
-          <div style="overflow:hidden; border-radius:4px; height:220px;">
-            <a href="${linkArt}">
-              <img src="${art.image_url}" class="art-img" loading="lazy">
-            </a>
-          </div>
-          <div class="art-info">
-            <span class="art-cat">${art.category}</span>
-            ${langBadge}
-            <a href="${linkArt}" style="text-decoration:none;">
-              <h3 class="art-title">${art.title} ${art.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">' : ''}</h3>
-            </a>
-            <p class="art-desc">${art.excerpt || art.slug}</p>
-            <div style="font-size:0.8rem; color:#999; margin-top:8px;">${SolitiquoAPI.formatDate(art.published_at)}</div>
-          </div>
-        </article>
-      `}).join('');
-      attachImageErrorHandlers(magFeed);
-    }
-  }
-
-  // 2. Grille À Découvrir
-  const discoList = activeCategory === 'all' ? filtered.slice(9) : filtered.slice(8);
+function renderDiscoverGrid(allArticles, activeCategory, lang) {
   const discoverGrid = document.getElementById('discover-grid');
   const discoverSection = document.querySelector('.discover-section');
+  if (!discoverGrid) return;
 
-  if (discoverGrid) {
-    if (discoList.length > 0) {
-      if (discoverSection) discoverSection.style.display = 'block';
-      discoverGrid.innerHTML = discoList.map((art, idx) => {
-        let cardClass = 'disco-card';
-        const patternIndex = idx % 10;
-        if (patternIndex === 4) {
-          cardClass += ' disco-card-wide';
-        } else if (patternIndex === 9) {
-          cardClass += ' disco-card-full';
-        }
+  // Si "Tous" : affiche les articles 9 et suivants. Si thème spécifique : cherche dans tous les articles.
+  const discoList = activeCategory === 'all'
+    ? allArticles.slice(9)
+    : allArticles.filter(a => (a.category || '').toLowerCase() === activeCategory.toLowerCase());
 
-        const excerptHtml = (patternIndex === 4 || patternIndex === 9) && (art.excerpt || art.slug)
-          ? `<p class="disco-excerpt">${art.excerpt || ''}</p>`
-          : '';
+  if (discoList.length > 0) {
+    if (discoverSection) discoverSection.style.display = 'block';
+    discoverGrid.innerHTML = discoList.map((art, idx) => {
+      let cardClass = 'disco-card';
+      const patternIndex = idx % 10;
+      if (patternIndex === 4) {
+        cardClass += ' disco-card-wide';
+      } else if (patternIndex === 9) {
+        cardClass += ' disco-card-full';
+      }
 
-        const linkDisco = `article.html?id=${art.id}`;
-        return `
-        <a href="${linkDisco}" class="${cardClass}">
-          <div class="disco-img-wrap">
-            <img src="${art.image_url}" class="disco-img" loading="lazy">
-          </div>
-          <div class="disco-body">
-            <span class="art-cat" style="font-size:0.65rem; margin-bottom:4px;">${art.category}</span>
-            <h4 class="disco-title">${art.title} ${art.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">' : ''}</h4>
-            ${excerptHtml}
-            <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
-          </div>
-        </a>
-      `}).join('');
+      const excerptHtml = (patternIndex === 4 || patternIndex === 9) && (art.excerpt || art.slug)
+        ? `<p class="disco-excerpt">${art.excerpt || ''}</p>`
+        : '';
 
-      attachImageErrorHandlers(discoverGrid);
-    } else {
-      if (discoverSection) discoverSection.style.display = 'none';
-      discoverGrid.innerHTML = '';
-    }
+      const linkDisco = `article.html?id=${art.id}`;
+      return `
+      <a href="${linkDisco}" class="${cardClass}">
+        <div class="disco-img-wrap">
+          <img src="${art.image_url}" class="disco-img" loading="lazy">
+        </div>
+        <div class="disco-body">
+          <span class="art-cat" style="font-size:0.65rem; margin-bottom:4px;">${art.category}</span>
+          <h4 class="disco-title">${art.title} ${art.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">' : ''}</h4>
+          ${excerptHtml}
+          <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
+        </div>
+      </a>
+    `}).join('');
+
+    attachImageErrorHandlers(discoverGrid);
+  } else {
+    if (discoverSection) discoverSection.style.display = 'block';
+    discoverGrid.innerHTML = `<p style="text-align:center; grid-column:1 / -1; padding:2rem; color:#888;">Aucun article dans le thème "${activeCategory}".</p>`;
   }
 }
 
