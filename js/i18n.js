@@ -760,13 +760,16 @@ function renderThemeFilterBar(allArticles, lang) {
   const container = document.getElementById('theme-filter-bar');
   if (!container) return;
 
-  // Thèmes standards de l'éditeur + thèmes personnalisés présents dans les articles
-  const defaultThemes = ['Politique', 'Social', 'Économie', 'Culture', 'International', 'Société', 'Opinions', 'Partis', 'Général'];
-  const customThemes = allArticles.map(a => a.category).filter(c => c && !defaultThemes.includes(c));
-  const allThemes = Array.from(new Set([...defaultThemes, ...customThemes]));
+  // 📌 N'affiche que les thèmes réellement représentés dans les articles publiés
+  const categories = Array.from(new Set(allArticles.map(a => a.category).filter(Boolean)));
+
+  if (categories.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
 
   let html = `<button class="theme-pill active" data-cat="all">Tous</button>`;
-  allThemes.forEach(cat => {
+  categories.forEach(cat => {
     html += `<button class="theme-pill" data-cat="${cat}">${cat}</button>`;
   });
 
