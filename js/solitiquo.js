@@ -268,10 +268,11 @@ function renderGlobalFooter() {
   footer.innerHTML = `
     <div class="footer-inner">
       <div class="footer-top-row">
-        <div class="footer-brand">
+        <a href="index.html" class="footer-brand">
           <img src="/logo.svg" class="footer-logo" alt="Solitiquo Logo">
-          <span class="footer-brand-title">Solitiquo</span>
-        </div>
+          <div class="brand-sep"></div>
+          <span class="brand-text">Solitiquo</span>
+        </a>
         <p class="footer-summary">
           ${isEn ? 'The benchmark media for political, economic and social analysis in Cameroon.' : 'Le média de référence pour l\'analyse politique, économique et sociale au Cameroun.'}
         </p>

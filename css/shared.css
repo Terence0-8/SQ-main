@@ -4146,16 +4146,31 @@ a[class*="btn"] {
 }
 
 .footer-brand {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    text-decoration: none;
 }
 
-.footer-brand-title {
+.footer-logo {
+    height: 38px;
+    width: auto;
+    border-radius: 6px;
+    filter: none !important;
+}
+
+.footer-brand .brand-sep {
+    width: 1px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.footer-brand .brand-text {
     font-family: 'Playfair Display', serif;
-    font-size: 1.4rem;
-    font-weight: 700;
+    font-size: 1.6rem;
+    font-weight: 800;
     color: white;
+    letter-spacing: -0.5px;
 }
 
 .footer-summary {
@@ -4193,11 +4208,6 @@ a[class*="btn"] {
     color: #888;
     margin-right: 5px;
     min-width: 130px;
-}
-
-.footer-logo {
-    height: 32px;
-    filter: brightness(0) invert(1);
 }
 
 .footer-link {
