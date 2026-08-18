@@ -252,7 +252,7 @@
         let allData = []; // Stocke tous les résultats pour le filtrage local
 
         document.addEventListener('DOMContentLoaded', async () => {
-            await initLanguageSwitcher({ reloadPage: true });
+            await initLanguageSwitcher();
 
             const params = new URLSearchParams(window.location.search);
             const query = params.get('q');

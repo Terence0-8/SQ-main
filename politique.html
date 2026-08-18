@@ -458,10 +458,7 @@
         
 
     // --- 4. CHARGEMENT INITIAL (ARTICLES + SONDAGE) ---
-    document.addEventListener('DOMContentLoaded', async () => {
-      // Init Language
-      await initLanguageSwitcher({ reloadPage: true });
-
+    async function loadPolitiqueData() {
       // A. Chargement Articles
       try {
         const lang = getLanguage();
@@ -550,7 +547,7 @@
             </div>
           `;
 
-                              // 2. Grille Découvrir avec filtres thématiques exclusifs (politique, économie, partis, géopolitique)
+          // 2. Grille Découvrir avec filtres thématiques exclusifs (politique, économie, partis, géopolitique)
           const POLITIQUE_THEME_NAMES = ['politique', 'économie', 'economie', 'partis', 'géopolitique', 'geopolitique'];
 
           const pageArticles = allArticles.filter(art => {
@@ -666,6 +663,15 @@
 
       // C. Lancement du Sondage
       loadSmartPoll();
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initLanguageSwitcher();
+      await loadPolitiqueData();
+    });
+
+    document.addEventListener('languageChanged', async () => {
+      await loadPolitiqueData();
     });
   </script>
   <script src="/js/lazyload.js"></script>

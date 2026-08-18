@@ -307,7 +307,7 @@
 
     // Gestion Auth & Profil
     document.addEventListener('DOMContentLoaded', async () => {
-      await initLanguageSwitcher({ reloadPage: true });
+      await initLanguageSwitcher();
 
       // Récupérer infos utilisateur
       const user = await SolitiquoAPI.getProfile();

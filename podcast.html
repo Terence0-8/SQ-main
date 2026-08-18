@@ -290,7 +290,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
-      await initLanguageSwitcher({ reloadPage: true });
+      await initLanguageSwitcher();
 
       // 1. Récupérer l'ID dans l'URL
       const params = new URLSearchParams(window.location.search);

@@ -290,8 +290,7 @@
       });
     };
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      await initLanguageSwitcher({ reloadPage: true });
+    async function loadPodcastsData() {
       try {
         const lang = localStorage.getItem('siteLanguage') || 'fr';
         const podcasts = await SolitiquoAPI.getPodcasts();
@@ -319,7 +318,7 @@
                 </a>
                 <div class="hero-content-pod">
                     <div class="hero-meta">
-                        <span class="tag-highlight">${une.category || 'PODCAST'}</span>
+                        <span class="tag-highlight">${tCategory(une.category || 'PODCAST')}</span>
                         <span>• ${Math.floor(une.duration / 60)} MIN</span>
                         <span>• ${SolitiquoAPI.formatDate(une.created_at)}</span>
                     </div>
@@ -339,7 +338,7 @@
                             <img src="${pod.image_url}" class="hl-img" onerror="handleImgError(this)" loading="lazy">
                         </div>
                         <div class="hl-content">
-                            <span class="hl-tag">${pod.category}</span>
+                            <span class="hl-tag">${tCategory(pod.category)}</span>
                             <h3 class="hl-title">${pod.title}</h3>
                             <div class="hl-meta">
                                 <span>${SolitiquoAPI.formatDate(pod.created_at)}</span>
@@ -362,7 +361,7 @@
                             <div class="pc-overlay"><div class="pc-play-icon">▶</div></div>
                         </div>
                         <div class="pc-content">
-                            <span class="pc-cat">${pod.category}</span>
+                            <span class="pc-cat">${tCategory(pod.category)}</span>
                             <h3 class="pc-title">${pod.title}</h3>
                             <div class="pc-footer">
                                 <span>${SolitiquoAPI.formatDate(pod.created_at)}</span>
@@ -379,6 +378,15 @@
           document.getElementById('podcasts-grid').innerHTML = '<p>Aucun podcast trouvé.</p>';
         }
       } catch (e) { console.error(e); }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initLanguageSwitcher();
+      await loadPodcastsData();
+    });
+
+    document.addEventListener('languageChanged', async () => {
+      await loadPodcastsData();
     });
 
   </script>

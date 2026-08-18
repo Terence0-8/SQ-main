@@ -551,7 +551,11 @@
       const mainArticle = document.getElementById('main-article');
 
       if (window.SolitiquoAPI) SolitiquoAPI.initUserInterface();
-      if (typeof initLanguageSwitcher === 'function') await initLanguageSwitcher({ reloadPage: true });
+      if (typeof initLanguageSwitcher === 'function') await initLanguageSwitcher();
+
+      document.addEventListener('languageChanged', () => {
+        if (typeof updateInterfaceText === 'function') updateInterfaceText(getLanguage());
+      });
 
       if (!id) {
         if (loadingDiv) {

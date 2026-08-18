@@ -381,7 +381,7 @@
         let chartTimeline = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
-            await initLanguageSwitcher({ reloadPage: true });
+            await initLanguageSwitcher();
 
             // 1. VERIFICATION AUTH & INIT
             const user = await SolitiquoAPI.getProfile();

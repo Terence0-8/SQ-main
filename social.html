@@ -426,8 +426,7 @@
         
 
     // --- 4. CHARGEMENT INITIAL ---
-    document.addEventListener('DOMContentLoaded', async () => {
-      await initLanguageSwitcher({ reloadPage: true });
+    async function loadSocialData() {
       try {
         const lang = getLanguage();
         let catParam = pageCategory;
@@ -501,7 +500,7 @@
               `).join('')}
             </div>
           `;
-                              // 2. Grille Découvrir avec filtres thématiques exclusifs pour la page Social
+          // 2. Grille Découvrir avec filtres thématiques exclusifs pour la page Social
           const SOCIAL_THEME_NAMES = [
             'social', 'société', 'societe', 'culture', 'international',
             'éducation', 'education', 'santé', 'sante', 'sport',
@@ -617,6 +616,15 @@
       }
 
       loadSmartPoll();
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initLanguageSwitcher();
+      await loadSocialData();
+    });
+
+    document.addEventListener('languageChanged', async () => {
+      await loadSocialData();
     });
   </script>
   <script src="/js/lazyload.js"></script>

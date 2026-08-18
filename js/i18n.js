@@ -1153,7 +1153,7 @@ async function initLanguageSwitcher(options = {}) {
         updateInterfaceText(selectedLang);
 
         // Si la page possède loadArticles (ex: index.html), recharger les articles
-        if (reloadArticles && typeof loadArticles === 'function') {
+        if (typeof loadArticles === 'function') {
           await loadArticles(selectedLang);
           console.log(`🌍 Articles rechargés en ${selectedLang.toUpperCase()}`);
         }

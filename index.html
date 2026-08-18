@@ -513,18 +513,7 @@
       }
     }
 
-    document.addEventListener('languageChanged', () => {
-      loadHomePoll();
-      loadHomeParty();
-    });
-
-
-
-  </script>
-  <script>
-    // Charge le dernier podcast pour l'Index
-    // Charge le dernier podcast pour l'Index (Avec Fallback)
-    document.addEventListener('DOMContentLoaded', async () => {
+    async function loadIndexPodcast() {
       const updatePodUI = (pod) => {
         const img = document.getElementById('index-pod-img');
         const title = document.getElementById('index-pod-title');
@@ -557,6 +546,17 @@
         const podLink = document.getElementById('index-pod-link');
         if (podLink) podLink.href = 'podcasts.html';
       }
+    }
+
+    document.addEventListener('languageChanged', () => {
+      if (typeof loadArticles === 'function') loadArticles(getLanguage());
+      loadHomePoll();
+      loadHomeParty();
+      loadIndexPodcast();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadIndexPodcast();
     });
   </script>
   <script src="/js/lazyload.js"></script>

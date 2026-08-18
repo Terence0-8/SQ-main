@@ -229,7 +229,7 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      await initLanguageSwitcher({ reloadPage: true });
+      await initLanguageSwitcher();
       // --- VARIABLES GLOBALES ---
       let allParties = [];
 
@@ -357,6 +357,10 @@
 
       // Lancement
       initPage();
+
+      document.addEventListener('languageChanged', () => {
+        renderGrid(allParties);
+      });
     });
   </script>
   <script src="js/lazyload.js"></script>

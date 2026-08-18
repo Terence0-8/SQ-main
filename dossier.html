@@ -270,7 +270,7 @@
     <script>
 
         document.addEventListener('DOMContentLoaded', async () => {
-            await initLanguageSwitcher({ reloadPage: true });
+            await initLanguageSwitcher();
 
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');

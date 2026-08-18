@@ -290,9 +290,7 @@
     }
 
     // DATA
-    document.addEventListener('DOMContentLoaded', async () => {
-      await initLanguageSwitcher({ reloadPage: true });
-
+    async function loadEmissionsData() {
       try {
         const res = await fetch(`${API_URL}/emissions?lang=${getLanguage()}`);
         const json = await res.json();
@@ -303,7 +301,7 @@
 
           // Hero
           const uneId = getYoutubeId(une.video_url);
-          if (uneId) switchVideo(uneId, une.title, une.description, une.category, SolitiquoAPI.formatDate(une.published_at));
+          if (uneId) switchVideo(uneId, une.title, une.description, tCategory(une.category), SolitiquoAPI.formatDate(une.published_at));
 
           // Grid
           document.getElementById('video-grid').innerHTML = list.map(vid => {
@@ -311,15 +309,16 @@
             const thumb = vid.image_url || `https://i.ytimg.com/vi/${ytid}/mqdefault.jpg`;
             const cleanTitle = vid.title.replace(/'/g, "\\'");
             const cleanDesc = vid.description ? vid.description.replace(/'/g, "\\'") : '';
+            const catStr = typeof tCategory === 'function' ? tCategory(vid.category) : vid.category;
 
             return `
-                    <div class="replay-card" onclick="switchVideo('${ytid}', '${cleanTitle}', '${cleanDesc}', '${vid.category}', '${SolitiquoAPI.formatDate(vid.published_at)}')">
+                    <div class="replay-card" onclick="switchVideo('${ytid}', '${cleanTitle}', '${cleanDesc}', '${catStr}', '${SolitiquoAPI.formatDate(vid.published_at)}')">
                         <div class="replay-thumb-box">
                             <img src="${thumb}" class="replay-img" onerror="handleImgError(this)" loading="lazy">
                             <div class="play-icon">▶</div>
                             <div class="vid-duration">${vid.duration || '?'} min</div>
                         </div>
-                        <div class="replay-meta">${SolitiquoAPI.formatDate(vid.published_at)} • ${vid.category}</div>
+                        <div class="replay-meta">${SolitiquoAPI.formatDate(vid.published_at)} • ${catStr}</div>
                         <h3 class="replay-title">${vid.title}</h3>
                     </div>
                     `;
@@ -332,6 +331,15 @@
         console.error('Erreur chargement emissions:', e);
         document.getElementById('video-grid').innerHTML = '<p style="text-align:center;color:red;">Erreur de chargement.</p>';
       }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initLanguageSwitcher();
+      await loadEmissionsData();
+    });
+
+    document.addEventListener('languageChanged', async () => {
+      await loadEmissionsData();
     });
   </script>
 

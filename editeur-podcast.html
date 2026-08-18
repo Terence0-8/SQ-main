@@ -292,7 +292,7 @@
     }
 
     (async function checkAccess() {
-      await initLanguageSwitcher({ reloadPage: true });
+      await initLanguageSwitcher();
       const user = await SolitiquoAPI.getProfile();
       if (!user || (user.role !== 'admin' && user.role !== 'writer')) {
         window.location.href = 'auth.html';
