@@ -116,6 +116,8 @@ var TRANSLATIONS = {
     poll_weekly: 'Le sondage de la semaine',
     poll_live_results: 'Résultats en direct',
     btn_listen_now: 'Écouter maintenant',
+    pol_pod_desc: 'Le podcast politique du moment.',
+    soc_pod_desc: 'Le podcast social du moment.',
 
     // ==================== ARTICLES ====================
     article_by: 'Par',
@@ -459,6 +461,8 @@ var TRANSLATIONS = {
     poll_weekly: 'Poll of the week',
     poll_live_results: 'LIVE RESULTS',
     btn_listen_now: 'Listen now',
+    pol_pod_desc: 'The current political podcast.',
+    soc_pod_desc: 'The current social podcast.',
 
     // ==================== ARTICLES ====================
     article_by: 'By',

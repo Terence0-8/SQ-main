@@ -207,11 +207,11 @@
       <div id="sidebar-poll-result-area" style="display:none;">
         <div class="sidebar-poll-results">
           <div
-            style="text-transform:uppercase; font-size:0.7rem; color:#aaa; letter-spacing:1px; margin-bottom:0.8rem;">
+            style="text-transform:uppercase; font-size:0.7rem; color:#aaa; letter-spacing:1px; margin-bottom:0.8rem;" data-i18n="poll_live_results">
             Résultats en direct</div>
           <h4 class="sidebar-poll-title" id="poll-question-sidebar">...</h4>
           <div id="poll-results-sidebar"></div>
-          <div style="text-align:center; font-size:0.8rem; color:#aaa; margin-top:10px;">Merci de votre vote</div>
+          <div style="text-align:center; font-size:0.8rem; color:#aaa; margin-top:10px;" data-i18n="poll_already_voted">Merci de votre vote</div>
         </div>
       </div>
 
@@ -220,16 +220,16 @@
           <img src="https://placehold.co/400x300" class="pod-sb-img" alt="Podcast" id="pol-pod-img"
             onerror="handleImgError(this)" loading="lazy">
           <div
-            style="position:absolute; top:15px; left:15px; background:var(--accent-red); color:white; font-size:0.6rem; font-weight:800; padding:4px 8px; border-radius:4px;">
+            style="position:absolute; top:15px; left:15px; background:var(--accent-red); color:white; font-size:0.6rem; font-weight:800; padding:4px 8px; border-radius:4px;" data-i18n="badge_podcast">
             PODCAST</div>
         </div>
         <div class="pod-sb-content">
           <span class="pod-sb-tag" id="pol-pod-cat">POLITIQUE</span>
           <h3 class="pod-sb-title" id="pol-pod-title">Chargement...</h3>
-          <p style="font-size:0.9rem; color:#ccc; line-height:1.5; margin-bottom:15px;">Le podcast politique du moment.
+          <p style="font-size:0.9rem; color:#ccc; line-height:1.5; margin-bottom:15px;" data-i18n="pol_pod_desc">Le podcast politique du moment.
           </p>
           <a href="#" id="pol-pod-link" href="podcasts.html"
-            style="display:inline-block; background:white; color:black; text-decoration:none; padding:8px 20px; border-radius:30px; font-weight:700; cursor:pointer;">Écouter</a>
+            style="display:inline-block; background:white; color:black; text-decoration:none; padding:8px 20px; border-radius:30px; font-weight:700; cursor:pointer;" data-i18n="btn_listen">Écouter</a>
         </div>
       </div>
 
@@ -401,6 +401,7 @@
           }
         }
       }
+      if (typeof updateInterfaceText === 'function') updateInterfaceText(getLanguage());
     }
 
     async function submitGlobalVote(optionIndex) {
@@ -651,8 +652,9 @@
 
           if (img) img.src = pod.image_url || pod.cover_image || 'https://placehold.co/400x300';
           if (title) title.textContent = pod.title;
-          if (cat) cat.textContent = (pod.category || 'Podcast').toUpperCase();
+          if (cat) cat.textContent = (tCategory(pod.category || 'Politique')).toUpperCase();
           if (link) link.href = `podcast.html?id=${pod.id}`;
+          if (typeof updateInterfaceText === 'function') updateInterfaceText(getLanguage());
         } else {
           const link = document.getElementById('pol-pod-link');
           if (link) link.href = 'podcasts.html';
