@@ -22,7 +22,7 @@
     <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
     <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
   <title>Cookies — Solitiquo</title>
-  <link rel="stylesheet" href="css/shared.css?v=13" />
+  <link rel="stylesheet" href="css/shared.css?v=14" />
   <link rel="stylesheet" href="css/pages/cookies.css" />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
@@ -139,48 +139,56 @@
   </nav>
 
   <section class="legal-hero">
-    <h1>Gestion des Cookies</h1>
-    <p>Transparence sur les traceurs utilisés</p>
-  </section>
-
-  <main class="legal-container">
-    <div class="legal-card">
-
-      <nav class="legal-nav">
-        <a href="mentions-legales.html">Mentions Légales</a>
-        <a href="conditions-utilisation.html">CGU</a>
-        <a href="politique-confidentialite.html">Confidentialité</a>
-        <a href="cookies.html" class="active">Cookies</a>
-      </nav>
-
-      <div class="legal-section">
-        <h2>1. Qu'est-ce qu'un cookie ?</h2>
-        <p>Un cookie est un petit fichier texte déposé sur votre terminal (ordinateur, tablette, smartphone) lors de la
-          visite d'un site. Il permet de conserver des données utilisateur afin de faciliter la navigation et de
-          permettre certaines fonctionnalités.</p>
+      <div class="legal-hero-inner">
+        <div class="legal-badge-pill">🍪 Traceurs & Préférences</div>
+        <h1 data-i18n="legal_cookies_title">Gestion des Cookies</h1>
+        <p data-i18n="legal_cookies_subtitle">Transparence totale sur les cookies et outils de suivi utilisés sur Solitiquo.</p>
+        <div class="legal-meta-row">
+          <span>📅 Dernière mise à jour : 15 Février 2026</span>
+          <span>•</span>
+          <span>Contrôle total de vos choix</span>
+        </div>
       </div>
+    </section>
 
-      <div class="legal-section">
-        <h2>2. Les cookies que nous utilisons</h2>
-        <ul>
-          <li><strong>Cookies techniques (Essentiels) :</strong> Nécessaires au fonctionnement du site (connexion,
-            sécurité). Ils ne peuvent pas être désactivés.</li>
-          <li><strong>Cookies analytiques :</strong> Nous permettent de connaître l'audience du site et d'améliorer nos
-            contenus (statistiques anonymes).</li>
-          <li><strong>Cookies publicitaires :</strong> Permettent d'afficher des publicités pertinentes pour les
-            utilisateurs non-abonnés.</li>
-        </ul>
+    <main class="legal-container">
+      <div class="legal-card">
+
+        <div class="legal-nav-wrapper">
+          <nav class="legal-nav">
+            <a href="mentions-legales.html">🏛️ Mentions Légales</a>
+            <a href="conditions-utilisation.html">📜 CGU</a>
+            <a href="politique-confidentialite.html">🔒 Confidentialité</a>
+            <a href="cookies.html" class="active">🍪 Cookies</a>
+          </nav>
+        </div>
+
+        <div class="legal-section">
+          <h2><span class="sec-badge">01</span> Qu'est-ce qu'un cookie ?</h2>
+          <p>Un cookie est un petit fichier texte déposé sur votre terminal (ordinateur, tablette, smartphone) lors de la consultation d'un service en ligne. Il permet de conserver des données d'état afin d'optimiser votre navigation et d'activer certaines fonctionnalités clés.</p>
+        </div>
+
+        <div class="legal-section">
+          <h2><span class="sec-badge">02</span> Les cookies utilisés sur Solitiquo</h2>
+          <ul>
+            <li><strong>Cookies techniques (Essentiels) :</strong> Indispensables au fonctionnement de la plateforme (maintien de session abonnée, préférences de langue, sécurité). Ils ne peuvent pas être désactivés.</li>
+            <li><strong>Cookies de mesure d'audience (Analytiques) :</strong> Nous permettent de mesurer la fréquentation de nos articles et d'optimiser la performance technique de l'application.</li>
+            <li><strong>Cookies de personnalisation :</strong> Permettent de mémoriser vos préférences de lecture et de thèmes.</li>
+          </ul>
+        </div>
+
+        <div class="legal-section">
+          <h2><span class="sec-badge">03</span> Contrôle et Gestion de vos choix</h2>
+          <p>Vous pouvez à tout moment configurer votre navigateur pour bloquer ou supprimer les cookies. Notez cependant que le blocage des cookies essentiels peut altérer l'accès à votre espace utilisateur.</p>
+          <div class="legal-callout">
+            <div class="legal-callout-title">⚙️ Modifier vos préférences</div>
+            <p>Vous pouvez réinitialiser vos choix de consentements ou contacter notre équipe support pour toute précision.</p>
+            <a href="contact.html" class="legal-contact-btn">✉️ Support & Questions Cookies</a>
+          </div>
+        </div>
+
       </div>
-
-      <div class="legal-section">
-        <h2>3. Gestion de vos préférences</h2>
-        <p>Vous pouvez à tout moment configurer votre navigateur pour bloquer ou supprimer les cookies. Cependant, notez
-          que la désactivation des cookies techniques peut empêcher le bon fonctionnement de certaines parties du site,
-          comme la connexion à votre espace membre.</p>
-      </div>
-
-    </div>
-  </main>
+    </main>
 
   <footer class="premium-footer">
     <div class="footer-inner">
@@ -231,8 +239,8 @@
   </footer>
 
   <script src="js/i18n.js"></script>
-  <script src="/js/api.js?v=13"></script>
-  <script src="/js/solitiquo.js?v=13"></script>
+  <script src="/js/api.js?v=14"></script>
+  <script src="/js/solitiquo.js?v=14"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       SolitiquoAPI.initUserInterface();
