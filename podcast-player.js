@@ -37,7 +37,7 @@ class SolitiquoPodcastPlayer {
             
             <div class="glass-top-row">
                 <div class="glass-cover-box">
-                    <img src="${this.data.cover}" class="glass-img">
+                    <img src="${this.data.cover}" class="glass-img" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1589903308904-1010c2294adc?w=600';">
                     <div class="glass-overlay-btn" id="btn-cover-play">▶</div>
                 </div>
 

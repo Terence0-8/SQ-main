@@ -207,7 +207,11 @@ router.get('/:id', async (req, res) => {
       await pool.query('UPDATE podcasts SET play_count = play_count + 1 WHERE id = $1', [id]);
     }
 
-    res.json({ success: true, podcast: rows[0] });
+    const pod = rows[0];
+    pod.image_url = pod.cover_image || pod.image_url || 'https://images.unsplash.com/photo-1589903308904-1010c2294adc?w=600';
+    pod.duration = pod.duration_seconds || pod.duration || 0;
+
+    res.json({ success: true, podcast: pod });
   } catch (err) {
     console.error('❌ Erreur détail podcast:', err);
     res.status(500).json({ success: false, error: 'Erreur serveur' });

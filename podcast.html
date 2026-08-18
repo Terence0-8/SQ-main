@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -363,7 +363,7 @@
               duration: Math.floor(pod.duration / 60) + ':' + (pod.duration % 60).toString().padStart(2, '0'),
               date: SolitiquoAPI.formatDate(pod.created_at),
               category: pod.category,
-              cover: pod.image_url || 'https://via.placeholder.com/400',
+              cover: pod.cover_image || pod.image_url || 'https://images.unsplash.com/photo-1589903308904-1010c2294adc?w=600',
               transcriptId: 'transcript-data'
             }
           );
