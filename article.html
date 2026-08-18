@@ -577,7 +577,7 @@
 
           const badge = document.getElementById('art-category-badge');
           if (badge) {
-            badge.textContent = article.category;
+            badge.textContent = typeof tCategory === 'function' ? tCategory(article.category) : article.category;
             if (article.is_premium) { badge.innerHTML += ' <img src="GOLD.png" alt="Premium" style="height:1.2em;vertical-align:middle;margin-left:5px;" loading="lazy">'; badge.style.backgroundColor = '#222'; }
           }
           const authorEl = document.getElementById('art-author');

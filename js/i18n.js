@@ -954,7 +954,7 @@ async function loadArticles(lang = getLanguage()) {
             <a href="${linkUne}" style="position:absolute; inset:0; z-index:2;" aria-label="${uneTitle}"></a>
             <img src="${uneImg}" class="hero-bg-img" style="object-position: top center;" alt="${uneTitle}">
             <div class="hero-overlay">
-              <span class="hero-tag">${badgeLabel}${uneCat ? ' • ' + uneCat : ''}</span>
+              <span class="hero-tag">${badgeLabel}${uneCat ? ' • ' + tCategory(uneCat) : ''}</span>
               <h1 class="hero-title-main">${uneTitle}</h1>
               <p class="hero-excerpt">${uneExcerpt}</p>
             </div>
@@ -986,7 +986,7 @@ async function loadArticles(lang = getLanguage()) {
                   </a>
                 </div>
                 <div class="art-info">
-                  <span class="art-cat">${artCat}</span>
+                  <span class="art-cat">${tCategory(artCat)}</span>
                   <a href="${linkArt}" style="text-decoration:none;">
                     <h3 class="art-title">${artTitle}</h3>
                   </a>
