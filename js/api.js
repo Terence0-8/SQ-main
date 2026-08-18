@@ -121,6 +121,8 @@ const SolitiquoAPI = {
     const profileBtn = nav ? nav.querySelector('.ph-btn-auth:not(#nav-dash-btn)') : document.querySelector('.ph-btn-auth');
     if (profileBtn) {
       profileBtn.id = 'nav-profile-btn';
+      profileBtn.removeAttribute('data-i18n');
+      profileBtn.dataset.loggedIn = 'true';
       profileBtn.textContent = `👤 ${user.username}`;
       profileBtn.href = "profil.html";
       profileBtn.style.backgroundColor = "#f0f0f0";
@@ -131,6 +133,16 @@ const SolitiquoAPI = {
         window.location.href = "profil.html";
       };
     }
+
+    // Mise à jour de tous les liens vers auth.html pour les connecter au profil
+    document.querySelectorAll('a[href="auth.html"]').forEach(link => {
+      link.href = "profil.html";
+      link.removeAttribute('data-i18n');
+      link.dataset.loggedIn = 'true';
+      const textSpan = link.querySelector('[data-i18n]');
+      if (textSpan) textSpan.removeAttribute('data-i18n');
+      link.innerHTML = `👤 ${user.username}`;
+    });
 
     // 2. SI ADMIN : Ajouter le bouton Dashboard (une seule fois)
     if ((user.role === 'admin' || user.role === 'writer') && nav && !document.getElementById('nav-dash-btn')) {

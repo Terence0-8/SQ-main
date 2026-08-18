@@ -860,6 +860,13 @@ function updateInterfaceText(lang = getLanguage()) {
   // 1. Textes standards data-i18n
   document.querySelectorAll('[data-i18n]').forEach(element => {
     const key = element.getAttribute('data-i18n');
+    // Ne pas écraser le bouton de profil si l'utilisateur est connecté !
+    if (key === 'nav_login') {
+      const href = element.getAttribute('href') || '';
+      if (element.id === 'nav-profile-btn' || element.dataset.loggedIn === 'true' || href.includes('profil.html') || document.body.dataset.userLogged === 'true') {
+        return;
+      }
+    }
     if (key && translations[key] !== undefined) {
       if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
         element.placeholder = translations[key];
