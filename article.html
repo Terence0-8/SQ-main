@@ -292,7 +292,7 @@
       stroke-linecap="round" stroke-linejoin="round">
       <path d="M19 12H5M12 19l-7-7 7-7" />
     </svg>
-    <span>Retour</span>
+    <span data-i18n="btn_back">Retour</span>
   </a>
 
   <div id="loading-container" class="article-detail-container" style="padding-top:2rem;margin-top:2rem;">
@@ -315,9 +315,9 @@
         style="background:var(--primary-dark);color:white;padding:4px 12px;border-radius:4px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;"></span>
     </div>
     <h1 class="article-title" id="art-title"></h1>
-    <div class="author-line"><strong>Par</strong> <span id="art-author"></span></div>
+    <div class="author-line"><strong data-i18n="article_by">Par</strong> <span id="art-author"></span></div>
     <div class="meta-info-simple" style="margin-bottom:1.5rem;">
-      <span class="time-read">⏱️ <span id="art-readtime">...</span> min de lecture</span>
+      <span class="time-read">⏱️ <span id="art-readtime">...</span> <span data-i18n="article_reading_time">min de lecture</span></span>
       <span class="date-publish" id="art-date"></span>
     </div>
 
@@ -339,9 +339,9 @@
             <path d="M8 5V19L19 12L8 5Z" />
           </svg>
         </span>
-        <span id="tts-label">Écouter l'article</span>
+        <span id="tts-label" data-i18n="btn_listen_article">Écouter l'article</span>
         <span class="tts-info" id="tts-info"
-          style="font-size: .85rem; color: #555; font-weight: 500; margin-left:8px; opacity:0.8;">Lecture audio</span>
+          style="font-size: .85rem; color: #555; font-weight: 500; margin-left:8px; opacity:0.8;" data-i18n="audio_reading">Lecture audio</span>
       </button>
     </div>
 
@@ -349,7 +349,7 @@
 
     <!-- 📣 BARRE DE PARTAGE — chaque bouton réseau ouvre la modale native -->
     <div class="share-bar" id="share-bar">
-      <span class="share-label">Partager</span>
+      <span class="share-label" data-i18n="btn_share">Partager</span>
       <button class="share-btn share-wa" id="share-wa" type="button">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path
@@ -376,18 +376,18 @@
           <rect x="9" y="9" width="13" height="13" rx="2" />
           <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
         </svg>
-        <span id="copy-label">Copier le lien</span>
+        <span id="copy-label" data-i18n="copy_link">Copier le lien</span>
       </button>
     </div>
 
     <section class="comments-section">
-      <h3 style="font-family:'Playfair Display';font-size:2rem;margin-bottom:2rem;color:var(--primary-dark);">
+      <h3 style="font-family:'Playfair Display';font-size:2rem;margin-bottom:2rem;color:var(--primary-dark);" data-i18n="comment_title">
         Discussions</h3>
       <form id="commentForm" class="comment-box">
-        <textarea id="commentInput" rows="3" class="comment-input" placeholder="Participez au débat..."></textarea>
+        <textarea id="commentInput" rows="3" class="comment-input" placeholder="Participez au débat..." data-i18n-placeholder="comment_placeholder"></textarea>
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div id="commentMsg" style="font-size:.9rem;"></div>
-          <button type="submit" class="btn-comment">Publier</button>
+          <button type="submit" class="btn-comment" data-i18n="btn_publish">Publier</button>
         </div>
       </form>
       <div id="commentsList"></div>
@@ -621,8 +621,10 @@
               pwPriceStr = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: pwCurrency, minimumFractionDigits: 2 }).format(pwAmount);
             }
             const pwFeatures = [
-              'Lecture sans publicité', 'Enquêtes & Analyses exclusives',
-              'Accès libre aux commentaires', 'Newsletter quotidienne récapitulative'
+              t('paywall_feature_noad'),
+              t('paywall_feature_enquetes'),
+              t('paywall_feature_comments'),
+              t('paywall_feature_newsletter')
             ];
             contentDiv.innerHTML = `
               <div style="position:relative;font-size:1.15rem;line-height:1.8;color:#333;">
@@ -630,15 +632,15 @@
                 <div style="position:absolute;bottom:0;left:0;width:100%;height:100%;background:linear-gradient(to bottom,rgba(255,255,255,0),rgba(253,253,253,1) 90%);pointer-events:none;"></div>
               </div>
               <div style="background:#f8fbf1;border:1px solid #C5C5A9;padding:2.5rem;text-align:center;border-radius:12px;margin-top:2rem;">
-                <h3 style="font-family:'Playfair Display';font-size:1.8rem;color:#37463D;margin-bottom:0.75rem;">Article Réservé aux Abonnés Premium</h3>
-                <p style="color:#666;margin-bottom:1.5rem;">Abonnez-vous dès aujourd'hui pour débloquer l'intégralité de cet article et soutenir un journalisme indépendant.</p>
+                <h3 style="font-family:'Playfair Display';font-size:1.8rem;color:#37463D;margin-bottom:0.75rem;">${t('paywall_title')}</h3>
+                <p style="color:#666;margin-bottom:1.5rem;">${t('paywall_subtitle')}</p>
                 <div style="background:#fff;border:1px solid #e0e8dc;border-radius:8px;padding:1rem 1.5rem;margin-bottom:1.75rem;text-align:left;display:inline-block;min-width:220px;">
-                  <div style="font-size:.78rem;font-weight:700;color:#37463D;margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:.5px;">Votre abonnement inclut :</div>
+                  <div style="font-size:.78rem;font-weight:700;color:#37463D;margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:.5px;">${t('paywall_features_title')}</div>
                   <ul style="margin:0;padding-left:1.1rem;color:#444;font-size:.9rem;line-height:1.9;">${pwFeatures.map(f => `<li>${f}</li>`).join('')}</ul>
                 </div>
                 <br>
-                <a href="abonnement.html" style="display:inline-block;background:#C82823;color:white;padding:13px 32px;border-radius:30px;text-decoration:none;font-weight:700;font-size:1rem;transition:.3s;">S'abonner à partir de ${pwPriceStr}</a>
-                <div style="margin-top:1.5rem;font-size:.9rem;color:#666;">Déjà abonné ? <a href="auth.html" style="color:#37463D;font-weight:bold;">Se connecter</a></div>
+                <a href="abonnement.html" style="display:inline-block;background:#C82823;color:white;padding:13px 32px;border-radius:30px;text-decoration:none;font-weight:700;font-size:1rem;transition:.3s;">${t('paywall_cta_prefix')} ${pwPriceStr}</a>
+                <div style="margin-top:1.5rem;font-size:.9rem;color:#666;">${t('paywall_already')} <a href="auth.html" style="color:#37463D;font-weight:bold;">${t('paywall_login_link')}</a></div>
               </div>`;
           } else {
             contentDiv.innerHTML = DOMPurify.sanitize(article.content, { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src'] });

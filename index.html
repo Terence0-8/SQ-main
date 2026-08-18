@@ -152,7 +152,7 @@
       <button id="mobileNavClose" class="mobile-nav-close">×</button>
     </div>
     <ul class="mobile-nav-list">
-      <li><a href="index.html" class="mobile-nav-link active">Accueil</a></li>
+      <li><a href="index.html" class="mobile-nav-link active" data-i18n="nav_home">Accueil</a></li>
       <li><a href="politique.html" class="mobile-nav-link" data-i18n="nav_pol">Politique</a></li>
       <li><a href="social.html" class="mobile-nav-link" data-i18n="nav_soc">Social</a></li>
       <li><a href="partis-politiques.html" class="mobile-nav-link" data-i18n="nav_parties">Partis</a></li>
@@ -185,7 +185,7 @@
 
     <div class="pod-info">
       <div style="display:flex; align-items:center; margin-bottom:10px;">
-        <span class="pod-tag-small">PODCAST À LA UNE</span>
+        <span class="pod-tag-small" data-i18n="pod_featured">PODCAST À LA UNE</span>
         <div class="sound-wave">
           <div class="bar"></div>
           <div class="bar"></div>
@@ -193,7 +193,7 @@
           <div class="bar"></div>
         </div>
       </div>
-      <h3 id="index-pod-title">Chargement du podcast...</h3>
+      <h3 id="index-pod-title" data-i18n="msg_loading">Chargement du podcast...</h3>
       <p class="pod-desc" id="index-pod-desc">Le dernier épisode disponible sur Solitiquo.</p>
     </div>
 
@@ -201,7 +201,7 @@
       <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
         <path d="M8 5v14l11-7z" />
       </svg>
-      <span>Écouter</span>
+      <span data-i18n="btn_listen">Écouter</span>
     </a>
 
     <!-- APRÈS (sans onclick) -->
@@ -242,12 +242,12 @@
         style="border-color:var(--primary-dark); color:var(--primary-dark);">L'Observatoire
       </div>
       <div id="home-poll-card" class="poll-box">
-        <p style="text-align:center; color:#888;">Chargement...</p>
+        <p style="text-align:center; color:#888;" data-i18n="msg_loading">Chargement...</p>
       </div>
 
       <div class="section-label" style="border-color:var(--primary-dark); color:var(--primary-dark); margin-top:2rem;" data-i18n="section_party">Découvrir un parti</div>
       <div id="home-party-card">
-        <p style="text-align:center; color:#888;">Chargement...</p>
+        <p style="text-align:center; color:#888;" data-i18n="msg_loading">Chargement...</p>
       </div>
     </aside>
   </div>
@@ -255,7 +255,7 @@
   <section class="discover-section">
     <div class="discover-container">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:2rem;">
-        <div class="section-label" style="border-color:#ccc; color:#888; margin-bottom:0;">À Découvrir</div>
+        <div class="section-label" style="border-color:#ccc; color:#888; margin-bottom:0;" data-i18n="section_discover">À Découvrir</div>
         <div id="theme-filter-bar" class="theme-filter-bar"></div>
       </div>
       <div id="discover-grid" class="discover-grid"></div>
@@ -407,16 +407,16 @@
           </div>`;
         }).join('');
 
-        const totalLabel = `<div style="text-align:right; font-size:0.7rem; color:#aaa; margin-top:6px;">${total} vote${total !== 1 ? 's' : ''}</div>`;
+        const totalLabel = `<div style="text-align:right; font-size:0.7rem; color:#aaa; margin-top:6px;">${total} ${t('poll_votes')}</div>`;
 
         const voteBtn = !hasVoted
-          ? `<a href="politique.html?poll=${poll.id}" style="display:block; background:var(--primary-dark); color:white; text-align:center; padding:9px; border-radius:4px; text-decoration:none; font-weight:600; font-size:0.85rem; margin-top:12px;">Voter</a>`
-          : `<div style="text-align:center; font-size:0.7rem; color:#aaa; margin-top:10px;">Merci de votre vote</div>`;
+          ? `<a href="politique.html?poll=${poll.id}" style="display:block; background:var(--primary-dark); color:white; text-align:center; padding:9px; border-radius:4px; text-decoration:none; font-weight:600; font-size:0.85rem; margin-top:12px;">${t('btn_vote')}</a>`
+          : `<div style="text-align:center; font-size:0.7rem; color:#aaa; margin-top:10px;">${t('poll_already_voted')}</div>`;
 
         container.innerHTML = `<p class="poll-q">${poll.question}</p>${barsHtml}${totalLabel}${voteBtn}`;
       } catch (e) {
         console.error('Erreur chargement sondage:', e);
-        container.innerHTML = '<p style="text-align:center;color:#999;">Chargement...</p>';
+        container.innerHTML = `<p style="text-align:center;color:#999;">${t('msg_loading')}</p>`;
       }
     }
 
@@ -455,7 +455,7 @@
         container.innerHTML = `
           <a href="dossier.html?id=${party.id}" class="party-glass-inner">
             <div class="party-card-badge-row">
-              <span class="party-card-badge">PARTI DU JOUR</span>
+              <span class="party-card-badge">${t('dossier_party_of_day')}</span>
             </div>
 
             <div class="party-card-hero">
@@ -476,14 +476,14 @@
               ${yearOnly ? `
               <div class="party-meta-item">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C82823" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                <span>Fondé en <strong>${yearOnly}</strong></span>
+                <span>${t('party_founded')} <strong>${yearOnly}</strong></span>
               </div>` : ''}
 
               ${party.leader_name ? `
               <div class="party-meta-item" style="justify-content: space-between; width: 100%;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C82823" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                  <span>Dirigeant : <strong>${party.leader_name}</strong></span>
+                  <span>${t('party_leader_label')} <strong>${party.leader_name}</strong></span>
                 </div>
                 ${party.leader_photo_url ? `
                 <img src="${party.leader_photo_url}" 
@@ -501,7 +501,7 @@
             </div>` : ''}
 
             <div class="party-glass-cta">
-              <span>Consulter le dossier du parti</span>
+              <span>${t('dossier_view_profile')}</span>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </div>
           </a>`;
@@ -512,6 +512,11 @@
         if (container) container.style.display = 'none';
       }
     }
+
+    document.addEventListener('languageChanged', () => {
+      loadHomePoll();
+      loadHomeParty();
+    });
 
 
 

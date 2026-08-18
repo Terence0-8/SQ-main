@@ -49,7 +49,7 @@
       stroke-linecap="round" stroke-linejoin="round">
       <path d="M19 12H5M12 19l-7-7 7-7" />
     </svg>
-    <span>Retour</span>
+    <span data-i18n="btn_back">Retour</span>
   </a>
   <header class="premium-header">
     <div class="ph-left">
@@ -149,8 +149,8 @@
 
   <main class="profile-wrapper">
     <div class="profile-header">
-      <h1 class="profile-title">Mon Espace</h1>
-      <div class="profile-sub">Gérez vos informations et votre abonnement</div>
+      <h1 class="profile-title" data-i18n="profile_title">Mon Espace</h1>
+      <div class="profile-sub" data-i18n="profile_sub">Gérez vos informations et votre abonnement</div>
     </div>
 
     <div class="profile-grid">
@@ -158,14 +158,14 @@
         <div class="avatar-circle" id="user-initial">?</div>
         <div class="user-name" id="user-name">Chargement...</div>
         <div class="user-email" id="user-email">...</div>
-        <button id="btn-logout" class="btn-logout">Se déconnecter</button>
+        <button id="btn-logout" class="btn-logout" data-i18n="auth_logout">Se déconnecter</button>
       </aside>
 
       <section class="sub-card">
-        <span class="section-label">VOTRE ABONNEMENT</span>
+        <span class="section-label" data-i18n="profile_sub_label">VOTRE ABONNEMENT</span>
 
         <div id="subscription-status-box" class="status-box">
-          <span class="status-label">Statut actuel</span>
+          <span class="status-label" data-i18n="profile_status_label">Statut actuel</span>
           <span class="status-text" id="status-text">...</span>
         </div>
 
@@ -178,12 +178,12 @@
   <div id="cancelModal" class="modal-overlay">
     <div class="modal-box">
       <span class="modal-icon">👋</span>
-      <h3 class="modal-title">Nous sommes tristes de vous voir partir</h3>
-      <p class="modal-text">En résiliant maintenant, vous perdrez immédiatement l'accès aux articles d'analyse et aux
+      <h3 class="modal-title" data-i18n="profile_cancel_modal_title">Nous sommes tristes de vous voir partir</h3>
+      <p class="modal-text" data-i18n="profile_cancel_modal_text">En résiliant maintenant, vous perdrez immédiatement l'accès aux articles d'analyse et aux
         enquêtes exclusives de Solitiquo.</p>
       <div class="modal-actions">
-        <button class="btn-modal-keep" id="btn-keep-sub">Je garde mon abonnement</button>
-        <button class="btn-modal-confirm" id="btn-confirm-cancel">Je confirme la résiliation</button>
+        <button class="btn-modal-keep" id="btn-keep-sub" data-i18n="btn_keep_sub">Je garde mon abonnement</button>
+        <button class="btn-modal-confirm" id="btn-confirm-cancel" data-i18n="btn_confirm_cancel">Je confirme la résiliation</button>
       </div>
     </div>
   </div>

@@ -570,9 +570,11 @@
           const discoverSection = document.querySelector('.discover-section');
 
           function renderDiscoverGrid(articlesList, activeCat) {
-            const list = activeCat === 'all'
+            const filtered = activeCat === 'all'
               ? articlesList
               : articlesList.filter(a => (a.category || '').toLowerCase() === activeCat.toLowerCase());
+
+            const list = filtered.slice(0, 20);
 
             if (!discoverGrid) return;
             if (list.length > 0) {
@@ -608,6 +610,9 @@
             }
           }
 
+          const usedTopIds = new Set(articles.slice(0, 8).map(a => a.id));
+          const discoverArticles = pageArticles.filter(a => !usedTopIds.has(a.id));
+
           if (filterContainer && categories.length > 0) {
             let html = '<button class="theme-pill active" data-cat="all">Tous</button>';
             categories.forEach(cat => {
@@ -619,12 +624,12 @@
               btn.addEventListener('click', () => {
                 filterContainer.querySelectorAll('.theme-pill').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                renderDiscoverGrid(pageArticles, btn.dataset.cat);
+                renderDiscoverGrid(discoverArticles, btn.dataset.cat);
               });
             });
           }
 
-          renderDiscoverGrid(pageArticles, 'all');
+          renderDiscoverGrid(discoverArticles, 'all');
         } else {
           document.getElementById('magazine-feed').innerHTML = '<p style="text-align:center; color:#888; padding:2rem;">Aucun article disponible pour le moment.</p>';
         }

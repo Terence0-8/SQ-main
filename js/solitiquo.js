@@ -289,7 +289,7 @@ function renderGlobalFooter() {
   const footer = document.querySelector('footer.premium-footer');
   if (!footer) return;
 
-  const currentLang = localStorage.getItem('siteLanguage') || 'fr';
+  const currentLang = typeof getLanguage === 'function' ? getLanguage() : (localStorage.getItem('siteLanguage') || localStorage.getItem('lang') || 'fr');
   const isEn = currentLang === 'en';
 
   footer.innerHTML = `
@@ -315,7 +315,7 @@ function renderGlobalFooter() {
           <a href="social.html" class="footer-link" data-i18n="nav_soc">${isEn ? 'Social & Society' : 'Social & Société'}</a>
           <a href="partis-politiques.html" class="footer-link" data-i18n="nav_parties">${isEn ? 'Political Parties' : 'Partis Politiques'}</a>
           <a href="podcasts.html" class="footer-link" data-i18n="nav_podcasts">${isEn ? 'Podcasts' : 'Podcasts'}</a>
-          <a href="emissions.html" class="footer-link" data-i18n="nav_emissions">${isEn ? 'Shows' : 'Émissions'}</a>
+          <a href="emissions.html" class="footer-link" data-i18n="nav_shows">${isEn ? 'Shows' : 'Émissions'}</a>
           <a href="recherche.html" class="footer-link" data-i18n="nav_search">${isEn ? 'Search' : 'Recherche'}</a>
         </div>
 

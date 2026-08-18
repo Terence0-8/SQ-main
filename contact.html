@@ -147,8 +147,8 @@
   </nav>
 
   <div class="contact-hero">
-    <h1 class="contact-title">Contactez la rédaction</h1>
-    <p class="contact-sub">Une question, une suggestion ou une information à partager ? Notre équipe est à votre écoute.
+    <h1 class="contact-title" data-i18n="contact_title">Contactez la rédaction</h1>
+    <p class="contact-sub" data-i18n="contact_sub">Une question, une suggestion ou une information à partager ? Notre équipe est à votre écoute.
     </p>
   </div>
 
@@ -156,45 +156,45 @@
 
     <div class="info-box">
       <div class="info-item">
-        <span class="info-label">Email Rédaction</span>
+        <span class="info-label" data-i18n="contact_email_label">Email Rédaction</span>
         <div class="info-val"><a href="mailto:contact@solitiquo.com">contact@solitiquo.com</a></div>
       </div>
       <div class="info-item">
-        <span class="info-label">Partenariats & Publicité</span>
+        <span class="info-label" data-i18n="contact_partnerships_label">Partenariats & Publicité</span>
         <div class="info-val"><a href="mailto:contact@solitiquo.com">contact@solitiquo.com</a></div>
       </div>
       <div class="info-item">
-        <span class="info-label">Siège Social</span>
+        <span class="info-label" data-i18n="contact_headquarters_label">Siège Social</span>
         <div class="info-val">43 RUE de Saint Andre d'Ornay<br>85000 La Roche-sur-Yon, France</div>
       </div>
-      <div style="margin-top:4rem; opacity:0.8; font-size:0.9rem; line-height:1.6;">
+      <div style="margin-top:4rem; opacity:0.8; font-size:0.9rem; line-height:1.6;" data-i18n="contact_follow_text">
         Suivez-nous sur les réseaux pour ne rien manquer de l'actualité et des exclusivités.
       </div>
     </div>
 
     <form id="contactForm" class="form-box">
       <div class="form-group">
-        <label>Nom complet</label>
-        <input type="text" id="name" class="form-input" required placeholder="Votre nom">
+        <label data-i18n="contact_fullname">Nom complet</label>
+        <input type="text" id="name" class="form-input" required placeholder="Votre nom" data-i18n-placeholder="contact_fullname_placeholder">
       </div>
       <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="email" class="form-input" required placeholder="votre@email.com">
+        <label data-i18n="auth_email">Email</label>
+        <input type="email" id="email" class="form-input" required placeholder="votre@email.com" data-i18n-placeholder="auth_email_placeholder">
       </div>
       <div class="form-group">
-        <label>Sujet</label>
+        <label data-i18n="contact_subject">Sujet</label>
         <select id="subject" class="form-input">
-          <option>Courrier des lecteurs</option>
-          <option>Proposition d'article</option>
-          <option>Signalement technique</option>
-          <option>Publicité / Partenariat</option>
+          <option data-i18n="subject_readers_mail">Courrier des lecteurs</option>
+          <option data-i18n="subject_article_proposal">Proposition d'article</option>
+          <option data-i18n="subject_technical_report">Signalement technique</option>
+          <option data-i18n="subject_advertising">Publicité / Partenariat</option>
         </select>
       </div>
       <div class="form-group">
-        <label>Message</label>
-        <textarea id="message" class="form-input" required placeholder="Votre message..."></textarea>
+        <label data-i18n="contact_message">Message</label>
+        <textarea id="message" class="form-input" required placeholder="Votre message..." data-i18n-placeholder="contact_message_placeholder"></textarea>
       </div>
-      <button type="submit" class="btn-send">Envoyer le message</button>
+      <button type="submit" class="btn-send" data-i18n="btn_send_message">Envoyer le message</button>
       <div id="msg-status" style="text-align:center; margin-top:15px; display:none; font-weight:600;"></div>
     </form>
 

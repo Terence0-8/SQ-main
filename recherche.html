@@ -155,32 +155,32 @@
         <div class="search-wrap search-page-container">
 
             <div class="results-header">
-                <h1 class="results-title" id="page-title">Explorer le contenu</h1>
+                <h1 class="results-title" id="page-title" data-i18n="search_explore">Explorer le contenu</h1>
                 <p class="results-count" id="results-count">...</p>
 
                 <div style="margin-top:20px; display:flex; justify-content:center; gap:10px;">
-                    <input type="text" id="internalSearch" placeholder="Nouvelle recherche..."
+                    <input type="text" id="internalSearch" placeholder="Nouvelle recherche..." data-i18n-placeholder="search_new"
                         style="padding:10px 15px; border:1px solid #ddd; border-radius:30px; width:300px; outline:none;">
                     <button
                         onclick="window.location.href='recherche.html?q='+document.getElementById('internalSearch').value"
-                        style="background:var(--primary-dark); color:white; border:none; padding:10px 20px; border-radius:30px; cursor:pointer;">Chercher</button>
+                        style="background:var(--primary-dark); color:white; border:none; padding:10px 20px; border-radius:30px; cursor:pointer;" data-i18n="search_submit">Chercher</button>
                 </div>
             </div>
 
             <div class="filter-zone">
                 <div class="filter-row">
-                    <span class="filter-label">Format :</span>
-                    <button class="filter-btn format-btn active" data-group="type" data-val="all">Tous</button>
-                    <button class="filter-btn format-btn" data-group="type" data-val="article">Articles</button>
-                    <button class="filter-btn format-btn" data-group="type" data-val="podcast">Podcasts</button>
-                    <button class="filter-btn format-btn" data-group="type" data-val="emission">Émissions</button>
+                    <span class="filter-label" data-i18n="search_format">Format :</span>
+                    <button class="filter-btn format-btn active" data-group="type" data-val="all" data-i18n="search_all">Tous</button>
+                    <button class="filter-btn format-btn" data-group="type" data-val="article" data-i18n="search_articles">Articles</button>
+                    <button class="filter-btn format-btn" data-group="type" data-val="podcast" data-i18n="search_podcasts">Podcasts</button>
+                    <button class="filter-btn format-btn" data-group="type" data-val="emission" data-i18n="search_emissions">Émissions</button>
                 </div>
 
                 <div class="filter-row">
-                    <span class="filter-label">Thème :</span>
-                    <button class="filter-btn theme-btn active" data-group="cat" data-val="all">Tous</button>
-                    <button class="filter-btn theme-btn" data-group="cat" data-val="Politique">Politique</button>
-                    <button class="filter-btn theme-btn" data-group="cat" data-val="Social">Social</button>
+                    <span class="filter-label" data-i18n="search_theme">Thème :</span>
+                    <button class="filter-btn theme-btn active" data-group="cat" data-val="all" data-i18n="search_all">Tous</button>
+                    <button class="filter-btn theme-btn" data-group="cat" data-val="Politique" data-i18n="nav_pol">Politique</button>
+                    <button class="filter-btn theme-btn" data-group="cat" data-val="Social" data-i18n="nav_soc">Social</button>
                     <button class="filter-btn theme-btn" data-group="cat" data-val="Économie">Économie</button>
                     <button class="filter-btn theme-btn" data-group="cat" data-val="Culture">Culture</button>
                     <button class="filter-btn theme-btn" data-group="cat" data-val="International">International</button>
@@ -260,14 +260,14 @@
 
             // --- CAS 1 : RECHERCHE SPÉCIFIQUE ---
             if (query) {
-                titleEl.textContent = `Résultats de recherche : "${query}"`;
+                titleEl.textContent = `${t('search_results')} : "${query}"`;
                 document.getElementById('internalSearch').value = query;
                 document.getElementById('btn-show-all').style.display = 'inline-block';
                 await performSearch(query);
             }
             // --- CAS 2 : PAS DE RECHERCHE (Tout afficher) ---
             else {
-                titleEl.textContent = "Tout le catalogue";
+                titleEl.textContent = t('search_explore');
                 await loadEverything();
             }
 
@@ -282,13 +282,23 @@
                     applyFilters();
                 });
             });
+
+            document.addEventListener('languageChanged', () => {
+                const params = new URLSearchParams(window.location.search);
+                const query = params.get('q');
+                if (query) {
+                    performSearch(query);
+                } else {
+                    loadEverything();
+                }
+            });
         });
 
         // 1. CHERCHER VIA L'API (Recherche Textuelle)
         async function performSearch(query) {
             const list = document.getElementById('results-list');
             const count = document.getElementById('results-count');
-            list.innerHTML = '<p style="text-align:center;color:#999;">Recherche en cours...</p>';
+            list.innerHTML = `<p style="text-align:center;color:#999;">${t('search_in_progress')}</p>`;
 
             try {
                 const lang = getLanguage ? getLanguage() : 'fr';
@@ -314,18 +324,19 @@
 
             } catch (e) {
                 console.error('❌ Erreur recherche:', e);
-                list.innerHTML = `<p style="text-align:center;color:red;">Erreur lors de la recherche : ${e.message}</p>`;
-                count.textContent = '0 résultats trouvés';
+                list.innerHTML = `<p style="text-align:center;color:red;">${t('msg_error')} : ${e.message}</p>`;
+                count.textContent = `0 ${t('search_results')}`;
             }
         }
 
         // 2. CHARGER TOUT LE CONTENU (Option "Tout voir")
         async function loadEverything() {
             const titleEl = document.getElementById('page-title');
-            titleEl.textContent = "Tout le contenu";
+            titleEl.textContent = t('search_explore');
             const list = document.getElementById('results-list');
-            list.innerHTML = '<p style="text-align:center;color:#999;">Chargement du catalogue...</p>';
-            document.getElementById('btn-show-all').style.display = 'none';
+            list.innerHTML = `<p style="text-align:center;color:#999;">${t('msg_loading')}</p>`;
+            const btnShowAll = document.getElementById('btn-show-all');
+            if (btnShowAll) btnShowAll.style.display = 'none';
 
             try {
                 // On appelle les 3 endpoints
@@ -348,7 +359,7 @@
 
                 applyFilters();
 
-            } catch (e) { console.error(e); list.innerHTML = "Erreur de chargement global."; }
+            } catch (e) { console.error(e); list.innerHTML = t('msg_error'); }
         }
 
         // 3. APPLIQUER LES FILTRES (Type + Thème)
@@ -367,7 +378,6 @@
             if (catFilter !== 'all') {
                 filtered = filtered.filter(item => {
                     if (!item.category) return false;
-                    // Mapping simple pour supporter EN/FR
                     const map = {
                         'Politique': ['Politique', 'Politics'],
                         'Social': ['Social'],
@@ -386,19 +396,19 @@
             const list = document.getElementById('results-list');
             const count = document.getElementById('results-count');
 
-            count.textContent = `${data.length} résultats trouvés`;
+            count.textContent = `${data.length} ${t('search_results')}`;
 
             if (data.length === 0) {
-                list.innerHTML = '<div style="text-align:center; padding:4rem; color:#999;">Aucun contenu ne correspond aux filtres.</div>';
+                list.innerHTML = `<div style="text-align:center; padding:4rem; color:#999;">${t('search_no_results')}</div>`;
                 return;
             }
 
             list.innerHTML = DOMPurify.sanitize(data.map(item => {
                 let link = '#', badgeClass = '', badgeText = '';
 
-                if (item.type === 'article') { link = `article.html?id=${item.id}`; badgeClass = 'type-article'; badgeText = 'ARTICLE'; }
-                else if (item.type === 'podcast') { link = `podcast.html?id=${item.id}`; badgeClass = 'type-podcast'; badgeText = 'PODCAST'; }
-                else if (item.type === 'emission') { link = `emissions.html`; badgeClass = 'type-emission'; badgeText = 'TV'; }
+                if (item.type === 'article') { link = `article.html?id=${item.id}`; badgeClass = 'type-article'; badgeText = t('type_article').toUpperCase(); }
+                else if (item.type === 'podcast') { link = `podcast.html?id=${item.id}`; badgeClass = 'type-podcast'; badgeText = t('type_podcast').toUpperCase(); }
+                else if (item.type === 'emission') { link = `emissions.html`; badgeClass = 'type-emission'; badgeText = t('type_emission').toUpperCase(); }
 
                 const img = item.image_url || 'https://via.placeholder.com/300x200';
                 const cat = item.category ? `<span class="res-cat-badge"> • ${item.category}</span>` : '';
