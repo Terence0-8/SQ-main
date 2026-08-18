@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -22,8 +22,8 @@
     <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
     <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
   <title>Contact — Solitiquo</title>
-  <link rel="stylesheet" href="css/shared.css?v=22" />
-  <link rel="stylesheet" href="css/pages/contact.css?v=22" />
+  <link rel="stylesheet" href="css/shared.css?v=23" />
+  <link rel="stylesheet" href="css/pages/contact.css?v=23" />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
     rel="stylesheet" />
@@ -250,7 +250,7 @@
 
   <script src="js/i18n.js"></script>
   <script src="js/config.js"></script>
-  <script src="/js/api.js?v=22"></script>
+  <script src="/js/api.js?v=23"></script>
   <script>
     // --- 1. MENU MOBILE & RECHERCHE ---
     const burger = document.getElementById('burgerBtn');
@@ -267,22 +267,7 @@
     if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
 
     // --- LOGIQUE RECHERCHE UNIFIÉE ---
-        document.addEventListener('DOMContentLoaded', () => {
-      const searchBtn = document.getElementById('searchBtn');
-      const searchLabel = document.getElementById('searchLabel');
-      const searchContainer = document.getElementById('searchContainer');
-      const searchInput = document.getElementById('searchInput');
-
-      if (!searchBtn || !searchContainer || !searchInput) return;
-}
-
-      document.addEventListener('click', (e) => {
-        if (!searchContainer.contains(e.target) && !searchBtn.contains(e.target) && (!searchLabel || !searchLabel.contains(e.target))) {
-          searchContainer.classList.remove('active');
-        }
-      });
-    });
-
+    
     // INIT AUTH HEADER & LANGUAGE
     document.addEventListener('DOMContentLoaded', async () => {
       SolitiquoAPI.initUserInterface();
@@ -331,7 +316,7 @@
       navigator.serviceWorker.register('/sw.js');
     }
   </script>
-  <script src="/js/solitiquo.js?v=22"></script>
+  <script src="/js/solitiquo.js?v=23"></script>
 </body>
 
 </html>
