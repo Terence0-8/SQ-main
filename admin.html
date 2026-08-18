@@ -761,22 +761,28 @@
                     const isFeatPol = (p.is_featured_politique === true || p.is_featured_politique === 1 || p.is_featured_politique === 'true');
                     const isFeatSoc = (p.is_featured_social === true || p.is_featured_social === 1 || p.is_featured_social === 'true');
 
+                    let titleBadges = [];
+                    if (isFeatGlobal) titleBadges.push('<span class="badge" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a; font-weight:800; font-size:0.68rem; padding:2px 6px; border-radius:4px; margin-left:6px;">⭐ INDEX</span>');
+                    if (isFeatPol) titleBadges.push('<span class="badge" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; font-weight:800; font-size:0.68rem; padding:2px 6px; border-radius:4px; margin-left:6px;">🏛️ POLITIQUE</span>');
+                    if (isFeatSoc) titleBadges.push('<span class="badge" style="background:#fce7f3; color:#be185d; border:1px solid #fbcfe8; font-weight:800; font-size:0.68rem; padding:2px 6px; border-radius:4px; margin-left:6px;">👥 SOCIAL</span>');
+
                     let featBadges = [];
-                    if (isFeatGlobal) featBadges.push('<span class="badge" style="background:#fef3c7; color:#d97706; border:1px solid #fde68a; font-weight:700; padding:3px 8px; border-radius:12px; font-size:0.75rem;">⭐ À la Une (Index)</span>');
-                    if (isFeatPol) featBadges.push('<span class="badge" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; font-weight:700; padding:3px 8px; border-radius:12px; font-size:0.75rem;">🏛️ Vedette Politique</span>');
-                    if (isFeatSoc) featBadges.push('<span class="badge" style="background:#fce7f3; color:#be185d; border:1px solid #fbcfe8; font-weight:700; padding:3px 8px; border-radius:12px; font-size:0.75rem;">👥 Vedette Social</span>');
+                    if (isFeatGlobal) featBadges.push('<span class="badge" style="background:#fef3c7; color:#d97706; border:1px solid #fde68a; font-weight:700; padding:4px 10px; border-radius:12px; font-size:0.75rem;">⭐ À la Une (Index)</span>');
+                    if (isFeatPol) featBadges.push('<span class="badge" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; font-weight:700; padding:4px 10px; border-radius:12px; font-size:0.75rem;">🏛️ Vedette Politique</span>');
+                    if (isFeatSoc) featBadges.push('<span class="badge" style="background:#fce7f3; color:#be185d; border:1px solid #fbcfe8; font-weight:700; padding:4px 10px; border-radius:12px; font-size:0.75rem;">👥 Vedette Social</span>');
 
                     const featDisplay = featBadges.length > 0 
-                        ? `<div style="display:flex; flex-wrap:wrap; gap:4px;">${featBadges.join('')}</div>` 
+                        ? `<div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">${featBadges.join('')}</div>` 
                         : '<span style="color:#94a3b8; font-size:0.85rem;">Standard</span>';
 
                     return `
-                    <tr style="${(isFeatGlobal || isFeatPol || isFeatSoc) ? 'background:rgba(254, 243, 199, 0.12);' : ''}">
+                    <tr style="${(isFeatGlobal || isFeatPol || isFeatSoc) ? 'background:rgba(254, 243, 199, 0.15);' : ''}">
                         <td>
                             <div class="title-row">
                                 <img src="${p.image_url || 'https://placehold.co/50'}" class="mini-thumb" loading="lazy">
-                                <div>
+                                <div style="display:flex; flex-wrap:wrap; align-items:center; gap:4px;">
                                     <strong style="font-size:0.95rem;">${p.title}</strong>
+                                    ${titleBadges.join('')}
                                 </div>
                             </div>
                         </td>
@@ -785,14 +791,14 @@
                         <td style="font-size:0.85rem; color:#64748b;">${new Date(p.created_at).toLocaleDateString('fr-FR')}</td>
                         <td style="text-align:right;">
                             <div style="display:inline-flex; gap:4px; flex-wrap:wrap; justify-content:flex-end;">
-                                <button class="btn-sm" data-action="toggle-featured-podcast" data-target="global" data-id="${p.id}" style="${isFeatGlobal ? 'background:#fef3c7; color:#b45309; border:1px solid #fde68a; font-weight:700;' : 'background:#f8fafc; color:#64748b; border:1px solid #cbd5e1;'} cursor:pointer; padding:5px 10px; border-radius:6px; font-size:0.78rem;" title="Mettre à la une sur l'accueil (Index & Podcasts)">
-                                    ${isFeatGlobal ? '⭐ À la Une' : '☆ À la Une'}
+                                <button class="btn-sm" data-action="toggle-featured-podcast" data-target="global" data-id="${p.id}" style="${isFeatGlobal ? 'background:#d97706; color:white; border:none; font-weight:700; box-shadow:0 2px 6px rgba(217,119,6,0.3);' : 'background:#f8fafc; color:#64748b; border:1px solid #cbd5e1;'} cursor:pointer; padding:6px 10px; border-radius:6px; font-size:0.78rem; transition:all 0.2s;" title="Mettre à la une sur l'accueil (Index & Podcasts)">
+                                    ${isFeatGlobal ? '⭐ À la Une (Index) ✓' : '☆ À la Une'}
                                 </button>
-                                <button class="btn-sm" data-action="toggle-featured-podcast" data-target="politique" data-id="${p.id}" style="${isFeatPol ? 'background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; font-weight:700;' : 'background:#f8fafc; color:#64748b; border:1px solid #cbd5e1;'} cursor:pointer; padding:5px 10px; border-radius:6px; font-size:0.78rem;" title="Mettre en avant sur la page Politique">
-                                    ${isFeatPol ? '🏛️ Politique' : '🏛️ Politique'}
+                                <button class="btn-sm" data-action="toggle-featured-podcast" data-target="politique" data-id="${p.id}" style="${isFeatPol ? 'background:#0284c7; color:white; border:none; font-weight:700; box-shadow:0 2px 6px rgba(2,132,199,0.3);' : 'background:#f8fafc; color:#64748b; border:1px solid #cbd5e1;'} cursor:pointer; padding:6px 10px; border-radius:6px; font-size:0.78rem; transition:all 0.2s;" title="Mettre en avant sur la page Politique">
+                                    ${isFeatPol ? '🏛️ Politique (Actif) ✓' : '🏛️ En avant Politique'}
                                 </button>
-                                <button class="btn-sm" data-action="toggle-featured-podcast" data-target="social" data-id="${p.id}" style="${isFeatSoc ? 'background:#fce7f3; color:#be185d; border:1px solid #fbcfe8; font-weight:700;' : 'background:#f8fafc; color:#64748b; border:1px solid #cbd5e1;'} cursor:pointer; padding:5px 10px; border-radius:6px; font-size:0.78rem;" title="Mettre en avant sur la page Social">
-                                    ${isFeatSoc ? '👥 Social' : '👥 Social'}
+                                <button class="btn-sm" data-action="toggle-featured-podcast" data-target="social" data-id="${p.id}" style="${isFeatSoc ? 'background:#db2777; color:white; border:none; font-weight:700; box-shadow:0 2px 6px rgba(219,39,119,0.3);' : 'background:#f8fafc; color:#64748b; border:1px solid #cbd5e1;'} cursor:pointer; padding:6px 10px; border-radius:6px; font-size:0.78rem; transition:all 0.2s;" title="Mettre en avant sur la page Social">
+                                    ${isFeatSoc ? '👥 Social (Actif) ✓' : '👥 En avant Social'}
                                 </button>
                                 <a href="editeur-podcast.html?id=${p.id}" class="btn-icon-sm edit" title="Éditer"><i data-lucide="pencil"></i></a>
                                 <button class="btn-icon-sm del" data-action="delete" data-type="podcast" data-id="${p.id}" title="Supprimer"><i data-lucide="trash-2"></i></button>

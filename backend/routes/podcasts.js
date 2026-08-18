@@ -11,6 +11,12 @@ const { sanitizeText, sanitizeHTML } = require('../middleware/sanitize');
 
 const { mixedUpload } = require('../middleware/upload');
 
+// 🔄 Auto-migration colonnes mises en avant spécifiques
+pool.query(`
+  ALTER TABLE podcasts ADD COLUMN IF NOT EXISTS is_featured_politique BOOLEAN DEFAULT FALSE;
+  ALTER TABLE podcasts ADD COLUMN IF NOT EXISTS is_featured_social BOOLEAN DEFAULT FALSE;
+`).catch(err => console.warn('⚠️ Colonnes featured podcasts warning:', err.message));
+
 // ==========================================
 // VALIDATION SCHEMA
 // ==========================================
@@ -21,13 +27,9 @@ const podcastSchema = Joi.object({
       'string.max': 'Le titre ne doit pas dépasser 255 caractères',
       'any.required': 'Le titre est requis'
     }),
-
   description: Joi.string().allow('').optional(),
-
   category: Joi.string().max(100).allow('').optional(),
-
   author_id: Joi.number().integer().optional(),
-
   cover_image: Joi.string().uri().allow('').optional()
 });
 
@@ -51,6 +53,8 @@ router.get('/', async (req, res) => {
         p.status,
         p.is_premium,
         p.is_featured,
+        COALESCE(p.is_featured_politique, FALSE) as is_featured_politique,
+        COALESCE(p.is_featured_social, FALSE) as is_featured_social,
         p.play_count,
         p.created_at,
         u.username as author_name
@@ -95,6 +99,8 @@ router.get('/featured', async (req, res) => {
         p.category,
         p.is_premium,
         p.is_featured,
+        COALESCE(p.is_featured_politique, FALSE) as is_featured_politique,
+        COALESCE(p.is_featured_social, FALSE) as is_featured_social,
         p.play_count,
         p.created_at,
         u.username as author_name
