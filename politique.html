@@ -380,8 +380,8 @@
               const weight = (c === max && total > 0) ? '700' : '400';
               return '<div style="margin-bottom:12px;"><div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:' + weight + '; margin-bottom:4px; color:#334155;"><span>' + opt.text + '</span><span>' + pct + '%</span></div><div style="height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;"><div style="width:' + pct + '%; background:' + barColor + '; height:100%; border-radius:3px; transition:width 0.5s;"></div></div></div>';
             }).join('');
-            const totalText = '<div style="text-align:right; font-size:0.75rem; color:#94a3b8; margin-top:6px;">' + total + ' vote' + (total !== 1 ? 's' : '') + '</div>';
-            const editBtn = '<div style="text-align:center; margin-top:15px;"><button class="btn-modify-vote js-poll-edit" style="background:none; border:none; color:#1E2D27; font-weight:600; font-size:0.8rem; cursor:pointer; text-decoration:underline;">Modifier mon vote</button></div>';
+            const totalText = '<div style="text-align:right; font-size:0.75rem; color:#94a3b8; margin-top:6px;">' + total + ' ' + (total > 1 ? t('poll_votes', 'votes') : t('poll_vote_singular', 'vote')) + '</div>';
+            const editBtn = '<div style="text-align:center; margin-top:15px;"><button class="btn-modify-vote js-poll-edit" style="background:none; border:none; color:#1E2D27; font-weight:600; font-size:0.8rem; cursor:pointer; text-decoration:underline;">' + t('poll_edit_vote', 'Modifier mon vote') + '</button></div>';
             optElem.innerHTML = bars + totalText + editBtn;
           }
         }
@@ -396,7 +396,7 @@
           const optElem = document.getElementById('poll-options-main');
           if (optElem) {
             const btns = options.map((opt, index) => '<button class="poll-option-btn js-poll-vote" data-index="' + index + '">' + opt.text + '</button>').join('');
-            const cancelBtn = hasVoted ? '<div style="text-align:center; margin-top:10px;"><a href="#" class="js-poll-cancel" style="color:#94a3b8; font-size:0.8rem; text-decoration:none;">Annuler la modification</a></div>' : '';
+            const cancelBtn = hasVoted ? '<div style="text-align:center; margin-top:10px;"><a href="#" class="js-poll-cancel" style="color:#94a3b8; font-size:0.8rem; text-decoration:none;">' + t('poll_cancel_edit', 'Annuler la modification') + '</a></div>' : '';
             optElem.innerHTML = btns + cancelBtn;
           }
         }
@@ -501,7 +501,7 @@
               <img src="${uneImg}" class="hero-bg-img" onerror="handleImgError(this)" loading="lazy">
               <div class="hero-overlay">
                 <div class="hero-tags-wrap">
-                    <span class="hero-badge-une">À LA UNE</span>
+                    <span class="hero-badge-une">${t('badge_une', 'À LA UNE')}</span>
                     <span class="hero-badge-cat">${une.category}</span>
                     ${langBadge}
 
@@ -541,7 +541,7 @@
                   <div class="grid-card-body">
                     <span class="grid-card-cat">${art.category || 'POLITIQUE'}</span>
                     <h4 class="grid-card-title">${art.title} ${_lb(art)} ${_pb(art)}</h4>
-                    <p class="grid-card-excerpt">${art.read_time || 3} min de lecture</p>
+                    <p class="grid-card-excerpt">${art.read_time || 3} ${t('article_reading_time', 'min de lecture')}</p>
                     <div class="grid-card-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
                   </div>
                 </a>
@@ -614,7 +614,7 @@
           const discoverArticles = pageArticles.filter(a => !usedTopIds.has(a.id));
 
           if (filterContainer && categories.length > 0) {
-            let html = '<button class="theme-pill active" data-cat="all">Tous</button>';
+            let html = '<button class="theme-pill active" data-cat="all">' + t('search_all', 'Tous') + '</button>';
             categories.forEach(cat => {
               html += '<button class="theme-pill" data-cat="' + cat + '">' + cat + '</button>';
             });
