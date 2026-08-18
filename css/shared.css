@@ -6252,59 +6252,9 @@ a.art-link {
 /* ============================================================
    PREMIUM LEGAL PAGES DESIGN SYSTEM (Sobriété & Rigueur Juridique)
 ============================================================ */
-.legal-page-body {
-    background: #f8fafc;
-}
-
-.legal-hero {
-    background: #1E2D27;
-    padding: 4.5rem 1.5rem 5rem;
-    text-align: center;
-    color: #ffffff;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.legal-hero-inner {
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.legal-hero h1 {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 2.8rem;
-    font-weight: 700;
-    color: #ffffff;
-    margin: 0 0 0.8rem 0;
-    line-height: 1.2;
-    letter-spacing: -0.3px;
-}
-
-.legal-hero p {
-    font-size: 1.05rem;
-    color: rgba(255, 255, 255, 0.75);
-    max-width: 600px;
-    margin: 0 auto 1.2rem;
-    line-height: 1.5;
-    font-weight: 400;
-}
-
-.legal-meta-row {
-    display: inline-block;
-    font-size: 0.78rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: rgba(255, 255, 255, 0.55);
-    padding: 4px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
-}
-
 .legal-container {
     max-width: 900px;
-    margin: -2.5rem auto 5rem;
-    position: relative;
-    z-index: 10;
+    margin: 3rem auto 5rem;
     padding: 0 20px;
     box-sizing: border-box;
 }
@@ -6312,18 +6262,60 @@ a.art-link {
 .legal-card {
     background: #ffffff;
     border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
     border: 1px solid #e2e8f0;
     padding: 3rem 3.5rem;
     box-sizing: border-box;
 }
 
+.legal-header-block {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.legal-breadcrumb {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+}
+
+.legal-header-block h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.25;
+}
+
+.legal-header-block p {
+    font-size: 1rem;
+    color: #475569;
+    margin: 0 0 1rem 0;
+    line-height: 1.5;
+}
+
+.legal-meta-badge {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 4px 12px;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+}
+
 .legal-nav-wrapper {
     display: flex;
-    justify-content: center;
-    margin-bottom: 3rem;
+    justify-content: flex-start;
+    margin-bottom: 2.5rem;
     border-bottom: 1px solid #e2e8f0;
-    padding-bottom: 1.5rem;
+    padding-bottom: 1.25rem;
 }
 
 .legal-nav {

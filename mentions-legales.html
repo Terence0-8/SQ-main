@@ -22,7 +22,7 @@
     <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
     <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
   <title>Mentions Légales — Solitiquo</title>
-  <link rel="stylesheet" href="css/shared.css?v=15" />
+  <link rel="stylesheet" href="css/shared.css?v=16" />
   <link rel="stylesheet" href="css/pages/mentions-legales.css" />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
@@ -139,16 +139,15 @@
     </div>
   </nav>
 
-  <section class="legal-hero">
-      <div class="legal-hero-inner">
-        <h1 data-i18n="legal_mentions_title">Mentions Légales</h1>
-        <p data-i18n="legal_mentions_subtitle">Informations réglementaires et identité de l'Éditeur</p>
-        <div class="legal-meta-row">République du Cameroun</div>
-      </div>
-    </section>
-
-    <main class="legal-container">
+  <main class="legal-container">
       <div class="legal-card">
+
+        <div class="legal-header-block">
+          <div class="legal-breadcrumb">Solitiquo — Informations Réglementaires</div>
+          <h1 data-i18n="legal_mentions_title">Mentions Légales</h1>
+          <p data-i18n="legal_mentions_subtitle">Informations réglementaires et identité de l'Éditeur</p>
+          <div class="legal-meta-badge">République du Cameroun</div>
+        </div>
 
         <div class="legal-nav-wrapper">
           <nav class="legal-nav">
@@ -241,8 +240,8 @@
   </footer>
 
   <script src="js/i18n.js"></script>
-  <script src="/js/api.js?v=15"></script>
-  <script src="/js/solitiquo.js?v=15"></script>
+  <script src="/js/api.js?v=16"></script>
+  <script src="/js/solitiquo.js?v=16"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       SolitiquoAPI.initUserInterface();
