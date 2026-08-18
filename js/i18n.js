@@ -102,8 +102,11 @@ var TRANSLATIONS = {
     poll_vote_btn: 'Voter',
     poll_results: 'Résultats',
     poll_votes: 'votes',
+    poll_vote_singular: 'vote',
     poll_total_votes: 'Total des votes',
     poll_already_voted: 'Merci de votre vote',
+    poll_edit_vote: 'Modifier mon vote',
+    poll_cancel_edit: 'Annuler la modification',
     poll_login_required: 'Connexion requise pour voter',
     poll_expired: 'Ce sondage est terminé',
     poll_ends_in: 'Se termine dans',
@@ -112,6 +115,7 @@ var TRANSLATIONS = {
     poll_vote_error: 'Erreur lors du vote',
     poll_weekly: 'Le sondage de la semaine',
     poll_live_results: 'Résultats en direct',
+    btn_listen_now: 'Écouter maintenant',
 
     // ==================== ARTICLES ====================
     article_by: 'Par',
@@ -441,8 +445,11 @@ var TRANSLATIONS = {
     poll_vote_btn: 'Vote',
     poll_results: 'Results',
     poll_votes: 'votes',
+    poll_vote_singular: 'vote',
     poll_total_votes: 'Total votes',
     poll_already_voted: 'Thank you for your vote',
+    poll_edit_vote: 'Edit my vote',
+    poll_cancel_edit: 'Cancel modification',
     poll_login_required: 'Login required to vote',
     poll_expired: 'This poll has ended',
     poll_ends_in: 'Ends in',
@@ -450,7 +457,8 @@ var TRANSLATIONS = {
     poll_vote_success: 'Vote recorded successfully',
     poll_vote_error: 'Error while voting',
     poll_weekly: 'Poll of the week',
-    poll_live_results: 'Live results',
+    poll_live_results: 'LIVE RESULTS',
+    btn_listen_now: 'Listen now',
 
     // ==================== ARTICLES ====================
     article_by: 'By',

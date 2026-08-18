@@ -30,10 +30,12 @@ const SolitiquoAPI = {
     } catch (error) { console.error("Err article:", error); return null; }
   },
 
-  formatDate: (dateString) => {
+  formatDate: (dateString, customLang) => {
     if (!dateString) return '';
+    const lang = customLang || (typeof getLanguage === 'function' ? getLanguage() : (localStorage.getItem('siteLanguage') || 'fr'));
+    const locale = lang === 'en' ? 'en-US' : 'fr-FR';
     const options = { day: 'numeric', month: 'long', year: 'numeric' };
-    return new Date(dateString).toLocaleDateString('fr-FR', options);
+    return new Date(dateString).toLocaleDateString(locale, options);
   },
 
   // --- PODCASTS ---
