@@ -780,6 +780,72 @@ function t(key, vars = {}, defaultVal = '') {
   return text;
 }
 
+const CATEGORY_TRANSLATIONS = {
+  fr: {
+    all: 'Tous',
+    politique: 'Politique',
+    social: 'Social',
+    societe: 'Société',
+    société: 'Société',
+    economie: 'Économie',
+    économie: 'Économie',
+    partis: 'Partis',
+    geopolitique: 'Géopolitique',
+    géopolitique: 'Géopolitique',
+    culture: 'Culture',
+    international: 'International',
+    education: 'Éducation',
+    éducation: 'Éducation',
+    sante: 'Santé',
+    santé: 'Santé',
+    sport: 'Sport',
+    environnement: 'Environnement',
+    technologie: 'Technologie',
+    opinions: 'Opinions',
+    dossier: 'Dossier',
+    une: 'À la Une'
+  },
+  en: {
+    all: 'All',
+    politique: 'Politics',
+    social: 'Social',
+    societe: 'Society',
+    société: 'Society',
+    economie: 'Economy',
+    économie: 'Economy',
+    partis: 'Parties',
+    geopolitique: 'Geopolitics',
+    géopolitique: 'Geopolitics',
+    culture: 'Culture',
+    international: 'International',
+    education: 'Education',
+    éducation: 'Education',
+    sante: 'Health',
+    santé: 'Health',
+    sport: 'Sports',
+    environnement: 'Environment',
+    technologie: 'Technology',
+    opinions: 'Opinions',
+    dossier: 'Special Report',
+    une: 'Top Story'
+  }
+};
+
+/**
+ * Traduit un nom de catégorie ou thème selon la langue courante
+ * @param {string} cat - Catégorie / Thème
+ * @param {string} [customLang] - Langue optionnelle ('fr'|'en')
+ * @returns {string} Nom traduit
+ */
+function tCategory(cat, customLang) {
+  if (!cat) return '';
+  const lang = customLang || (typeof getLanguage === 'function' ? getLanguage() : 'fr');
+  const key = String(cat).trim().toLowerCase();
+  const dict = CATEGORY_TRANSLATIONS[lang] || CATEGORY_TRANSLATIONS.fr;
+  if (dict[key]) return dict[key];
+  return cat.charAt(0).toUpperCase() + cat.slice(1);
+}
+
 /**
  * Met à jour TOUS les éléments structurels de la page courante
  * @param {string} lang - Langue cible ('fr' ou 'en')
@@ -967,7 +1033,7 @@ async function loadArticles(lang = getLanguage()) {
                   <img src="${art.image_url || 'https://via.placeholder.com/600x400'}" class="disco-img" alt="${art.title}" onerror="handleImgError(this)" loading="lazy">
                 </div>
                 <div class="disco-body">
-                  <span class="art-cat" style="font-size:0.65rem; margin-bottom:4px; color:#C82823; font-weight:800; text-transform:uppercase;">${catTag}</span>
+                  <span class="art-cat" style="font-size:0.65rem; margin-bottom:4px; color:#C82823; font-weight:800; text-transform:uppercase;">${tCategory(catTag)}</span>
                   <h4 class="disco-title">${art.title}${pb}</h4>
                   ${excerptHtml}
                   ${artDate ? `<div class="disco-date">${artDate}</div>` : ''}
@@ -988,7 +1054,7 @@ async function loadArticles(lang = getLanguage()) {
         if (themeFilterBar) {
           const categories = ['all', ...new Set(window._indexDiscoverArticles.map(a => a.category).filter(Boolean))];
           themeFilterBar.innerHTML = categories.map(cat => {
-            const label = cat === 'all' ? t('filter_all', 'Tous') : cat;
+            const label = cat === 'all' ? t('filter_all', 'Tous') : tCategory(cat);
             return `<button class="theme-pill ${cat === 'all' ? 'active' : ''}" data-cat="${cat}">${label}</button>`;
           }).join('');
 
@@ -1020,6 +1086,8 @@ async function loadArticles(lang = getLanguage()) {
 // Exposer globalement
 window.TRANSLATIONS = TRANSLATIONS;
 window.t = t;
+window.tCategory = tCategory;
+window.tTheme = tCategory;
 window.getLanguage = getLanguage;
 window.loadLanguagePreference = loadLanguagePreference;
 window.setLanguage = setLanguage;

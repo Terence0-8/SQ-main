@@ -502,7 +502,7 @@
               <div class="hero-overlay">
                 <div class="hero-tags-wrap">
                     <span class="hero-badge-une">${t('badge_une', 'À LA UNE')}</span>
-                    <span class="hero-badge-cat">${une.category}</span>
+                    <span class="hero-badge-cat">${tCategory(une.category)}</span>
                     ${langBadge}
 
                 </div>
@@ -539,7 +539,7 @@
                     ${art.is_premium ? '<img src="GOLD.png" alt="Premium" class="premium-badge-card" loading="lazy">' : ''}
                   </div>
                   <div class="grid-card-body">
-                    <span class="grid-card-cat">${art.category || 'POLITIQUE'}</span>
+                    <span class="grid-card-cat">${tCategory(art.category || 'POLITIQUE')}</span>
                     <h4 class="grid-card-title">${art.title} ${_lb(art)} ${_pb(art)}</h4>
                     <p class="grid-card-excerpt">${art.read_time || 3} ${t('article_reading_time', 'min de lecture')}</p>
                     <div class="grid-card-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
@@ -598,7 +598,7 @@
                     '<img src="' + (art.image_url || 'https://via.placeholder.com/600x400') + '" class="disco-img" onerror="handleImgError(this)" loading="lazy">' +
                   '</div>' +
                   '<div class="disco-body">' +
-                    '<span class="art-cat" style="font-size:0.65rem; margin-bottom:4px; color:#C82823; font-weight:800; text-transform:uppercase;">' + catTag + '</span>' +
+                    '<span class="art-cat" style="font-size:0.65rem; margin-bottom:4px; color:#C82823; font-weight:800; text-transform:uppercase;">' + tCategory(catTag) + '</span>' +
                     '<h4 class="disco-title">' + art.title + pb + '</h4>' +
                     excerptHtml +
                     '<div class="disco-date">' + SolitiquoAPI.formatDate(art.published_at) + '</div>' +
@@ -616,7 +616,7 @@
           if (filterContainer && categories.length > 0) {
             let html = '<button class="theme-pill active" data-cat="all">' + t('search_all', 'Tous') + '</button>';
             categories.forEach(cat => {
-              html += '<button class="theme-pill" data-cat="' + cat + '">' + cat + '</button>';
+              html += '<button class="theme-pill" data-cat="' + cat + '">' + tCategory(cat) + '</button>';
             });
             filterContainer.innerHTML = html;
 
