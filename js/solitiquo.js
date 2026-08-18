@@ -2,6 +2,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   console.log("Solitiquo JS chargé"); // Pour vérifier dans la console
 
+  if (window.SolitiquoAPI && typeof window.SolitiquoAPI.initUserInterface === 'function') {
+    window.SolitiquoAPI.initUserInterface();
+  }
+
   // ============================================================
   // 0. SERVICE WORKER (PWA)
   // ============================================================

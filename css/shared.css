@@ -6365,10 +6365,16 @@ a.art-link {
     }
 }
 
-@media (max-width: 480px) {
-    .legal-nav {
-        grid-template-columns: 1fr;
-    }
+/* ============================================================
+   FOOTER AUTH LINKS VISIBILITY CONTROL
+============================================================ */
+body:not(.user-logged-in) .footer-link-group a[href="profil.html"] {
+    display: none !important;
+}
+
+body.user-logged-in .footer-link-group a[href="abonnement.html"],
+body.user-logged-in .footer-link-group a[href="auth.html"] {
+    display: none !important;
 }
 
 .legal-section {

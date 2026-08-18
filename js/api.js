@@ -94,7 +94,15 @@ const SolitiquoAPI = {
   initUserInterface: async () => {
     if (document.body.dataset.uiInited === 'true') return;
     const user = await SolitiquoAPI.getProfile();
-    if (!user) return;
+
+    if (user) {
+      document.body.classList.add('user-logged-in');
+      document.body.dataset.userLogged = 'true';
+    } else {
+      document.body.classList.remove('user-logged-in');
+      document.body.dataset.userLogged = 'false';
+      return;
+    }
 
     document.body.dataset.uiInited = 'true';
     const nav = document.querySelector('.ph-right');
