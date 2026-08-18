@@ -235,7 +235,10 @@
   <!-- SECTION DÉCOUVRIR PLEINE LARGEUR -->
   <section class="discover-section">
     <div class="discover-container">
-      <div class="section-label">Découvrir</div>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:2rem;">
+        <div class="section-label" style="border-color:#ccc; color:#888; margin-bottom:0;">Découvrir</div>
+        <div id="theme-filter-bar" class="theme-filter-bar"></div>
+      </div>
       <div id="discover-grid" class="discover-grid"></div>
     </div>
   </section>
@@ -427,10 +430,15 @@
       try {
         const lang = getLanguage();
         let catParam = pageCategory;
-        const res = await fetch(`${API_URL}/articles?category=${catParam}`);
+        const res = await fetch(`${API_URL}/articles?lang=${lang}`);
         const json = await res.json();
         if (json.success && json.data.length > 0) {
-          let articles = json.data;
+          const allArticles = json.data;
+          let articles = allArticles.filter(art => {
+            const c = (art.category || '').trim().toLowerCase();
+            return c === 'social' || c === 'société' || c === 'societe';
+          });
+          if (articles.length === 0) articles = allArticles;
           articles.sort((a, b) => {
             if (a.language === lang && b.language !== lang) return -1;
             if (a.language !== lang && b.language === lang) return 1;
@@ -492,42 +500,86 @@
               `).join('')}
             </div>
           `;
-                              // 2. Grille Découvrir (Exactement le même modèle que la page index)
-          const discoverArticles = articles.slice(8, 20);
+                              // 2. Grille Découvrir avec filtres thématiques exclusifs pour la page Social
+          const SOCIAL_THEME_NAMES = [
+            'social', 'société', 'societe', 'culture', 'international',
+            'éducation', 'education', 'santé', 'sante', 'sport',
+            'environnement', 'technologie', 'opinions'
+          ];
+
+          const pageArticles = allArticles.filter(art => {
+            const cat = (art.category || '').trim().toLowerCase();
+            return SOCIAL_THEME_NAMES.includes(cat);
+          });
+
+          const categoryMap = new Map();
+          pageArticles.forEach(art => {
+            if (art.category && !categoryMap.has(art.category.toLowerCase())) {
+              categoryMap.set(art.category.toLowerCase(), art.category);
+            }
+          });
+          const categories = Array.from(categoryMap.values());
+
+          const filterContainer = document.getElementById('theme-filter-bar');
           const discoverGrid = document.getElementById('discover-grid');
-          if (discoverGrid && discoverArticles.length > 0) {
-            discoverGrid.innerHTML = discoverArticles.map((art, idx) => {
-              let cardClass = 'disco-card';
-              const patternIndex = idx % 10;
-              if (patternIndex === 4) {
-                cardClass += ' disco-card-wide';
-              } else if (patternIndex === 9) {
-                cardClass += ' disco-card-full';
-              }
+          const discoverSection = document.querySelector('.discover-section');
 
-              const excerptHtml = (patternIndex === 4 || patternIndex === 9) && (art.excerpt || art.slug)
-                ? '<p class="disco-excerpt">' + (art.excerpt || '') + '</p>'
-                : '';
+          function renderDiscoverGrid(articlesList, activeCat) {
+            const list = activeCat === 'all'
+              ? articlesList
+              : articlesList.filter(a => (a.category || '').toLowerCase() === activeCat.toLowerCase());
 
-              const linkDisco = 'article.html?id=' + art.id;
-              const pb = art.is_premium ? ' <img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">' : '';
-              const catTag = art.category || "Social & Société";
+            if (!discoverGrid) return;
+            if (list.length > 0) {
+              if (discoverSection) discoverSection.style.display = 'block';
+              discoverGrid.innerHTML = list.map((art, idx) => {
+                let cardClass = 'disco-card';
+                const patternIndex = idx % 10;
+                if (patternIndex === 4) cardClass += ' disco-card-wide';
+                else if (patternIndex === 9) cardClass += ' disco-card-full';
 
-              return '<a href="' + linkDisco + '" class="' + cardClass + '">' +
-                '<div class="disco-img-wrap">' +
-                  '<img src="' + (art.image_url || 'https://via.placeholder.com/600x400') + '" class="disco-img" onerror="handleImgError(this)" loading="lazy">' +
-                '</div>' +
-                '<div class="disco-body">' +
-                  '<span class="art-cat" style="font-size:0.65rem; margin-bottom:4px; color:#C82823; font-weight:800; text-transform:uppercase;">' + catTag + '</span>' +
-                  '<h4 class="disco-title">' + art.title + pb + '</h4>' +
-                  excerptHtml +
-                  '<div class="disco-date">' + SolitiquoAPI.formatDate(art.published_at) + '</div>' +
-                '</div>' +
-              '</a>';
-            }).join('');
-          } else if (discoverGrid) {
-            discoverGrid.innerHTML = '<p style="text-align:center; color:#999; grid-column:1/-1; padding:2rem;">Plus d&apos;articles bientôt.</p>';
+                const excerptHtml = (patternIndex === 4 || patternIndex === 9) && (art.excerpt || art.slug)
+                  ? '<p class="disco-excerpt">' + (art.excerpt || '') + '</p>'
+                  : '';
+
+                const linkDisco = 'article.html?id=' + art.id;
+                const pb = art.is_premium ? ' <img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">' : '';
+                const catTag = art.category || 'Social';
+
+                return '<a href="' + linkDisco + '" class="' + cardClass + '">' +
+                  '<div class="disco-img-wrap">' +
+                    '<img src="' + (art.image_url || 'https://via.placeholder.com/600x400') + '" class="disco-img" onerror="handleImgError(this)" loading="lazy">' +
+                  '</div>' +
+                  '<div class="disco-body">' +
+                    '<span class="art-cat" style="font-size:0.65rem; margin-bottom:4px; color:#C82823; font-weight:800; text-transform:uppercase;">' + catTag + '</span>' +
+                    '<h4 class="disco-title">' + art.title + pb + '</h4>' +
+                    excerptHtml +
+                    '<div class="disco-date">' + SolitiquoAPI.formatDate(art.published_at) + '</div>' +
+                  '</div>' +
+                '</a>';
+              }).join('');
+            } else {
+              discoverGrid.innerHTML = '<p style="text-align:center; color:#999; grid-column:1/-1; padding:2rem;">Aucun article disponible.</p>';
+            }
           }
+
+          if (filterContainer && categories.length > 0) {
+            let html = '<button class="theme-pill active" data-cat="all">Tous</button>';
+            categories.forEach(cat => {
+              html += '<button class="theme-pill" data-cat="' + cat + '">' + cat + '</button>';
+            });
+            filterContainer.innerHTML = html;
+
+            filterContainer.querySelectorAll('.theme-pill').forEach(btn => {
+              btn.addEventListener('click', () => {
+                filterContainer.querySelectorAll('.theme-pill').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderDiscoverGrid(pageArticles, btn.dataset.cat);
+              });
+            });
+          }
+
+          renderDiscoverGrid(pageArticles, 'all');
         } else {
           const link = document.getElementById('soc-pod-link');
           if (link) link.href = 'podcasts.html';
