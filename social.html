@@ -482,8 +482,12 @@
                     <img src="${art.image_url}" class="grid-card-img" onerror="handleImgError(this)" loading="lazy">
                     ${art.is_premium ? '<img src="GOLD.png" alt="Premium" class="premium-badge-card" loading="lazy">' : ''}
                   </div>
-                  <h4 class="grid-card-title">${art.title} ${_lb(art)} ${_pb(art)}</h4>
-                  <div class="grid-card-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
+                  <div class="grid-card-body">
+                    <span class="grid-card-cat">${art.category || 'SOCIAL'}</span>
+                    <h4 class="grid-card-title">${art.title} ${_lb(art)} ${_pb(art)}</h4>
+                    <p class="grid-card-excerpt">${art.read_time || 3} min de lecture</p>
+                    <div class="grid-card-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
+                  </div>
                 </a>
               `).join('')}
             </div>
