@@ -15,10 +15,17 @@ const SolitiquoAPI = {
 
   getArticleById: async (id) => {
     try {
-      const response = await fetch(`${API_URL}/articles/${id}`);
+      const lang = localStorage.getItem('siteLanguage') || 'fr';
+      let response;
+      if (!isNaN(id)) {
+        response = await fetch(`${API_URL}/articles/${id}?lang=${lang}`);
+      }
+      if (!response || !response.ok) {
+        response = await fetch(`${API_URL}/articles/by-slug/${encodeURIComponent(id)}?lang=${lang}`);
+      }
       if (!response.ok) throw new Error('Introuvable');
       const json = await response.json();
-      return json.article;
+      return json.article || json.data;
     } catch (error) { console.error("Err article:", error); return null; }
   },
 
