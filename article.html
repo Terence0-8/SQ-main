@@ -21,8 +21,8 @@
   <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
   <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
   <title>Chargement... — Solitiquo</title>
-  <link rel="stylesheet" href="css/shared.css?v=37" />
-  <link rel="stylesheet" href="css/pages/article.css?v=37" />
+  <link rel="stylesheet" href="css/shared.css?v=38" />
+  <link rel="stylesheet" href="css/pages/article.css?v=38" />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
     rel="stylesheet" />
@@ -447,9 +447,9 @@
   </footer>
 
   <script src="js/i18n.js"></script>
-  <script src="/js/solitiquo.js?v=37"></script>
+  <script src="/js/solitiquo.js?v=38"></script>
   <script src="js/config.js"></script>
-  <script src="/js/api.js?v=37"></script>
+  <script src="/js/api.js?v=38"></script>
   <script>
     // --- MENU MOBILE ---
     const burger = document.getElementById('burgerBtn');
@@ -544,20 +544,25 @@
       });
     }
 
-    // --- CHARGEMENT ARTICLE ---
+        // --- CHARGEMENT ARTICLE ---
     document.addEventListener('DOMContentLoaded', async () => {
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
       const loadingDiv = document.getElementById('loading-container');
       const mainArticle = document.getElementById('main-article');
 
-      SolitiquoAPI.initUserInterface();
-      await initLanguageSwitcher({ reloadPage: true });
+      if (window.SolitiquoAPI) SolitiquoAPI.initUserInterface();
+      if (typeof initLanguageSwitcher === 'function') await initLanguageSwitcher({ reloadPage: true });
 
-      if (!id) { loadingDiv.innerHTML = '<p>Aucun article demandé.</p>'; return; }
+      if (!id) {
+        if (loadingDiv) {
+          loadingDiv.innerHTML = '<div style="text-align:center; padding: 4rem 1rem;"><h2 style="font-family:'Playfair Display',serif; font-size:1.8rem; color:#37463D; margin-bottom:1rem;">Aucun article demandé</h2><a href="index.html" style="background:#37463D; color:#fff; padding:12px 24px; border-radius:30px; text-decoration:none; font-weight:700;">Retour à l'accueil</a></div>';
+        }
+        return;
+      }
 
       // Fetch geo-pricing in parallel with article (for paywall price display)
-      const pricingPromise = fetch(`${window.API_URL}/subscriptions/pricing`, { credentials: 'include' })
+      const pricingPromise = fetch(`${window.API_URL || API_URL || "/api"}/subscriptions/pricing`, { credentials: 'include' })
         .then(r => r.json())
         .catch(() => ({ currency: 'USD', amount: 7.99, success: true }));
 
@@ -568,17 +573,37 @@
         if (article) {
           window._currentArticle = article;
           document.title = `${article.title} — Solitiquo`;
-          document.getElementById('art-title').textContent = article.title;
+          const titleEl = document.getElementById('art-title');
+          if (titleEl) titleEl.textContent = article.title;
+
           const badge = document.getElementById('art-category-badge');
-          badge.textContent = article.category;
-          if (article.is_premium) { badge.innerHTML += ' <img src="GOLD.png" alt="Premium" style="height:1.2em;vertical-align:middle;margin-left:5px;" loading="lazy">'; badge.style.backgroundColor = '#222'; }
-          document.getElementById('art-author').textContent = article.author_name || 'La Rédaction';
-          document.getElementById('art-date').textContent = SolitiquoAPI.formatDate(article.published_at);
-          if (article.excerpt) document.getElementById('art-excerpt').textContent = article.excerpt;
-          else document.getElementById('art-excerpt').style.display = 'none';
-          if (article.image_url) { document.getElementById('art-image').src = article.image_url; document.getElementById('art-caption').textContent = article.image_caption || '© Solitiquo'; }
-          else document.getElementById('art-figure').style.display = 'none';
-          await initTranslationButton(article);
+          if (badge) {
+            badge.textContent = article.category;
+            if (article.is_premium) { badge.innerHTML += ' <img src="GOLD.png" alt="Premium" style="height:1.2em;vertical-align:middle;margin-left:5px;" loading="lazy">'; badge.style.backgroundColor = '#222'; }
+          }
+          const authorEl = document.getElementById('art-author');
+          if (authorEl) authorEl.textContent = article.author_name || 'La Rédaction';
+          const dateEl = document.getElementById('art-date');
+          if (dateEl) dateEl.textContent = SolitiquoAPI.formatDate(article.published_at);
+
+          const excerptEl = document.getElementById('art-excerpt');
+          if (excerptEl) {
+            if (article.excerpt) excerptEl.textContent = article.excerpt;
+            else excerptEl.style.display = 'none';
+          }
+
+          const imgEl = document.getElementById('art-image');
+          const figEl = document.getElementById('art-figure');
+          if (article.image_url) {
+            if (imgEl) imgEl.src = article.image_url;
+            const capEl = document.getElementById('art-caption');
+            if (capEl) capEl.textContent = article.image_caption || '© Solitiquo';
+          } else if (figEl) {
+            figEl.style.display = 'none';
+          }
+
+          if (typeof initTranslationButton === 'function') await initTranslationButton(article);
+
           const contentDiv = document.getElementById('art-content');
           const canRead = user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer');
           if (article.is_premium && !canRead) {
@@ -597,8 +622,8 @@
               pwPriceStr = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: pwCurrency, minimumFractionDigits: 2 }).format(pwAmount);
             }
             const pwFeatures = [
-              t('sub_feature_noad'), t('sub_feature_enquetes'),
-              t('sub_feature_comments'), t('sub_feature_newsletter')
+              'Lecture sans publicité', 'Enquêtes & Analyses exclusives',
+              'Accès libre aux commentaires', 'Newsletter quotidienne récapitulative'
             ];
             contentDiv.innerHTML = `
               <div style="position:relative;font-size:1.15rem;line-height:1.8;color:#333;">
@@ -606,28 +631,42 @@
                 <div style="position:absolute;bottom:0;left:0;width:100%;height:100%;background:linear-gradient(to bottom,rgba(255,255,255,0),rgba(253,253,253,1) 90%);pointer-events:none;"></div>
               </div>
               <div style="background:#f8fbf1;border:1px solid #C5C5A9;padding:2.5rem;text-align:center;border-radius:12px;margin-top:2rem;">
-                <h3 style="font-family:'Playfair Display';font-size:1.8rem;color:#37463D;margin-bottom:0.75rem;">${t('paywall_title')}</h3>
-                <p style="color:#666;margin-bottom:1.5rem;">${t('paywall_subtitle')}</p>
+                <h3 style="font-family:'Playfair Display';font-size:1.8rem;color:#37463D;margin-bottom:0.75rem;">Article Réservé aux Abonnés Premium</h3>
+                <p style="color:#666;margin-bottom:1.5rem;">Abonnez-vous dès aujourd'hui pour débloquer l'intégralité de cet article et soutenir un journalisme indépendant.</p>
                 <div style="background:#fff;border:1px solid #e0e8dc;border-radius:8px;padding:1rem 1.5rem;margin-bottom:1.75rem;text-align:left;display:inline-block;min-width:220px;">
-                  <div style="font-size:.78rem;font-weight:700;color:#37463D;margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:.5px;">${t('paywall_features_title')}</div>
+                  <div style="font-size:.78rem;font-weight:700;color:#37463D;margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:.5px;">Votre abonnement inclut :</div>
                   <ul style="margin:0;padding-left:1.1rem;color:#444;font-size:.9rem;line-height:1.9;">${pwFeatures.map(f => `<li>${f}</li>`).join('')}</ul>
                 </div>
                 <br>
-                <a href="abonnement.html" style="display:inline-block;background:#C82823;color:white;padding:13px 32px;border-radius:30px;text-decoration:none;font-weight:700;font-size:1rem;transition:.3s;">${t('paywall_cta_prefix')} ${pwPriceStr}</a>
-                <div style="margin-top:1.5rem;font-size:.9rem;color:#666;">${t('paywall_already')} <a href="auth.html" style="color:#37463D;font-weight:bold;">${t('paywall_login_link')}</a></div>
+                <a href="abonnement.html" style="display:inline-block;background:#C82823;color:white;padding:13px 32px;border-radius:30px;text-decoration:none;font-weight:700;font-size:1rem;transition:.3s;">S'abonner à partir de ${pwPriceStr}</a>
+                <div style="margin-top:1.5rem;font-size:.9rem;color:#666;">Déjà abonné ? <a href="auth.html" style="color:#37463D;font-weight:bold;">Se connecter</a></div>
               </div>`;
           } else {
             contentDiv.innerHTML = DOMPurify.sanitize(article.content, { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src'] });
-            initTTS(article);
+            if (typeof initTTS === 'function') initTTS(article);
           }
           const readTime = article.read_time || Math.max(Math.ceil(article.content.replace(/<[^>]*>/g, ' ').split(/\s+/).filter(w => w).length / 230), 1);
-          document.getElementById('art-readtime').textContent = readTime;
+          const rtEl = document.getElementById('art-readtime');
+          if (rtEl) rtEl.textContent = readTime;
+
           if (user && (user.role === 'admin' || user.role === 'writer')) {
-            const editLink = document.createElement('a');
-            editLink.href = `editeur-article.html?id=${article.id}`;
-            editLink.innerHTML = ` <span style="background:#eee;padding:2px 8px;border-radius:4px;font-size:.7rem;color:#333;text-decoration:none;margin-left:10px;cursor:pointer;">✏️ Modifier</span>`;
-            document.querySelector('.meta-info-simple').appendChild(editLink);
+            const metaInfo = document.querySelector('.meta-info-simple');
+            if (metaInfo) {
+              const editLink = document.createElement('a');
+              editLink.href = `editeur-article.html?id=${article.id}`;
+              editLink.innerHTML = ` <span style="background:#eee;padding:2px 8px;border-radius:4px;font-size:.7rem;color:#333;text-decoration:none;margin-left:10px;cursor:pointer;">✏️ Modifier</span>`;
+              metaInfo.appendChild(editLink);
+            }
           }
+
+          // HIDE LOADING SKELETON AND DISPLAY REAL ARTICLE
+          if (loadingDiv) loadingDiv.style.display = 'none';
+          if (mainArticle) mainArticle.style.display = 'block';
+
+          if (typeof updateReadingProgressBar === 'function') updateReadingProgressBar();
+          if (typeof updateOGTags === 'function') updateOGTags(article);
+          if (typeof initShareButtons === 'function') initShareButtons(article.title, window.location.href);
+
           // ── Bouton de téléchargement PDF (Premium) ──
           const shareBar = document.getElementById('share-bar');
           if (shareBar && article.slug) {
@@ -648,13 +687,12 @@
               if (isPremiumUser) {
                 const lang = localStorage.getItem('lang') || 'fr';
                 const a = document.createElement('a');
-                a.href = `/api/articles/${article.slug}/download?lang=${lang}`;
+                a.href = `${window.API_URL || '/api'}/articles/${article.slug}/download?lang=${lang}`;
                 a.download = `solitiquo-${article.slug}.pdf`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
               } else {
-                // Afficher un tooltip ou rediriger vers abonnement
                 const existingTooltip = document.getElementById('premium-tooltip');
                 if (existingTooltip) { existingTooltip.remove(); return; }
                 const tooltip = document.createElement('div');
@@ -670,215 +708,33 @@
             shareBar.appendChild(dlBtn);
           }
 
-          loadComments(id);
-          initAnalytics(id);
+          if (typeof loadComments === 'function') loadComments(id);
+          if (typeof initAnalytics === 'function') initAnalytics(id);
         } else {
-          loadingDiv.innerHTML = `
-            <div style="text-align:center; padding: 4rem 1rem;">
-              <h2 style="font-family:'Playfair Display',serif; font-size:1.8rem; color:#37463D; margin-bottom:1rem;">Article introuvable</h2>
-              <p style="color:#64748b; margin-bottom:2rem;">L'article demandé n'existe pas ou n'est plus disponible.</p>
-              <a href="index.html" style="background:#C82823; color:#fff; padding:12px 24px; border-radius:30px; text-decoration:none; font-weight:700;">Retour à l'accueil</a>
-            </div>`;
+          if (loadingDiv) {
+            loadingDiv.style.display = 'block';
+            loadingDiv.innerHTML = `
+              <div style="text-align:center; padding: 4rem 1rem;">
+                <h2 style="font-family:'Playfair Display',serif; font-size:1.8rem; color:#37463D; margin-bottom:1rem;">Article introuvable</h2>
+                <p style="color:#64748b; margin-bottom:2rem;">L'article demandé n'existe pas ou n'est plus disponible.</p>
+                <a href="index.html" style="background:#C82823; color:#fff; padding:12px 24px; border-radius:30px; text-decoration:none; font-weight:700;">Retour à l'accueil</a>
+              </div>`;
+          }
         }
       } catch (err) {
         console.error("Erreur chargement article:", err);
-        loadingDiv.innerHTML = `
-          <div style="text-align:center; padding: 4rem 1rem;">
-            <h2 style="font-family:'Playfair Display',serif; font-size:1.8rem; color:#37463D; margin-bottom:1rem;">Erreur de chargement</h2>
-            <p style="color:#64748b; margin-bottom:2rem;">Impossible de charger cet article pour le moment.</p>
-            <a href="index.html" style="background:#37463D; color:#fff; padding:12px 24px; border-radius:30px; text-decoration:none; font-weight:700;">Retour à l'accueil</a>
-          </div>`;
-      }
-
-          loadComments(id);
-          initAnalytics(id);
+        if (loadingDiv) {
+          loadingDiv.style.display = 'block';
+          loadingDiv.innerHTML = `
+            <div style="text-align:center; padding: 4rem 1rem;">
+              <h2 style="font-family:'Playfair Display',serif; font-size:1.8rem; color:#37463D; margin-bottom:1rem;">Erreur de chargement</h2>
+              <p style="color:#64748b; margin-bottom:2rem;">Impossible de charger cet article pour le moment.</p>
+              <a href="index.html" style="background:#37463D; color:#fff; padding:12px 24px; border-radius:30px; text-decoration:none; font-weight:700;">Retour à l'accueil</a>
+            </div>`;
         }
-      } catch (e) { console.error(e); loadingDiv.innerHTML = '<p>Erreur de chargement.</p>'; }
+      }
     });
 
-    // --- TRADUCTION + HREFLANG ---
-    async function initTranslationButton(article) {
-      const translationZone = document.getElementById('translation-zone');
-      const currentLang = article.language;
-      const targetLang = currentLang === 'fr' ? 'en' : 'fr';
-      const texts = {
-        fr: { btnTranslate: 'Version française', noticePrefix: 'Available in English', noticeLink: 'Read', progressLabel: 'Connexion...' },
-        en: { btnTranslate: 'Version anglaise', noticePrefix: 'Disponible en Français', noticeLink: 'Lire', progressLabel: 'Connecting...' }
-      };
-      const t = texts[currentLang] || texts['fr'];
-      const globeSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>`;
-      try {
-        const res = await fetch(`${window.API_URL}/translate/article/${article.id}?lang=${targetLang}`);
-        const data = await res.json();
-        if (data.has_translation) {
-          updateHreflang(article, data.translation.id);
-          translationZone.innerHTML = `<a class="translation-notice" href="article.html?id=${data.translation.id}"><span class="tn-icon">${globeSvg}</span><span class="tn-text">${t.noticePrefix}</span><span class="tn-link">${t.noticeLink}</span></a>`;
-        } else {
-          updateHreflang(article, null);
-          translationZone.innerHTML = `<button id="translateBtn" class="translate-btn"><span style="display:flex;align-items:center;">${globeSvg}</span><span>${t.btnTranslate}</span></button><div id="progress-container" class="progress-container hidden" style="display:none;"><svg class="progress-ring" width="120" height="120"><circle class="progress-ring__circle-bg" stroke="#e0e0e0" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/><circle class="progress-ring__circle" id="progress-circle" stroke="#37463D" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/><text id="progress-text" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="20" font-weight="bold" fill="#37463D">0%</text></svg><p id="progress-label" style="margin-top:15px;font-weight:600;color:#37463D;">${t.progressLabel}</p></div>`;
-          const circle = document.getElementById('progress-circle');
-          const circumference = circle.r.baseVal.value * 2 * Math.PI;
-          circle.style.strokeDasharray = `${circumference} ${circumference}`; circle.style.strokeDashoffset = circumference;
-          function setProgress(p) { circle.style.strokeDashoffset = circumference - p / 100 * circumference; document.getElementById('progress-text').textContent = `${p}%`; }
-          document.getElementById('translateBtn').addEventListener('click', async () => {
-            const btn = document.getElementById('translateBtn'), pc = document.getElementById('progress-container'), lbl = document.getElementById('progress-label');
-            btn.style.display = 'none'; pc.style.display = 'flex'; setProgress(10);
-            try {
-              setTimeout(() => setProgress(30), 300);
-              const csrfHeader = (window.SolitiquoAPI && SolitiquoAPI.csrfToken) ? { 'X-CSRF-Token': SolitiquoAPI.csrfToken } : {};
-              const tp = fetch(`${window.API_URL}/translate/article/${article.id}`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', ...csrfHeader }, body: JSON.stringify({ targetLang }) });
-              const si = setInterval(() => { const c = parseInt(document.getElementById('progress-text').textContent); if (c < 80) { setProgress(c + Math.floor(Math.random() * 5)); if (c > 30) lbl.textContent = (targetLang === 'fr') ? 'Traduction en cours...' : 'Translating...'; } }, 200);
-              const result = await (await tp).json(); clearInterval(si);
-              if (result.success) { setProgress(100); lbl.textContent = (targetLang === 'fr') ? 'Finalisation...' : 'Finalizing...'; updateHreflang(article, result.translation.id); setTimeout(() => { window.location.href = `article.html?id=${result.translation.id}`; }, 500); }
-              else { alert(`Error: ${result.error}`); pc.style.display = 'none'; btn.style.display = 'inline-flex'; }
-            } catch (err) { console.error('Erreur traduction:', err); alert('Translation service error.'); pc.style.display = 'none'; btn.style.display = 'inline-flex'; }
-          });
-        }
-      } catch (err) { console.error('Erreur chargement traduction:', err); updateHreflang(article, null); }
-    }
-
-    // --- TTS ---
-    const playSvg = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 5V19L19 12L8 5Z" /></svg>';
-    const pauseSvg = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M6 19H10V5H6V19ZM14 5V19H18V5H14Z" /></svg>';
-
-    let _ttsPlaying = false, _ttsUtterance = null, _ttsLang = 'fr-FR', _ttsBaseLabel = "Écouter l'article";
-    function initTTS(article) {
-      if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
-      const player = document.getElementById('tts-player'), label = document.getElementById('tts-label'), info = document.getElementById('tts-info'), icon = document.getElementById('tts-icon');
-      if (!player || !label || !info || !icon) return;
-      _ttsLang = (article.language === 'en') ? 'en-US' : 'fr-FR';
-      const isEn = _ttsLang === 'en-US';
-      _ttsBaseLabel = isEn ? 'Listen to this article' : "Écouter l'article";
-      label.textContent = _ttsBaseLabel; info.textContent = isEn ? 'Audio reading' : 'Lecture audio';
-      icon.innerHTML = playSvg;
-      player.addEventListener('click', toggleTTS);
-      player.style.display = 'inline-flex';
-      window.addEventListener('beforeunload', () => { if (_ttsPlaying) window.speechSynthesis.cancel(); });
-    }
-    function toggleTTS() {
-      const contentDiv = document.getElementById('art-content'), icon = document.getElementById('tts-icon'), label = document.getElementById('tts-label');
-      if (!contentDiv || !icon || !label) return;
-      if (_ttsPlaying) { window.speechSynthesis.cancel(); _ttsPlaying = false; icon.innerHTML = playSvg; label.textContent = _ttsBaseLabel; return; }
-      const text = (contentDiv.innerText || contentDiv.textContent || '').trim();
-      if (!text) return;
-      _ttsUtterance = new SpeechSynthesisUtterance(text);
-      _ttsUtterance.lang = _ttsLang; _ttsUtterance.rate = .95; _ttsUtterance.pitch = 1;
-      _ttsUtterance.onend = _ttsUtterance.onerror = () => { _ttsPlaying = false; icon.innerHTML = playSvg; label.textContent = _ttsBaseLabel; };
-      window.speechSynthesis.speak(_ttsUtterance);
-      _ttsPlaying = true; icon.innerHTML = pauseSvg; label.textContent = 'Pause';
-    }
-
-    // --- BARRE DE PROGRESSION ET SUIVI DES LECTURES (ANALYTICS) ---
-    const trackedMilestones = {};
-    function trackMilestone(articleId, milestone) {
-      if (!articleId) return;
-      const key = `${articleId}_${milestone}`;
-      if (trackedMilestones[key]) return;
-      trackedMilestones[key] = true;
-
-      const apiUrl = window.API_URL || (typeof SolitiquoAPI !== 'undefined' ? SolitiquoAPI.baseUrl : '/api');
-      fetch(`${apiUrl}/analytics/track`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ article_id: parseInt(articleId), milestone: String(milestone) })
-      }).catch(() => {});
-    }
-
-    function updateReadingProgressBar(e) {
-      const bar = document.getElementById('progressBar');
-      if (!bar) return;
-
-      let pct = 0;
-
-      // 1. Target element scroll (if an internal overflow container is scrolling)
-      if (e && e.target && e.target.scrollTop !== undefined && e.target.scrollHeight > e.target.clientHeight) {
-        const max = e.target.scrollHeight - e.target.clientHeight;
-        if (max > 0) {
-          pct = (e.target.scrollTop / max) * 100;
-        }
-      }
-
-      // 2. Global window & document scroll positions
-      const winScroll = Math.max(
-        window.pageYOffset || 0,
-        window.scrollY || 0,
-        document.documentElement ? document.documentElement.scrollTop : 0,
-        document.body ? document.body.scrollTop : 0
-      );
-
-      const maxWinScroll = Math.max(
-        document.body ? document.body.scrollHeight : 0,
-        document.documentElement ? document.documentElement.scrollHeight : 0,
-        document.body ? document.body.offsetHeight : 0
-      ) - (window.innerHeight || 800);
-
-      if (maxWinScroll > 50) {
-        const winPct = (winScroll / maxWinScroll) * 100;
-        if (winPct > pct) pct = winPct;
-      }
-
-      // 3. Geometry Bounding Rect of Article Container
-      const art = document.getElementById('art-content') || document.querySelector('.article-detail-container') || document.querySelector('main');
-      if (art && art.offsetHeight > 0) {
-        const rect = art.getBoundingClientRect();
-        const winH = window.innerHeight || 800;
-        const total = rect.height;
-        const scrolled = winH - rect.top;
-        const rectPct = (scrolled / total) * 100;
-        if (rectPct > pct) pct = rectPct;
-      }
-
-      pct = Math.min(100, Math.max(0, pct));
-      bar.style.width = pct.toFixed(1) + '%';
-
-      const artId = window._currentArticleId || (window._currentArticle && window._currentArticle.id);
-      if (artId) {
-        trackMilestone(artId, 'start');
-        if (pct >= 20) trackMilestone(artId, 25);
-        if (pct >= 40) trackMilestone(artId, 50);
-        if (pct >= 60) trackMilestone(artId, 75);
-        if (pct >= 75) trackMilestone(artId, 100);
-      }
-    }
-
-    // Capture ALL scroll events across the entire DOM tree
-    window.addEventListener('scroll', updateReadingProgressBar, true);
-    document.addEventListener('scroll', updateReadingProgressBar, true);
-    window.addEventListener('resize', updateReadingProgressBar);
-    window.addEventListener('DOMContentLoaded', updateReadingProgressBar);
-
-    // --- COMMENTAIRES ---
-    const commentForm = document.getElementById('commentForm'), commentsList = document.getElementById('commentsList');
-    async function loadComments(articleId) {
-      try {
-        const json = await (await fetch(`${window.API_URL}/comments/${articleId}`)).json();
-        const user = await SolitiquoAPI.getProfile();
-        const isAdmin = user && (user.role === 'admin' || user.role === 'writer');
-        if (json.success && json.comments.length > 0) {
-          commentsList.innerHTML = json.comments.map(c => {
-            const d = new Date(c.created_at).toLocaleString('fr-FR');
-            const del = isAdmin ? `<button onclick="SolitiquoAPI.deleteComment(${c.id})" style="float:right;color:#C82823;background:none;border:none;font-size:1.2rem;cursor:pointer;opacity:.6;">×</button>` : '';
-            return `<div id="comment-${c.id}" style="margin-bottom:20px;border-bottom:1px solid #eee;padding-bottom:15px;">${del}<div style="font-weight:bold;color:#37463D;margin-bottom:5px;">${c.username || 'Lecteur'} <span style="font-weight:normal;color:#888;font-size:.8rem;">• ${d}</span></div><div style="line-height:1.5;color:#444;">${c.content}</div></div>`;
-          }).join('');
-        } else commentsList.innerHTML = '<p style="color:#888;font-style:italic;">Soyez le premier à réagir.</p>';
-      } catch (e) { }
-    }
-    if (commentForm) {
-      commentForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const articleId = new URLSearchParams(window.location.search).get('id');
-        const content = document.getElementById('commentInput').value;
-        const msgDiv = document.getElementById('commentMsg');
-        const user = await SolitiquoAPI.getProfile();
-        if (!user) { if (confirm('Vous devez être connecté pour commenter. Se connecter ?')) window.location.href = 'auth.html'; return; }
-        if (!content.trim()) return;
-        try {
-          const json = await (await fetch(`${window.API_URL}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': SolitiquoAPI.csrfToken }, body: JSON.stringify({ article_id: articleId, content }), credentials: 'include' })).json();
-          if (json.success) { document.getElementById('commentInput').value = ''; if (json.modere) { msgDiv.style.color = 'orange'; msgDiv.textContent = 'En attente de validation.'; } else { msgDiv.style.color = 'green'; msgDiv.textContent = 'Publié !'; loadComments(articleId); } setTimeout(() => msgDiv.textContent = '', 3000); }
-          else { msgDiv.style.color = 'red'; msgDiv.textContent = 'Erreur.'; }
-        } catch (err) { }
-      });
-    }
   </script>
   <script src="/js/lazyload.js"></script>
   <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js'); }</script>
