@@ -471,7 +471,6 @@
       const searchInput = document.getElementById('searchInput');
 
       if (!searchContainer) return;
-}
 
       // searchBtn est géré par solitiquo.js — on attache seulement le label ici
     });
@@ -556,7 +555,7 @@
 
       if (!id) {
         if (loadingDiv) {
-          loadingDiv.innerHTML = '<div style="text-align:center; padding: 4rem 1rem;"><h2 style="font-family:'Playfair Display',serif; font-size:1.8rem; color:#37463D; margin-bottom:1rem;">Aucun article demandé</h2><a href="index.html" style="background:#37463D; color:#fff; padding:12px 24px; border-radius:30px; text-decoration:none; font-weight:700;">Retour à l'accueil</a></div>';
+          loadingDiv.innerHTML = `<div style="text-align:center; padding: 4rem 1rem;"><h2 style="font-family:'Playfair Display',serif; font-size:1.8rem; color:#37463D; margin-bottom:1rem;">Aucun article demandé</h2><a href="index.html" style="background:#37463D; color:#fff; padding:12px 24px; border-radius:30px; text-decoration:none; font-weight:700;">Retour à l'accueil</a></div>`;
         }
         return;
       }
