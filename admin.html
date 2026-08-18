@@ -723,7 +723,7 @@
 
                     const res = await fetch(API_URL + '/admin/content/articles');
                     const json = await res.json();
-                    renderArticles(json.data || []);
+                    initArticlesFilters(json.data || []);
 
                     const drafts = (json.data || []).filter(a => a.status === 'draft').length;
                     const badge = document.getElementById('badge-art-pending');
@@ -754,6 +754,7 @@
             let allAdminArticles = [];
             let currentAdminLangFilter = 'all';
             let currentAdminThemeFilter = 'all';
+            let filterEventsAttached = false;
 
             function initArticlesFilters(data) {
                 allAdminArticles = data || [];
@@ -769,32 +770,13 @@
 
                 const themeBar = document.getElementById('art-theme-filter-bar');
                 if (themeBar) {
-                    let themeHtml = `<button class="art-theme-pill active" data-cat="all" style="background:#C82823; color:white; border:none; padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 6px rgba(200,40,35,0.2);">Tous les thèmes (${allAdminArticles.length})</button>`;
+                    let themeHtml = `<button class="art-theme-pill ${currentAdminThemeFilter === 'all' ? 'active' : ''}" data-cat="all" style="${currentAdminThemeFilter === 'all' ? 'background:#C82823; color:white; border:none; box-shadow:0 2px 6px rgba(200,40,35,0.2);' : 'background:#f1f5f9; color:#334155; border:1px solid #cbd5e1;'} padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s;">Tous les thèmes (${allAdminArticles.length})</button>`;
                     categories.forEach(cat => {
                         const count = allAdminArticles.filter(a => (a.category || '').toLowerCase() === cat.toLowerCase()).length;
-                        themeHtml += `<button class="art-theme-pill" data-cat="${cat}" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s;">${cat} (${count})</button>`;
+                        const isActive = currentAdminThemeFilter.toLowerCase() === cat.toLowerCase();
+                        themeHtml += `<button class="art-theme-pill ${isActive ? 'active' : ''}" data-cat="${cat}" style="${isActive ? 'background:#C82823; color:white; border:none; box-shadow:0 2px 6px rgba(200,40,35,0.2);' : 'background:#f1f5f9; color:#334155; border:1px solid #cbd5e1;'} padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s;">${cat} (${count})</button>`;
                     });
                     themeBar.innerHTML = themeHtml;
-
-                    themeBar.querySelectorAll('.art-theme-pill').forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            themeBar.querySelectorAll('.art-theme-pill').forEach(b => {
-                                b.classList.remove('active');
-                                b.style.background = '#f1f5f9';
-                                b.style.color = '#334155';
-                                b.style.border = '1px solid #cbd5e1';
-                                b.style.boxShadow = 'none';
-                            });
-                            btn.classList.add('active');
-                            btn.style.background = '#C82823';
-                            btn.style.color = 'white';
-                            btn.style.border = 'none';
-                            btn.style.boxShadow = '0 2px 6px rgba(200,40,35,0.2)';
-
-                            currentAdminThemeFilter = btn.dataset.cat;
-                            applyAdminArticlesFilter();
-                        });
-                    });
                 }
 
                 // 2. Mettre à jour les badges de langues avec compteurs
@@ -803,34 +785,70 @@
                     const frCount = allAdminArticles.filter(a => (a.language || 'fr').toLowerCase() === 'fr').length;
                     const enCount = allAdminArticles.filter(a => (a.language || '').toLowerCase() === 'en').length;
 
+                    const isAll = currentAdminLangFilter === 'all';
+                    const isFr = currentAdminLangFilter === 'fr';
+                    const isEn = currentAdminLangFilter === 'en';
+
                     langBar.innerHTML = `
-                        <button class="art-lang-pill active" data-lang="all" style="background:#37463D; color:white; border:none; padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 6px rgba(55,70,61,0.2);">🌐 Toutes (${allAdminArticles.length})</button>
-                        <button class="art-lang-pill" data-lang="fr" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s;">🇫🇷 Français (${frCount})</button>
-                        <button class="art-lang-pill" data-lang="en" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s;">🇬🇧 English (${enCount})</button>
+                        <button class="art-lang-pill ${isAll ? 'active' : ''}" data-lang="all" style="${isAll ? 'background:#37463D; color:white; border:none; box-shadow:0 2px 6px rgba(55,70,61,0.2);' : 'background:#f1f5f9; color:#334155; border:1px solid #cbd5e1;'} padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s;">🌐 Toutes (${allAdminArticles.length})</button>
+                        <button class="art-lang-pill ${isFr ? 'active' : ''}" data-lang="fr" style="${isFr ? 'background:#37463D; color:white; border:none; box-shadow:0 2px 6px rgba(55,70,61,0.2);' : 'background:#f1f5f9; color:#334155; border:1px solid #cbd5e1;'} padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s;">🇫🇷 Français (${frCount})</button>
+                        <button class="art-lang-pill ${isEn ? 'active' : ''}" data-lang="en" style="${isEn ? 'background:#37463D; color:white; border:none; box-shadow:0 2px 6px rgba(55,70,61,0.2);' : 'background:#f1f5f9; color:#334155; border:1px solid #cbd5e1;'} padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s;">🇬🇧 English (${enCount})</button>
                     `;
-
-                    langBar.querySelectorAll('.art-lang-pill').forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            langBar.querySelectorAll('.art-lang-pill').forEach(b => {
-                                b.classList.remove('active');
-                                b.style.background = '#f1f5f9';
-                                b.style.color = '#334155';
-                                b.style.border = '1px solid #cbd5e1';
-                                b.style.boxShadow = 'none';
-                            });
-                            btn.classList.add('active');
-                            btn.style.background = '#37463D';
-                            btn.style.color = 'white';
-                            btn.style.border = 'none';
-                            btn.style.boxShadow = '0 2px 6px rgba(55,70,61,0.2)';
-
-                            currentAdminLangFilter = btn.dataset.lang;
-                            applyAdminArticlesFilter();
-                        });
-                    });
                 }
 
+                setupArticlesFilterEvents();
                 applyAdminArticlesFilter();
+            }
+
+            function setupArticlesFilterEvents() {
+                if (filterEventsAttached) return;
+                filterEventsAttached = true;
+
+                document.addEventListener('click', (e) => {
+                    const langBtn = e.target.closest('.art-lang-pill');
+                    if (langBtn) {
+                        e.preventDefault();
+                        currentAdminLangFilter = langBtn.dataset.lang || 'all';
+                        
+                        document.querySelectorAll('.art-lang-pill').forEach(b => {
+                            b.classList.remove('active');
+                            b.style.background = '#f1f5f9';
+                            b.style.color = '#334155';
+                            b.style.border = '1px solid #cbd5e1';
+                            b.style.boxShadow = 'none';
+                        });
+                        langBtn.classList.add('active');
+                        langBtn.style.background = '#37463D';
+                        langBtn.style.color = 'white';
+                        langBtn.style.border = 'none';
+                        langBtn.style.boxShadow = '0 2px 6px rgba(55,70,61,0.2)';
+
+                        applyAdminArticlesFilter();
+                        return;
+                    }
+
+                    const themeBtn = e.target.closest('.art-theme-pill');
+                    if (themeBtn) {
+                        e.preventDefault();
+                        currentAdminThemeFilter = themeBtn.dataset.cat || 'all';
+
+                        document.querySelectorAll('.art-theme-pill').forEach(b => {
+                            b.classList.remove('active');
+                            b.style.background = '#f1f5f9';
+                            b.style.color = '#334155';
+                            b.style.border = '1px solid #cbd5e1';
+                            b.style.boxShadow = 'none';
+                        });
+                        themeBtn.classList.add('active');
+                        themeBtn.style.background = '#C82823';
+                        themeBtn.style.color = 'white';
+                        themeBtn.style.border = 'none';
+                        themeBtn.style.boxShadow = '0 2px 6px rgba(200,40,35,0.2)';
+
+                        applyAdminArticlesFilter();
+                        return;
+                    }
+                });
             }
 
             function applyAdminArticlesFilter() {
