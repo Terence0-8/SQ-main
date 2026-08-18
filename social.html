@@ -580,6 +580,26 @@
           }
 
           renderDiscoverGrid(pageArticles, 'all');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+
+      // B. Chargement Podcast Featured Social
+      try {
+        const resPod = await fetch(`${API_URL}/podcasts/featured/social`);
+        const jsonPod = await resPod.json();
+        if (jsonPod.success && jsonPod.data) {
+          const pod = jsonPod.data;
+          const img = document.getElementById('soc-pod-img');
+          const title = document.getElementById('soc-pod-title');
+          const cat = document.getElementById('soc-pod-cat');
+          const link = document.getElementById('soc-pod-link');
+
+          if (img) img.src = pod.image_url || pod.cover_image || 'https://placehold.co/400x300';
+          if (title) title.textContent = pod.title;
+          if (cat) cat.textContent = (pod.category || 'Podcast').toUpperCase();
+          if (link) link.href = `podcast.html?id=${pod.id}`;
         } else {
           const link = document.getElementById('soc-pod-link');
           if (link) link.href = 'podcasts.html';
@@ -600,5 +620,4 @@
   </script>
   <script src="/js/solitiquo.js?v=38"></script>
 </body>
-
 </html>

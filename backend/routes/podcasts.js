@@ -123,8 +123,11 @@ router.get('/featured/:category', async (req, res) => {
     const { category } = req.params;
     const { lang } = req.query;
     const isEn = lang === 'en';
+    const catLower = (category || '').trim().toLowerCase();
 
-    const normalizedCategory = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
+    let targetCol = 'is_featured';
+    if (catLower === 'politique') targetCol = 'is_featured_politique';
+    else if (catLower === 'social' || catLower === 'societe' || catLower === 'société') targetCol = 'is_featured_social';
 
     const query = `
       SELECT 
@@ -137,23 +140,23 @@ router.get('/featured/:category', async (req, res) => {
         p.category,
         p.is_premium,
         p.is_featured,
+        COALESCE(p.is_featured_politique, FALSE) as is_featured_politique,
+        COALESCE(p.is_featured_social, FALSE) as is_featured_social,
         p.play_count,
         p.created_at,
         u.username as author_name
       FROM podcasts p
       LEFT JOIN users u ON p.author_id = u.id
       WHERE p.status = 'published'
-        AND (p.category = $1 OR p.is_featured = TRUE)
       ORDER BY 
-        CASE WHEN p.category = $1 AND p.is_featured = TRUE THEN 0
-             WHEN p.is_featured = TRUE THEN 1
-             WHEN p.category = $1 THEN 2
-             ELSE 3 END,
+        CASE WHEN ${targetCol} = TRUE THEN 0
+             WHEN LOWER(p.category) = $1 THEN 1
+             ELSE 2 END,
         p.created_at DESC
       LIMIT 1
     `;
 
-    const { rows } = await pool.query(query, [normalizedCategory]);
+    const { rows } = await pool.query(query, [catLower]);
     if (rows.length === 0) {
       return res.json({ success: false, message: 'Aucun podcast pour cette catégorie' });
     }
@@ -289,7 +292,7 @@ router.post('/', isWriter, mixedUpload.fields([
         created_at, 
         updated_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, 'published', FALSE, NOW(), NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7, 'published', FALSE, NOW(), NOW(), $8, $9, $10)
       RETURNING id, title
     `;
 
@@ -407,7 +410,7 @@ router.put('/:id', isWriter, mixedUpload.fields([
       // Si nouvel audio, on met à jour duration aussi
       query = `
         UPDATE podcasts 
-        SET title=$1, description=$2, audio_url=$3, cover_image=$4, duration_seconds=$5, category=$6, updated_at=NOW()
+        SET title=$1, description=$2, audio_url=$3, cover_image=$4, duration_seconds=$5, category=$6, is_featured=$7, is_featured_politique=$8, is_featured_social=$9, updated_at=NOW()
         WHERE id=$7 
         RETURNING id, title
       `;
@@ -416,7 +419,7 @@ router.put('/:id', isWriter, mixedUpload.fields([
       // Sinon on garde la durée existante
       query = `
         UPDATE podcasts 
-        SET title=$1, description=$2, cover_image=$3, category=$4, updated_at=NOW()
+        SET title=$1, description=$2, cover_image=$3, category=$4, is_featured=$5, is_featured_politique=$6, is_featured_social=$7, updated_at=NOW()
         WHERE id=$5 
         RETURNING id, title
       `;
@@ -587,25 +590,28 @@ const { isAdmin } = require('../middleware/auth');
 router.post('/:id/toggle-featured', isAdmin, async (req, res) => {
   try {
     const { id } = req.params;
+    const target = (req.query.target || req.body.target || 'global').toLowerCase();
     if (isNaN(id)) return res.status(400).json({ success: false, error: 'ID invalide' });
 
-    // Check current state of the podcast
-    const checkRes = await pool.query('SELECT is_featured FROM podcasts WHERE id = $1', [id]);
+    let col = 'is_featured';
+    if (target === 'politique') col = 'is_featured_politique';
+    if (target === 'social') col = 'is_featured_social';
+
+    const checkRes = await pool.query(`SELECT ${col} FROM podcasts WHERE id = $1`, [id]);
     if (checkRes.rows.length === 0) return res.status(404).json({ success: false, error: 'Podcast introuvable' });
 
-    const isCurrentlyFeatured = checkRes.rows[0].is_featured === true;
+    const isCurrentlyFeatured = checkRes.rows[0][col] === true;
 
-    // Reset all podcasts to FALSE (only one podcast featured at a time)
-    await pool.query('UPDATE podcasts SET is_featured = FALSE');
+    // Seul un podcast peut être mis en avant par emplacement à la fois
+    await pool.query(`UPDATE podcasts SET ${col} = FALSE`);
 
     let newStatus = false;
     if (!isCurrentlyFeatured) {
-      // If it wasn't featured, set this podcast to TRUE
-      await pool.query('UPDATE podcasts SET is_featured = TRUE WHERE id = $1', [id]);
+      await pool.query(`UPDATE podcasts SET ${col} = TRUE WHERE id = $1`, [id]);
       newStatus = true;
     }
 
-    res.json({ success: true, is_featured: newStatus });
+    res.json({ success: true, target, is_featured: newStatus });
   } catch (err) {
     console.error('❌ Erreur toggle featured:', err);
     res.status(500).json({ success: false, error: 'Erreur serveur' });

@@ -378,7 +378,7 @@
                 if (action === 'delete') await deleteItem(type, id);
                 if (action === 'toggle-premium') await togglePremium(type, id, btn.dataset.isprem === 'true');
                 if (action === 'approve-art') await workflow(id, 'approve');
-                if (action === 'set-featured' || action === 'toggle-featured-podcast') await toggleFeaturedPodcast(id);
+                if (action === 'set-featured' || action === 'toggle-featured-podcast') await toggleFeaturedPodcast(id, btn.dataset.target || 'global');
                 if (action === 'edit-poll') openPollModal(id);
                 if (action === 'reset-poll-votes') await resetPollVotes(id);
                 if (action === 'visualize-poll') showPollChart(id);
@@ -757,43 +757,54 @@
                 }
 
                 tbody.innerHTML = safeHTML(data.map(p => {
-                    const isFeat = (p.is_featured === true || p.is_featured === 1 || p.is_featured === 'true');
-                    const featBadge = isFeat
-                        ? '<span class="badge" style="background:#fef3c7; color:#d97706; border:1px solid #fde68a; font-weight:700; display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:20px;">⭐ À la Une</span>'
+                    const isFeatGlobal = (p.is_featured === true || p.is_featured === 1 || p.is_featured === 'true');
+                    const isFeatPol = (p.is_featured_politique === true || p.is_featured_politique === 1 || p.is_featured_politique === 'true');
+                    const isFeatSoc = (p.is_featured_social === true || p.is_featured_social === 1 || p.is_featured_social === 'true');
+
+                    let featBadges = [];
+                    if (isFeatGlobal) featBadges.push('<span class="badge" style="background:#fef3c7; color:#d97706; border:1px solid #fde68a; font-weight:700; padding:3px 8px; border-radius:12px; font-size:0.75rem;">⭐ À la Une (Index)</span>');
+                    if (isFeatPol) featBadges.push('<span class="badge" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; font-weight:700; padding:3px 8px; border-radius:12px; font-size:0.75rem;">🏛️ Vedette Politique</span>');
+                    if (isFeatSoc) featBadges.push('<span class="badge" style="background:#fce7f3; color:#be185d; border:1px solid #fbcfe8; font-weight:700; padding:3px 8px; border-radius:12px; font-size:0.75rem;">👥 Vedette Social</span>');
+
+                    const featDisplay = featBadges.length > 0 
+                        ? `<div style="display:flex; flex-wrap:wrap; gap:4px;">${featBadges.join('')}</div>` 
                         : '<span style="color:#94a3b8; font-size:0.85rem;">Standard</span>';
 
-                    const featBtnStyle = isFeat
-                        ? 'background:#fef3c7; color:#b45309; border:1.5px solid #fde68a; font-weight:700; box-shadow:0 1px 3px rgba(217,119,6,.15);'
-                        : 'background:#f8fafc; color:#64748b; border:1px solid #cbd5e1;';
-
                     return `
-                    <tr style="${isFeat ? 'background:rgba(254, 243, 199, 0.15);' : ''}">
+                    <tr style="${(isFeatGlobal || isFeatPol || isFeatSoc) ? 'background:rgba(254, 243, 199, 0.12);' : ''}">
                         <td>
                             <div class="title-row">
                                 <img src="${p.image_url || 'https://placehold.co/50'}" class="mini-thumb" loading="lazy">
                                 <div>
                                     <strong style="font-size:0.95rem;">${p.title}</strong>
-                                    ${isFeat ? '<span style="margin-left:6px; color:#d97706; font-size:0.9rem;" title="Podcast mis en avant">⭐</span>' : ''}
                                 </div>
                             </div>
                         </td>
                         <td><span class="badge" style="background:#f1f5f9; color:#64748b;">${p.category || 'Général'}</span></td>
-                        <td>${featBadge}</td>
+                        <td>${featDisplay}</td>
                         <td style="font-size:0.85rem; color:#64748b;">${new Date(p.created_at).toLocaleDateString('fr-FR')}</td>
                         <td style="text-align:right;">
-                            <button class="btn-sm" data-action="toggle-featured-podcast" data-id="${p.id}" style="${featBtnStyle} cursor:pointer; padding:6px 14px; border-radius:6px; margin-right:6px; transition:all 0.2s;" title="Basculer la mise en avant de ce podcast">
-                                ${isFeat ? '⭐ À la Une' : '☆ Mettre à la Une'}
-                            </button>
-                            <a href="editeur-podcast.html?id=${p.id}" class="btn-icon-sm edit" title="Éditer"><i data-lucide="pencil"></i></a>
-                            <button class="btn-icon-sm del" data-action="delete" data-type="podcast" data-id="${p.id}" title="Supprimer"><i data-lucide="trash-2"></i></button>
+                            <div style="display:inline-flex; gap:4px; flex-wrap:wrap; justify-content:flex-end;">
+                                <button class="btn-sm" data-action="toggle-featured-podcast" data-target="global" data-id="${p.id}" style="${isFeatGlobal ? 'background:#fef3c7; color:#b45309; border:1px solid #fde68a; font-weight:700;' : 'background:#f8fafc; color:#64748b; border:1px solid #cbd5e1;'} cursor:pointer; padding:5px 10px; border-radius:6px; font-size:0.78rem;" title="Mettre à la une sur l'accueil (Index & Podcasts)">
+                                    ${isFeatGlobal ? '⭐ À la Une' : '☆ À la Une'}
+                                </button>
+                                <button class="btn-sm" data-action="toggle-featured-podcast" data-target="politique" data-id="${p.id}" style="${isFeatPol ? 'background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; font-weight:700;' : 'background:#f8fafc; color:#64748b; border:1px solid #cbd5e1;'} cursor:pointer; padding:5px 10px; border-radius:6px; font-size:0.78rem;" title="Mettre en avant sur la page Politique">
+                                    ${isFeatPol ? '🏛️ Politique' : '🏛️ Politique'}
+                                </button>
+                                <button class="btn-sm" data-action="toggle-featured-podcast" data-target="social" data-id="${p.id}" style="${isFeatSoc ? 'background:#fce7f3; color:#be185d; border:1px solid #fbcfe8; font-weight:700;' : 'background:#f8fafc; color:#64748b; border:1px solid #cbd5e1;'} cursor:pointer; padding:5px 10px; border-radius:6px; font-size:0.78rem;" title="Mettre en avant sur la page Social">
+                                    ${isFeatSoc ? '👥 Social' : '👥 Social'}
+                                </button>
+                                <a href="editeur-podcast.html?id=${p.id}" class="btn-icon-sm edit" title="Éditer"><i data-lucide="pencil"></i></a>
+                                <button class="btn-icon-sm del" data-action="delete" data-type="podcast" data-id="${p.id}" title="Supprimer"><i data-lucide="trash-2"></i></button>
+                            </div>
                         </td>
                     </tr>`;
                 }).join(''));
             }
 
-            async function toggleFeaturedPodcast(id) {
+            async function toggleFeaturedPodcast(id, target = 'global') {
                 try {
-                    const res = await fetch(`${API_URL}/podcasts/${id}/toggle-featured`, {
+                    const res = await fetch(`${API_URL}/podcasts/${id}/toggle-featured?target=${target}`, {
                         method: 'POST',
                         headers: { 
                             'X-CSRF-Token': SolitiquoAPI.csrfToken || '',
@@ -804,10 +815,14 @@
                     const json = await res.json();
                     if (json.success) {
                         const isFeat = json.is_featured;
+                        let pageName = "Accueil / Index & Podcasts";
+                        if (target === 'politique') pageName = "Page Politique";
+                        if (target === 'social') pageName = "Page Social";
+
                         Swal.fire({
                             icon: 'success',
-                            title: isFeat ? '⭐ Podcast mis en avant !' : 'Mise à la une retirée',
-                            text: isFeat ? 'Ce podcast est désormais affiché en vedette sur la plateforme.' : 'Ce podcast n\'est plus mis en avant.',
+                            title: isFeat ? '⭐ Podcast mis en avant !' : 'Mise en avant retirée',
+                            text: isFeat ? `Ce podcast est désormais mis en avant sur : ${pageName}.` : `Ce podcast n'est plus mis en avant sur : ${pageName}.`,
                             timer: 2000,
                             showConfirmButton: false
                         });

@@ -257,6 +257,9 @@
         document.getElementById('title').value = p.title || '';
         document.getElementById('description').value = p.description || '';
         document.getElementById('category').value = p.category || 'Politique';
+        document.getElementById('is_featured').checked = (p.is_featured === true || p.is_featured === 1 || p.is_featured === 'true');
+        document.getElementById('is_featured_politique').checked = (p.is_featured_politique === true || p.is_featured_politique === 1 || p.is_featured_politique === 'true');
+        document.getElementById('is_featured_social').checked = (p.is_featured_social === true || p.is_featured_social === 1 || p.is_featured_social === 'true');
 
         // Transcription : vide le placeholder si vide en base
         const transcriptEl = document.getElementById('transcript-editor');
@@ -316,6 +319,9 @@
       formData.append('title', document.getElementById('title').value);
       formData.append('description', document.getElementById('description').value);
       formData.append('category', document.getElementById('category').value);
+      formData.append('is_featured', document.getElementById('is_featured').checked);
+      formData.append('is_featured_politique', document.getElementById('is_featured_politique').checked);
+      formData.append('is_featured_social', document.getElementById('is_featured_social').checked);
 
       const audioFile = document.getElementById('audio_file').files[0];
       const imgFile = document.getElementById('image_file').files[0];
