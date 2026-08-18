@@ -184,11 +184,49 @@
             </div>
 
             <div id="view-articles" class="view-section">
+                <!-- BARRE DE FILTRES POUR LES ARTICLES (LANGUES ET THÈMES) -->
+                <div style="background:white; border-radius:12px; padding:1.25rem 1.5rem; margin-bottom:1.5rem; border:1px solid #e2e8f0; box-shadow:0 2px 10px rgba(0,0,0,0.03); display:flex; flex-direction:column; gap:1rem;">
+                    
+                    <!-- 1. BADGES DE LANGUE -->
+                    <div style="display:flex; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+                        <span style="font-weight:700; font-size:0.8rem; color:#475569; text-transform:uppercase; letter-spacing:0.8px; margin-right:0.5rem; display:flex; align-items:center; gap:6px;">
+                            🌐 Filtre Langue :
+                        </span>
+                        <div id="art-lang-filter-bar" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                            <button class="art-lang-pill active" data-lang="all" style="background:#37463D; color:white; border:none; padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 6px rgba(55,70,61,0.2);">
+                                🌐 Toutes
+                            </button>
+                            <button class="art-lang-pill" data-lang="fr" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s;">
+                                🇫🇷 Français
+                            </button>
+                            <button class="art-lang-pill" data-lang="en" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s;">
+                                🇬🇧 English
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="height:1px; background:#f1f5f9; width:100%;"></div>
+
+                    <!-- 2. BADGES DE THÈMES -->
+                    <div style="display:flex; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+                        <span style="font-weight:700; font-size:0.8rem; color:#475569; text-transform:uppercase; letter-spacing:0.8px; margin-right:0.5rem; display:flex; align-items:center; gap:6px;">
+                            🏷️ Filtre Thème :
+                        </span>
+                        <div id="art-theme-filter-bar" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                            <button class="art-theme-pill active" data-cat="all" style="background:#C82823; color:white; border:none; padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 6px rgba(200,40,35,0.2);">
+                                Tous les thèmes
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
                 <div class="table-card">
                     <table>
                         <thead>
                             <tr>
-                                <th style="width:35%;">Article</th>
+                                <th style="width:32%;">Article</th>
+                                <th>Langue</th>
                                 <th>Statut</th>
                                 <th>Accès</th>
                                 <th>Validation</th>
@@ -198,7 +236,7 @@
                         </thead>
                         <tbody id="list-articles">
                             <tr>
-                                <td colspan="6" style="text-align:center; padding:3rem;">Chargement...</td>
+                                <td colspan="7" style="text-align:center; padding:3rem;">Chargement...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -713,23 +751,125 @@
                 } catch (e) { console.error(e); }
             }
 
+            let allAdminArticles = [];
+            let currentAdminLangFilter = 'all';
+            let currentAdminThemeFilter = 'all';
+
+            function initArticlesFilters(data) {
+                allAdminArticles = data || [];
+                
+                // 1. Populer dynamiquement les badges de thèmes
+                const categoryMap = new Map();
+                allAdminArticles.forEach(a => {
+                    if (a.category && !categoryMap.has(a.category.toLowerCase())) {
+                        categoryMap.set(a.category.toLowerCase(), a.category);
+                    }
+                });
+                const categories = Array.from(categoryMap.values());
+
+                const themeBar = document.getElementById('art-theme-filter-bar');
+                if (themeBar) {
+                    let themeHtml = `<button class="art-theme-pill active" data-cat="all" style="background:#C82823; color:white; border:none; padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 6px rgba(200,40,35,0.2);">Tous les thèmes (${allAdminArticles.length})</button>`;
+                    categories.forEach(cat => {
+                        const count = allAdminArticles.filter(a => (a.category || '').toLowerCase() === cat.toLowerCase()).length;
+                        themeHtml += `<button class="art-theme-pill" data-cat="${cat}" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s;">${cat} (${count})</button>`;
+                    });
+                    themeBar.innerHTML = themeHtml;
+
+                    themeBar.querySelectorAll('.art-theme-pill').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            themeBar.querySelectorAll('.art-theme-pill').forEach(b => {
+                                b.classList.remove('active');
+                                b.style.background = '#f1f5f9';
+                                b.style.color = '#334155';
+                                b.style.border = '1px solid #cbd5e1';
+                                b.style.boxShadow = 'none';
+                            });
+                            btn.classList.add('active');
+                            btn.style.background = '#C82823';
+                            btn.style.color = 'white';
+                            btn.style.border = 'none';
+                            btn.style.boxShadow = '0 2px 6px rgba(200,40,35,0.2)';
+
+                            currentAdminThemeFilter = btn.dataset.cat;
+                            applyAdminArticlesFilter();
+                        });
+                    });
+                }
+
+                // 2. Mettre à jour les badges de langues avec compteurs
+                const langBar = document.getElementById('art-lang-filter-bar');
+                if (langBar) {
+                    const frCount = allAdminArticles.filter(a => (a.language || 'fr').toLowerCase() === 'fr').length;
+                    const enCount = allAdminArticles.filter(a => (a.language || '').toLowerCase() === 'en').length;
+
+                    langBar.innerHTML = `
+                        <button class="art-lang-pill active" data-lang="all" style="background:#37463D; color:white; border:none; padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 6px rgba(55,70,61,0.2);">🌐 Toutes (${allAdminArticles.length})</button>
+                        <button class="art-lang-pill" data-lang="fr" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s;">🇫🇷 Français (${frCount})</button>
+                        <button class="art-lang-pill" data-lang="en" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s;">🇬🇧 English (${enCount})</button>
+                    `;
+
+                    langBar.querySelectorAll('.art-lang-pill').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            langBar.querySelectorAll('.art-lang-pill').forEach(b => {
+                                b.classList.remove('active');
+                                b.style.background = '#f1f5f9';
+                                b.style.color = '#334155';
+                                b.style.border = '1px solid #cbd5e1';
+                                b.style.boxShadow = 'none';
+                            });
+                            btn.classList.add('active');
+                            btn.style.background = '#37463D';
+                            btn.style.color = 'white';
+                            btn.style.border = 'none';
+                            btn.style.boxShadow = '0 2px 6px rgba(55,70,61,0.2)';
+
+                            currentAdminLangFilter = btn.dataset.lang;
+                            applyAdminArticlesFilter();
+                        });
+                    });
+                }
+
+                applyAdminArticlesFilter();
+            }
+
+            function applyAdminArticlesFilter() {
+                let filtered = allAdminArticles;
+                if (currentAdminLangFilter !== 'all') {
+                    filtered = filtered.filter(a => (a.language || 'fr').toLowerCase() === currentAdminLangFilter.toLowerCase());
+                }
+                if (currentAdminThemeFilter !== 'all') {
+                    filtered = filtered.filter(a => (a.category || '').toLowerCase() === currentAdminThemeFilter.toLowerCase());
+                }
+                renderArticles(filtered);
+            }
+
             function renderArticles(data) {
                 const tbody = document.getElementById('list-articles');
-                if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Vide</td></tr>'; return; }
+                if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem; color:#888;">Aucun article ne correspond aux filtres sélectionnés.</td></tr>'; return; }
 
                 tbody.innerHTML = safeHTML(data.map(art => {
                     const isPrem = (art.is_premium === true);
                     const statusBadge = art.status === 'draft' ? '<span class="badge badge-draft">Brouillon</span>' : '<span class="badge badge-pub">Publié</span>';
                     const premStyle = isPrem ? 'color:#b91c1c; background:#fef2f2; border-color:#fecaca;' : 'color:#64748b; background:#f1f5f9; border-color:#e2e8f0;';
 
+                    const isEn = (art.language || '').toLowerCase() === 'en';
+                    const langBadge = isEn 
+                        ? '<span class="badge" style="background:#fef2f2; color:#991b1b; border:1px solid #fecaca; font-weight:700; padding:4px 10px; border-radius:12px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">🇬🇧 EN</span>'
+                        : '<span class="badge" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-weight:700; padding:4px 10px; border-radius:12px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">🇫🇷 FR</span>';
+
                     return `
                     <tr>
                         <td>
                             <div class="title-row">
                                 <img src="${art.image_url || 'https://placehold.co/50'}" class="mini-thumb" loading="lazy">
-                                <div><div style="font-weight:700;">${art.title}</div><div style="font-size:0.8rem; color:#64748b;">${art.category}</div></div>
+                                <div>
+                                    <div style="font-weight:700;">${art.title}</div>
+                                    <div style="font-size:0.75rem; color:#475569; font-weight:700; text-transform:uppercase; margin-top:2px;">${art.category || 'Général'}</div>
+                                </div>
                             </div>
                         </td>
+                        <td>${langBadge}</td>
                         <td>${statusBadge}</td>
                         <td>
                             <button class="btn-sm" style="${premStyle}" data-action="toggle-premium" data-type="article" data-id="${art.id}" data-isprem="${isPrem}">
