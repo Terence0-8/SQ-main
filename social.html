@@ -35,8 +35,8 @@
   <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
   <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
   <title>Social — Solitiquo</title>
-  <link rel="stylesheet" href="css/shared.css?v=30" />
-  <link rel="stylesheet" href="css/pages/social.css?v=30" />
+  <link rel="stylesheet" href="css/shared.css?v=31" />
+  <link rel="stylesheet" href="css/pages/social.css?v=31" />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
     rel="stylesheet" />
@@ -293,7 +293,7 @@
 
   <script src="js/i18n.js"></script>
   <script src="js/config.js"></script>
-  <script src="/js/api.js?v=30"></script>
+  <script src="/js/api.js?v=31"></script>
   <script>
     // --- 1. GESTIONNAIRE DE CLICS GLOBAL ---
     document.addEventListener('click', (e) => {
@@ -488,34 +488,41 @@
               `).join('')}
             </div>
           `;
-                    // 2. Grille Découvrir Pleine Largeur (Dynamic grid layout)
+                              // 2. Grille Découvrir (Exactement le même modèle que la page index)
           const discoverArticles = articles.slice(8, 20);
           const discoverGrid = document.getElementById('discover-grid');
           if (discoverGrid && discoverArticles.length > 0) {
             discoverGrid.innerHTML = discoverArticles.map((art, idx) => {
-              const formatTag = art.format_tag || art.format || "Article";
-              const isWide = (idx % 5 === 3);
-              const cardClass = isWide ? 'discover-card discover-card-wide' : 'discover-card';
-              return `
-                <a href="article.html?id=${art.id}" class="${cardClass}">
-                  <div class="discover-img-wrap">
-                    <img src="${art.image_url || 'https://via.placeholder.com/600x400'}" class="discover-img" onerror="handleImgError(this)" loading="lazy">
-                  </div>
-                  <div class="discover-body">
-                    <div class="card-badge-row">
-                      <span class="badge-format">${formatTag}</span>
-                      <span class="badge-theme">${art.category || "Social & Société"}</span>
-                      ${_lb(art)}
-                    </div>
-                    <h4 class="discover-title">${art.title} ${_pb(art)}</h4>
-                    ${isWide && art.excerpt ? `<p style="font-size:0.9rem; color:#475569; margin-bottom:0.8rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${art.excerpt}</p>` : ''}
-                    <div class="discover-date" style="color:#64748b; font-weight:600; font-size:0.8rem; margin-top:auto;">${SolitiquoAPI.formatDate(art.published_at)}</div>
-                  </div>
-                </a>
-              `;
+              let cardClass = 'disco-card';
+              const patternIndex = idx % 10;
+              if (patternIndex === 4) {
+                cardClass += ' disco-card-wide';
+              } else if (patternIndex === 9) {
+                cardClass += ' disco-card-full';
+              }
+
+              const excerptHtml = (patternIndex === 4 || patternIndex === 9) && (art.excerpt || art.slug)
+                ? '<p class="disco-excerpt">' + (art.excerpt || '') + '</p>'
+                : '';
+
+              const linkDisco = 'article.html?id=' + art.id;
+              const pb = art.is_premium ? ' <img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">' : '';
+              const catTag = art.category || "Social & Société";
+
+              return '<a href="' + linkDisco + '" class="' + cardClass + '">' +
+                '<div class="disco-img-wrap">' +
+                  '<img src="' + (art.image_url || 'https://via.placeholder.com/600x400') + '" class="disco-img" onerror="handleImgError(this)" loading="lazy">' +
+                '</div>' +
+                '<div class="disco-body">' +
+                  '<span class="art-cat" style="font-size:0.65rem; margin-bottom:4px; color:#C82823; font-weight:800; text-transform:uppercase;">' + catTag + '</span>' +
+                  '<h4 class="disco-title">' + art.title + pb + '</h4>' +
+                  excerptHtml +
+                  '<div class="disco-date">' + SolitiquoAPI.formatDate(art.published_at) + '</div>' +
+                '</div>' +
+              '</a>';
             }).join('');
           } else if (discoverGrid) {
-            discoverGrid.innerHTML = '<p style="text-align:center;color:#999;grid-column:1/-1;">Plus d&apos;articles bientôt.</p>';
+            discoverGrid.innerHTML = '<p style="text-align:center; color:#999; grid-column:1/-1; padding:2rem;">Plus d&apos;articles bientôt.</p>';
           }
         } else {
           const link = document.getElementById('soc-pod-link');
@@ -535,7 +542,7 @@
       navigator.serviceWorker.register('/sw.js');
     }
   </script>
-  <script src="/js/solitiquo.js?v=30"></script>
+  <script src="/js/solitiquo.js?v=31"></script>
 </body>
 
 </html>
