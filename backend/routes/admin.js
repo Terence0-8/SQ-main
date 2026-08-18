@@ -66,6 +66,17 @@ router.get('/content/articles', isWriter, async (req, res) => {
         a.published_at, 
         a.views_count, 
         a.is_premium,
+        CASE 
+          WHEN LOWER(COALESCE(a.language, '')) = 'en' 
+            OR a.title ILIKE '% the %' 
+            OR a.title ILIKE '% and %' 
+            OR a.title ILIKE '% in %' 
+            OR a.title ILIKE '% for %' 
+            OR a.title ILIKE '% of %' 
+            OR a.title ILIKE '% with %'
+          THEN 'en' 
+          ELSE 'fr' 
+        END AS language,
         u.username as author_name
       FROM articles a
       LEFT JOIN users u ON a.author_id = u.id
