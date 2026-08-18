@@ -839,6 +839,49 @@ function renderDiscoverGrid(allArticles, activeCategory, lang) {
   }
 }
 
+// ============================================================
+// HELPER FUNCTIONS FOR I18N
+// ============================================================
+function getLanguage() {
+  return localStorage.getItem('siteLanguage') || localStorage.getItem('lang') || 'fr';
+}
+
+async function loadLanguagePreference() {
+  return getLanguage();
+}
+
+function setLanguage(lang) {
+  localStorage.setItem('siteLanguage', lang);
+  localStorage.setItem('lang', lang);
+  return lang;
+}
+
+function t(key, defaultVal = '') {
+  const lang = getLanguage();
+  if (TRANSLATIONS[lang] && TRANSLATIONS[lang][key] !== undefined) {
+    return TRANSLATIONS[lang][key];
+  }
+  if (TRANSLATIONS.fr && TRANSLATIONS.fr[key] !== undefined) {
+    return TRANSLATIONS.fr[key];
+  }
+  return defaultVal || key;
+}
+
+function updateInterfaceText(lang = getLanguage()) {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (key && TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) {
+      el.textContent = TRANSLATIONS[lang][key];
+    }
+  });
+}
+
+window.t = t;
+window.getLanguage = getLanguage;
+window.loadLanguagePreference = loadLanguagePreference;
+window.setLanguage = setLanguage;
+window.updateInterfaceText = updateInterfaceText;
+
 /**
  * FONCTION PRINCIPALE D'INITIALISATION
  * À appeler depuis n'importe quelle page pour activer le système de langue
