@@ -35,8 +35,8 @@
   <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
   <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
   <title>Politique — Solitiquo</title>
-  <link rel="stylesheet" href="css/shared.css?v=29" />
-  <link rel="stylesheet" href="css/pages/politique.css?v=29" />
+  <link rel="stylesheet" href="css/shared.css?v=30" />
+  <link rel="stylesheet" href="css/pages/politique.css?v=30" />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
     rel="stylesheet" />
@@ -198,10 +198,7 @@
         </div>
       </div>
 
-      <div class="discover-section">
-        <div class="section-label">Découvrir</div>
-        <div id="discover-grid" class="discover-grid"></div>
-      </div>
+      
 
     </div>
 
@@ -238,6 +235,14 @@
 
     </aside>
   </div>
+
+  <!-- SECTION DÉCOUVRIR PLEINE LARGEUR (FULL WIDTH) -->
+  <section class="discover-section">
+    <div class="discover-container">
+      <div class="section-label">Découvrir</div>
+      <div id="discover-grid" class="discover-grid"></div>
+    </div>
+  </section>
 
 
   <footer class="premium-footer">
@@ -289,9 +294,9 @@
   </footer>
 
   <script src="js/i18n.js"></script>
-  <script src="/js/solitiquo.js?v=29"></script>
+  <script src="/js/solitiquo.js?v=30"></script>
   <script src="js/config.js"></script>
-  <script src="/js/api.js?v=29"></script>
+  <script src="/js/api.js?v=30"></script>
   <script>
     // --- 1. GESTIONNAIRE DE CLICS GLOBAL (LA SOLUTION) ---
     // Cette partie écoute tous les clics sur la page et réagit si c'est un bouton de sondage
@@ -534,24 +539,34 @@
             </div>
           `;
 
-          // Injection de la grille "Découvrir" (articles 8-16 après le nouveau découpage)
-          const discoverArticles = articles.slice(8, 16);
+                    // 2. Grille Découvrir Pleine Largeur (Dynamic grid layout)
+          const discoverArticles = articles.slice(8, 20);
           const discoverGrid = document.getElementById('discover-grid');
           if (discoverGrid && discoverArticles.length > 0) {
-            discoverGrid.innerHTML = discoverArticles.map(art => `
-                <a href="article.html?id=${art.id}" class="discover-card">
+            discoverGrid.innerHTML = discoverArticles.map((art, idx) => {
+              const formatTag = art.format_tag || art.format || "Article";
+              const isWide = (idx % 5 === 3);
+              const cardClass = isWide ? 'discover-card discover-card-wide' : 'discover-card';
+              return `
+                <a href="article.html?id=${art.id}" class="${cardClass}">
                   <div class="discover-img-wrap">
-                    <img src="${art.image_url}" class="discover-img" onerror="handleImgError(this)" loading="lazy">
-                    ${art.is_premium ? '<img src="GOLD.png" alt="Premium" class="premium-badge-card" style="position:absolute; top:10px; right:10px; width:24px; z-index:2;" loading="lazy">' : ''}
+                    <img src="${art.image_url || 'https://via.placeholder.com/600x400'}" class="discover-img" onerror="handleImgError(this)" loading="lazy">
                   </div>
                   <div class="discover-body">
-                    <h4 class="discover-title">${art.title} ${art.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">' : ''}</h4>
-                    <div class="discover-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
+                    <div class="card-badge-row">
+                      <span class="badge-format">${formatTag}</span>
+                      <span class="badge-theme">${art.category || "Politique"}</span>
+                      ${_lb(art)}
+                    </div>
+                    <h4 class="discover-title">${art.title} ${_pb(art)}</h4>
+                    ${isWide && art.excerpt ? `<p style="font-size:0.9rem; color:#475569; margin-bottom:0.8rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${art.excerpt}</p>` : ''}
+                    <div class="discover-date" style="color:#64748b; font-weight:600; font-size:0.8rem; margin-top:auto;">${SolitiquoAPI.formatDate(art.published_at)}</div>
                   </div>
                 </a>
-            `).join('');
+              `;
+            }).join('');
           } else if (discoverGrid) {
-            discoverGrid.innerHTML = '<p style="text-align:center;color:#999;">Plus d\'articles bientôt.</p>';
+            discoverGrid.innerHTML = '<p style="text-align:center;color:#999;grid-column:1/-1;">Plus d&apos;articles bientôt.</p>';
           }
         } else {
           document.getElementById('magazine-feed').innerHTML = '<p style="text-align:center; color:#888; padding:2rem;">Aucun article disponible pour le moment.</p>';
