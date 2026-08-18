@@ -516,6 +516,10 @@ body.menu-open {
     transition: all .3s ease
 }
 
+.search-btn svg {
+    pointer-events: none;
+}
+
 .search-btn:hover {
     background: var(--secondary-gray);
     color: #fff

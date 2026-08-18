@@ -114,27 +114,50 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.style.overflow = '';
   }
 
-  // Bouton de recherche dans le header (desktop ou mobile)
-  if (searchBtn && searchContainer && !searchBtn.dataset.searchInit) {
-    searchBtn.dataset.searchInit = 'solitiquo';
-
-    // Sur mobile (burger visible), ouvrir l'overlay global
-    // Sur desktop, comportement classique (dropdown)
-    searchBtn.addEventListener('click', (e) => {
+  // Centralized Header Search Toggle (Bulletproof)
+  function handleSearchToggle(e) {
+    if (e) {
       e.stopPropagation();
-      const isMobile = window.innerWidth <= 900;
-      if (isMobile) {
-        openSearchOverlay();
-      } else {
-        searchContainer.classList.toggle('active');
-        if (searchContainer.classList.contains('active')) {
-          setTimeout(() => searchInput && searchInput.focus(), 100);
-        }
-      }
-    });
+      e.preventDefault();
+    }
+    const currentContainer = document.getElementById('searchContainer');
+    const currentInput = document.getElementById('searchInput');
+    if (!currentContainer) return;
 
+    const isMobile = window.innerWidth <= 900;
+    if (isMobile) {
+      if (typeof openSearchOverlay === 'function') openSearchOverlay();
+    } else {
+      const isCurrentlyActive = currentContainer.classList.contains('active');
+      if (isCurrentlyActive) {
+        currentContainer.classList.remove('active');
+      } else {
+        currentContainer.classList.add('active');
+        setTimeout(() => currentInput && currentInput.focus(), 100);
+      }
+    }
+  }
+
+  if (searchBtn && !searchBtn.dataset.searchInit) {
+    searchBtn.dataset.searchInit = 'true';
+    searchBtn.addEventListener('click', handleSearchToggle);
+  }
+
+  const searchLabelElem = document.getElementById('searchLabel');
+  if (searchLabelElem && !searchLabelElem.dataset.searchInit) {
+    searchLabelElem.dataset.searchInit = 'true';
+    searchLabelElem.addEventListener('click', handleSearchToggle);
+  }
+
+  if (searchContainer) {
     searchContainer.addEventListener('click', (e) => e.stopPropagation());
-    document.addEventListener('click', () => searchContainer.classList.remove('active'));
+    document.addEventListener('click', (e) => {
+      const currentBtn = document.getElementById('searchBtn');
+      const currentLabel = document.getElementById('searchLabel');
+      if (currentBtn && currentBtn.contains(e.target)) return;
+      if (currentLabel && currentLabel.contains(e.target)) return;
+      searchContainer.classList.remove('active');
+    });
   }
 
   // Bouton loupe mobile dédié (burgerSearchBtn) si présent dans le header

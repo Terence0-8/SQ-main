@@ -22,8 +22,8 @@
     <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
     <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
   <title>Contact — Solitiquo</title>
-  <link rel="stylesheet" href="css/shared.css?v=21" />
-  <link rel="stylesheet" href="css/pages/contact.css?v=21" />
+  <link rel="stylesheet" href="css/shared.css?v=22" />
+  <link rel="stylesheet" href="css/pages/contact.css?v=22" />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
     rel="stylesheet" />
@@ -250,7 +250,7 @@
 
   <script src="js/i18n.js"></script>
   <script src="js/config.js"></script>
-  <script src="/js/api.js?v=21"></script>
+  <script src="/js/api.js?v=22"></script>
   <script>
     // --- 1. MENU MOBILE & RECHERCHE ---
     const burger = document.getElementById('burgerBtn');
@@ -274,17 +274,7 @@
       const searchInput = document.getElementById('searchInput');
 
       if (!searchBtn || !searchContainer || !searchInput) return;
-
-      function toggleSearch(e) {
-        e.stopPropagation();
-        searchContainer.classList.toggle('active');
-        if (searchContainer.classList.contains('active')) {
-          setTimeout(() => searchInput.focus(), 100);
-        }
-      }
-
-      searchBtn.addEventListener('click', toggleSearch);
-      if (searchLabel) searchLabel.addEventListener('click', toggleSearch);
+}
 
       document.addEventListener('click', (e) => {
         if (!searchContainer.contains(e.target) && !searchBtn.contains(e.target) && (!searchLabel || !searchLabel.contains(e.target))) {
@@ -341,7 +331,7 @@
       navigator.serviceWorker.register('/sw.js');
     }
   </script>
-  <script src="/js/solitiquo.js?v=21"></script>
+  <script src="/js/solitiquo.js?v=22"></script>
 </body>
 
 </html>
