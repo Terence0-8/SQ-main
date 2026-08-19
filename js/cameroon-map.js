@@ -1,4 +1,4 @@
-/* global document, window, alert */
+/* global document, window, alert, XMLSerializer, Image, Blob, navigator, ClipboardItem */
 /**
  * js/cameroon-map.js - Plateforme Cartographique Interactive des 10 Régions du Cameroun
  * Écosystème Solitiquo (Ultra Luxury D.A.) :
@@ -1020,6 +1020,9 @@ class CameroonMap {
           <button class="cm-drawer-cta" id="cm-drawer-cta">
             Voir les enquêtes de la région →
           </button>
+          <button class="cm-drawer-cta" id="cm-drawer-export-cta" style="background:#37463D;margin-top:0.6rem;">
+            📸 Exporter cette fiche en Infographie R.S. →
+          </button>
         </div>
       </div>
 
@@ -1047,6 +1050,51 @@ class CameroonMap {
           </div>
 
           <div class="cm-compare-results" id="cm-compare-results-grid"></div>
+        </div>
+      </div>
+
+      <!-- Modal Studio d'Exportation Réseaux Sociaux -->
+      <div class="cm-modal-overlay" id="cm-export-modal-overlay">
+        <div class="cm-modal-content cm-export-modal">
+          <button class="cm-modal-close" id="cm-export-modal-close">&times;</button>
+          <h3 class="cm-modal-title">📸 Studio d'Exportation Réseaux Sociaux & Infographies</h3>
+          <p class="cm-modal-desc">Exporte la carte avec ses légendes et statistiques au format HD (2000px) prêt pour la publication sur X, LinkedIn, Facebook et Instagram.</p>
+
+          <div class="cm-export-controls">
+            <div class="cm-export-option-group">
+              <label for="cm-export-format-select">Format R.S. :</label>
+              <select id="cm-export-format-select">
+                <option value="square" selected>📱 Carré (1080 x 1080px - Insta/LinkedIn)</option>
+                <option value="landscape">🐦 Paysage (1200 x 675px - X/Facebook)</option>
+              </select>
+            </div>
+            <div class="cm-export-option-group">
+              <label for="cm-export-theme-select">Esthétique :</label>
+              <select id="cm-export-theme-select">
+                <option value="paper" selected>📜 Papier Archiviste & Hachures 45°</option>
+                <option value="dark">🌙 Nuit Impériale (Fond Sombre)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="cm-export-preview-box">
+            <canvas id="cm-export-preview-canvas" class="cm-export-preview-canvas"></canvas>
+          </div>
+
+          <div class="cm-export-actions">
+            <button class="cm-export-btn-secondary" id="cm-export-dl-svg">
+              <svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span>SVG Vectoriel</span>
+            </button>
+            <button class="cm-export-btn-secondary" id="cm-export-copy-clipboard">
+              <svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span>Copier l'Image</span>
+            </button>
+            <button class="cm-export-btn-primary" id="cm-export-dl-png">
+              <svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+              <span>Télécharger PNG HD</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1114,19 +1162,40 @@ class CameroonMap {
     if (btnCompare) btnCompare.addEventListener('click', () => this.openCompareModal());
 
     const btnExport = document.getElementById('cm-btn-export');
-    if (btnExport) btnExport.addEventListener('click', () => this.exportMapImage());
+    if (btnExport) btnExport.addEventListener('click', () => this.openExportStudioModal());
+
+    const drawerExportCta = document.getElementById('cm-drawer-export-cta');
+    if (drawerExportCta) drawerExportCta.addEventListener('click', () => this.openExportStudioModal());
 
     const btnSources = document.getElementById('cm-btn-sources');
     if (btnSources) btnSources.addEventListener('click', () => this.openSourcesModal());
 
     document.getElementById('cm-compare-modal-close').addEventListener('click', () => this.closeModals());
+    document.getElementById('cm-export-modal-close').addEventListener('click', () => this.closeModals());
     document.getElementById('cm-sources-modal-close').addEventListener('click', () => this.closeModals());
     document.getElementById('cm-compare-modal-overlay').addEventListener('click', (e) => {
       if (e.target.id === 'cm-compare-modal-overlay') this.closeModals();
     });
+    document.getElementById('cm-export-modal-overlay').addEventListener('click', (e) => {
+      if (e.target.id === 'cm-export-modal-overlay') this.closeModals();
+    });
     document.getElementById('cm-sources-modal-overlay').addEventListener('click', (e) => {
       if (e.target.id === 'cm-sources-modal-overlay') this.closeModals();
     });
+
+    const exportFormatSel = document.getElementById('cm-export-format-select');
+    const exportThemeSel = document.getElementById('cm-export-theme-select');
+    if (exportFormatSel) exportFormatSel.addEventListener('change', () => this.renderExportCanvas());
+    if (exportThemeSel) exportThemeSel.addEventListener('change', () => this.renderExportCanvas());
+
+    const btnDlPng = document.getElementById('cm-export-dl-png');
+    if (btnDlPng) btnDlPng.addEventListener('click', () => this.downloadExportPng());
+
+    const btnCopyClip = document.getElementById('cm-export-copy-clipboard');
+    if (btnCopyClip) btnCopyClip.addEventListener('click', () => this.copyExportToClipboard());
+
+    const btnDlSvg = document.getElementById('cm-export-dl-svg');
+    if (btnDlSvg) btnDlSvg.addEventListener('click', () => this.downloadExportSvg());
 
     const resetFilterBtn = document.getElementById('cm-reset-filter');
     if (resetFilterBtn) {
@@ -1925,8 +1994,215 @@ class CameroonMap {
     document.querySelectorAll('.cm-modal-overlay').forEach(m => m.classList.remove('is-open'));
   }
 
-  exportMapImage() {
-    alert('Capture d\'écran cartographique HD générée. Téléchargement de l\'image vectorielle de la carte du Cameroun.');
+  openExportStudioModal() {
+    const overlay = document.getElementById('cm-export-modal-overlay');
+    if (overlay) {
+      overlay.classList.add('is-open');
+      setTimeout(() => this.renderExportCanvas(), 50);
+    }
+  }
+
+  renderExportCanvas() {
+    const previewCanvas = document.getElementById('cm-export-preview-canvas');
+    if (!previewCanvas) return;
+
+    const formatSelect = document.getElementById('cm-export-format-select');
+    const themeSelect = document.getElementById('cm-export-theme-select');
+    const format = formatSelect ? formatSelect.value : 'square';
+    const theme = themeSelect ? themeSelect.value : 'paper';
+
+    const targetW = format === 'square' ? 1080 : 1200;
+    const targetH = format === 'square' ? 1080 : 675;
+
+    previewCanvas.width = targetW;
+    previewCanvas.height = targetH;
+    const ctx = previewCanvas.getContext('2d');
+
+    // 1. Fond du Canvas
+    if (theme === 'dark') {
+      ctx.fillStyle = '#121814';
+      ctx.fillRect(0, 0, targetW, targetH);
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.08)';
+      ctx.lineWidth = 1;
+      for (let i = -targetH; i < targetW + targetH; i += 16) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i + targetH, targetH);
+        ctx.stroke();
+      }
+    } else {
+      ctx.fillStyle = '#FAFBF8';
+      ctx.fillRect(0, 0, targetW, targetH);
+      ctx.strokeStyle = 'rgba(55, 70, 61, 0.07)';
+      ctx.lineWidth = 1;
+      for (let i = -targetH; i < targetW + targetH; i += 16) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i + targetH, targetH);
+        ctx.stroke();
+      }
+    }
+
+    // 2. En-tête & Branding Solitiquo
+    ctx.fillStyle = '#C82823';
+    ctx.fillRect(40, 36, 10, 36);
+
+    ctx.font = '900 22px system-ui, sans-serif';
+    ctx.fillStyle = theme === 'dark' ? '#D4AF37' : '#37463D';
+    ctx.fillText('SOLITIQUO DATAVIZ', 62, 58);
+
+    ctx.font = '600 12px system-ui, sans-serif';
+    ctx.fillStyle = theme === 'dark' ? '#9CA3AF' : '#6B7280';
+    ctx.fillText('PLATEFORME CARTOGRAPHIQUE DU CAMEROUN', 62, 74);
+
+    const badgeText = document.getElementById('cm-header-badge')?.textContent || 'Données Électorales 2025';
+    ctx.font = '700 26px Georgia, serif';
+    ctx.fillStyle = theme === 'dark' ? '#FFFFFF' : '#1A241E';
+    ctx.fillText(badgeText.toUpperCase(), 40, 126);
+
+    ctx.strokeStyle = theme === 'dark' ? '#2A362E' : '#E2E8F0';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(40, 142);
+    ctx.lineTo(targetW - 40, 142);
+    ctx.stroke();
+
+    // 3. Dessin de la Carte SVG sur le Canvas
+    const svgEl = document.getElementById('cm-svg-root');
+    if (svgEl) {
+      const serializer = new XMLSerializer();
+      let svgStr = serializer.serializeToString(svgEl);
+
+      const img = new Image();
+      const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+
+      img.onload = () => {
+        const mapX = 30;
+        const mapY = 160;
+        const mapW = format === 'square' ? 520 : 540;
+        const mapH = format === 'square' ? 840 : 470;
+
+        ctx.drawImage(img, mapX, mapY, mapW, mapH);
+        URL.revokeObjectURL(url);
+
+        // 4. Panneau Légende & Statistiques à Droite
+        const rightX = mapX + mapW + (format === 'square' ? 20 : 30);
+        const rightY = 160;
+        const rightW = targetW - rightX - 40;
+        const rightH = format === 'square' ? 840 : 470;
+
+        ctx.fillStyle = theme === 'dark' ? '#1A241E' : '#FFFFFF';
+        ctx.fillRect(rightX, rightY, rightW, rightH);
+        ctx.strokeStyle = theme === 'dark' ? '#37463D' : '#E2E8F0';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(rightX, rightY, rightW, rightH);
+
+        ctx.font = '700 16px system-ui, sans-serif';
+        ctx.fillStyle = theme === 'dark' ? '#D4AF37' : '#37463D';
+        ctx.fillText('LÉGENDE & ÉCHELLE OFFICIELLE', rightX + 20, rightY + 35);
+
+        ctx.strokeStyle = theme === 'dark' ? '#2A362E' : '#EDF2F7';
+        ctx.beginPath();
+        ctx.moveTo(rightX + 20, rightY + 48);
+        ctx.lineTo(rightX + rightW - 20, rightY + 48);
+        ctx.stroke();
+
+        let currentY = rightY + 75;
+        const regions = Object.values(CAMEROON_REGIONS_DATA);
+
+        regions.forEach(reg => {
+          const yearData = reg.historicalElections[this.activeYear] || reg.historicalElections['2025'];
+          let color = '#37463D';
+          let valStr = '';
+
+          if (this.activeTab === 'seats') {
+            color = yearData.seats.partyColor;
+            valStr = `${yearData.seats.leadingParty} (${yearData.seats.total} sièges)`;
+          } else if (this.activeTab === 'turnout') {
+            color = yearData.turnout.fill;
+            valStr = `${yearData.turnout.percent}% (${yearData.turnout.votesCast})`;
+          } else if (this.activeTab === 'votes') {
+            color = yearData.votes.partyColor;
+            valStr = yearData.votes.leadingParty;
+          } else if (this.activeTab === 'localElected') {
+            color = reg.localElected.partyColor;
+            valStr = `${reg.localElected.leadingParty} (${reg.localElected.municipalitiesCount} mairies)`;
+          } else if (this.activeTab === 'security') {
+            color = reg.security.color;
+            valStr = reg.security.status;
+          } else if (this.activeTab === 'demographics') {
+            color = '#059669';
+            valStr = `IDH ${reg.demographics.hdiIndex}`;
+          } else if (this.activeTab === 'economy') {
+            color = '#37463D';
+            valStr = `PIB ${reg.economy.gdpShare}`;
+          } else if (this.activeTab === 'education') {
+            color = '#34D399';
+            valStr = `Alphab. ${reg.education.literacyRate}`;
+          }
+
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(rightX + 28, currentY - 5, 6, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.font = '600 13px system-ui, sans-serif';
+          ctx.fillStyle = theme === 'dark' ? '#E5E7EB' : '#1F2937';
+          ctx.fillText(reg.name, rightX + 42, currentY);
+
+          ctx.font = '600 12px system-ui, sans-serif';
+          ctx.fillStyle = theme === 'dark' ? '#9CA3AF' : '#6B7280';
+          const textW = ctx.measureText(valStr).width;
+          ctx.fillText(valStr, rightX + rightW - 20 - textW, currentY);
+
+          currentY += (format === 'square' ? 70 : 38);
+        });
+
+        // 5. Watermark Footer
+        ctx.font = '600 11px system-ui, sans-serif';
+        ctx.fillStyle = theme === 'dark' ? '#6B7280' : '#9CA3AF';
+        ctx.fillText('INFOGRAPHIE SOLITIQUO DATAVIZ — REPRODUCTION AUTORISÉE AVEC MENTION SOLITIQUO.COM', 40, targetH - 18);
+      };
+
+      img.src = url;
+    }
+  }
+
+  downloadExportPng() {
+    const canvas = document.getElementById('cm-export-preview-canvas');
+    if (!canvas) return;
+    const a = document.createElement('a');
+    a.download = `solitiquo-infographie-cameroun-${this.activeTab}-${this.activeYear}.png`;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  }
+
+  copyExportToClipboard() {
+    const canvas = document.getElementById('cm-export-preview-canvas');
+    if (!canvas) return;
+    if (typeof ClipboardItem === 'undefined') {
+      alert('Copie automatique non supportée sur ce navigateur. Utilisez le bouton Télécharger PNG.');
+      return;
+    }
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+        .then(() => alert('Infographie copiée dans le presse-papier ! Vous pouvez la coller directement sur vos réseaux sociaux.'))
+        .catch(() => alert('Copie dans le presse-papier refusée par le navigateur. Utilisez le bouton Télécharger PNG.'));
+    });
+  }
+
+  downloadExportSvg() {
+    const svgEl = document.getElementById('cm-svg-root');
+    if (!svgEl) return;
+    const serializer = new XMLSerializer();
+    const svgStr = serializer.serializeToString(svgEl);
+    const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+    const a = document.createElement('a');
+    a.download = `solitiquo-cameroun-carte-${this.activeTab}-${this.activeYear}.svg`;
+    a.href = URL.createObjectURL(blob);
+    a.click();
   }
 
   openDrawer() {
