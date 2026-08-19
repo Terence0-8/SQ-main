@@ -1,10 +1,10 @@
 /* global document, window, alert */
 /**
  * js/cameroon-map.js - Composant Carte Interactive des 10 Régions du Cameroun
- * Conçu pour l'écosystème Solitiquo (Vanilla JS, Accessible, Responsive)
+ * Fonctionnalités Solitiquo : Multi-données (Partis, Vote, Analyses), Pan & Zoom interactif, Accessibilité ARIA
  */
 
-const CAMEROON_SVG_EMBED = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" class="cm-map-svg" role="img" aria-label="Carte interactive des 10 régions du Cameroun">
+const CAMEROON_SVG_EMBED = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" id="cm-svg-root" class="cm-map-svg" role="img" aria-label="Carte interactive des 10 régions du Cameroun">
   <defs>
     <filter id="cm-glow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#37463D" flood-opacity="0.25"/>
@@ -12,9 +12,17 @@ const CAMEROON_SVG_EMBED = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0
     <filter id="cm-active-glow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#C82823" flood-opacity="0.4"/>
     </filter>
+
+    <!-- Grille cartographique d'arrière-plan -->
+    <pattern id="cm-grid-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#37463D" stroke-width="0.5" stroke-opacity="0.08" stroke-dasharray="2,2"/>
+    </pattern>
   </defs>
 
-  <g class="cm-map-regions">
+  <!-- Fond de carte avec grille lat/long -->
+  <rect width="800" height="600" fill="url(#cm-grid-pattern)" />
+
+  <g class="cm-map-regions" id="cm-map-regions-group">
     <!-- 1. EXTRÊME-NORD (CM-EN) -->
     <path id="region-cm-en" data-region="CM-EN" class="cm-region" tabindex="0" role="button" aria-label="Extrême-Nord (Chef-lieu: Maroua)"
       d="M467.0684 63.3872L465.6313 60.4559L465.0875 60L453.9579 60.1324L457.5006 82.4969L457.7546 86.6366L457.5788 89.2177L458.7673 90.3226L465.2438 90.581L468.119 91.8248L468.3437 93.5549L469.1936 95.2677L470.9454 96.8328L472.44 97.2757L473.0196 98.3828L471.9874 100.1975L471.4436 103.2106L470.9519 104.1375L471.6097 106.7555L471.5543 108.9219L470.5221 114.5247L469.1317 117.236L471.4892 120.9676L471.6846 122.8757L470.6198 126.5693L468.4512 127.7285L465.9732 130.1294L463.5148 131.3342L460.708 134.7434L459.2264 135.2286L457.1262 137.4113L455.7749 137.521L453.5672 136.2847L451.3562 135.818L448.9597 138.6845L447.9177 140.4287L446.244 144.5131L444.1894 146.7208L444.0315 149.8409L443.8605 150.3427L438.2485 160.9068L437.3823 163.3262L436.2003 168.5806L435.1258 176.5094L434.4225 179.1187L434.6797 181.0072L434.1099 182.9859L432.7788 184.5173L433.5156 186.2041L434.582 186.7751L436.1076 186.152L437.8822 186.2801L441.1042 184.7454L441.6463 184.0116L440.8876 182.1838L441.8466 180.152L442.7762 179.9132L446.0015 180.6296L447.3023 180.4342L449.6435 180.9465L451.1055 181.7562L451.8838 183.2953L453.6633 185.5355L458.0184 186.9683L458.331 187.6325L458.0987 190.3063L465.7909 189.6274L474.9896 192.6307L476.253 192.7176L480.2092 191.0905L483.4947 191.7385L485.3475 191.5627L486.8714 190.206L490.1894 190.0985L495.484 192.3626L497.2619 192.2997L504.8813 189.7968L503.517 188.1719L500.3096 186.0478L498.4276 183.8542L497.2553 181.6487L492.9149 176.3346L492.1887 172.8679L491.0165 171.2452L490.2969 168.9637L487.7733 167.5169L487.5877 165.6793L488.1413 163.2546L487.9003 162.243L485.494 156.1137L485.4061 154.5323L485.9076 151.7016L484.5269 147.6488L484.3267 144.0533L484.0874 139.7547L484.3088 137.153L485.1945 135.0973L485.328 129.9427L485.8164 128.3809L487.6919 125.1247L486.1029 121.5516L485.5689 118.0132L486.0508 115.9944L486.9137 114.5356L485.9336 111.6658L485.0251 111.2295L484.7418 109.5167L485.4159 108.4704L484.6963 103.0782L484.9763 101.8625L483.791 100.8531L482.3095 101.5326L480.3655 99.288L480.4211 94.9701L480.5283 91.6837L479.558 86.6366L478.6788 86.2177L479.1282 84.6026L478.0862 79.4448L477.7215 78.5808L476.1358 78.8153L475.3315 76.9701L473.7783 75.0142L472.847 75.3399L470.9422 73.4567L469.8937 73.8941L469.2099 72.6307L469.2099 71.045L467.6795 69.3268L467.3701 68.1828L467.813 64.7106L467.0684 63.3872Z" />
@@ -53,7 +61,7 @@ const CAMEROON_SVG_EMBED = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0
 
     <!-- 10. SUD (CM-SU) -->
     <path id="region-cm-su" data-region="CM-SU" class="cm-region" tabindex="0" role="button" aria-label="Sud (Chef-lieu: Ebolowa)"
-      d="M367.5438 518.5255L367.9801 515.8619L368.6118 514.3489L368.4751 512.8619L376.8858 512.4495L378.5432 512.0045L381.1123 513.6477L385.43 513.6391L387.8363 513.359L392.0758 513.3699L395.2864 513.7454L399.425 512.4842L401.0271 513.4784L403.9739 513.0595L408.2656 514.6962L412.5279 515.545L414.3644 514.3967L416.2432 515.1977L418.0374 514.3967L419.532 514.9719L420.3102 514.566L421.6973 515.2302L423.0389 515.0066L424.6083 513.537L428.0599 514.0841L429.3754 515.3127L429.8085 516.422L429.688 518.723L441.2725 518.8615L440.2673 490.0122L439.9694 487.4182L438.8639 488.0412L437.1414 489.8277L436.285 490.0665L435.8438 492.4869L434.0057 492.4869L432.4802 491.3646L430.8179 491.1823L430.2204 490.1924L428.5076 490.8827L426.4367 489.3328L423.3385 489.0766L422.78 489.6454L420.3118 488.8856L419.5027 488.0347L418.4542 488.369L415.2175 487.5658L414.0193 486.6063L412.974 484.277L412.8764 479.5447L412.0786 475.6047L410.0988 471.5562L407.8895 468.7754L406.8915 467.0583L406.2761 465.0721L406.8427 460.025L405.6997 458.2428L404.941 456.2457L403.5962 455.792L401.8412 458.2732L398.4889 461.8637L397.0025 464.2732L395.9214 469.6329L393.7805 470.7465L392.6213 468.5236L385.728 464.0735L384.4727 467.1039L381.0114 469.6524L379.9938 472.075L379.2807 474.7972L376.5862 476.638L374.3378 477.3718L369.4243 477.3218L367.6008 477.7668L366.2804 477.4369L364.242 477.8363L362.36 475.1923L362.0572 473.5338L360.7612 472.1705L359.9064 467.9592L358.5665 466.0251L356.8652 466.2573L355.4178 465.5952L352.6028 465.9925L351.7318 463.3702L350.47 463.2682L348.4219 463.8521L337.6863 468.0591L334.9836 468.4455L333.4093 461.5424L333.6926 460.1943L333.4679 459.3672L331.8984 458.106L330.1482 459.0026L327.9438 462.4064L327.9536 465.3608L326.6771 469.0446L323.6685 472.1808L323.3608 473.8997L324.5684 480.0275L324.1069 482.5094L322.8455 484.8118L322.0404 488.4628L321.9302 493.7923L321.2661 496.211L320.3123 501.8413L320.1944 509.6544L319.5765 511.133L319.9384 511.8416L319.9319 514.3619L321.8628 516.6152L325.6074 518.532L331.8766 518.5315L338.7984 518.5299L348.6938 518.5298L367.5438 518.5255Z" />
+      d="M367.5438 518.5255L367.9801 515.8619L368.6118 514.3489L368.4751 512.8619L376.8858 512.4495L378.5432 512.0045L381.1123 513.6477L385.43 513.6391L387.8363 513.359L392.0758 513.3699L395.2864 513.7454L399.425 512.4842L401.0271 513.4784L403.9739 513.0595L408.2656 514.6962L412.5279 515.545L414.3644 514.3967L416.2432 515.1977L418.0374 514.3967L419.532 514.9719L420.3102 514.566L421.6973 515.2302L423.0389 515.0066L424.6083 513.537L428.0599 514.0841L429.3754 515.3127L429.8085 516.422L429.688 518.723L441.2725 518.8615L440.2673 490.0122L439.9694 487.4182L438.8639 488.0412L437.1414 489.8277L436.285 490.0665L435.8438 492.4869L434.0057 492.4869L432.4802 491.3646L430.8179 491.1823L430.2204 490.1924L428.5076 490.8827L426.4367 489.3328L423.3385 489.0766L422.78 489.6454L420.3118 488.8856L419.5027 488.0347L418.4542 488.369L415.2175 487.5658L414.0193 486.6063L412.974 484.277L412.8764 479.5447L412.0786 475.6047L410.0988 471.5562L407.8895 468.7754L406.8915 467.0583L406.2761 465.0721L406.8427 460.025L405.6997 458.2428L404.941 456.2457L403.5962 455.792L401.8412 458.2732L398.4889 461.8637L397.0025 464.2732L395.9214 469.6329L393.7805 470.7465L392.6213 468.5236L385.728 464.0735L384.4727 467.1039L381.0114 469.6524L379.9938 472.075L379.2807 474.7972L376.5862 476.638L374.3378 477.3718L369.4243 477.3218L367.6008 477.7668L366.2804 477.4369L364.242 477.8363L362.36 475.1923L362.0572 473.5338L360.7612 472.1705L359.9064 467.9592L358.5665 466.0251L356.8652 466.0251L355.4178 465.5952L352.6028 465.9925L351.7318 463.3702L350.47 463.2682L348.4219 463.8521L337.6863 468.0591L334.9836 468.4455L333.4093 461.5424L333.6926 460.1943L333.4679 459.3672L331.8984 458.106L330.1482 459.0026L327.9438 462.4064L327.9536 465.3608L326.6771 469.0446L323.6685 472.1808L323.3608 473.8997L324.5684 480.0275L324.1069 482.5094L322.8455 484.8118L322.0404 488.4628L321.9302 493.7923L321.2661 496.211L320.3123 501.8413L320.1944 509.6544L319.5765 511.133L319.9384 511.8416L319.9319 514.3619L321.8628 516.6152L325.6074 518.532L331.8766 518.5315L338.7984 518.5299L348.6938 518.5298L367.5438 518.5255Z" />
   </g>
 </svg>`;
 
@@ -68,7 +76,9 @@ const CAMEROON_REGIONS_DATA = {
     summary: 'Région stratégique du Grand Nord. Carrefour marchand transfrontalier avec le Tchad et le Nigeria, pôle agricole et culturel sahélien.',
     articlesCount: 42,
     keyTopics: ['Sécurité transfrontalière', 'Commerce du lac Tchad', 'Climat & Environnement'],
-    leadImage: 'https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?auto=format&fit=crop&w=600&q=80'
+    leadImage: 'https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?auto=format&fit=crop&w=600&q=80',
+    seats: { total: 29, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 25, UNDP: 4 } },
+    votes: { turnoutPercent: 78.4, registeredVoters: '2 150 000', votesCast: '1 685 600', leadingCandidate: 'RDPC (74.2%)', fill: '#064E3B' }
   },
   'CM-NO': {
     code: 'CM-NO',
@@ -80,7 +90,9 @@ const CAMEROON_REGIONS_DATA = {
     summary: 'Bassin cotonnier et agro-industriel majeur. Port fluvial historique de Garoua et grand parc national de la Bénoué.',
     articlesCount: 35,
     keyTopics: ['Filière Coton', 'Énergie hydroélectrique', 'Politiques agricoles'],
-    leadImage: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=600&q=80'
+    leadImage: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=600&q=80',
+    seats: { total: 12, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 9, UNDP: 3 } },
+    votes: { turnoutPercent: 72.1, registeredVoters: '1 280 000', votesCast: '922 880', leadingCandidate: 'RDPC (68.5%)', fill: '#047857' }
   },
   'CM-AD': {
     code: 'CM-AD',
@@ -92,7 +104,9 @@ const CAMEROON_REGIONS_DATA = {
     summary: 'Château d\'eau du Cameroun et carrefour ferroviaire. Élevage bovin intensif et réserves bauxitiques d\'importance continentale.',
     articlesCount: 28,
     keyTopics: ['Ressources minières', 'Transhumance & Élevage', 'Transports Camrail'],
-    leadImage: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80'
+    leadImage: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80',
+    seats: { total: 10, leadingParty: 'UNDP', partyColor: '#059669', breakdown: { UNDP: 6, RDPC: 4 } },
+    votes: { turnoutPercent: 66.8, registeredVoters: '690 000', votesCast: '460 920', leadingCandidate: 'UNDP (51.2%)', fill: '#10B981' }
   },
   'CM-NW': {
     code: 'CM-NW',
@@ -104,7 +118,9 @@ const CAMEROON_REGIONS_DATA = {
     summary: 'Hauts plateaux anglophones. Agriculture maraîchère dense, artisanat de haut niveau et dynamisme des Chefferies Grassfields.',
     articlesCount: 54,
     keyTopics: ['Décentralisation', 'Agriculture de montagne', 'Patrimoine traditionnel'],
-    leadImage: 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&w=600&q=80'
+    leadImage: 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&w=600&q=80',
+    seats: { total: 20, leadingParty: 'SDF', partyColor: '#D4AF37', breakdown: { SDF: 11, RDPC: 9 } },
+    votes: { turnoutPercent: 44.5, registeredVoters: '1 120 000', votesCast: '498 400', leadingCandidate: 'SDF (48.3%)', fill: '#A7F3D0' }
   },
   'CM-OU': {
     code: 'CM-OU',
@@ -116,7 +132,9 @@ const CAMEROON_REGIONS_DATA = {
     summary: 'Cœur de l\'entrepreneuriat et du commerce. Hauts plateaux fertiles, royaumes traditionnels Bamiléké et Bamoun.',
     articlesCount: 48,
     keyTopics: ['Chefferies traditionnelles', 'Microfinance & Commerce', 'Culture & Artisanat'],
-    leadImage: 'https://images.unsplash.com/photo-1576085898323-218337e3e43c?auto=format&fit=crop&w=600&q=80'
+    leadImage: 'https://images.unsplash.com/photo-1576085898323-218337e3e43c?auto=format&fit=crop&w=600&q=80',
+    seats: { total: 25, leadingParty: 'UDC', partyColor: '#7C3AED', breakdown: { UDC: 12, RDPC: 10, MRC: 3 } },
+    votes: { turnoutPercent: 68.9, registeredVoters: '1 450 000', votesCast: '999 050', leadingCandidate: 'RDPC (42.1%)', fill: '#10B981' }
   },
   'CM-SW': {
     code: 'CM-SW',
@@ -128,7 +146,9 @@ const CAMEROON_REGIONS_DATA = {
     summary: 'Façade maritime occidentale. Mont Cameroun, agro-industrie CDC (banane, cacao, palmier) et pôle numérique Silicon Mountain.',
     articlesCount: 61,
     keyTopics: ['Silicon Mountain (Buea)', 'Agro-industrie CDC', 'Installations pétrolières'],
-    leadImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80'
+    leadImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80',
+    seats: { total: 15, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 12, SDF: 3 } },
+    votes: { turnoutPercent: 48.2, registeredVoters: '850 000', votesCast: '409 700', leadingCandidate: 'RDPC (62.0%)', fill: '#6EE7B7' }
   },
   'CM-LT': {
     code: 'CM-LT',
@@ -140,7 +160,9 @@ const CAMEROON_REGIONS_DATA = {
     summary: 'Poumon économique du Cameroun et de la zone CEMAC. Port autonome de Douala, Bourse régionale BVMAC et hub industriel.',
     articlesCount: 89,
     keyTopics: ['Port Autonome de Douala', 'Bourse BVMAC', 'Industrie & Commerce'],
-    leadImage: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80'
+    leadImage: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80',
+    seats: { total: 19, leadingParty: 'MRC', partyColor: '#C82823', breakdown: { MRC: 9, RDPC: 8, PCRN: 2 } },
+    votes: { turnoutPercent: 81.3, registeredVoters: '1 980 000', votesCast: '1 609 740', leadingCandidate: 'MRC (46.8%)', fill: '#064E3B' }
   },
   'CM-CE': {
     code: 'CM-CE',
@@ -152,7 +174,9 @@ const CAMEROON_REGIONS_DATA = {
     summary: 'Siège des institutions républicaines, ministères, représentations diplomatiques et grands centres universitaires.',
     articlesCount: 112,
     keyTopics: ['Gouvernance & Lois', 'Diplomatie centrale', 'Projets d\'infrastructures'],
-    leadImage: 'https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?auto=format&fit=crop&w=600&q=80'
+    leadImage: 'https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?auto=format&fit=crop&w=600&q=80',
+    seats: { total: 28, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 23, PCRN: 5 } },
+    votes: { turnoutPercent: 79.6, registeredVoters: '2 340 000', votesCast: '1 862 640', leadingCandidate: 'RDPC (69.4%)', fill: '#064E3B' }
   },
   'CM-ES': {
     code: 'CM-ES',
@@ -164,7 +188,9 @@ const CAMEROON_REGIONS_DATA = {
     summary: 'Grande réserve forestière et minière (Or, Diamant). Projet du barrage hydroélectrique de Lom Pangar et transition écologique.',
     articlesCount: 31,
     keyTopics: ['Exploitation forestière', 'Barrage Lom Pangar', 'Mines & Ressources'],
-    leadImage: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80'
+    leadImage: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80',
+    seats: { total: 11, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 11 } },
+    votes: { turnoutPercent: 70.4, registeredVoters: '580 000', votesCast: '408 320', leadingCandidate: 'RDPC (82.1%)', fill: '#047857' }
   },
   'CM-SU': {
     code: 'CM-SU',
@@ -176,7 +202,9 @@ const CAMEROON_REGIONS_DATA = {
     summary: 'Port en eau profonde de Kribi, complexe siderurgique et hub d\'intégration sous-régionale avec le Gabon et la Guinée Équatoriale.',
     articlesCount: 45,
     keyTopics: ['Port en eau profonde Kribi', 'Intégration CEMAC', 'Filière Cacao'],
-    leadImage: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80'
+    leadImage: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
+    seats: { total: 11, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 11 } },
+    votes: { turnoutPercent: 84.1, registeredVoters: '520 000', votesCast: '437 320', leadingCandidate: 'RDPC (91.0%)', fill: '#064E3B' }
   }
 };
 
@@ -185,7 +213,14 @@ class CameroonMap {
     this.containerId = options.containerId || 'cm-map-root';
     this.onSelectCallback = options.onSelect || null;
     this.selectedRegionCode = null;
-    this.activeRegion = null;
+    this.activeTab = options.initialTab || 'seats'; // 'seats' | 'votes' | 'editorial'
+
+    // Cadrage Pan & Zoom
+    this.baseViewBox = { x: 0, y: 0, w: 800, h: 600 };
+    this.currentViewBox = { ...this.baseViewBox };
+    this.zoomLevel = 1.0;
+    this.isDragging = false;
+    this.dragStart = { x: 0, y: 0 };
 
     this.init();
   }
@@ -196,6 +231,8 @@ class CameroonMap {
 
     this.createDomStructure();
     this.bindEvents();
+    this.setupPanZoom();
+    this.switchTab(this.activeTab);
   }
 
   createDomStructure() {
@@ -207,32 +244,64 @@ class CameroonMap {
             <h2>
               <span> Carte Interactive du Cameroun</span>
             </h2>
-            <p>Cliquez ou survolez une région pour explorer les données et analyses territoriales de Solitiquo.</p>
+            <p>Données territoriales, représentativité politique et enquêtes exclusives Solitiquo.</p>
           </div>
-          <span class="cm-map-badge">10 Régions</span>
+          <span class="cm-map-badge" id="cm-header-badge">Données Électorales</span>
+        </div>
+
+        <!-- Onglets de Données (Data Tabs) -->
+        <div class="cm-data-tabs" role="tablist">
+          <button class="cm-tab-btn ${this.activeTab === 'seats' ? 'is-active' : ''}" data-tab="seats" role="tab">
+            <span class="cm-tab-icon">🏛️</span> Sièges Assemblée
+          </button>
+          <button class="cm-tab-btn ${this.activeTab === 'votes' ? 'is-active' : ''}" data-tab="votes" role="tab">
+            <span class="cm-tab-icon">🗳️</span> Participation & Votes
+          </button>
+          <button class="cm-tab-btn ${this.activeTab === 'editorial' ? 'is-active' : ''}" data-tab="editorial" role="tab">
+            <span class="cm-tab-icon">📰</span> Analyses Solitiquo
+          </button>
         </div>
 
         <!-- Layout principal : Carte SVG + Liste Régions -->
         <div class="cm-map-layout">
-          <!-- Zone SVG -->
+          <!-- Zone SVG avec Pan & Zoom -->
           <div class="cm-svg-container" id="cm-svg-mount">
-            <!-- SVG injecté via fetch ou inline -->
+            <!-- Boutons de Zoom Flottants -->
+            <div class="cm-zoom-controls">
+              <button class="cm-zoom-btn" id="cm-zoom-in" title="Zoom Avant (+)" aria-label="Zoom avant">+</button>
+              <button class="cm-zoom-btn" id="cm-zoom-out" title="Zoom Arrière (-)" aria-label="Zoom arrière">−</button>
+              <button class="cm-zoom-btn" id="cm-zoom-reset" title="Réinitialiser la vue" aria-label="Réinitialiser la vue">⟲</button>
+              <div class="cm-zoom-level" id="cm-zoom-indicator">100%</div>
+            </div>
+
+            <!-- Boussole N -->
+            <div class="cm-compass-rose">
+              <span class="cm-compass-arrow">▲</span> N
+            </div>
+
+            <!-- Légende Flottante Dynamique -->
+            <div class="cm-map-legend" id="cm-map-legend"></div>
           </div>
 
-          <!-- Panneau latéral / Légende interactive -->
-          <div class="cm-region-list" id="cm-region-list">
-            ${Object.values(CAMEROON_REGIONS_DATA).map(reg => `
-              <div class="cm-region-item" data-region="${reg.code}" tabindex="0" role="button" aria-label="Sélectionner la région ${reg.name}">
-                <div class="cm-region-item-info">
-                  <div class="cm-region-dot"></div>
-                  <div>
-                    <div class="cm-region-item-name">${reg.name}</div>
-                    <div class="cm-region-item-capital">${reg.capital}</div>
+          <!-- Panneau latéral / Liste des Régions -->
+          <div class="cm-region-list-container">
+            <div class="cm-list-header">
+              <h3 id="cm-list-title">Régions du Cameroun</h3>
+            </div>
+            <div class="cm-region-list" id="cm-region-list">
+              ${Object.values(CAMEROON_REGIONS_DATA).map(reg => `
+                <div class="cm-region-item" data-region="${reg.code}" tabindex="0" role="button" aria-label="Sélectionner la région ${reg.name}">
+                  <div class="cm-region-item-info">
+                    <div class="cm-region-dot" id="dot-${reg.code}"></div>
+                    <div>
+                      <div class="cm-region-item-name">${reg.name}</div>
+                      <div class="cm-region-item-capital">${reg.capital}</div>
+                    </div>
                   </div>
+                  <div class="cm-region-item-badge" id="badge-${reg.code}">-</div>
                 </div>
-                <div class="cm-region-item-badge">${reg.articlesCount} art.</div>
-              </div>
-            `).join('')}
+              `).join('')}
+            </div>
           </div>
         </div>
 
@@ -251,34 +320,34 @@ class CameroonMap {
           </div>
         </div>
         <div class="cm-drawer-body">
-          <div class="cm-stats-grid">
+          <div class="cm-stats-grid" id="cm-drawer-stats">
             <div class="cm-stat-card">
-              <div class="cm-stat-val" id="cm-stat-pop">-</div>
-              <div class="cm-stat-lbl">Population estimée</div>
+              <div class="cm-stat-val" id="cm-stat-1">-</div>
+              <div class="cm-stat-lbl" id="cm-stat-lbl-1">Metric 1</div>
             </div>
             <div class="cm-stat-card">
-              <div class="cm-stat-val" id="cm-stat-depts">-</div>
-              <div class="cm-stat-lbl">Départements</div>
+              <div class="cm-stat-val" id="cm-stat-2">-</div>
+              <div class="cm-stat-lbl" id="cm-stat-lbl-2">Metric 2</div>
             </div>
           </div>
 
           <div>
-            <div class="cm-drawer-sec-title">Présentation & Enjeux</div>
+            <div class="cm-drawer-sec-title">Enjeux & Présentation</div>
             <p style="color:#4A5568;line-height:1.6;font-size:0.92rem;margin:0;" id="cm-drawer-summary">-</p>
           </div>
 
+          <div id="cm-drawer-breakdown-sec">
+            <div class="cm-drawer-sec-title" id="cm-drawer-breakdown-title">Détails Régionaux</div>
+            <div class="cm-tags-list" id="cm-drawer-breakdown-list"></div>
+          </div>
+
           <div>
-            <div class="cm-drawer-sec-title">Thématiques Clés Solitiquo</div>
+            <div class="cm-drawer-sec-title">Thématiques Clés</div>
             <div class="cm-tags-list" id="cm-drawer-topics"></div>
           </div>
 
-          <div>
-            <div class="cm-drawer-sec-title">Départements de la région</div>
-            <div class="cm-tags-list" id="cm-drawer-depts-list"></div>
-          </div>
-
           <button class="cm-drawer-cta" id="cm-drawer-cta">
-            Voir les ${0} analyses de la région →
+            Voir les analyses de la région →
           </button>
         </div>
       </div>
@@ -287,7 +356,7 @@ class CameroonMap {
     // Injecter le SVG nettoyé
     const mountEl = document.getElementById('cm-svg-mount');
     if (mountEl) {
-      mountEl.innerHTML = CAMEROON_SVG_EMBED;
+      mountEl.insertAdjacentHTML('afterbegin', CAMEROON_SVG_EMBED);
       this.bindSvgInteractions();
     }
   }
@@ -309,6 +378,15 @@ class CameroonMap {
       }
     });
 
+    // Gestion des onglets (Data Tabs)
+    const tabBtns = this.container.querySelectorAll('.cm-tab-btn');
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tabKey = btn.getAttribute('data-tab');
+        this.switchTab(tabKey);
+      });
+    });
+
     // Clics sur la liste latérale
     const listItems = this.container.querySelectorAll('.cm-region-item');
     listItems.forEach(item => {
@@ -322,6 +400,198 @@ class CameroonMap {
       });
       item.addEventListener('mouseenter', () => this.highlightRegion(code));
       item.addEventListener('mouseleave', () => this.unhighlightRegion(code));
+    });
+  }
+
+  setupPanZoom() {
+    this.svg = this.container.querySelector('#cm-svg-root');
+    if (!this.svg) return;
+
+    this.zoomInBtn = document.getElementById('cm-zoom-in');
+    this.zoomOutBtn = document.getElementById('cm-zoom-out');
+    this.zoomResetBtn = document.getElementById('cm-zoom-reset');
+    this.zoomIndicator = document.getElementById('cm-zoom-indicator');
+
+    // Événements de boutons Zoom
+    this.zoomInBtn.addEventListener('click', () => this.zoom(0.8));
+    this.zoomOutBtn.addEventListener('click', () => this.zoom(1.25));
+    this.zoomResetBtn.addEventListener('click', () => this.resetZoom());
+
+    // Molette de la souris (Mouse wheel zoom)
+    this.svg.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoomFactor = e.deltaY > 0 ? 1.15 : 0.85;
+      this.zoom(zoomFactor, e.clientX, e.clientY);
+    }, { passive: false });
+
+    // Glissement Pan (Click & Drag)
+    this.svg.addEventListener('mousedown', (e) => {
+      this.isDragging = true;
+      this.dragStart = { x: e.clientX, y: e.clientY };
+      this.svg.classList.add('is-dragging');
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!this.isDragging) return;
+      const dx = (e.clientX - this.dragStart.x) * (this.currentViewBox.w / this.svg.clientWidth);
+      const dy = (e.clientY - this.dragStart.y) * (this.currentViewBox.h / this.svg.clientHeight);
+
+      this.currentViewBox.x -= dx;
+      this.currentViewBox.y -= dy;
+      this.dragStart = { x: e.clientX, y: e.clientY };
+      this.updateViewBox();
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (this.isDragging) {
+        this.isDragging = false;
+        this.svg.classList.remove('is-dragging');
+      }
+    });
+  }
+
+  zoom(factor, mouseX = null, mouseY = null) {
+    const newZoom = this.zoomLevel * (1 / factor);
+    if (newZoom < 0.5 || newZoom > 4.5) return; // Limites de zoom
+
+    let cx = this.currentViewBox.x + this.currentViewBox.w / 2;
+    let cy = this.currentViewBox.y + this.currentViewBox.h / 2;
+
+    if (mouseX !== null && mouseY !== null) {
+      const rect = this.svg.getBoundingClientRect();
+      const px = (mouseX - rect.left) / rect.width;
+      const py = (mouseY - rect.top) / rect.height;
+      cx = this.currentViewBox.x + px * this.currentViewBox.w;
+      cy = this.currentViewBox.y + py * this.currentViewBox.h;
+    }
+
+    this.currentViewBox.w *= factor;
+    this.currentViewBox.h *= factor;
+    this.currentViewBox.x = cx - (cx - this.currentViewBox.x) * factor;
+    this.currentViewBox.y = cy - (cy - this.currentViewBox.y) * factor;
+
+    this.zoomLevel = newZoom;
+    this.updateViewBox();
+  }
+
+  resetZoom() {
+    this.currentViewBox = { ...this.baseViewBox };
+    this.zoomLevel = 1.0;
+    this.updateViewBox();
+  }
+
+  updateViewBox() {
+    this.svg.setAttribute('viewBox', `${this.currentViewBox.x} ${this.currentViewBox.y} ${this.currentViewBox.w} ${this.currentViewBox.h}`);
+    if (this.zoomIndicator) {
+      this.zoomIndicator.textContent = `${Math.round(this.zoomLevel * 100)}%`;
+    }
+  }
+
+  switchTab(tabKey) {
+    this.activeTab = tabKey;
+
+    // Mise à jour de la barre d'onglets
+    const tabBtns = this.container.querySelectorAll('.cm-tab-btn');
+    tabBtns.forEach(btn => {
+      if (btn.getAttribute('data-tab') === tabKey) {
+        btn.classList.add('is-active');
+      } else {
+        btn.classList.remove('is-active');
+      }
+    });
+
+    // Mettre à jour le badge d'en-tête et titre
+    const headerBadge = document.getElementById('cm-header-badge');
+    const listTitle = document.getElementById('cm-list-title');
+
+    if (tabKey === 'seats') {
+      if (headerBadge) headerBadge.textContent = 'Sièges Assemblée (180 Députés)';
+      if (listTitle) listTitle.textContent = 'Majorités Régionales';
+    } else if (tabKey === 'votes') {
+      if (headerBadge) headerBadge.textContent = 'Participation Électorale';
+      if (listTitle) listTitle.textContent = 'Taux de Participation';
+    } else {
+      if (headerBadge) headerBadge.textContent = 'Écosystème Solitiquo';
+      if (listTitle) listTitle.textContent = 'Enquêtes par Région';
+    }
+
+    // Mise à jour des couleurs sur la carte SVG et de la liste latérale
+    this.updateMapColors();
+    this.updateLegend();
+    this.updateSidebar();
+
+    // Si une région est déjà sélectionnée dans le tiroir, rafraîchir ses stats
+    if (this.selectedRegionCode) {
+      this.selectRegion(this.selectedRegionCode, false);
+    }
+  }
+
+  updateMapColors() {
+    Object.values(CAMEROON_REGIONS_DATA).forEach(data => {
+      const path = this.container.querySelector(`.cm-region[data-region="${data.code}"]`);
+      if (!path) return;
+
+      if (this.activeTab === 'seats') {
+        path.style.fill = data.seats.partyColor;
+      } else if (this.activeTab === 'votes') {
+        path.style.fill = data.votes.fill;
+      } else {
+        path.style.fill = '#37463D'; // Vert Solitiquo d'origine
+      }
+    });
+  }
+
+  updateLegend() {
+    const legendEl = document.getElementById('cm-map-legend');
+    if (!legendEl) return;
+
+    if (this.activeTab === 'seats') {
+      legendEl.innerHTML = `
+        <div class="cm-legend-title">Partis en Tête</div>
+        <div class="cm-legend-items">
+          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#37463D"></span> RDPC (Majorité)</div>
+          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#C82823"></span> MRC</div>
+          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#059669"></span> UNDP</div>
+          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#7C3AED"></span> UDC</div>
+          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#D4AF37"></span> SDF</div>
+        </div>
+      `;
+    } else if (this.activeTab === 'votes') {
+      legendEl.innerHTML = `
+        <div class="cm-legend-title">Taux de Participation</div>
+        <div class="cm-legend-gradient-bar"></div>
+        <div class="cm-legend-gradient-labels">
+          <span>40%</span>
+          <span>65%</span>
+          <span>85%+</span>
+        </div>
+      `;
+    } else {
+      legendEl.innerHTML = `
+        <div class="cm-legend-title">Couverture Solitiquo</div>
+        <div class="cm-legend-items">
+          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#37463D"></span> Régions Analysées</div>
+          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#C82823"></span> Pôles d'enquêtes chaudes</div>
+        </div>
+      `;
+    }
+  }
+
+  updateSidebar() {
+    Object.values(CAMEROON_REGIONS_DATA).forEach(data => {
+      const dotEl = document.getElementById(`dot-${data.code}`);
+      const badgeEl = document.getElementById(`badge-${data.code}`);
+
+      if (this.activeTab === 'seats') {
+        if (dotEl) dotEl.style.background = data.seats.partyColor;
+        if (badgeEl) badgeEl.textContent = `${data.seats.total} sièges`;
+      } else if (this.activeTab === 'votes') {
+        if (dotEl) dotEl.style.background = data.votes.fill;
+        if (badgeEl) badgeEl.textContent = `${data.votes.turnoutPercent}% participation`;
+      } else {
+        if (dotEl) dotEl.style.background = '#37463D';
+        if (badgeEl) badgeEl.textContent = `${data.articlesCount} art.`;
+      }
     });
   }
 
@@ -362,10 +632,21 @@ class CameroonMap {
     const data = CAMEROON_REGIONS_DATA[code];
     if (!data) return;
 
+    let subHtml = `Chef-lieu : <strong>${data.capital}</strong>`;
+    let statHtml = `📊 ${data.articlesCount} enquêtes Solitiquo`;
+
+    if (this.activeTab === 'seats') {
+      subHtml = `Parti Majoritaire : <strong>${data.seats.leadingParty}</strong>`;
+      statHtml = `🏛️ ${data.seats.total} sièges représentés`;
+    } else if (this.activeTab === 'votes') {
+      subHtml = `Taux de participation : <strong>${data.votes.turnoutPercent}%</strong>`;
+      statHtml = `🗳️ Tête de scrutin : ${data.votes.leadingCandidate}`;
+    }
+
     this.tooltip.innerHTML = `
       <div class="cm-tooltip-title">${data.name}</div>
-      <div class="cm-tooltip-sub">Chef-lieu : <strong>${data.capital}</strong></div>
-      <div class="cm-tooltip-stat">📊 ${data.articlesCount} analyses Solitiquo</div>
+      <div class="cm-tooltip-sub">${subHtml}</div>
+      <div class="cm-tooltip-stat">${statHtml}</div>
     `;
     this.tooltip.classList.add('is-visible');
     this.positionTooltip(e);
@@ -376,7 +657,6 @@ class CameroonMap {
     let x = e.pageX + offset;
     let y = e.pageY + offset;
 
-    // Débordement écran
     const tooltipRect = this.tooltip.getBoundingClientRect();
     if (x + tooltipRect.width > window.innerWidth) {
       x = e.pageX - tooltipRect.width - offset;
@@ -411,11 +691,10 @@ class CameroonMap {
     if (listItem) listItem.classList.remove('is-active');
   }
 
-  selectRegion(code) {
+  selectRegion(code, shouldOpenDrawer = true) {
     const data = CAMEROON_REGIONS_DATA[code];
     if (!data) return;
 
-    // Désélectionner précédente
     if (this.selectedRegionCode) {
       this.unhighlightRegion(this.selectedRegionCode);
     }
@@ -423,23 +702,54 @@ class CameroonMap {
     this.selectedRegionCode = code;
     this.highlightRegion(code);
 
-    // Mettre à jour le tiroir
+    // Mettre à jour le tiroir latéral
     document.getElementById('cm-drawer-header').style.backgroundImage = `url('${data.leadImage}')`;
     document.getElementById('cm-drawer-title').textContent = data.name;
     document.getElementById('cm-drawer-subtitle').textContent = `Chef-lieu : ${data.capital} • ${data.departmentsCount} départements`;
-    document.getElementById('cm-stat-pop').textContent = data.population;
-    document.getElementById('cm-stat-depts').textContent = `${data.departmentsCount} départements`;
+
+    const statVal1 = document.getElementById('cm-stat-1');
+    const statLbl1 = document.getElementById('cm-stat-lbl-1');
+    const statVal2 = document.getElementById('cm-stat-2');
+    const statLbl2 = document.getElementById('cm-stat-lbl-2');
+    const breakdownTitle = document.getElementById('cm-drawer-breakdown-title');
+    const breakdownList = document.getElementById('cm-drawer-breakdown-list');
+
+    if (this.activeTab === 'seats') {
+      statVal1.textContent = `${data.seats.total} Députés`;
+      statLbl1.textContent = 'Sièges Assemblée';
+      statVal2.textContent = data.seats.leadingParty;
+      statLbl2.textContent = 'Parti Majoritaire';
+
+      breakdownTitle.textContent = 'Répartition des Sièges par Parti';
+      breakdownList.innerHTML = Object.entries(data.seats.breakdown).map(([party, count]) => `
+        <span class="cm-tag"><strong>${party}</strong> : ${count} siège(s)</span>
+      `).join('');
+    } else if (this.activeTab === 'votes') {
+      statVal1.textContent = `${data.votes.turnoutPercent}%`;
+      statLbl1.textContent = 'Participation';
+      statVal2.textContent = data.votes.votesCast;
+      statLbl2.textContent = 'Votants exprimés';
+
+      breakdownTitle.textContent = 'Résultats Électoraux Régionaux';
+      breakdownList.innerHTML = `
+        <span class="cm-tag">En tête : <strong>${data.votes.leadingCandidate}</strong></span>
+        <span class="cm-tag">Inscrits : ${data.votes.registeredVoters}</span>
+      `;
+    } else {
+      statVal1.textContent = data.population;
+      statLbl1.textContent = 'Population Estimée';
+      statVal2.textContent = `${data.departmentsCount} Dépts`;
+      statLbl2.textContent = 'Découpage Administratif';
+
+      breakdownTitle.textContent = 'Départements de la région';
+      breakdownList.innerHTML = data.departments.map(d => `<span class="cm-tag">${d}</span>`).join('');
+    }
+
     document.getElementById('cm-drawer-summary').textContent = data.summary;
 
-    // Thématiques
     const topicsEl = document.getElementById('cm-drawer-topics');
     topicsEl.innerHTML = data.keyTopics.map(t => `<span class="cm-tag"># ${t}</span>`).join('');
 
-    // Départements
-    const deptsEl = document.getElementById('cm-drawer-depts-list');
-    deptsEl.innerHTML = data.departments.map(d => `<span class="cm-tag">${d}</span>`).join('');
-
-    // CTA
     const ctaBtn = document.getElementById('cm-drawer-cta');
     ctaBtn.textContent = `Explorer les ${data.articlesCount} analyses de la région →`;
     ctaBtn.onclick = () => {
@@ -450,8 +760,9 @@ class CameroonMap {
       }
     };
 
-    // Ouvrir le tiroir
-    this.openDrawer();
+    if (shouldOpenDrawer) {
+      this.openDrawer();
+    }
   }
 
   openDrawer() {

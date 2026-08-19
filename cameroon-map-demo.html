@@ -22,9 +22,9 @@
     }
 
     .demo-header {
-      background: #37463D;
+      background: linear-gradient(135deg, #1E2822 0%, #37463D 100%);
       color: #FFFFFF;
-      padding: 3rem 1.5rem;
+      padding: 3.5rem 1.5rem;
       text-align: center;
       margin-bottom: 2.5rem;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
@@ -32,15 +32,16 @@
 
     .demo-header h1 {
       font-family: 'Playfair Display', serif;
-      font-size: 2.5rem;
+      font-size: 2.6rem;
       margin: 0 0 0.5rem 0;
     }
 
     .demo-header p {
       font-size: 1.1rem;
       opacity: 0.9;
-      max-width: 700px;
+      max-width: 750px;
       margin: 0 auto;
+      line-height: 1.6;
     }
 
     .demo-container {
@@ -51,7 +52,7 @@
 
     .demo-features-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 1.5rem;
       margin-top: 3rem;
     }
@@ -60,12 +61,12 @@
       background: #FFFFFF;
       border: 1px solid #E2E6DF;
       padding: 1.5rem;
-      border-radius: 12px;
+      border-radius: 14px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.03);
     }
 
     .demo-feature-icon {
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       margin-bottom: 0.5rem;
     }
 
@@ -86,11 +87,11 @@
       background: #1E2822;
       color: #EAE8DC;
       padding: 1.5rem;
-      border-radius: 12px;
+      border-radius: 14px;
       font-family: monospace;
       font-size: 0.9rem;
       overflow-x: auto;
-      margin-top: 2rem;
+      margin-top: 2.5rem;
     }
   </style>
 </head>
@@ -99,7 +100,7 @@
 
   <header class="demo-header">
     <h1>Carte Interactive du Cameroun</h1>
-    <p>Composant cartographique sur-mesure pour Solitiquo. Structuré, accessible (ARIA), responsive et prêt à l'emploi.</p>
+    <p>Composant cartographique de précision pour Solitiquo. Pan & Zoom interactif, onglets multi-données électorales & politiques, accessibilité ARIA et design de luxe.</p>
   </header>
 
   <main class="demo-container">
@@ -109,21 +110,21 @@
     <!-- Présentation des fonctionnalités techniques du composant -->
     <section class="demo-features-grid">
       <div class="demo-feature-card">
-        <div class="demo-feature-icon">🧹</div>
-        <div class="demo-feature-title">SVG Structuré & Nettoyé</div>
-        <div class="demo-feature-desc">Fichier vectoriel dépourvu de styles inline moches, doté d'identifiants standardisés (`data-region="CM-XX"`) et d'un viewBox responsive.</div>
+        <div class="demo-feature-icon">🗳️</div>
+        <div class="demo-feature-title">Onglets Multi-Données</div>
+        <div class="demo-feature-desc">Basculez en un clic entre la répartition des sièges par parti politique à l'Assemblée, les taux de participation électorale (gradient choroplèthe) et le volume d'enquêtes Solitiquo.</div>
+      </div>
+
+      <div class="demo-feature-card">
+        <div class="demo-feature-icon">🔍</div>
+        <div class="demo-feature-title">Pan & Zoom Cartographique</div>
+        <div class="demo-feature-desc">Molette de souris, glisser-déposer par clic-maintien (drag) et boutons flottants (`+`, `-`, `⟲`) pour scruter précisément chaque région.</div>
       </div>
 
       <div class="demo-feature-card">
         <div class="demo-feature-icon">🎨</div>
         <div class="demo-feature-title">Charte Graphique Solitiquo</div>
-        <div class="demo-feature-desc">Intégration du Vert Forêt Émeraude (`#37463D`), Rouge Impérial (`#C82823`), effet verre Dépoli (Glassmorphism) et ombres douces.</div>
-      </div>
-
-      <div class="demo-feature-card">
-        <div class="demo-feature-icon">⚡</div>
-        <div class="demo-feature-title">Interactivité & Tooltips</div>
-        <div class="demo-feature-desc">Surbrillance fluide au survol, tooltips volants avec détection de bordure d'écran, et ouverture d'un tiroir latéral informatif détaillé au clic.</div>
+        <div class="demo-feature-desc">Vert Forêt Émeraude (`#37463D`), Rouge Impérial (`#C82823`), effet verre Dépoli (Glassmorphism), grille lat/long et boussole.</div>
       </div>
 
       <div class="demo-feature-card">
@@ -135,13 +136,14 @@
 
     <!-- Code d'intégration futur pour le site -->
     <div class="demo-code-block">
-      // Exemple d'intégration future dans n'importe quelle page de Solitiquo :<br>
+      // Exemple d'intégration future dans Solitiquo :<br>
       &lt;link rel="stylesheet" href="css/cameroon-map.css"&gt;<br>
       &lt;div id="cm-map-root"&gt;&lt;/div&gt;<br>
       &lt;script src="js/cameroon-map.js"&gt;&lt;/script&gt;<br>
       &lt;script&gt;<br>
       &nbsp;&nbsp;const map = new CameroonMap({<br>
       &nbsp;&nbsp;&nbsp;&nbsp;containerId: 'cm-map-root',<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;initialTab: 'seats', // 'seats' | 'votes' | 'editorial'<br>
       &nbsp;&nbsp;&nbsp;&nbsp;onSelect: (regionData) => {<br>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;console.log('Région sélectionnée :', regionData.name);<br>
       &nbsp;&nbsp;&nbsp;&nbsp;}<br>
@@ -155,6 +157,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       new CameroonMap({
         containerId: 'cm-map-root',
+        initialTab: 'seats',
         onSelect: (region) => {
           console.log('Action de redirection ou filtrage pour la région :', region);
         }
