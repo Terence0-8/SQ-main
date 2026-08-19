@@ -19,6 +19,12 @@ const CAMEROON_SVG_EMBED = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="260
       <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#C82823" flood-opacity="0.4"/>
     </filter>
 
+    <style>
+      .cm-pin-dot { fill: #FFFFFF; stroke: #37463D; stroke-width: 1.5px; }
+      .cm-pin-text { font-family: system-ui, -apple-system, sans-serif; font-size: 5.5px; font-weight: 800; fill: #1E2822; text-anchor: middle; letter-spacing: 0.4px; paint-order: stroke fill; stroke: #FFFFFF; stroke-width: 1.5px; stroke-linejoin: round; }
+      .cm-region { stroke: #FFFFFF; stroke-width: 1.2px; stroke-linejoin: round; }
+    </style>
+
     <!-- Motif Hachuré Cartographique Style Gravure Géopolitique (Diagonales 45°) -->
     <pattern id="cm-hatch-pattern" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
       <line x1="0" y1="0" x2="0" y2="8" stroke="#37463D" stroke-width="0.75" stroke-opacity="0.075"/>
@@ -2011,158 +2017,217 @@ class CameroonMap {
     const format = formatSelect ? formatSelect.value : 'square';
     const theme = themeSelect ? themeSelect.value : 'paper';
 
-    const targetW = format === 'square' ? 1080 : 1200;
-    const targetH = format === 'square' ? 1080 : 675;
+    const targetW = format === 'square' ? 1200 : 1200;
+    const targetH = format === 'square' ? 1200 : 675;
 
     previewCanvas.width = targetW;
     previewCanvas.height = targetH;
     const ctx = previewCanvas.getContext('2d');
 
-    // 1. Fond du Canvas
-    if (theme === 'dark') {
-      ctx.fillStyle = '#121814';
-      ctx.fillRect(0, 0, targetW, targetH);
-      ctx.strokeStyle = 'rgba(212, 175, 55, 0.08)';
-      ctx.lineWidth = 1;
-      for (let i = -targetH; i < targetW + targetH; i += 16) {
-        ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i + targetH, targetH);
-        ctx.stroke();
-      }
-    } else {
-      ctx.fillStyle = '#FAFBF8';
-      ctx.fillRect(0, 0, targetW, targetH);
-      ctx.strokeStyle = 'rgba(55, 70, 61, 0.07)';
-      ctx.lineWidth = 1;
-      for (let i = -targetH; i < targetW + targetH; i += 16) {
-        ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i + targetH, targetH);
-        ctx.stroke();
-      }
+    const isDark = theme === 'dark';
+    const bgColor = isDark ? '#0D130E' : '#FAFBF8';
+    const cardBg = isDark ? '#161F18' : '#FFFFFF';
+    const textColor = isDark ? '#F3F4F6' : '#1A241E';
+    const mutedColor = isDark ? '#9CA3AF' : '#6B7280';
+    const accentGold = '#D4AF37';
+    const accentRed = '#C82823';
+    const borderColor = isDark ? '#2A362E' : '#E2E8F0';
+
+    // 1. Fond du Canvas avec Hachures 45°
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, targetW, targetH);
+
+    ctx.strokeStyle = isDark ? 'rgba(212, 175, 55, 0.06)' : 'rgba(55, 70, 61, 0.06)';
+    ctx.lineWidth = 1;
+    for (let i = -targetH; i < targetW + targetH; i += 16) {
+      ctx.beginPath();
+      ctx.moveTo(i, 0);
+      ctx.lineTo(i + targetH, targetH);
+      ctx.stroke();
     }
 
-    // 2. En-tête & Branding Solitiquo
-    ctx.fillStyle = '#C82823';
-    ctx.fillRect(40, 36, 10, 36);
+    // Cadre de Marge Or
+    ctx.strokeStyle = isDark ? 'rgba(212, 175, 55, 0.3)' : 'rgba(212, 175, 55, 0.45)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(20, 20, targetW - 40, targetH - 40);
 
-    ctx.font = '900 22px system-ui, sans-serif';
-    ctx.fillStyle = theme === 'dark' ? '#D4AF37' : '#37463D';
-    ctx.fillText('SOLITIQUO DATAVIZ', 62, 58);
+    // 2. En-tête Presse & Branding Solitiquo
+    ctx.fillStyle = accentRed;
+    ctx.fillRect(45, 45, 8, 38);
+
+    ctx.font = '900 20px system-ui, sans-serif';
+    ctx.fillStyle = isDark ? accentGold : '#37463D';
+    ctx.fillText('SOLITIQUO DATAVIZ', 65, 65);
 
     ctx.font = '600 12px system-ui, sans-serif';
-    ctx.fillStyle = theme === 'dark' ? '#9CA3AF' : '#6B7280';
-    ctx.fillText('PLATEFORME CARTOGRAPHIQUE DU CAMEROUN', 62, 74);
+    ctx.fillStyle = mutedColor;
+    ctx.fillText('INTELLIGENCE TERRITORIALE & ANALYSE CAMEROUN', 65, 81);
 
-    const badgeText = document.getElementById('cm-header-badge')?.textContent || 'Données Électorales 2025';
-    ctx.font = '700 26px Georgia, serif';
-    ctx.fillStyle = theme === 'dark' ? '#FFFFFF' : '#1A241E';
-    ctx.fillText(badgeText.toUpperCase(), 40, 126);
+    // Badge Catégorie
+    const tabNameMap = {
+      seats: 'SIÈGES PARLEMENTAIRES',
+      turnout: 'PARTICIPATION ÉLECTORALE',
+      votes: 'RÉSULTATS DES URNES',
+      localElected: 'ÉLUS LOCAUX & MAIRES',
+      security: 'SÉCURITÉ & STABILITÉ',
+      demographics: 'DÉMOGRAPHIE & IDH',
+      economy: 'ÉCONOMIE & PIB',
+      education: 'ÉDUCATION & ALPHABÉTISATION'
+    };
+    const categoryLabel = tabNameMap[this.activeTab] || 'ANALYSE TERRITORIALE';
 
-    ctx.strokeStyle = theme === 'dark' ? '#2A362E' : '#E2E8F0';
-    ctx.lineWidth = 1.5;
+    ctx.font = '700 12px system-ui, sans-serif';
+    const catWidth = ctx.measureText(categoryLabel).width + 24;
+    ctx.fillStyle = isDark ? '#2A362E' : '#F1F5F9';
+    ctx.fillRect(targetW - 45 - catWidth, 48, catWidth, 28);
+    ctx.strokeStyle = accentGold;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(targetW - 45 - catWidth, 48, catWidth, 28);
+
+    ctx.fillStyle = isDark ? accentGold : '#37463D';
+    ctx.fillText(categoryLabel, targetW - 45 - catWidth + 12, 66);
+
+    // Titre Headline
+    const badgeText = document.getElementById('cm-header-badge')?.textContent || `SCRUTIN ${this.activeYear}`;
+    ctx.font = '700 24px Georgia, serif';
+    ctx.fillStyle = textColor;
+    ctx.fillText(badgeText.toUpperCase(), 45, 125);
+
+    // Ligne de Séparation
+    ctx.strokeStyle = borderColor;
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(40, 142);
-    ctx.lineTo(targetW - 40, 142);
+    ctx.moveTo(45, 142);
+    ctx.lineTo(targetW - 45, 142);
     ctx.stroke();
 
-    // 3. Dessin de la Carte SVG sur le Canvas
+    // 3. Dimensions selon le Format
+    const mapW = format === 'square' ? 560 : 540;
+    const mapH = format === 'square' ? 950 : 470;
+    const mapX = 35;
+    const mapY = 160;
+
+    const rightX = mapX + mapW + (format === 'square' ? 25 : 35);
+    const rightY = 160;
+    const rightW = targetW - rightX - 45;
+    const rightH = format === 'square' ? 950 : 470;
+
+    // 4. Carte Légende à Droite
+    ctx.fillStyle = cardBg;
+    ctx.fillRect(rightX, rightY, rightW, rightH);
+    ctx.strokeStyle = borderColor;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(rightX, rightY, rightW, rightH);
+
+    ctx.font = '700 15px system-ui, sans-serif';
+    ctx.fillStyle = isDark ? accentGold : '#37463D';
+    ctx.fillText('RÉPARTITION ET DONNÉES RÉGIONALES', rightX + 24, rightY + 36);
+
+    ctx.strokeStyle = borderColor;
+    ctx.beginPath();
+    ctx.moveTo(rightX + 24, rightY + 48);
+    ctx.lineTo(rightX + rightW - 24, rightY + 48);
+    ctx.stroke();
+
+    // Données par Région
+    const regions = Object.values(CAMEROON_REGIONS_DATA);
+    let rowY = rightY + 80;
+    const rowGap = format === 'square' ? 84 : 39;
+
+    regions.forEach(reg => {
+      const yearData = reg.historicalElections[this.activeYear] || reg.historicalElections['2025'];
+      let color = '#37463D';
+      let valStr = '';
+      let subStr = '';
+
+      if (this.activeTab === 'seats') {
+        color = yearData.seats.partyColor;
+        valStr = `${yearData.seats.leadingParty} — ${yearData.seats.total} sièges`;
+        subStr = `Majorité : ${yearData.seats.breakdown[yearData.seats.leadingParty] || 0} sièges`;
+      } else if (this.activeTab === 'turnout') {
+        color = yearData.turnout.fill;
+        valStr = `${yearData.turnout.percent}%`;
+        subStr = `${yearData.turnout.votesCast} votants`;
+      } else if (this.activeTab === 'votes') {
+        color = yearData.votes.partyColor;
+        valStr = `${yearData.votes.leadingParty}`;
+        subStr = yearData.votes.breakdown[yearData.votes.leadingParty] || '';
+      } else if (this.activeTab === 'localElected') {
+        color = reg.localElected.partyColor;
+        valStr = `${reg.localElected.leadingParty}`;
+        subStr = `${reg.localElected.municipalitiesCount} mairies`;
+      } else if (this.activeTab === 'security') {
+        color = reg.security.color;
+        valStr = reg.security.status;
+        subStr = reg.security.incidents.length ? `${reg.security.incidents.length} incident(s)` : 'Zone calme';
+      } else if (this.activeTab === 'demographics') {
+        color = '#059669';
+        valStr = `IDH ${reg.demographics.hdiIndex}`;
+        subStr = `Urb. ${reg.demographics.urbanizationRate}`;
+      } else if (this.activeTab === 'economy') {
+        color = '#37463D';
+        valStr = `PIB ${reg.economy.gdpShare}`;
+        subStr = `Pauvreté ${reg.economy.povertyRate}`;
+      } else if (this.activeTab === 'education') {
+        color = '#34D399';
+        valStr = `Alphab. ${reg.education.literacyRate}`;
+        subStr = `${reg.education.universitiesCount} Univ.`;
+      }
+
+      ctx.fillStyle = color;
+      ctx.fillRect(rightX + 24, rowY - 14, 10, 18);
+
+      ctx.font = '700 14px system-ui, sans-serif';
+      ctx.fillStyle = textColor;
+      ctx.fillText(reg.name, rightX + 42, rowY);
+
+      ctx.font = '700 13px system-ui, sans-serif';
+      ctx.fillStyle = isDark ? accentGold : '#1E2822';
+      const valW = ctx.measureText(valStr).width;
+      ctx.fillText(valStr, rightX + rightW - 24 - valW, rowY);
+
+      if (format === 'square') {
+        ctx.font = '500 11px system-ui, sans-serif';
+        ctx.fillStyle = mutedColor;
+        ctx.fillText(subStr, rightX + 42, rowY + 16);
+      }
+
+      rowY += rowGap;
+    });
+
+    // 5. Dessin de la Carte SVG sur le Canvas avec Injection CSS des Villes
     const svgEl = document.getElementById('cm-svg-root');
     if (svgEl) {
       const serializer = new XMLSerializer();
       let svgStr = serializer.serializeToString(svgEl);
+
+      const styleInjection = `<style>
+        .cm-pin-dot { fill: #FFFFFF; stroke: #37463D; stroke-width: 1.5px; }
+        .cm-pin-text { font-family: system-ui, -apple-system, sans-serif; font-size: 5.5px; font-weight: 800; fill: #1E2822; text-anchor: middle; letter-spacing: 0.4px; paint-order: stroke fill; stroke: #FFFFFF; stroke-width: 1.5px; stroke-linejoin: round; }
+        .cm-region { stroke: #FFFFFF; stroke-width: 1.2px; stroke-linejoin: round; }
+      </style>`;
+
+      if (!svgStr.includes('.cm-pin-text')) {
+        svgStr = svgStr.replace('<defs>', `<defs>${styleInjection}`);
+      }
 
       const img = new Image();
       const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
       const url = URL.createObjectURL(svgBlob);
 
       img.onload = () => {
-        const mapX = 30;
-        const mapY = 160;
-        const mapW = format === 'square' ? 520 : 540;
-        const mapH = format === 'square' ? 840 : 470;
-
         ctx.drawImage(img, mapX, mapY, mapW, mapH);
         URL.revokeObjectURL(url);
 
-        // 4. Panneau Légende & Statistiques à Droite
-        const rightX = mapX + mapW + (format === 'square' ? 20 : 30);
-        const rightY = 160;
-        const rightW = targetW - rightX - 40;
-        const rightH = format === 'square' ? 840 : 470;
-
-        ctx.fillStyle = theme === 'dark' ? '#1A241E' : '#FFFFFF';
-        ctx.fillRect(rightX, rightY, rightW, rightH);
-        ctx.strokeStyle = theme === 'dark' ? '#37463D' : '#E2E8F0';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(rightX, rightY, rightW, rightH);
-
-        ctx.font = '700 16px system-ui, sans-serif';
-        ctx.fillStyle = theme === 'dark' ? '#D4AF37' : '#37463D';
-        ctx.fillText('LÉGENDE & ÉCHELLE OFFICIELLE', rightX + 20, rightY + 35);
-
-        ctx.strokeStyle = theme === 'dark' ? '#2A362E' : '#EDF2F7';
-        ctx.beginPath();
-        ctx.moveTo(rightX + 20, rightY + 48);
-        ctx.lineTo(rightX + rightW - 20, rightY + 48);
-        ctx.stroke();
-
-        let currentY = rightY + 75;
-        const regions = Object.values(CAMEROON_REGIONS_DATA);
-
-        regions.forEach(reg => {
-          const yearData = reg.historicalElections[this.activeYear] || reg.historicalElections['2025'];
-          let color = '#37463D';
-          let valStr = '';
-
-          if (this.activeTab === 'seats') {
-            color = yearData.seats.partyColor;
-            valStr = `${yearData.seats.leadingParty} (${yearData.seats.total} sièges)`;
-          } else if (this.activeTab === 'turnout') {
-            color = yearData.turnout.fill;
-            valStr = `${yearData.turnout.percent}% (${yearData.turnout.votesCast})`;
-          } else if (this.activeTab === 'votes') {
-            color = yearData.votes.partyColor;
-            valStr = yearData.votes.leadingParty;
-          } else if (this.activeTab === 'localElected') {
-            color = reg.localElected.partyColor;
-            valStr = `${reg.localElected.leadingParty} (${reg.localElected.municipalitiesCount} mairies)`;
-          } else if (this.activeTab === 'security') {
-            color = reg.security.color;
-            valStr = reg.security.status;
-          } else if (this.activeTab === 'demographics') {
-            color = '#059669';
-            valStr = `IDH ${reg.demographics.hdiIndex}`;
-          } else if (this.activeTab === 'economy') {
-            color = '#37463D';
-            valStr = `PIB ${reg.economy.gdpShare}`;
-          } else if (this.activeTab === 'education') {
-            color = '#34D399';
-            valStr = `Alphab. ${reg.education.literacyRate}`;
-          }
-
-          ctx.fillStyle = color;
-          ctx.beginPath();
-          ctx.arc(rightX + 28, currentY - 5, 6, 0, Math.PI * 2);
-          ctx.fill();
-
-          ctx.font = '600 13px system-ui, sans-serif';
-          ctx.fillStyle = theme === 'dark' ? '#E5E7EB' : '#1F2937';
-          ctx.fillText(reg.name, rightX + 42, currentY);
-
-          ctx.font = '600 12px system-ui, sans-serif';
-          ctx.fillStyle = theme === 'dark' ? '#9CA3AF' : '#6B7280';
-          const textW = ctx.measureText(valStr).width;
-          ctx.fillText(valStr, rightX + rightW - 20 - textW, currentY);
-
-          currentY += (format === 'square' ? 70 : 38);
-        });
-
-        // 5. Watermark Footer
+        // 6. Pied de Page / Filigrane Copyright
+        const footerY = targetH - 26;
         ctx.font = '600 11px system-ui, sans-serif';
-        ctx.fillStyle = theme === 'dark' ? '#6B7280' : '#9CA3AF';
-        ctx.fillText('INFOGRAPHIE SOLITIQUO DATAVIZ — REPRODUCTION AUTORISÉE AVEC MENTION SOLITIQUO.COM', 40, targetH - 18);
+        ctx.fillStyle = mutedColor;
+        ctx.fillText('INFOGRAPHIE SOLITIQUO DATAVIZ — REPRODUCTION AUTORISÉE AVEC MENTION SOLITIQUO.COM', 45, footerY);
+
+        ctx.font = '600 11px system-ui, sans-serif';
+        const dateStr = new Date().toLocaleDateString('fr-FR');
+        ctx.fillText(`ÉDITION DU ${dateStr}`, targetW - 45 - ctx.measureText(`ÉDITION DU ${dateStr}`).width, footerY);
       };
 
       img.src = url;
