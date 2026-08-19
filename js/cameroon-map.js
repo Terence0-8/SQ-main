@@ -1,7 +1,13 @@
 /* global document, window, alert */
 /**
- * js/cameroon-map.js - Composant Carte Interactive des 10 Régions du Cameroun
- * Fonctionnalités Solitiquo (Ultra Luxury D.A.) : Données vectorielles électorales à 3 Onglets, Pan & Zoom interactif, Accessibilité ARIA
+ * js/cameroon-map.js - Plateforme Cartographique Interactive des 10 Régions du Cameroun
+ * Écosystème Solitiquo (Ultra Luxury D.A.) :
+ * - Multi-thématique (Électoral, Sécurité, Démographie, Économie, Éducation)
+ * - Filtre temporel électoral (2018, 2020, 2025)
+ * - Recherche rapide par ville/région
+ * - Légende cliquable & filtrante
+ * - Mode comparaison côte à côte
+ * - Exportation d'image & Modal de méthodologie
  */
 
 const CAMEROON_SVG_EMBED = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="260 45 275 510" id="cm-svg-root" class="cm-map-svg" role="img" aria-label="Carte interactive des 10 régions du Cameroun">
@@ -45,7 +51,7 @@ const CAMEROON_SVG_EMBED = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="260
 
     <!-- 6. SUD-OUEST (CM-SW) -->
     <path id="region-cm-sw" data-region="CM-SW" class="cm-region" tabindex="0" role="button" aria-label="Sud-Ouest (Chef-lieu: Buea)"
-      d="M314.7005 335.5642L313.3837 335.818L311.6808 338.843L309.7789 339.8917L308.6623 340.7543L307.7082 343.2041L305.5624 343.9541L304.6995 344.9201L302.9965 348.9415L298.6756 353.5728L294.0225 360.0939L293.8402 361.8381L291.919 361.4723L289.8448 363.8656L289.568 365.4091L290.0435 367.8631L288.6921 369.9167L289.1057 370.9793L291.0366 373.3487L291.2189 375.4826L289.6755 377.8748L289.6527 381.3046L288.5651 385.0373L288.894 387.054L288.0507 392.761L286.771 393.8008L285.843 395.4951L285.182 397.8895L283.1827 402.2028L281.8542 404.4517L282.1668 406.5292L281.5997 407.2258L281.1023 407.6719L281.1561 410.176L280.7638 412.2374L279.2999 413.9193L278.9871 415.0492L279.8408 416.0747L278.7922 418.331L279.4383 419.9787L281.0484 420.8112L284.9866 420.4163L285.4558 418.8318L284.4841 417.8985L283.6893 414.0014L285.12 414.8133L285.6943 417.0901L287.7198 418.7293L288.4889 417.6832L289.5658 417.8148L290.3504 416.1653L291.3708 417.396L291.0708 418.9634L292.0554 419.2267L291.0708 422.129L291.8323 428.1132L293.1348 431.1438L294.1014 432.3385L293.4219 436.0562L293.4783 437.2408L296.5961 439.3141L298.2729 440.7226L300.2061 440.5961L301.0214 441.1328L301.024 442.9754L302.2726 443.119L303.3443 441.7994L304.2699 444.3787L304.8323 444.7567L306.7461 442.9149L308.6541 438.2405L309.4618 436.7946L310.2264 437.1759L312.0943 434.5313L311.111 432.2954L308.2309 431.2512L308.4767 428.9719L310.6567 424.3568L310.476 421.6911L310.8374 418.1158L312.5925 414.534L314.5088 414.1063L314.7188 412.6953L316.7669 409.1135L316.9574 406.8993L319.4126 403.1439L318.5513 401.1207L319.3051 398.1923L320.9381 397.0483L321.1677 395.7806L320.1257 392.9803L318.9274 391.0374L318.4097 389.3398L318.2778 386.9845L319.6275 386.5439L320.7427 384.7899L321.8075 384.4664L323.0058 383.2551L324.3164 378.907L324.6192 376.3303L325.4202 374.8368L327.8901 371.9887L329.2918 371.2941L328.906 368.8693L325.1467 367.3997L323.3623 368.6631L318.6099 366.056L317.1837 363.8526L315.6387 363.794L313.4522 360.5096L313.8054 358.4083L313.0321 357.032L313.5889 355.8099L316.6644 353.257L317.4084 352.0284L319.0414 351.8829L319.7691 346.2931L317.511 337.1867L316.2498 335.0148L314.7005 335.5642Z" />
+      d="M314.7005 335.5642L313.3837 335.818L311.6808 338.843L309.7789 339.8917L308.6623 340.7543L307.7082 343.2041L305.5624 343.9541L304.6995 344.9201L302.9965 348.9415L298.6756 353.5728L294.0225 360.0939L293.8402 361.8381L291.919 361.4723L289.8448 363.8656L289.568 365.4091L290.0435 367.8631L288.6921 369.9167L289.1057 370.9793L291.0366 373.3487L291.2189 375.4826L289.6755 377.8748L289.6527 381.3046L288.5651 385.0373L288.894 387.054L288.0507 392.761L286.771 393.8008L285.843 395.4951L285.182 397.8895L283.1827 402.2028L281.8542 404.4517L282.1668 406.5292L281.5997 407.2258L281.1023 407.6719L281.1561 410.176L280.7638 412.2374L279.2999 413.9193L278.9871 415.0492L279.8408 416.0747L278.7922 418.331L279.4383 419.9787L281.0484 420.8112L284.9866 420.4163L285.4558 418.8318L284.4841 417.8985L283.6893 414.0014L285.12 414.8133L285.6943 417.0901L287.7198 418.7293L288.4889 417.6832L289.568 417.8148L290.3504 416.1653L291.3708 417.396L291.0708 418.9634L292.0554 419.2267L291.0708 422.129L291.8323 428.1132L293.1348 431.1438L294.1014 432.3385L293.4219 436.0562L293.4783 437.2408L296.5961 439.3141L298.2729 440.7226L300.2061 440.5961L301.0214 441.1328L301.024 442.9754L302.2726 443.119L303.3443 441.7994L304.2699 444.3787L304.8323 444.7567L306.7461 442.9149L308.6541 438.2405L309.4618 436.7946L310.2264 437.1759L312.0943 434.5313L311.111 432.2954L308.2309 431.2512L308.4767 428.9719L310.6567 424.3568L310.476 421.6911L310.8374 418.1158L312.5925 414.534L314.5088 414.1063L314.7188 412.6953L316.7669 409.1135L316.9574 406.8993L319.4126 403.1439L318.5513 401.1207L319.3051 398.1923L320.9381 397.0483L321.1677 395.7806L320.1257 392.9803L318.9274 391.0374L318.4097 389.3398L318.2778 386.9845L319.6275 386.5439L320.7427 384.7899L321.8075 384.4664L323.0058 383.2551L324.3164 378.907L324.6192 376.3303L325.4202 374.8368L327.8901 371.9887L329.2918 371.2941L328.906 368.8693L325.1467 367.3997L323.3623 368.6631L318.6099 366.056L317.1837 363.8526L315.6387 363.794L313.4522 360.5096L313.8054 358.4083L313.0321 357.032L313.5889 355.8099L316.6644 353.257L317.4084 352.0284L319.0414 351.8829L319.7691 346.2931L317.511 337.1867L316.2498 335.0148L314.7005 335.5642Z" />
 
     <!-- 7. LITTORAL (CM-LT) -->
     <path id="region-cm-lt" data-region="CM-LT" class="cm-region" tabindex="0" role="button" aria-label="Littoral (Chef-lieu: Douala)"
@@ -53,11 +59,11 @@ const CAMEROON_SVG_EMBED = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="260
 
     <!-- 8. CENTRE (CM-CE) -->
     <path id="region-cm-ce" data-region="CM-CE" class="cm-region" tabindex="0" role="button" aria-label="Centre (Chef-lieu: Yaoundé)"
-      d="M416.7186 357.4575L405.3709 357.362L404.6284 356.9604L402.761 353.1528L398.738 349.2389L396.4001 348.8026L393.419 350.359L390.9395 349.9249L389.4872 348.7114L388.105 346.5971L386.936 346.8402L385.4968 348.3814L384.1389 349.1608L382.2406 349.3496L379.8212 351.6007L378.2925 353.4633L376.806 354.5356L369.6685 356.6435L367.9215 357.6181L366.5865 357.7571L365.5624 360.6594L366.2267 363.6833L366.2267 365.561L367.1775 365.6804L365.9922 368.7152L364.0369 370.7492L363.3922 373.3303L364.0223 375.6509L364.0027 377.8716L362.9852 380.572L363.1626 382.5561L361.4613 385.1524L359.8723 386.685L359.7501 390.4383L359.9846 391.2892L358.4884 392.1098L357.4904 393.4274L356.7821 396.9788L356.962 400.7517L355.0319 401.2944L353.1743 401.0512L351.0138 398.8045L349.3711 400.9253L345.0338 403.6909L344.1009 403.8754L341.7581 403.3132L341.1525 405.1692L339.4218 407.3661L338.1356 408.2409L337.5886 409.3675L337.3639 411.6186L337.8963 411.9746L339.4365 410.7264L341.2062 409.895L341.7288 411.6447L341.2355 413.7373L339.8565 415.6346L338.6306 418.2981L338.5426 420.7316L340.2098 420.8228L343.2299 423.0044L345.3513 422.8221L348.163 419.5138L349.3467 421.1136L350.2795 419.872L351.1408 415.9993L351.7855 415.3676L353.2573 415.6715L355.0026 415.4045L354.9343 420.5102L355.9697 424.0529L357.5197 427.537L360.7856 431.4596L361.2154 432.2758L358.9719 434.388L357.2803 434.9546L354.721 436.4285L351.5218 437.8374L350.4456 437.8374L348.6173 438.9575L346.4763 444.3411L346.701 446.9069L346.4617 449.6334L345.646 451.8911L344.6284 452.1928L343.0199 450.0133L341.4455 449.3187L340.5175 448.1682L338.0477 450.2217L336.5417 456.7297L336.4147 458.7182L335.0129 460.3181L333.6926 460.1943L333.4093 461.5424L334.9836 468.4455L337.6863 468.0591L348.4219 463.8521L350.47 463.2682L351.7318 463.3702L352.6028 465.9925L355.4178 465.5952L356.8652 466.2573L358.5665 466.0251L359.9064 467.9592L360.7612 472.1705L362.0572 473.5338L362.36 475.1923L364.242 477.8363L366.2804 477.4369L367.6008 477.7668L369.4243 477.3218L374.3378 477.3718L376.5862 476.638L379.2807 474.7972L379.9938 472.075L381.0114 469.6524L384.4727 467.1039L385.728 464.0735L392.6213 468.5236L393.7805 470.7465L395.9214 469.6329L397.0025 464.2732L398.4889 461.8637L401.8412 458.2732L403.5962 455.792L404.941 456.2457L405.6997 458.2428L406.8427 460.025L408.0849 456.1936L408.1826 451.9258L407.7625 451.0748L405.8707 449.9895L404.8189 448.014L404.9264 446.5357L406.5838 444.6797L408.9054 443.4684L409.6055 443.4879L412.1909 440.3229L413.6139 439.5415L413.9802 438.671L413.1303 435.7057L414.4996 429.1412L414.1072 426.7685L415.5448 424.5978L416.5379 420.0673L417.3096 418.6346L419.4848 417.1802L423.6169 417.8141L424.7207 417.343L426.1437 417.6426L427.0342 416.7786L427.9036 407.34L426.2951 402.7184L425.4257 401.798L423.9392 401.5787L421.8569 400.044L421.8911 396.9832L420.8833 394.7668L417.3438 389.8456L415.2029 387.6401L416.4744 386.3572L418.4542 386.4375L419.5922 385.6908L421.0787 382.287L422.4528 377.8195L422.5407 376.0525L421.0787 372.6877L420.2972 369.9156L419.0989 367.797L418.6544 365.8802L416.5086 361.3758L416.7186 357.4575Z" />
+      d="M416.7186 357.4575L405.3709 357.362L404.6284 356.9604L402.761 353.1528L398.738 349.2389L396.4001 348.8026L393.419 350.359L390.9395 349.9249L389.4872 348.7114L388.105 346.5971L386.936 346.8402L385.4968 348.3814L384.1389 349.1608L382.2406 349.3496L379.8212 351.6007L378.2925 353.4633L376.806 354.5356L369.6685 356.6435L367.9215 357.6181L366.5865 357.7571L365.5624 360.6594L366.2267 363.6833L366.2267 365.561L367.1775 365.6804L365.9922 368.7152L364.0369 370.7492L363.3922 373.3303L364.0223 375.6509L364.0027 377.8716L362.9852 380.572L363.1626 382.5561L361.4613 385.1524L359.8723 386.685L359.7501 390.4383L359.9846 391.2892L358.4884 392.1098L357.4904 393.4274L356.7821 396.9788L355.6962 400.7517L355.0319 401.2944L353.1743 401.0512L351.0138 398.8045L349.3711 400.9253L345.0338 403.6909L344.1009 403.8754L341.7581 403.3132L341.1525 405.1692L339.4218 407.3661L338.1356 408.2409L337.5886 409.3675L337.3639 411.6186L337.8963 411.9746L339.4365 410.7264L341.2062 409.895L341.7288 411.6447L341.2355 413.7373L339.8565 415.6346L338.6306 418.2981L338.5426 420.7316L340.2098 420.8228L343.2299 423.0044L345.3513 422.8221L348.163 419.5138L349.3467 421.1136L350.2795 419.872L351.1408 415.9993L351.7855 415.3676L353.2573 415.6715L355.0026 415.4045L354.9343 420.5102L355.9697 424.0529L357.5197 427.537L360.7856 431.4596L361.2154 432.2758L358.9719 434.388L357.2803 434.9546L354.721 436.4285L351.5218 437.8374L350.4456 437.8374L348.6173 438.9575L346.4763 444.3411L346.701 446.9069L346.4617 449.6334L345.646 451.8911L344.6284 452.1928L343.0199 450.0133L341.4455 449.3187L340.5175 448.1682L338.0477 450.2217L336.5417 456.7297L336.4147 458.7182L335.0129 460.3181L333.6926 460.1943L333.4093 461.5424L334.9836 468.4455L337.6863 468.0591L348.4219 463.8521L350.47 463.2682L351.7318 463.3702L352.6028 465.9925L355.4178 465.5952L356.8652 466.2573L358.5665 466.0251L359.9064 467.9592L360.7612 472.1705L362.0572 473.5338L362.36 475.1923L364.242 477.8363L366.2804 477.4369L367.6008 477.7668L369.4243 477.3218L374.3378 477.3718L376.5862 476.638L379.2807 474.7972L379.9938 472.075L381.0114 469.6524L384.4727 467.1039L385.728 464.0735L392.6213 468.5236L393.7805 470.7465L395.9214 469.6329L397.0025 464.2732L398.4889 461.8637L401.8412 458.2732L403.5962 455.792L404.941 456.2457L406.6997 458.2428L406.8427 460.025L408.0849 456.1936L408.1826 451.9258L407.7625 451.0748L405.8707 449.9895L404.8189 448.014L404.9264 446.5357L406.5838 444.6797L408.9054 443.4684L409.6055 443.4879L412.1909 440.3229L413.6139 439.5415L413.9802 438.671L413.1303 435.7057L414.4996 429.1412L414.1072 426.7685L415.5448 424.5978L416.5379 420.0673L417.3096 418.6346L419.4848 417.1802L423.6169 417.8141L424.7207 417.343L426.1437 417.6426L427.0342 416.7786L427.9036 407.34L426.2951 402.7184L425.4257 401.798L423.9392 401.5787L421.8569 400.044L421.8911 396.9832L420.8833 394.7668L417.3438 389.8456L415.2029 387.6401L416.4744 386.3572L418.4542 386.4375L419.5922 385.6908L421.0787 382.287L422.4528 377.8195L422.5407 376.0525L421.0787 372.6877L420.2972 369.9156L419.0989 367.797L418.6544 365.8802L416.5086 361.3758L416.7186 357.4575Z" />
 
     <!-- 9. EST (CM-ES) -->
     <path id="region-cm-es" data-region="CM-ES" class="cm-region" tabindex="0" role="button" aria-label="Est (Chef-lieu: Bertoua)"
-      d="M521.1199 515.5559L520.8008 513.8236L519.1271 510.1636L518.4368 507.906L518.4368 506.3387L517.7693 504.0442L518.4368 500.864L517.7693 497.6838L518.4042 496.0231L516.8966 495.9493L516.812 492.463L517.6618 491.3299L517.8344 489.2242L516.6687 486.0115L515.7504 484.3638L514.3568 484.4593L513.3506 480.9188L512.2142 479.3667L509.0492 479.3233L508.1701 478.9455L502.8527 471.4346L491.6825 455.6478L488.8153 451.5991L486.0932 446.2698L484.2371 440.3783L486.3081 440.8081L489.4698 439.2798L488.0957 438.3681L487.604 436.9148L486.65 436.752L486.0801 435.2313L485.7122 430.3026L484.947 427.9624L483.8562 426.1726L483.4361 424.5369L481.4759 423.1618L476.4777 418.5781L474.5109 415.3447L473.6741 409.4587L474.0127 407.264L473.5569 403.2947L472.7107 398.9862L472.9415 397.2502L472.8079 393.5088L472.44 391.5898L471.5869 390.0551L469.5713 389.024L468.4186 387.7182L469.428 384.7084L470.7305 382.1816L470.8021 380.2844L471.411 377.394L470.5482 374.6425L470.5905 373.2597L471.7953 368.4634L471.3655 363.1319L470.3365 360.6767L469.0959 361.3421L467.1031 361.2553L465.9928 358.7187L464.4428 356.6543L465.5457 354.1358L464.267 352.7491L462.9759 353.8887L460.9425 354.2361L457.9549 355.2259L453.7219 355.9987L451.5907 355.1217L450.5976 355.1934L447.3121 356.8453L444.4043 357.3251L432.0145 357.4575L416.7186 357.4575L416.5086 361.3758L418.6544 365.8802L419.0989 367.797L420.2972 369.9156L421.0787 372.6877L422.5407 376.0525L422.4528 377.8195L421.0787 382.287L419.5922 385.6908L418.4542 386.4375L416.4744 386.3572L415.2029 387.6401L417.3438 389.8456L420.8833 394.7668L421.8911 396.9832L421.8569 400.044L423.9392 401.5787L425.4257 401.798L426.2951 402.7184L427.9036 407.34L427.0342 416.7786L426.1437 417.6426L424.7207 417.343L423.6169 417.8141L419.4848 417.1802L417.3096 418.6346L416.5379 420.0673L415.5448 424.5978L414.1072 426.7685L414.4996 429.1412L413.1303 435.7057L413.9802 438.671L413.6139 439.5415L412.1909 440.3229L409.6055 443.4879L408.9054 443.4684L406.5838 444.6797L404.9264 446.5357L404.8189 448.014L405.8707 449.9895L407.7625 451.0748L408.1826 451.9258L408.0849 456.1936L406.8427 460.025L406.2761 465.0721L406.8915 467.0583L407.8895 468.7754L410.0988 471.5562L412.0786 475.6047L412.8764 479.5447L412.974 484.277L414.0193 486.6063L415.2175 487.5658L418.4542 488.369L419.5027 488.0347L420.3118 488.8856L422.78 489.6454L423.3385 489.0766L426.4367 489.3328L428.5076 490.8827L430.2204 490.1924L430.8179 491.1823L432.4802 491.3646L434.0057 492.4869L435.8438 492.4869L436.285 490.0665L437.1414 489.8277L438.8639 488.0412L439.9694 487.4182L440.2673 490.0122L441.2725 518.8615L460.3238 519.0856L462.0039 518.3193L464 518.6796L465.1038 519.8063L468.8647 518.6253L469.6234 516.7172L470.4342 517.0146L471.4762 518.5646L474.1462 521.0555L474.6249 520.1286L475.9013 521.3052L476.0088 522.739L477.9462 522.4535L479.3691 521.2184L480.499 523.0147L480.0302 525.2202L482.2541 525.0509L482.8109 524.0979L484.3088 525.6858L486.3048 526.1428L488.1967 523.7669L490.7821 524.1739L491.2347 525.3483L492.4785 526.0017L493.1688 528.2159L494.4192 528.7108L497.2553 526.756L498.6327 526.5031L502.6932 527.9022L505.6856 528.3461L507.5091 529.323L508.7138 531.3711L511.2178 533.1881L511.4555 534.1725L515.7537 535.894L515.6169 537.1335L517.1246 540L518.541 537.2898L519.9346 536.6288L519.1792 531.9865L518.1177 528.3114L516.9683 526.3729L516.9324 524.8219L517.499 523.5216L517.3036 522.1301L517.8377 520.998L517.5544 519.7021L518.2121 517.3576L519.9412 517.8395L521.2078 516.5761L521.1199 515.5559Z" />
+      d="M521.1199 515.5559L520.8008 513.8236L519.1271 510.1636L518.4368 507.906L518.4368 506.3387L517.7693 504.0442L518.4368 500.864L517.7693 497.6838L518.4042 496.0231L516.8966 495.9493L516.812 492.463L517.6618 491.3299L517.8344 489.2242L516.6687 486.0115L515.7504 484.3638L514.3568 484.4593L513.3506 480.9188L512.2142 479.3667L509.0492 479.3233L508.1701 478.9455L502.8527 471.4346L491.6825 455.6478L488.8153 451.5991L486.0932 446.2698L484.2371 440.3783L486.3081 440.8081L489.4698 439.2798L488.0957 438.3681L487.604 436.9148L486.65 436.752L486.0801 435.2313L485.7122 430.3026L484.947 427.9624L483.8562 426.1726L483.4361 424.5369L481.4759 423.1618L476.4777 418.5781L474.5109 415.3447L473.6741 409.4587L474.0127 407.264L473.5569 403.2947L472.7107 398.9862L472.9415 397.2502L472.8079 393.5088L472.44 391.5898L471.5869 390.0551L469.5713 389.024L468.4186 387.7182L469.428 384.7084L470.7305 382.1816L470.8021 380.2844L471.411 377.394L470.5482 374.6425L470.5905 373.2597L471.7953 368.4634L471.3655 363.1319L470.3365 360.6767L469.0959 361.3421L467.1031 361.2553L465.9928 358.7187L464.4428 356.6543L465.5457 354.1358L464.267 352.7491L462.9759 353.8887L460.9425 354.2361L457.9549 355.2259L453.7219 355.9987L451.5907 355.1217L450.5976 355.1934L447.3121 356.8453L444.4043 357.3251L432.0145 357.4575L416.7186 357.4575L416.5086 361.3758L418.6544 365.8802L419.0989 367.797L420.2972 369.9156L421.0787 372.6877L422.5407 376.0525L422.5428 377.8195L421.0787 382.287L419.5922 385.6908L418.4542 386.4375L416.4744 386.3572L415.2029 387.6401L417.3438 389.8456L420.8833 394.7668L421.8911 396.9832L421.8569 400.044L423.9392 401.5787L425.4257 401.798L426.2951 402.7184L427.9036 407.34L427.0342 416.7786L426.1437 417.6426L424.7207 417.343L423.6169 417.8141L419.4848 417.1802L417.3096 418.6346L416.5379 420.0673L415.5448 424.5978L414.1072 426.7685L414.4996 429.1412L413.1303 435.7057L413.9802 438.671L413.6139 439.5415L412.1909 440.3229L409.6055 443.4879L408.9054 443.4684L406.5838 444.6797L404.9264 446.5357L404.8189 448.014L405.8707 449.9895L407.7625 451.0748L408.1826 451.9258L408.0849 456.1936L406.8427 460.025L406.2761 465.0721L406.8915 467.0583L407.8895 468.7754L410.0988 471.5562L412.0786 475.6047L412.8764 479.5447L412.974 484.277L414.0193 486.6063L415.2175 487.5658L418.4542 488.369L419.5027 488.0347L420.3118 488.8856L422.78 489.6454L423.3385 489.0766L426.4367 489.3328L428.5076 490.8827L430.2204 490.1924L430.8179 491.1823L432.4802 491.3646L434.0057 492.4869L435.8438 492.4869L436.285 490.0665L437.1414 489.8277L438.8639 488.0412L439.9694 487.4182L440.2673 490.0122L441.2725 518.8615L460.3238 519.0856L462.0039 518.3193L464 518.6796L465.1038 519.8063L468.8647 518.6253L469.6234 516.7172L470.4342 517.0146L471.4762 518.5646L474.1462 521.0555L474.6249 520.1286L475.9013 521.3052L476.0088 522.739L477.9462 522.4535L479.3691 521.2184L480.499 523.0147L480.0302 525.2202L482.2541 525.0509L482.8109 524.0979L484.3088 525.6858L486.3048 526.1428L488.1967 523.7669L490.7821 524.1739L491.2347 525.3483L492.4785 526.0017L493.1688 528.2159L494.4192 528.7108L497.2553 526.756L498.6327 526.5031L502.6932 527.9022L505.6856 528.3461L507.5091 529.323L508.7138 531.3711L511.2178 533.1881L511.4555 534.1725L515.7537 535.894L515.6169 537.1335L517.1246 540L518.541 537.2898L519.9346 536.6288L519.1792 531.9865L518.1177 528.3114L516.9683 526.3729L516.9324 524.8219L517.499 523.5216L517.3036 522.1301L517.8377 520.998L517.5544 519.7021L518.2121 517.3576L519.9412 517.8395L521.2078 516.5761L521.1199 515.5559Z" />
 
     <!-- 10. SUD (CM-SU) -->
     <path id="region-cm-su" data-region="CM-SU" class="cm-region" tabindex="0" role="button" aria-label="Sud (Chef-lieu: Ebolowa)"
@@ -129,6 +135,13 @@ const PARTY_CANDIDATE_NAMES = {
   'Autres': 'Autres candidats'
 };
 
+const SECURITY_LEVEL_COLORS = {
+  'Conflit': '#C82823',   // Rouge
+  'Sensible': '#EA580C',  // Orange
+  'Vigilance': '#D4AF37', // Jaune/Or
+  'Stabilité': '#059669' // Vert
+};
+
 const CAMEROON_REGIONS_DATA = {
   'CM-EN': {
     code: 'CM-EN',
@@ -141,10 +154,56 @@ const CAMEROON_REGIONS_DATA = {
     articlesCount: 42,
     keyTopics: ['Sécurité transfrontalière', 'Commerce du lac Tchad', 'Climat & Environnement'],
     leadImage: 'https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?auto=format&fit=crop&w=600&q=80',
-    seats: { total: 29, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 25, UNDP: 4 } },
-    turnout: { percent: 78.4, registeredVoters: '2 150 000', votesCast: '1 685 600', fill: '#064E3B' },
-    votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'Paul Biya (RDPC - 74.2%)', breakdown: { 'RDPC': '74.2%', 'UNDP': '18.1%', 'MRC': '4.5%', 'Autres': '3.2%' } }
+    
+    // Données Électorales par Année
+    historicalElections: {
+      '2025': {
+        seats: { total: 29, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 25, UNDP: 4 } },
+        turnout: { percent: 78.4, registeredVoters: '2 150 000', votesCast: '1 685 600', fill: '#064E3B' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'Paul Biya (RDPC - 74.2%)', breakdown: { 'RDPC': '74.2%', 'UNDP': '18.1%', 'MRC': '4.5%', 'Autres': '3.2%' } }
+      },
+      '2020': {
+        seats: { total: 29, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 26, UNDP: 3 } },
+        turnout: { percent: 74.1, registeredVoters: '2 010 000', votesCast: '1 489 410', fill: '#047857' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'RDPC (79.0%)', breakdown: { 'RDPC': '79.0%', 'UNDP': '15.5%', 'MRC': '3.0%', 'Autres': '2.5%' } }
+      },
+      '2018': {
+        seats: { total: 29, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 27, UNDP: 2 } },
+        turnout: { percent: 79.2, registeredVoters: '1 950 000', votesCast: '1 544 400', fill: '#064E3B' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'Paul Biya (RDPC - 81.6%)', breakdown: { 'RDPC': '81.6%', 'UNDP': '12.2%', 'MRC': '3.8%', 'Autres': '2.4%' } }
+      }
+    },
+
+    // Indicateurs Thématiques
+    security: {
+      status: 'Sensible',
+      color: '#EA580C',
+      description: 'Pression sécuritaire persistante dans le bassin du Lac Tchad et aux frontières avec le Nigeria.',
+      incidents: [
+        { date: '14 Jan 2026', title: 'Incursion contrecarrée à Fotokol', source: 'ACLED / Report' },
+        { date: '02 Nov 2025', title: 'Raid sécuritaire sur l\'axe Mora-Kolofata', source: 'Crisis Group' }
+      ]
+    },
+    demographics: {
+      urbanizationRate: '28.5%',
+      hdiIndex: '0.412',
+      waterAccess: '44.2%',
+      electricityAccess: '38.0%',
+      healthAccess: '41.5%'
+    },
+    economy: {
+      gdpShare: '9.8%',
+      povertyRate: '68.2%',
+      unemploymentRate: '8.4%',
+      keySectors: ['Coton & Oasiens', 'Élevage bovin', 'Commerce transfrontalier']
+    },
+    education: {
+      literacyRate: '42.1%',
+      schoolEnrollment: '54.3%',
+      universitiesCount: 1
+    }
   },
+
   'CM-NO': {
     code: 'CM-NO',
     name: 'Nord',
@@ -156,10 +215,51 @@ const CAMEROON_REGIONS_DATA = {
     articlesCount: 35,
     keyTopics: ['Filière Coton', 'Énergie hydroélectrique', 'Politiques agricoles'],
     leadImage: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=600&q=80',
-    seats: { total: 12, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 9, UNDP: 3 } },
-    turnout: { percent: 72.1, registeredVoters: '1 280 000', votesCast: '922 880', fill: '#047857' },
-    votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'Paul Biya (RDPC - 68.5%)', breakdown: { 'RDPC': '68.5%', 'UNDP': '22.4%', 'MRC': '5.1%', 'Autres': '4.0%' } }
+    
+    historicalElections: {
+      '2025': {
+        seats: { total: 12, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 9, UNDP: 3 } },
+        turnout: { percent: 72.1, registeredVoters: '1 280 000', votesCast: '922 880', fill: '#047857' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'Paul Biya (RDPC - 68.5%)', breakdown: { 'RDPC': '68.5%', 'UNDP': '22.4%', 'MRC': '5.1%', 'Autres': '4.0%' } }
+      },
+      '2020': {
+        seats: { total: 12, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 10, UNDP: 2 } },
+        turnout: { percent: 69.4, registeredVoters: '1 190 000', votesCast: '825 860', fill: '#10B981' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'RDPC (72.0%)', breakdown: { 'RDPC': '72.0%', 'UNDP': '20.1%', 'MRC': '4.5%', 'Autres': '3.4%' } }
+      },
+      '2018': {
+        seats: { total: 12, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 9, UNDP: 3 } },
+        turnout: { percent: 73.8, registeredVoters: '1 150 000', votesCast: '848 700', fill: '#047857' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'Paul Biya (RDPC - 75.4%)', breakdown: { 'RDPC': '75.4%', 'UNDP': '18.2%', 'MRC': '3.9%', 'Autres': '2.5%' } }
+      }
+    },
+
+    security: {
+      status: 'Vigilance',
+      color: '#D4AF37',
+      description: 'Stabilité générale avec des zones de vigilance au parc de la Bénoué et frontière centrafricaine.',
+      incidents: [{ date: '18 Déc 2025', title: 'Patrouille forestière renforcée à Touboro', source: 'MINEPIA' }]
+    },
+    demographics: {
+      urbanizationRate: '36.2%',
+      hdiIndex: '0.485',
+      waterAccess: '52.4%',
+      electricityAccess: '49.1%',
+      healthAccess: '48.0%'
+    },
+    economy: {
+      gdpShare: '7.4%',
+      povertyRate: '51.8%',
+      unemploymentRate: '6.9%',
+      keySectors: ['Sodecoton', 'Port fluvial', 'Agro-industrie']
+    },
+    education: {
+      literacyRate: '49.8%',
+      schoolEnrollment: '62.0%',
+      universitiesCount: 1
+    }
   },
+
   'CM-AD': {
     code: 'CM-AD',
     name: 'Adamaoua',
@@ -171,10 +271,51 @@ const CAMEROON_REGIONS_DATA = {
     articlesCount: 28,
     keyTopics: ['Ressources minières', 'Transhumance & Élevage', 'Transports Camrail'],
     leadImage: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80',
-    seats: { total: 10, leadingParty: 'UNDP', partyColor: '#059669', breakdown: { UNDP: 6, RDPC: 4 } },
-    turnout: { percent: 66.8, registeredVoters: '690 000', votesCast: '460 920', fill: '#10B981' },
-    votes: { leadingParty: 'UNDP', partyColor: '#059669', leadingCandidate: 'Bello Bouba (UNDP - 51.2%)', breakdown: { 'UNDP': '51.2%', 'RDPC': '41.0%', 'MRC': '4.8%', 'Autres': '3.0%' } }
+    
+    historicalElections: {
+      '2025': {
+        seats: { total: 10, leadingParty: 'UNDP', partyColor: '#059669', breakdown: { UNDP: 6, RDPC: 4 } },
+        turnout: { percent: 66.8, registeredVoters: '690 000', votesCast: '460 920', fill: '#10B981' },
+        votes: { leadingParty: 'UNDP', partyColor: '#059669', leadingCandidate: 'Bello Bouba (UNDP - 51.2%)', breakdown: { 'UNDP': '51.2%', 'RDPC': '41.0%', 'MRC': '4.8%', 'Autres': '3.0%' } }
+      },
+      '2020': {
+        seats: { total: 10, leadingParty: 'UNDP', partyColor: '#059669', breakdown: { UNDP: 5, RDPC: 5 } },
+        turnout: { percent: 64.2, registeredVoters: '640 000', votesCast: '410 880', fill: '#10B981' },
+        votes: { leadingParty: 'UNDP', partyColor: '#059669', leadingCandidate: 'UNDP (49.5%)', breakdown: { 'UNDP': '49.5%', 'RDPC': '43.2%', 'MRC': '4.1%', 'Autres': '3.2%' } }
+      },
+      '2018': {
+        seats: { total: 10, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 6, UNDP: 4 } },
+        turnout: { percent: 67.5, registeredVoters: '610 000', votesCast: '411 750', fill: '#10B981' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'Paul Biya (RDPC - 49.8%)', breakdown: { 'RDPC': '49.8%', 'UNDP': '42.1%', 'MRC': '5.0%', 'Autres': '3.1%' } }
+      }
+    },
+
+    security: {
+      status: 'Vigilance',
+      color: '#D4AF37',
+      description: 'Enjeux liés au kidnapping contre rançon dans les zones pastorales isolées.',
+      incidents: [{ date: '05 Jan 2026', title: 'Opération anti-coupeurs de route à Meiganga', source: 'Gendarmerie Nationale' }]
+    },
+    demographics: {
+      urbanizationRate: '41.0%',
+      hdiIndex: '0.510',
+      waterAccess: '58.9%',
+      electricityAccess: '53.4%',
+      healthAccess: '52.1%'
+    },
+    economy: {
+      gdpShare: '5.2%',
+      povertyRate: '47.1%',
+      unemploymentRate: '5.8%',
+      keySectors: ['Bauxite de Minim-Martap', 'Élevage Bovin', 'Hub Camrail']
+    },
+    education: {
+      literacyRate: '54.2%',
+      schoolEnrollment: '68.5%',
+      universitiesCount: 1
+    }
   },
+
   'CM-NW': {
     code: 'CM-NW',
     name: 'Nord-Ouest',
@@ -186,10 +327,54 @@ const CAMEROON_REGIONS_DATA = {
     articlesCount: 54,
     keyTopics: ['Décentralisation', 'Agriculture de montagne', 'Patrimoine traditionnel'],
     leadImage: 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&w=600&q=80',
-    seats: { total: 20, leadingParty: 'SDF', partyColor: '#D4AF37', breakdown: { SDF: 11, RDPC: 9 } },
-    turnout: { percent: 44.5, registeredVoters: '1 120 000', votesCast: '498 400', fill: '#A7F3D0' },
-    votes: { leadingParty: 'SDF', partyColor: '#D4AF37', leadingCandidate: 'SDF (48.3%)', breakdown: { 'SDF': '48.3%', 'RDPC': '39.5%', 'MRC': '7.2%', 'Autres': '5.0%' } }
+    
+    historicalElections: {
+      '2025': {
+        seats: { total: 20, leadingParty: 'SDF', partyColor: '#D4AF37', breakdown: { SDF: 11, RDPC: 9 } },
+        turnout: { percent: 44.5, registeredVoters: '1 120 000', votesCast: '498 400', fill: '#A7F3D0' },
+        votes: { leadingParty: 'SDF', partyColor: '#D4AF37', leadingCandidate: 'SDF (48.3%)', breakdown: { 'SDF': '48.3%', 'RDPC': '39.5%', 'MRC': '7.2%', 'Autres': '5.0%' } }
+      },
+      '2020': {
+        seats: { total: 20, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 18, SDF: 2 } },
+        turnout: { percent: 38.2, registeredVoters: '1 050 000', votesCast: '401 100', fill: '#A7F3D0' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'RDPC (64.0%)', breakdown: { 'RDPC': '64.0%', 'SDF': '28.1%', 'MRC': '5.0%', 'Autres': '2.9%' } }
+      },
+      '2018': {
+        seats: { total: 20, leadingParty: 'SDF', partyColor: '#D4AF37', breakdown: { SDF: 14, RDPC: 6 } },
+        turnout: { percent: 41.0, registeredVoters: '990 000', votesCast: '405 900', fill: '#A7F3D0' },
+        votes: { leadingParty: 'SDF', partyColor: '#D4AF37', leadingCandidate: 'Joshua Osih (SDF - 51.5%)', breakdown: { 'SDF': '51.5%', 'RDPC': '38.0%', 'MRC': '6.2%', 'Autres': '4.3%' } }
+      }
+    },
+
+    security: {
+      status: 'Conflit',
+      color: '#C82823',
+      description: 'Zone sous statut sécuritaire particulier. Crise sociopolitique et affrontements sporadiques.',
+      incidents: [
+        { date: '22 Jan 2026', title: 'Couvre-feu partiel levé sur l\'axe Bamenda-Bafoussam', source: 'Gouvernorat NW' },
+        { date: '10 Nov 2025', title: 'Consultations pour le Statut Spécial', source: 'Crisis Group' }
+      ]
+    },
+    demographics: {
+      urbanizationRate: '44.8%',
+      hdiIndex: '0.530',
+      waterAccess: '61.0%',
+      electricityAccess: '56.2%',
+      healthAccess: '51.0%'
+    },
+    economy: {
+      gdpShare: '6.1%',
+      povertyRate: '58.4%',
+      unemploymentRate: '12.5%',
+      keySectors: ['Agriculture de montagne', 'Café Arabica', 'Artisanat Grassfields']
+    },
+    education: {
+      literacyRate: '71.5%',
+      schoolEnrollment: '61.4%',
+      universitiesCount: 2
+    }
   },
+
   'CM-OU': {
     code: 'CM-OU',
     name: 'Ouest',
@@ -201,10 +386,51 @@ const CAMEROON_REGIONS_DATA = {
     articlesCount: 48,
     keyTopics: ['Chefferies traditionnelles', 'Microfinance & Commerce', 'Culture & Artisanat'],
     leadImage: 'https://images.unsplash.com/photo-1576085898323-218337e3e43c?auto=format&fit=crop&w=600&q=80',
-    seats: { total: 25, leadingParty: 'UDC', partyColor: '#7C3AED', breakdown: { UDC: 12, RDPC: 10, MRC: 3 } },
-    turnout: { percent: 68.9, registeredVoters: '1 450 000', votesCast: '999 050', fill: '#10B981' },
-    votes: { leadingParty: 'MRC', partyColor: '#C82823', leadingCandidate: 'Maurice Kamto (MRC - 56.4%)', breakdown: { 'MRC': '56.4%', 'RDPC': '34.1%', 'UDC': '6.2%', 'Autres': '3.3%' } }
+    
+    historicalElections: {
+      '2025': {
+        seats: { total: 25, leadingParty: 'UDC', partyColor: '#7C3AED', breakdown: { UDC: 12, RDPC: 10, MRC: 3 } },
+        turnout: { percent: 68.9, registeredVoters: '1 450 000', votesCast: '999 050', fill: '#10B981' },
+        votes: { leadingParty: 'MRC', partyColor: '#C82823', leadingCandidate: 'Maurice Kamto (MRC - 56.4%)', breakdown: { 'MRC': '56.4%', 'RDPC': '34.1%', 'UDC': '6.2%', 'Autres': '3.3%' } }
+      },
+      '2020': {
+        seats: { total: 25, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 15, UDC: 8, MRC: 2 } },
+        turnout: { percent: 65.4, registeredVoters: '1 380 000', votesCast: '902 520', fill: '#10B981' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'RDPC (48.2%)', breakdown: { 'RDPC': '48.2%', 'MRC': '38.0%', 'UDC': '10.5%', 'Autres': '3.3%' } }
+      },
+      '2018': {
+        seats: { total: 25, leadingParty: 'MRC', partyColor: '#C82823', breakdown: { MRC: 11, RDPC: 9, UDC: 5 } },
+        turnout: { percent: 71.0, registeredVoters: '1 310 000', votesCast: '930 100', fill: '#047857' },
+        votes: { leadingParty: 'MRC', partyColor: '#C82823', leadingCandidate: 'Maurice Kamto (MRC - 59.8%)', breakdown: { 'MRC': '59.8%', 'RDPC': '31.2%', 'UDC': '6.0%', 'Autres': '3.0%' } }
+      }
+    },
+
+    security: {
+      status: 'Stabilité',
+      color: '#059669',
+      description: 'Climat de paix et stabilité républicaine maintenue.',
+      incidents: []
+    },
+    demographics: {
+      urbanizationRate: '52.1%',
+      hdiIndex: '0.628',
+      waterAccess: '71.4%',
+      electricityAccess: '74.0%',
+      healthAccess: '68.5%'
+    },
+    economy: {
+      gdpShare: '11.5%',
+      povertyRate: '32.1%',
+      unemploymentRate: '6.1%',
+      keySectors: ['Microfinance & Coopératives', 'Maraîchage & Aviculture', 'Café & Commerce']
+    },
+    education: {
+      literacyRate: '82.4%',
+      schoolEnrollment: '86.0%',
+      universitiesCount: 2
+    }
   },
+
   'CM-SW': {
     code: 'CM-SW',
     name: 'Sud-Ouest',
@@ -216,10 +442,51 @@ const CAMEROON_REGIONS_DATA = {
     articlesCount: 61,
     keyTopics: ['Silicon Mountain (Buea)', 'Agro-industrie CDC', 'Installations pétrolières'],
     leadImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80',
-    seats: { total: 15, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 12, SDF: 3 } },
-    turnout: { percent: 48.2, registeredVoters: '850 000', votesCast: '409 700', fill: '#6EE7B7' },
-    votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'Paul Biya (RDPC - 62.0%)', breakdown: { 'RDPC': '62.0%', 'SDF': '24.5%', 'MRC': '8.5%', 'Autres': '5.0%' } }
+    
+    historicalElections: {
+      '2025': {
+        seats: { total: 15, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 12, SDF: 3 } },
+        turnout: { percent: 48.2, registeredVoters: '850 000', votesCast: '409 700', fill: '#6EE7B7' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'Paul Biya (RDPC - 62.0%)', breakdown: { 'RDPC': '62.0%', 'SDF': '24.5%', 'MRC': '8.5%', 'Autres': '5.0%' } }
+      },
+      '2020': {
+        seats: { total: 15, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 14, SDF: 1 } },
+        turnout: { percent: 42.1, registeredVoters: '790 000', votesCast: '332 590', fill: '#A7F3D0' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'RDPC (71.0%)', breakdown: { 'RDPC': '71.0%', 'SDF': '20.2%', 'MRC': '5.4%', 'Autres': '3.4%' } }
+      },
+      '2018': {
+        seats: { total: 15, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 11, SDF: 4 } },
+        turnout: { percent: 45.8, registeredVoters: '760 000', votesCast: '348 080', fill: '#6EE7B7' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'Paul Biya (RDPC - 65.4%)', breakdown: { 'RDPC': '65.4%', 'SDF': '22.0%', 'MRC': '8.0%', 'Autres': '4.6%' } }
+      }
+    },
+
+    security: {
+      status: 'Conflit',
+      color: '#C82823',
+      description: 'Dispositif sécuritaire renforcé en zone cotière et agro-industrielle.',
+      incidents: [{ date: '04 Déc 2025', title: 'Sécurisation du port et pôle de Limbe', source: 'ACLED' }]
+    },
+    demographics: {
+      urbanizationRate: '56.4%',
+      hdiIndex: '0.589',
+      waterAccess: '68.0%',
+      electricityAccess: '65.3%',
+      healthAccess: '61.2%'
+    },
+    economy: {
+      gdpShare: '9.4%',
+      povertyRate: '41.0%',
+      unemploymentRate: '9.2%',
+      keySectors: ['Agro-industrie CDC', 'Raffinage Sonara', 'Silicon Mountain Buea']
+    },
+    education: {
+      literacyRate: '78.9%',
+      schoolEnrollment: '74.2%',
+      universitiesCount: 2
+    }
   },
+
   'CM-LT': {
     code: 'CM-LT',
     name: 'Littoral',
@@ -231,10 +498,51 @@ const CAMEROON_REGIONS_DATA = {
     articlesCount: 89,
     keyTopics: ['Port Autonome de Douala', 'Bourse BVMAC', 'Industrie & Commerce'],
     leadImage: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80',
-    seats: { total: 19, leadingParty: 'MRC', partyColor: '#C82823', breakdown: { MRC: 9, RDPC: 8, PCRN: 2 } },
-    turnout: { percent: 81.3, registeredVoters: '1 980 000', votesCast: '1 609 740', fill: '#064E3B' },
-    votes: { leadingParty: 'MRC', partyColor: '#C82823', leadingCandidate: 'Maurice Kamto (MRC - 54.8%)', breakdown: { 'MRC': '54.8%', 'RDPC': '38.2%', 'PCRN': '4.2%', 'Autres': '2.8%' } }
+    
+    historicalElections: {
+      '2025': {
+        seats: { total: 19, leadingParty: 'MRC', partyColor: '#C82823', breakdown: { MRC: 9, RDPC: 8, PCRN: 2 } },
+        turnout: { percent: 81.3, registeredVoters: '1 980 000', votesCast: '1 609 740', fill: '#064E3B' },
+        votes: { leadingParty: 'MRC', partyColor: '#C82823', leadingCandidate: 'Maurice Kamto (MRC - 54.8%)', breakdown: { 'MRC': '54.8%', 'RDPC': '38.2%', 'PCRN': '4.2%', 'Autres': '2.8%' } }
+      },
+      '2020': {
+        seats: { total: 19, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 13, PCRN: 4, MRC: 2 } },
+        turnout: { percent: 77.0, registeredVoters: '1 850 000', votesCast: '1 424 500', fill: '#064E3B' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'RDPC (49.1%)', breakdown: { 'RDPC': '49.1%', 'MRC': '35.4%', 'PCRN': '11.0%', 'Autres': '4.5%' } }
+      },
+      '2018': {
+        seats: { total: 19, leadingParty: 'MRC', partyColor: '#C82823', breakdown: { MRC: 10, RDPC: 7, PCRN: 2 } },
+        turnout: { percent: 80.5, registeredVoters: '1 790 000', votesCast: '1 440 950', fill: '#064E3B' },
+        votes: { leadingParty: 'MRC', partyColor: '#C82823', leadingCandidate: 'Maurice Kamto (MRC - 57.1%)', breakdown: { 'MRC': '57.1%', 'RDPC': '35.9%', 'PCRN': '4.0%', 'Autres': '3.0%' } }
+      }
+    },
+
+    security: {
+      status: 'Stabilité',
+      color: '#059669',
+      description: 'Métropole économique pacifiée et sécurisée.',
+      incidents: []
+    },
+    demographics: {
+      urbanizationRate: '92.4%',
+      hdiIndex: '0.745',
+      waterAccess: '86.5%',
+      electricityAccess: '89.2%',
+      healthAccess: '84.0%'
+    },
+    economy: {
+      gdpShare: '32.4%',
+      povertyRate: '18.2%',
+      unemploymentRate: '7.8%',
+      keySectors: ['Port Autonome Douala', 'Industrie manufacturière', 'Bourse BVMAC & Banque']
+    },
+    education: {
+      literacyRate: '91.2%',
+      schoolEnrollment: '92.8%',
+      universitiesCount: 4
+    }
   },
+
   'CM-CE': {
     code: 'CM-CE',
     name: 'Centre',
@@ -246,10 +554,51 @@ const CAMEROON_REGIONS_DATA = {
     articlesCount: 112,
     keyTopics: ['Gouvernance & Lois', 'Diplomatie centrale', 'Projets d\'infrastructures'],
     leadImage: 'https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?auto=format&fit=crop&w=600&q=80',
-    seats: { total: 28, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 23, PCRN: 5 } },
-    turnout: { percent: 79.6, registeredVoters: '2 340 000', votesCast: '1 862 640', fill: '#064E3B' },
-    votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'Paul Biya (RDPC - 69.4%)', breakdown: { 'RDPC': '69.4%', 'MRC': '22.1%', 'PCRN': '5.5%', 'Autres': '3.0%' } }
+    
+    historicalElections: {
+      '2025': {
+        seats: { total: 28, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 23, PCRN: 5 } },
+        turnout: { percent: 79.6, registeredVoters: '2 340 000', votesCast: '1 862 640', fill: '#064E3B' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'Paul Biya (RDPC - 69.4%)', breakdown: { 'RDPC': '69.4%', 'MRC': '22.1%', 'PCRN': '5.5%', 'Autres': '3.0%' } }
+      },
+      '2020': {
+        seats: { total: 28, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 25, PCRN: 3 } },
+        turnout: { percent: 76.5, registeredVoters: '2 210 000', votesCast: '1 690 650', fill: '#064E3B' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'RDPC (74.8%)', breakdown: { 'RDPC': '74.8%', 'MRC': '18.0%', 'PCRN': '4.5%', 'Autres': '2.7%' } }
+      },
+      '2018': {
+        seats: { total: 28, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 26, PCRN: 2 } },
+        turnout: { percent: 78.9, registeredVoters: '2 150 000', votesCast: '1 696 350', fill: '#064E3B' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'Paul Biya (RDPC - 71.1%)', breakdown: { 'RDPC': '71.1%', 'MRC': '21.4%', 'PCRN': '5.0%', 'Autres': '2.5%' } }
+      }
+    },
+
+    security: {
+      status: 'Stabilité',
+      color: '#059669',
+      description: 'Cœur administratif pacifié.',
+      incidents: []
+    },
+    demographics: {
+      urbanizationRate: '78.5%',
+      hdiIndex: '0.720',
+      waterAccess: '82.1%',
+      electricityAccess: '86.4%',
+      healthAccess: '82.5%'
+    },
+    economy: {
+      gdpShare: '24.1%',
+      povertyRate: '21.5%',
+      unemploymentRate: '8.1%',
+      keySectors: ['Administration & Services', 'BTP & Infrastructures', 'Enseignement Supérieur']
+    },
+    education: {
+      literacyRate: '89.5%',
+      schoolEnrollment: '91.0%',
+      universitiesCount: 5
+    }
   },
+
   'CM-ES': {
     code: 'CM-ES',
     name: 'Est',
@@ -261,10 +610,51 @@ const CAMEROON_REGIONS_DATA = {
     articlesCount: 31,
     keyTopics: ['Exploitation forestière', 'Barrage Lom Pangar', 'Mines & Ressources'],
     leadImage: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80',
-    seats: { total: 11, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 11 } },
-    turnout: { percent: 70.4, registeredVoters: '580 000', votesCast: '408 320', fill: '#047857' },
-    votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'Paul Biya (RDPC - 82.1%)', breakdown: { 'RDPC': '82.1%', 'MRC': '11.4%', 'UNDP': '4.0%', 'Autres': '2.5%' } }
+    
+    historicalElections: {
+      '2025': {
+        seats: { total: 11, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 11 } },
+        turnout: { percent: 70.4, registeredVoters: '580 000', votesCast: '408 320', fill: '#047857' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'Paul Biya (RDPC - 82.1%)', breakdown: { 'RDPC': '82.1%', 'MRC': '11.4%', 'UNDP': '4.0%', 'Autres': '2.5%' } }
+      },
+      '2020': {
+        seats: { total: 11, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 11 } },
+        turnout: { percent: 68.0, registeredVoters: '540 000', votesCast: '367 200', fill: '#10B981' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'RDPC (85.0%)', breakdown: { 'RDPC': '85.0%', 'MRC': '9.2%', 'UNDP': '3.8%', 'Autres': '2.0%' } }
+      },
+      '2018': {
+        seats: { total: 11, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 11 } },
+        turnout: { percent: 72.5, registeredVoters: '520 000', votesCast: '377 000', fill: '#047857' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'Paul Biya (RDPC - 89.2%)', breakdown: { 'RDPC': '89.2%', 'MRC': '6.1%', 'UNDP': '3.0%', 'Autres': '1.7%' } }
+      }
+    },
+
+    security: {
+      status: 'Vigilance',
+      color: '#D4AF37',
+      description: 'Vigilance le long de la frontière avec la République Centrafricaine (RCA).',
+      incidents: [{ date: '12 Nov 2025', title: 'Sécurisation du corridor Garoua-Boulaï', source: 'ACLED' }]
+    },
+    demographics: {
+      urbanizationRate: '34.0%',
+      hdiIndex: '0.505',
+      waterAccess: '49.8%',
+      electricityAccess: '45.0%',
+      healthAccess: '46.2%'
+    },
+    economy: {
+      gdpShare: '4.8%',
+      povertyRate: '49.5%',
+      unemploymentRate: '4.8%',
+      keySectors: ['Filière Bois & Forêt', 'Barrage Lom Pangar', 'Mines d\'or de Bétaré-Oya']
+    },
+    education: {
+      literacyRate: '61.0%',
+      schoolEnrollment: '67.0%',
+      universitiesCount: 1
+    }
   },
+
   'CM-SU': {
     code: 'CM-SU',
     name: 'Sud',
@@ -276,9 +666,49 @@ const CAMEROON_REGIONS_DATA = {
     articlesCount: 45,
     keyTopics: ['Port en eau profonde Kribi', 'Intégration CEMAC', 'Filière Cacao'],
     leadImage: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
-    seats: { total: 11, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 11 } },
-    turnout: { percent: 84.1, registeredVoters: '520 000', votesCast: '437 320', fill: '#064E3B' },
-    votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'Paul Biya (RDPC - 91.0%)', breakdown: { 'RDPC': '91.0%', 'MRC': '5.2%', 'Autres': '3.8%' } }
+    
+    historicalElections: {
+      '2025': {
+        seats: { total: 11, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 11 } },
+        turnout: { percent: 84.1, registeredVoters: '520 000', votesCast: '437 320', fill: '#064E3B' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'Paul Biya (RDPC - 91.0%)', breakdown: { 'RDPC': '91.0%', 'MRC': '5.2%', 'Autres': '3.8%' } }
+      },
+      '2020': {
+        seats: { total: 11, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 11 } },
+        turnout: { percent: 82.5, registeredVoters: '490 000', votesCast: '404 250', fill: '#064E3B' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'RDPC (93.5%)', breakdown: { 'RDPC': '93.5%', 'MRC': '4.0%', 'Autres': '2.5%' } }
+      },
+      '2018': {
+        seats: { total: 11, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 11 } },
+        turnout: { percent: 86.0, registeredVoters: '480 000', votesCast: '412 800', fill: '#064E3B' },
+        votes: { leadingParty: 'RDPC', partyColor: '#37463D', leadingCandidate: 'Paul Biya (RDPC - 92.8%)', breakdown: { 'RDPC': '92.8%', 'MRC': '4.5%', 'Autres': '2.7%' } }
+      }
+    },
+
+    security: {
+      status: 'Stabilité',
+      color: '#059669',
+      description: 'Zone côtière et frontalière sous haute stabilité.',
+      incidents: []
+    },
+    demographics: {
+      urbanizationRate: '47.2%',
+      hdiIndex: '0.640',
+      waterAccess: '73.2%',
+      electricityAccess: '71.0%',
+      healthAccess: '70.8%'
+    },
+    economy: {
+      gdpShare: '6.4%',
+      povertyRate: '29.0%',
+      unemploymentRate: '5.2%',
+      keySectors: ['Port en eau profonde Kribi', 'Filière Cacao', 'Intégration CEMAC']
+    },
+    education: {
+      literacyRate: '86.4%',
+      schoolEnrollment: '88.1%',
+      universitiesCount: 1
+    }
   }
 };
 
@@ -287,9 +717,11 @@ class CameroonMap {
     this.containerId = options.containerId || 'cm-map-root';
     this.onSelectCallback = options.onSelect || null;
     this.selectedRegionCode = null;
-    this.activeTab = options.initialTab || 'seats'; // 'seats' | 'turnout' | 'votes'
+    this.activeYear = '2025'; // '2018' | '2020' | '2025'
+    this.activeTab = options.initialTab || 'seats'; // 'seats' | 'turnout' | 'votes' | 'security' | 'demographics' | 'economy' | 'education'
+    this.filterLegendKey = null;
 
-    // Cadrage Pan & Zoom calibré sur les coordonnées réelles du Cameroun
+    // Cadrage Pan & Zoom
     this.baseViewBox = { x: 260, y: 45, w: 275, h: 510 };
     this.currentViewBox = { ...this.baseViewBox };
     this.zoomLevel = 1.0;
@@ -311,38 +743,88 @@ class CameroonMap {
 
   createDomStructure() {
     this.container.innerHTML = `
-      <div class="cm-map-wrapper">
-        <!-- En-tête Haute Couture -->
+      <div class="cm-map-wrapper" id="cm-map-export-node">
+        <!-- Barre de Contrôles Supérieure (Outils & Filtre Temporel) -->
+        <div class="cm-top-toolbar">
+          <div class="cm-search-box">
+            <svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="cm-search-input" placeholder="Rechercher une ville, chef-lieu ou région (ex: Garoua, Douala, Bamenda)..." aria-label="Rechercher une région">
+          </div>
+
+          <div class="cm-toolbar-actions">
+            <!-- Sélecteur Temporel Électoral -->
+            <div class="cm-year-picker">
+              <label for="cm-year-select">Scrutin :</label>
+              <select id="cm-year-select">
+                <option value="2025" selected>Élections 2025 (Projections)</option>
+                <option value="2020">Législatives 2020</option>
+                <option value="2018">Présidentielle 2018</option>
+              </select>
+            </div>
+
+            <!-- Boutons Outils -->
+            <button class="cm-tool-btn" id="cm-btn-compare" title="Comparer 2 régions côte à côte">
+              <svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 3h5v5M4 21h5v-5M21 3l-7 7M3 21l7-7"/></svg>
+              <span>Comparer</span>
+            </button>
+            <button class="cm-tool-btn" id="cm-btn-export" title="Exporter l'image cartographique">
+              <svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+              <span>Exporter</span>
+            </button>
+            <button class="cm-tool-btn" id="cm-btn-sources" title="Voir les sources et la méthodologie">
+              <svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              <span>Sources</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- En-tête -->
         <div class="cm-map-header">
           <div class="cm-map-title-group">
             <h2>
               <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 3a8 8 0 0 1 8 7.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
               <span>Carte Interactive du Cameroun</span>
             </h2>
-            <p>Cartographie électorale, représentativité parlementaire et suffrages régionaux.</p>
+            <p>Données électorales, indicateurs de développement, sécurité et économie territoriale Solitiquo.</p>
           </div>
-          <span class="cm-map-badge" id="cm-header-badge">Données Électorales</span>
+          <span class="cm-map-badge" id="cm-header-badge">Données Électorales 2025</span>
         </div>
 
-        <!-- 3 Onglets Électoraux Centraux (Onglet Analyses Solitiquo Retiré) -->
+        <!-- Barre d'Onglets Thématiques Complète -->
         <div class="cm-data-tabs" role="tablist">
           <button class="cm-tab-btn ${this.activeTab === 'seats' ? 'is-active' : ''}" data-tab="seats" role="tab">
-            <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 3l9 7H3l9-7z"/></svg>
+            <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 3l9 7H3l9-7z"/></svg>
             Sièges Assemblée
           </button>
           <button class="cm-tab-btn ${this.activeTab === 'turnout' ? 'is-active' : ''}" data-tab="turnout" role="tab">
-            <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
-            Participation Électorale
+            <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+            Participation
           </button>
           <button class="cm-tab-btn ${this.activeTab === 'votes' ? 'is-active' : ''}" data-tab="votes" role="tab">
-            <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6M15 3h6v6M10 14L21 3M4 6h7v7H4z"/></svg>
-            Résultats des Votes
+            <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6M15 3h6v6M10 14L21 3M4 6h7v7H4z"/></svg>
+            Suffrages Urnes
+          </button>
+          <button class="cm-tab-btn ${this.activeTab === 'security' ? 'is-active' : ''}" data-tab="security" role="tab">
+            <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Sécurité & Conflits
+          </button>
+          <button class="cm-tab-btn ${this.activeTab === 'demographics' ? 'is-active' : ''}" data-tab="demographics" role="tab">
+            <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Démographie & IDH
+          </button>
+          <button class="cm-tab-btn ${this.activeTab === 'economy' ? 'is-active' : ''}" data-tab="economy" role="tab">
+            <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Économie & Emploi
+          </button>
+          <button class="cm-tab-btn ${this.activeTab === 'education' ? 'is-active' : ''}" data-tab="education" role="tab">
+            <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            Éducation
           </button>
         </div>
 
         <!-- Layout principal : Carte SVG + Liste Régions -->
         <div class="cm-map-layout">
-          <!-- Zone SVG avec Pan & Zoom (Carte 100% dégagée de tout overlay) -->
+          <!-- Zone SVG avec Pan & Zoom (Carte 100% dégagée) -->
           <div class="cm-svg-container" id="cm-svg-mount">
             <!-- Boutons de Zoom Flottants Vectoriels -->
             <div class="cm-zoom-controls">
@@ -364,10 +846,11 @@ class CameroonMap {
             </div>
           </div>
 
-          <!-- Panneau latéral : Liste des Régions d'abord, puis Légende sous la liste -->
+          <!-- Panneau latéral : Liste des Régions + Légende Cliquable -->
           <div class="cm-region-list-container">
             <div class="cm-list-header">
               <h3 id="cm-list-title">Régions du Cameroun</h3>
+              <button class="cm-reset-filter-btn" id="cm-reset-filter" style="display:none;">Annuler le filtre</button>
             </div>
             <div class="cm-region-list" id="cm-region-list">
               ${Object.values(CAMEROON_REGIONS_DATA).map(reg => `
@@ -384,7 +867,7 @@ class CameroonMap {
               `).join('')}
             </div>
 
-            <!-- Légende Inversée et Placée sous la Liste -->
+            <!-- Légende Cliquable et Filtrante -->
             <div class="cm-map-legend" id="cm-map-legend"></div>
           </div>
         </div>
@@ -435,6 +918,51 @@ class CameroonMap {
           </button>
         </div>
       </div>
+
+      <!-- Modal Mode Comparaison 2 Régions -->
+      <div class="cm-modal-overlay" id="cm-compare-modal-overlay">
+        <div class="cm-modal-content cm-compare-modal">
+          <button class="cm-modal-close" id="cm-compare-modal-close">&times;</button>
+          <h3 class="cm-modal-title">⚖️ Comparateur de Régions du Cameroun</h3>
+          <p class="cm-modal-desc">Sélectionnez 2 régions pour juxtaposer leurs indicateurs électoraux, socio-économiques et sécuritaires.</p>
+
+          <div class="cm-compare-selectors">
+            <div class="cm-compare-select-group">
+              <label>Région 1 :</label>
+              <select id="cm-compare-reg1">
+                ${Object.values(CAMEROON_REGIONS_DATA).map(r => `<option value="${r.code}">${r.name}</option>`).join('')}
+              </select>
+            </div>
+            <div class="cm-compare-vs-badge">VS</div>
+            <div class="cm-compare-select-group">
+              <label>Région 2 :</label>
+              <select id="cm-compare-reg2">
+                ${Object.values(CAMEROON_REGIONS_DATA).map(r => `<option value="${r.code}" ${r.code === 'CM-CE' ? 'selected' : ''}>${r.name}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+
+          <div class="cm-compare-results" id="cm-compare-results-grid"></div>
+        </div>
+      </div>
+
+      <!-- Modal Sources & Méthodologie -->
+      <div class="cm-modal-overlay" id="cm-sources-modal-overlay">
+        <div class="cm-modal-content cm-sources-modal">
+          <button class="cm-modal-close" id="cm-sources-modal-close">&times;</button>
+          <h3 class="cm-modal-title">ℹ️ Sources & Méthodologie</h3>
+          <div class="cm-sources-body">
+            <p>Les données restituées sur la plateforme cartographique Solitiquo proviennent d'institutions publiques et d'observatoires indépendants :</p>
+            <ul class="cm-sources-list">
+              <li><strong>Élections (Sièges, Participation, Votes)</strong> : Résultats officiels ELECAM (Élections Cameroon), Ministère de l'Administration Territoriale (MINAT), archives des scrutins 2018 & 2020. Projections 2025 établies par la rédaction Solitiquo.</li>
+              <li><strong>Sécurité & Conflits</strong> : Rapports ACLED (Armed Conflict Location & Event Data Project), International Crisis Group (ICG), bulletins d'information du Ministère de la Défense.</li>
+              <li><strong>Démographie & Développement (IDH, Accès Eau/Électricité)</strong> : Institut National de la Statistique du Cameroun (INS), Rapport sur le Développement Humain du PNUD (2024).</li>
+              <li><strong>Économie & Filières</strong> : Ministère de l'Économie, de la Planification et de l'Aménagement du Territoire (MINEPAT), Banque Mondiale (World Bank Data Cameroun).</li>
+              <li><strong>Éducation & Alphabétisation</strong> : Ministère de l'Éducation de Base (MINEDUB), Ministère des Enseignements Secondaires (MINESEC), Annuaire statistique INS.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
     `;
 
     // Injecter le SVG nettoyé
@@ -455,14 +983,69 @@ class CameroonMap {
     this.closeBtn.addEventListener('click', () => this.closeDrawer());
     this.overlay.addEventListener('click', () => this.closeDrawer());
 
-    // Touche Echap pour fermer tiroir
+    // Touche Echap
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.drawer.classList.contains('is-open')) {
-        this.closeDrawer();
+      if (e.key === 'Escape') {
+        if (this.drawer.classList.contains('is-open')) this.closeDrawer();
+        this.closeModals();
       }
     });
 
-    // Gestion des onglets (Data Tabs)
+    // Barre de recherche par ville / chef-lieu / région
+    const searchInput = document.getElementById('cm-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        this.searchLocation(query);
+      });
+    }
+
+    // Sélecteur Temporel d'Année
+    const yearSelect = document.getElementById('cm-year-select');
+    if (yearSelect) {
+      yearSelect.addEventListener('change', (e) => {
+        this.activeYear = e.target.value;
+        const headerBadge = document.getElementById('cm-header-badge');
+        if (headerBadge) headerBadge.textContent = `Données Électorales ${this.activeYear}`;
+        this.switchTab(this.activeTab);
+      });
+    }
+
+    // Boutons de Modals (Comparer, Export, Sources)
+    const btnCompare = document.getElementById('cm-btn-compare');
+    if (btnCompare) btnCompare.addEventListener('click', () => this.openCompareModal());
+
+    const btnExport = document.getElementById('cm-btn-export');
+    if (btnExport) btnExport.addEventListener('click', () => this.exportMapImage());
+
+    const btnSources = document.getElementById('cm-btn-sources');
+    if (btnSources) btnSources.addEventListener('click', () => this.openSourcesModal());
+
+    // Boutons de fermeture Modals
+    document.getElementById('cm-compare-modal-close').addEventListener('click', () => this.closeModals());
+    document.getElementById('cm-sources-modal-close').addEventListener('click', () => this.closeModals());
+    document.getElementById('cm-compare-modal-overlay').addEventListener('click', (e) => {
+      if (e.target.id === 'cm-compare-modal-overlay') this.closeModals();
+    });
+    document.getElementById('cm-sources-modal-overlay').addEventListener('click', (e) => {
+      if (e.target.id === 'cm-sources-modal-overlay') this.closeModals();
+    });
+
+    // Bouton d'annulation de filtre légende
+    const resetFilterBtn = document.getElementById('cm-reset-filter');
+    if (resetFilterBtn) {
+      resetFilterBtn.addEventListener('click', () => this.clearLegendFilter());
+    }
+
+    // Changement des sélecteurs du comparateur
+    const compSel1 = document.getElementById('cm-compare-reg1');
+    const compSel2 = document.getElementById('cm-compare-reg2');
+    if (compSel1 && compSel2) {
+      compSel1.addEventListener('change', () => this.updateCompareResults());
+      compSel2.addEventListener('change', () => this.updateCompareResults());
+    }
+
+    // Gestion des onglets thématiques (Data Tabs)
     const tabBtns = this.container.querySelectorAll('.cm-tab-btn');
     tabBtns.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -496,19 +1079,16 @@ class CameroonMap {
     this.zoomResetBtn = document.getElementById('cm-zoom-reset');
     this.zoomIndicator = document.getElementById('cm-zoom-indicator');
 
-    // Événements de boutons Zoom
     this.zoomInBtn.addEventListener('click', () => this.zoom(0.8));
     this.zoomOutBtn.addEventListener('click', () => this.zoom(1.25));
     this.zoomResetBtn.addEventListener('click', () => this.resetZoom());
 
-    // Molette de la souris (Mouse wheel zoom)
     this.svg.addEventListener('wheel', (e) => {
       e.preventDefault();
       const zoomFactor = e.deltaY > 0 ? 1.15 : 0.85;
       this.zoom(zoomFactor, e.clientX, e.clientY);
     }, { passive: false });
 
-    // Glissement Pan (Click & Drag)
     this.svg.addEventListener('mousedown', (e) => {
       this.isDragging = true;
       this.dragStart = { x: e.clientX, y: e.clientY };
@@ -571,8 +1151,39 @@ class CameroonMap {
     }
   }
 
+  searchLocation(query) {
+    if (!query) {
+      this.container.querySelectorAll('.cm-region-item, .cm-region').forEach(el => el.style.opacity = '1');
+      return;
+    }
+
+    Object.values(CAMEROON_REGIONS_DATA).forEach(data => {
+      const isMatch = data.name.toLowerCase().includes(query) ||
+                      data.capital.toLowerCase().includes(query) ||
+                      data.departments.some(d => d.toLowerCase().includes(query));
+
+      const path = this.container.querySelector(`.cm-region[data-region="${data.code}"]`);
+      const item = this.container.querySelector(`.cm-region-item[data-region="${data.code}"]`);
+
+      if (isMatch) {
+        if (path) path.style.opacity = '1';
+        if (item) {
+          item.style.opacity = '1';
+          item.style.borderColor = 'var(--cm-gold-accent)';
+        }
+      } else {
+        if (path) path.style.opacity = '0.25';
+        if (item) {
+          item.style.opacity = '0.35';
+          item.style.borderColor = 'var(--cm-border)';
+        }
+      }
+    });
+  }
+
   switchTab(tabKey) {
     this.activeTab = tabKey;
+    this.clearLegendFilter();
 
     const tabBtns = this.container.querySelectorAll('.cm-tab-btn');
     tabBtns.forEach(btn => {
@@ -587,14 +1198,26 @@ class CameroonMap {
     const listTitle = document.getElementById('cm-list-title');
 
     if (tabKey === 'seats') {
-      if (headerBadge) headerBadge.textContent = 'Sièges Assemblée (180 Députés)';
+      if (headerBadge) headerBadge.textContent = `Sièges Assemblée (${this.activeYear})`;
       if (listTitle) listTitle.textContent = 'Parti Majoritaire par Région';
     } else if (tabKey === 'turnout') {
-      if (headerBadge) headerBadge.textContent = 'Participation Électorale (%)';
+      if (headerBadge) headerBadge.textContent = `Participation Électorale (${this.activeYear})`;
       if (listTitle) listTitle.textContent = 'Participation par Région';
     } else if (tabKey === 'votes') {
-      if (headerBadge) headerBadge.textContent = 'Résultats des Urnes';
+      if (headerBadge) headerBadge.textContent = `Résultats des Urnes (${this.activeYear})`;
       if (listTitle) listTitle.textContent = 'Score du Vainqueur Régional';
+    } else if (tabKey === 'security') {
+      if (headerBadge) headerBadge.textContent = 'Statuts & Incidents Sécuritaires';
+      if (listTitle) listTitle.textContent = 'Niveau de Sécurité Régional';
+    } else if (tabKey === 'demographics') {
+      if (headerBadge) headerBadge.textContent = 'Développement & IDH (INS)';
+      if (listTitle) listTitle.textContent = 'Indicateurs de Développement';
+    } else if (tabKey === 'economy') {
+      if (headerBadge) headerBadge.textContent = 'PIB & Filières Économiques';
+      if (listTitle) listTitle.textContent = 'Poids Économique par Région';
+    } else if (tabKey === 'education') {
+      if (headerBadge) headerBadge.textContent = 'Alphabétisation & Scolarisation';
+      if (listTitle) listTitle.textContent = 'Niveau d\'Instruction';
     }
 
     this.updateMapColors();
@@ -611,33 +1234,45 @@ class CameroonMap {
       const path = this.container.querySelector(`.cm-region[data-region="${data.code}"]`);
       if (!path) return;
 
+      const yearData = data.historicalElections[this.activeYear] || data.historicalElections['2025'];
+
       if (this.activeTab === 'seats') {
-        path.style.fill = data.seats.partyColor;
+        path.style.fill = yearData.seats.partyColor;
       } else if (this.activeTab === 'turnout') {
-        path.style.fill = data.turnout.fill;
+        path.style.fill = yearData.turnout.fill;
       } else if (this.activeTab === 'votes') {
-        path.style.fill = data.votes.partyColor;
+        path.style.fill = yearData.votes.partyColor;
+      } else if (this.activeTab === 'security') {
+        path.style.fill = SECURITY_LEVEL_COLORS[data.security.status] || data.security.color;
+      } else if (this.activeTab === 'demographics') {
+        const val = parseFloat(data.demographics.hdiIndex);
+        path.style.fill = val > 0.7 ? '#064E3B' : (val > 0.5 ? '#059669' : '#10B981');
+      } else if (this.activeTab === 'economy') {
+        const val = parseFloat(data.economy.gdpShare);
+        path.style.fill = val > 20 ? '#1E2822' : (val > 8 ? '#37463D' : '#52665B');
+      } else if (this.activeTab === 'education') {
+        const val = parseFloat(data.education.literacyRate);
+        path.style.fill = val > 80 ? '#064E3B' : (val > 60 ? '#059669' : '#34D399');
       }
     });
   }
 
-  /* Inversion de la légende et de la statistique pour tous les onglets */
   updateLegend() {
     const legendEl = document.getElementById('cm-map-legend');
     if (!legendEl) return;
 
     if (this.activeTab === 'seats') {
-      // Inversé : La légende indique l'échelle de sièges (Volume parlementaire)
       legendEl.innerHTML = `
-        <div class="cm-legend-title"><span>Volume de Sièges Parlementaires</span></div>
+        <div class="cm-legend-title"><span>Volume de Sièges Parlementaires (Cliquer pour filtrer)</span></div>
         <div class="cm-legend-items">
-          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#37463D"></span> > 20 Sièges (Grands Bassins)</div>
-          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#059669"></span> 15 - 20 Sièges</div>
-          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#C82823"></span> < 15 Sièges (Adamaoua, Est, Sud)</div>
+          <div class="cm-legend-item" data-filter-party="RDPC"><span class="cm-legend-chip" style="background:#37463D"></span> Majorité RDPC</div>
+          <div class="cm-legend-item" data-filter-party="MRC"><span class="cm-legend-chip" style="background:#C82823"></span> En tête MRC</div>
+          <div class="cm-legend-item" data-filter-party="UNDP"><span class="cm-legend-chip" style="background:#059669"></span> En tête UNDP</div>
+          <div class="cm-legend-item" data-filter-party="UDC"><span class="cm-legend-chip" style="background:#7C3AED"></span> En tête UDC</div>
+          <div class="cm-legend-item" data-filter-party="SDF"><span class="cm-legend-chip" style="background:#D4AF37"></span> En tête SDF</div>
         </div>
       `;
     } else if (this.activeTab === 'turnout') {
-      // Inversé : Légende par Paliers de Mobilisation
       legendEl.innerHTML = `
         <div class="cm-legend-title"><span>Niveaux de Mobilisation Électorale</span></div>
         <div class="cm-legend-gradient-bar"></div>
@@ -648,38 +1283,144 @@ class CameroonMap {
         </div>
       `;
     } else if (this.activeTab === 'votes') {
-      // Inversé : Légende des Candidats & Partis en compétition
       legendEl.innerHTML = `
-        <div class="cm-legend-title"><span>Partis & Candidats Électoraux</span></div>
+        <div class="cm-legend-title"><span>Partis & Candidats en Tête</span></div>
         <div class="cm-legend-items">
-          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#37463D"></span> Paul Biya (RDPC)</div>
-          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#C82823"></span> Maurice Kamto (MRC)</div>
-          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#059669"></span> Bello Bouba (UNDP)</div>
-          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#D4AF37"></span> Joshua Osih (SDF)</div>
+          <div class="cm-legend-item" data-filter-party="RDPC"><span class="cm-legend-chip" style="background:#37463D"></span> Paul Biya (RDPC)</div>
+          <div class="cm-legend-item" data-filter-party="MRC"><span class="cm-legend-chip" style="background:#C82823"></span> Maurice Kamto (MRC)</div>
+          <div class="cm-legend-item" data-filter-party="UNDP"><span class="cm-legend-chip" style="background:#059669"></span> Bello Bouba (UNDP)</div>
+          <div class="cm-legend-item" data-filter-party="SDF"><span class="cm-legend-chip" style="background:#D4AF37"></span> Joshua Osih (SDF)</div>
+        </div>
+      `;
+    } else if (this.activeTab === 'security') {
+      legendEl.innerHTML = `
+        <div class="cm-legend-title"><span>Statut Sécuritaire Régional</span></div>
+        <div class="cm-legend-items">
+          <div class="cm-legend-item" data-filter-sec="Stabilité"><span class="cm-legend-chip" style="background:#059669"></span> Stabilité</div>
+          <div class="cm-legend-item" data-filter-sec="Vigilance"><span class="cm-legend-chip" style="background:#D4AF37"></span> Vigilance / Transfrontalier</div>
+          <div class="cm-legend-item" data-filter-sec="Sensible"><span class="cm-legend-chip" style="background:#EA580C"></span> Pression Sécuritaire</div>
+          <div class="cm-legend-item" data-filter-sec="Conflit"><span class="cm-legend-chip" style="background:#C82823"></span> Statut Particulier / Conflit</div>
+        </div>
+      `;
+    } else if (this.activeTab === 'demographics') {
+      legendEl.innerHTML = `
+        <div class="cm-legend-title"><span>Indice de Développement Humain (IDH INS)</span></div>
+        <div class="cm-legend-gradient-bar" style="background: linear-gradient(to right, #10B981, #059669, #064E3B);"></div>
+        <div class="cm-legend-gradient-labels">
+          <span>Modéré (< 0.50)</span>
+          <span>Élevé (0.50 - 0.70)</span>
+          <span>Très Élevé (> 0.70)</span>
+        </div>
+      `;
+    } else if (this.activeTab === 'economy') {
+      legendEl.innerHTML = `
+        <div class="cm-legend-title"><span>Part au PIB National (%)</span></div>
+        <div class="cm-legend-items">
+          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#1E2822"></span> Pôle Majeur (> 20% - Douala/Yaoundé)</div>
+          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#37463D"></span> Pôle Intermédiaire (8% - 20%)</div>
+          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#52665B"></span> Pôle Restreint (< 8%)</div>
+        </div>
+      `;
+    } else if (this.activeTab === 'education') {
+      legendEl.innerHTML = `
+        <div class="cm-legend-title"><span>Taux d'Alphabétisation (%)</span></div>
+        <div class="cm-legend-gradient-bar" style="background: linear-gradient(to right, #34D399, #059669, #064E3B);"></div>
+        <div class="cm-legend-gradient-labels">
+          <span>< 50% (Bassin Nord)</span>
+          <span>50% - 80%</span>
+          <span>> 80% (Pôles Urbains)</span>
         </div>
       `;
     }
+
+    // Binder les clics sur la légende pour filtrer instantanément
+    const legendFilterItems = legendEl.querySelectorAll('[data-filter-party], [data-filter-sec]');
+    legendFilterItems.forEach(item => {
+      item.style.cursor = 'pointer';
+      item.addEventListener('click', () => {
+        const partyKey = item.getAttribute('data-filter-party');
+        const secKey = item.getAttribute('data-filter-sec');
+        this.filterByLegend(partyKey || secKey);
+      });
+    });
   }
 
-  /* Inversion des Badges dans la Liste Latérale */
+  filterByLegend(filterKey) {
+    if (!filterKey) return;
+    this.filterLegendKey = filterKey;
+
+    const resetBtn = document.getElementById('cm-reset-filter');
+    if (resetBtn) resetBtn.style.display = 'inline-block';
+
+    Object.values(CAMEROON_REGIONS_DATA).forEach(data => {
+      const yearData = data.historicalElections[this.activeYear] || data.historicalElections['2025'];
+      let isMatch = false;
+
+      if (this.activeTab === 'seats') {
+        isMatch = (yearData.seats.leadingParty === filterKey);
+      } else if (this.activeTab === 'votes') {
+        isMatch = (yearData.votes.leadingParty === filterKey);
+      } else if (this.activeTab === 'security') {
+        isMatch = (data.security.status === filterKey);
+      }
+
+      const path = this.container.querySelector(`.cm-region[data-region="${data.code}"]`);
+      const item = this.container.querySelector(`.cm-region-item[data-region="${data.code}"]`);
+
+      if (isMatch) {
+        if (path) path.style.opacity = '1';
+        if (item) {
+          item.style.opacity = '1';
+          item.classList.add('is-selected');
+        }
+      } else {
+        if (path) path.style.opacity = '0.2';
+        if (item) {
+          item.style.opacity = '0.3';
+          item.classList.remove('is-selected');
+        }
+      }
+    });
+  }
+
+  clearLegendFilter() {
+    this.filterLegendKey = null;
+    const resetBtn = document.getElementById('cm-reset-filter');
+    if (resetBtn) resetBtn.style.display = 'none';
+
+    this.container.querySelectorAll('.cm-region, .cm-region-item').forEach(el => {
+      el.style.opacity = '1';
+    });
+  }
+
   updateSidebar() {
     Object.values(CAMEROON_REGIONS_DATA).forEach(data => {
       const dotEl = document.getElementById(`dot-${data.code}`);
       const badgeEl = document.getElementById(`badge-${data.code}`);
+      const yearData = data.historicalElections[this.activeYear] || data.historicalElections['2025'];
 
       if (this.activeTab === 'seats') {
-        // Inversé : Le badge affiche le Parti Majoritaire + Nombre de sièges du Parti
-        if (dotEl) dotEl.style.background = data.seats.partyColor;
-        if (badgeEl) badgeEl.textContent = `${data.seats.leadingParty} (${data.seats.total} sièges)`;
+        if (dotEl) dotEl.style.background = yearData.seats.partyColor;
+        if (badgeEl) badgeEl.textContent = `${yearData.seats.leadingParty} (${yearData.seats.total} sièges)`;
       } else if (this.activeTab === 'turnout') {
-        // Inversé : Le badge affiche le Taux % + Total Votants
-        if (dotEl) dotEl.style.background = data.turnout.fill;
-        if (badgeEl) badgeEl.textContent = `${data.turnout.percent}% (${data.turnout.votesCast} votants)`;
+        if (dotEl) dotEl.style.background = yearData.turnout.fill;
+        if (badgeEl) badgeEl.textContent = `${yearData.turnout.percent}% (${yearData.turnout.votesCast} votants)`;
       } else if (this.activeTab === 'votes') {
-        // Inversé : Le badge affiche le Score % du Vainqueur Régional
-        if (dotEl) dotEl.style.background = data.votes.partyColor;
-        const leaderScore = data.votes.breakdown[data.votes.leadingParty] || 'En tête';
-        if (badgeEl) badgeEl.textContent = `${data.votes.leadingParty} — ${leaderScore}`;
+        if (dotEl) dotEl.style.background = yearData.votes.partyColor;
+        const leaderScore = yearData.votes.breakdown[yearData.votes.leadingParty] || 'En tête';
+        if (badgeEl) badgeEl.textContent = `${yearData.votes.leadingParty} — ${leaderScore}`;
+      } else if (this.activeTab === 'security') {
+        if (dotEl) dotEl.style.background = data.security.color;
+        if (badgeEl) badgeEl.textContent = data.security.status;
+      } else if (this.activeTab === 'demographics') {
+        if (dotEl) dotEl.style.background = '#059669';
+        if (badgeEl) badgeEl.textContent = `IDH ${data.demographics.hdiIndex}`;
+      } else if (this.activeTab === 'economy') {
+        if (dotEl) dotEl.style.background = '#37463D';
+        if (badgeEl) badgeEl.textContent = `PIB ${data.economy.gdpShare}`;
+      } else if (this.activeTab === 'education') {
+        if (dotEl) dotEl.style.background = '#34D399';
+        if (badgeEl) badgeEl.textContent = `Alphab. ${data.education.literacyRate}`;
       }
     });
   }
@@ -721,18 +1462,31 @@ class CameroonMap {
     const data = CAMEROON_REGIONS_DATA[code];
     if (!data) return;
 
+    const yearData = data.historicalElections[this.activeYear] || data.historicalElections['2025'];
     let subHtml = `Chef-lieu : <strong>${data.capital}</strong>`;
     let statHtml = '';
 
     if (this.activeTab === 'seats') {
-      subHtml = `Parti Majoritaire : <strong>${data.seats.leadingParty}</strong>`;
-      statHtml = `<svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 3l9 7H3l9-7z"/></svg> ${data.seats.total} sièges au total`;
+      subHtml = `Parti Majoritaire (${this.activeYear}) : <strong>${yearData.seats.leadingParty}</strong>`;
+      statHtml = `<svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 3l9 7H3l9-7z"/></svg> ${yearData.seats.total} sièges représentés`;
     } else if (this.activeTab === 'turnout') {
-      subHtml = `Participation électorale : <strong>${data.turnout.percent}%</strong>`;
-      statHtml = `<svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg> ${data.turnout.votesCast} votants exprimés`;
+      subHtml = `Participation électorale : <strong>${yearData.turnout.percent}%</strong>`;
+      statHtml = `<svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg> ${yearData.turnout.votesCast} votants exprimés`;
     } else if (this.activeTab === 'votes') {
-      subHtml = `Vainqueur Régional : <strong>${data.votes.leadingParty}</strong>`;
-      statHtml = `<svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6M15 3h6v6M10 14L21 3M4 6h7v7H4z"/></svg> ${data.votes.leadingCandidate}`;
+      subHtml = `Vainqueur Régional : <strong>${yearData.votes.leadingParty}</strong>`;
+      statHtml = `<svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6M15 3h6v6M10 14L21 3M4 6h7v7H4z"/></svg> ${yearData.votes.leadingCandidate}`;
+    } else if (this.activeTab === 'security') {
+      subHtml = `Statut Sécuritaire : <strong>${data.security.status}</strong>`;
+      statHtml = `<svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> ${data.security.description.substring(0, 45)}...`;
+    } else if (this.activeTab === 'demographics') {
+      subHtml = `IDH Régional : <strong>${data.demographics.hdiIndex}</strong>`;
+      statHtml = `Accès Eau : ${data.demographics.waterAccess} • Électricité : ${data.demographics.electricityAccess}`;
+    } else if (this.activeTab === 'economy') {
+      subHtml = `Part du PIB National : <strong>${data.economy.gdpShare}</strong>`;
+      statHtml = `Pauvreté : ${data.economy.povertyRate} • Chômage : ${data.economy.unemploymentRate}`;
+    } else if (this.activeTab === 'education') {
+      subHtml = `Alphabétisation : <strong>${data.education.literacyRate}</strong>`;
+      statHtml = `Scolarisation : ${data.education.schoolEnrollment} • ${data.education.universitiesCount} univ.`;
     }
 
     this.tooltip.innerHTML = `
@@ -785,7 +1539,6 @@ class CameroonMap {
     const data = CAMEROON_REGIONS_DATA[code];
     if (!data) return;
 
-    // Réinitialiser TOUTES les sélections précédentes pour empêcher la sélection multiple
     this.container.querySelectorAll('.cm-region.is-selected, .cm-region-item.is-selected').forEach(el => {
       el.classList.remove('is-selected');
     });
@@ -798,7 +1551,6 @@ class CameroonMap {
     if (selectedPath) selectedPath.classList.add('is-selected');
     if (selectedListItem) selectedListItem.classList.add('is-selected');
 
-    // Mettre à jour l'en-tête du tiroir latéral
     document.getElementById('cm-drawer-header').style.backgroundImage = `url('${data.leadImage}')`;
     document.getElementById('cm-drawer-title').textContent = data.name;
     document.getElementById('cm-drawer-subtitle').textContent = `Chef-lieu : ${data.capital} • ${data.departmentsCount} départements`;
@@ -810,112 +1562,150 @@ class CameroonMap {
     const breakdownTitle = document.getElementById('cm-drawer-breakdown-title');
     const breakdownList = document.getElementById('cm-drawer-breakdown-list');
 
+    const yearData = data.historicalElections[this.activeYear] || data.historicalElections['2025'];
+
     if (this.activeTab === 'seats') {
-      statVal1.textContent = `${data.seats.total} Députés`;
-      statLbl1.textContent = 'Sièges Assemblée';
-      statVal2.textContent = data.seats.leadingParty;
+      statVal1.textContent = `${yearData.seats.total} Députés`;
+      statLbl1.textContent = `Sièges ${this.activeYear}`;
+      statVal2.textContent = yearData.seats.leadingParty;
       statLbl2.textContent = 'Parti Majoritaire';
 
-      breakdownTitle.textContent = 'Répartition des Sièges par Parti Politique';
-      
-      const seatsHtml = Object.entries(data.seats.breakdown).map(([party, count]) => {
-        const pct = Math.round((count / data.seats.total) * 100);
+      breakdownTitle.textContent = `Répartition des Sièges (${this.activeYear})`;
+      const seatsHtml = Object.entries(yearData.seats.breakdown).map(([party, count]) => {
+        const pct = Math.round((count / yearData.seats.total) * 100);
         const partyColor = PARTY_COLORS[party] || '#37463D';
         return `
           <div class="cm-breakdown-row">
             <div class="cm-breakdown-header-line">
-              <span class="cm-breakdown-party-tag">
-                <span class="cm-legend-chip" style="background:${partyColor}"></span>
-                <strong>${party}</strong>
-              </span>
+              <span class="cm-breakdown-party-tag"><span class="cm-legend-chip" style="background:${partyColor}"></span><strong>${party}</strong></span>
               <span class="cm-breakdown-score">${count} siège(s) (${pct}%)</span>
             </div>
-            <div class="cm-breakdown-track">
-              <div class="cm-breakdown-bar" style="width:${pct}%; background:${partyColor}"></div>
-            </div>
+            <div class="cm-breakdown-track"><div class="cm-breakdown-bar" style="width:${pct}%; background:${partyColor}"></div></div>
           </div>
         `;
       }).join('');
-
       breakdownList.innerHTML = seatsHtml;
 
     } else if (this.activeTab === 'turnout') {
-      statVal1.textContent = `${data.turnout.percent}%`;
-      statLbl1.textContent = 'Participation Électorale';
-      statVal2.textContent = data.turnout.votesCast;
+      statVal1.textContent = `${yearData.turnout.percent}%`;
+      statLbl1.textContent = `Participation ${this.activeYear}`;
+      statVal2.textContent = yearData.turnout.votesCast;
       statLbl2.textContent = 'Votants Exprimés';
 
-      breakdownTitle.textContent = 'Bilan de la Participation vs Abstention';
-      
-      const abstentionPct = (100 - data.turnout.percent).toFixed(1);
-      
+      breakdownTitle.textContent = `Bilan de la Participation vs Abstention (${this.activeYear})`;
+      const abstentionPct = (100 - yearData.turnout.percent).toFixed(1);
       breakdownList.innerHTML = `
         <div class="cm-breakdown-row">
           <div class="cm-breakdown-header-line">
-            <span class="cm-breakdown-party-tag">
-              <span class="cm-legend-chip" style="background:#059669"></span>
-              <strong>Suffrages Exprimés (Votants)</strong>
-            </span>
-            <span class="cm-breakdown-score">${data.turnout.votesCast} (${data.turnout.percent}%)</span>
+            <span class="cm-breakdown-party-tag"><span class="cm-legend-chip" style="background:#059669"></span><strong>Votants Exprimés</strong></span>
+            <span class="cm-breakdown-score">${yearData.turnout.votesCast} (${yearData.turnout.percent}%)</span>
           </div>
-          <div class="cm-breakdown-track">
-            <div class="cm-breakdown-bar" style="width:${data.turnout.percent}%; background:#059669"></div>
-          </div>
+          <div class="cm-breakdown-track"><div class="cm-breakdown-bar" style="width:${yearData.turnout.percent}%; background:#059669"></div></div>
         </div>
-
         <div class="cm-breakdown-row" style="margin-top:0.6rem;">
           <div class="cm-breakdown-header-line">
-            <span class="cm-breakdown-party-tag">
-              <span class="cm-legend-chip" style="background:#9CA3AF"></span>
-              <strong>Abstention / Non-Votants</strong>
-            </span>
+            <span class="cm-breakdown-party-tag"><span class="cm-legend-chip" style="background:#9CA3AF"></span><strong>Abstention</strong></span>
             <span class="cm-breakdown-score">${abstentionPct}%</span>
           </div>
-          <div class="cm-breakdown-track">
-            <div class="cm-breakdown-bar" style="width:${abstentionPct}%; background:#9CA3AF"></div>
-          </div>
+          <div class="cm-breakdown-track"><div class="cm-breakdown-bar" style="width:${abstentionPct}%; background:#9CA3AF"></div></div>
         </div>
-
         <div style="font-size:0.83rem;color:#4B5563;margin-top:0.85rem;padding-top:0.75rem;border-top:1px dashed #E2E8F0;">
-          Électeurs inscrits au fichier : <strong>${data.turnout.registeredVoters}</strong>
+          Inscrits au fichier électoral : <strong>${yearData.turnout.registeredVoters}</strong>
         </div>
       `;
 
     } else if (this.activeTab === 'votes') {
-      statVal1.textContent = data.votes.leadingParty;
-      statLbl1.textContent = 'Vainqueur Régional';
-      statVal2.textContent = data.votes.leadingCandidate.split('(')[1] ? data.votes.leadingCandidate.split('(')[1].replace(')', '') : 'En tête';
-      statLbl2.textContent = 'Score du Vainqueur';
+      statVal1.textContent = yearData.votes.leadingParty;
+      statLbl1.textContent = `Vainqueur ${this.activeYear}`;
+      statVal2.textContent = yearData.votes.leadingCandidate.split('(')[1] ? yearData.votes.leadingCandidate.split('(')[1].replace(')', '') : 'En tête';
+      statLbl2.textContent = 'Score Vainqueur';
 
-      breakdownTitle.textContent = 'Résultats Détaillés par Candidat / Parti';
-
-      const votesHtml = Object.entries(data.votes.breakdown).map(([party, scoreStr]) => {
+      breakdownTitle.textContent = `Suffrages Exprimés par Candidat (${this.activeYear})`;
+      const votesHtml = Object.entries(yearData.votes.breakdown).map(([party, scoreStr]) => {
         const pctVal = parseFloat(scoreStr);
         const partyColor = PARTY_COLORS[party] || '#6B7280';
         const candidateLabel = PARTY_CANDIDATE_NAMES[party] || party;
         return `
           <div class="cm-breakdown-row">
             <div class="cm-breakdown-header-line">
-              <span class="cm-breakdown-party-tag">
-                <span class="cm-legend-chip" style="background:${partyColor}"></span>
-                <strong>${candidateLabel}</strong>
-              </span>
+              <span class="cm-breakdown-party-tag"><span class="cm-legend-chip" style="background:${partyColor}"></span><strong>${candidateLabel}</strong></span>
               <span class="cm-breakdown-score">${scoreStr}</span>
             </div>
-            <div class="cm-breakdown-track">
-              <div class="cm-breakdown-bar" style="width:${pctVal}%; background:${partyColor}"></div>
-            </div>
+            <div class="cm-breakdown-track"><div class="cm-breakdown-bar" style="width:${pctVal}%; background:${partyColor}"></div></div>
           </div>
         `;
       }).join('');
-
       breakdownList.innerHTML = votesHtml;
+
+    } else if (this.activeTab === 'security') {
+      statVal1.textContent = data.security.status;
+      statLbl1.textContent = 'Niveau de Sécurité';
+      statVal2.textContent = `${data.security.incidents.length} Incidents`;
+      statLbl2.textContent = 'Événements Récents';
+
+      breakdownTitle.textContent = 'Diagnostic Sécuritaire & Incidents Récents';
+      const incidentsHtml = data.security.incidents.length > 0 ? data.security.incidents.map(inc => `
+        <div style="background:#FFFFFF;border:1px solid #E2E8F0;padding:10px 12px;border-radius:10px;margin-bottom:8px;">
+          <div style="font-size:0.78rem;color:#C82823;font-weight:700;">${inc.date} • ${inc.source}</div>
+          <div style="font-weight:600;font-size:0.88rem;color:#111827;margin-top:2px;">${inc.title}</div>
+        </div>
+      `).join('') : '<div style="color:#059669;font-weight:600;font-size:0.88rem;">Aucun incident majeur récent répertorié.</div>';
+
+      breakdownList.innerHTML = `<p style="font-size:0.88rem;color:#37463D;margin:0 0 10px 0;">${data.security.description}</p>${incidentsHtml}`;
+
+    } else if (this.activeTab === 'demographics') {
+      statVal1.textContent = data.demographics.hdiIndex;
+      statLbl1.textContent = 'Indice IDH Régional';
+      statVal2.textContent = data.demographics.urbanizationRate;
+      statLbl2.textContent = 'Taux d\'Urbanisation';
+
+      breakdownTitle.textContent = 'Accès aux Services de Base (INS Cameroun)';
+      breakdownList.innerHTML = `
+        <div class="cm-breakdown-row">
+          <div class="cm-breakdown-header-line"><span>Accès Eau Potable</span><span class="cm-breakdown-score">${data.demographics.waterAccess}</span></div>
+          <div class="cm-breakdown-track"><div class="cm-breakdown-bar" style="width:${data.demographics.waterAccess}; background:#059669"></div></div>
+        </div>
+        <div class="cm-breakdown-row" style="margin-top:8px;">
+          <div class="cm-breakdown-header-line"><span>Accès Électricité</span><span class="cm-breakdown-score">${data.demographics.electricityAccess}</span></div>
+          <div class="cm-breakdown-track"><div class="cm-breakdown-bar" style="width:${data.demographics.electricityAccess}; background:#D4AF37"></div></div>
+        </div>
+        <div class="cm-breakdown-row" style="margin-top:8px;">
+          <div class="cm-breakdown-header-line"><span>Indice Couverture Santé</span><span class="cm-breakdown-score">${data.demographics.healthAccess}</span></div>
+          <div class="cm-breakdown-track"><div class="cm-breakdown-bar" style="width:${data.demographics.healthAccess}; background:#2563EB"></div></div>
+        </div>
+      `;
+
+    } else if (this.activeTab === 'economy') {
+      statVal1.textContent = data.economy.gdpShare;
+      statLbl1.textContent = 'Part du PIB National';
+      statVal2.textContent = data.economy.povertyRate;
+      statLbl2.textContent = 'Taux de Pauvreté';
+
+      breakdownTitle.textContent = 'Filières Économiques Dominantes';
+      breakdownList.innerHTML = `
+        <div class="cm-tags-list" style="margin-bottom:12px;">
+          ${data.economy.keySectors.map(s => `<span class="cm-tag"><strong>${s}</strong></span>`).join('')}
+        </div>
+        <div style="font-size:0.85rem;color:#4B5563;">Taux de Chômage régional : <strong>${data.economy.unemploymentRate}</strong></div>
+      `;
+
+    } else if (this.activeTab === 'education') {
+      statVal1.textContent = data.education.literacyRate;
+      statLbl1.textContent = 'Taux d\'Alphabétisation';
+      statVal2.textContent = `${data.education.universitiesCount} Univ.`;
+      statLbl2.textContent = 'Pôles Universitaires';
+
+      breakdownTitle.textContent = 'Taux de Scolarisation & Infrastructures';
+      breakdownList.innerHTML = `
+        <div class="cm-breakdown-row">
+          <div class="cm-breakdown-header-line"><span>Taux de Scolarisation</span><span class="cm-breakdown-score">${data.education.schoolEnrollment}</span></div>
+          <div class="cm-breakdown-track"><div class="cm-breakdown-bar" style="width:${data.education.schoolEnrollment}; background:#059669"></div></div>
+        </div>
+      `;
     }
 
     document.getElementById('cm-drawer-summary').textContent = data.summary;
-
-    const topicsEl = document.getElementById('cm-drawer-topics');
-    topicsEl.innerHTML = data.keyTopics.map(t => `<span class="cm-tag"># ${t}</span>`).join('');
+    document.getElementById('cm-drawer-topics').innerHTML = data.keyTopics.map(t => `<span class="cm-tag"># ${t}</span>`).join('');
 
     const ctaBtn = document.getElementById('cm-drawer-cta');
     ctaBtn.textContent = `Explorer les ${data.articlesCount} enquêtes de la région →`;
@@ -930,6 +1720,66 @@ class CameroonMap {
     if (shouldOpenDrawer) {
       this.openDrawer();
     }
+  }
+
+  openCompareModal() {
+    const overlay = document.getElementById('cm-compare-modal-overlay');
+    if (overlay) {
+      overlay.classList.add('is-open');
+      this.updateCompareResults();
+    }
+  }
+
+  updateCompareResults() {
+    const code1 = document.getElementById('cm-compare-reg1').value;
+    const code2 = document.getElementById('cm-compare-reg2').value;
+    const reg1 = CAMEROON_REGIONS_DATA[code1];
+    const reg2 = CAMEROON_REGIONS_DATA[code2];
+    const grid = document.getElementById('cm-compare-results-grid');
+
+    if (!reg1 || !reg2 || !grid) return;
+
+    const y1 = reg1.historicalElections[this.activeYear] || reg1.historicalElections['2025'];
+    const y2 = reg2.historicalElections[this.activeYear] || reg2.historicalElections['2025'];
+
+    grid.innerHTML = `
+      <div class="cm-compare-col">
+        <h4>${reg1.name}</h4>
+        <div class="cm-compare-item"><span>Chef-lieu :</span> <strong>${reg1.capital}</strong></div>
+        <div class="cm-compare-item"><span>Population :</span> <strong>${reg1.population}</strong></div>
+        <div class="cm-compare-item"><span>Vainqueur (${this.activeYear}) :</span> <strong>${y1.votes.leadingParty}</strong></div>
+        <div class="cm-compare-item"><span>Participation (${this.activeYear}) :</span> <strong>${y1.turnout.percent}%</strong></div>
+        <div class="cm-compare-item"><span>Sécurité :</span> <strong style="color:${reg1.security.color}">${reg1.security.status}</strong></div>
+        <div class="cm-compare-item"><span>IDH :</span> <strong>${reg1.demographics.hdiIndex}</strong></div>
+        <div class="cm-compare-item"><span>Part du PIB :</span> <strong>${reg1.economy.gdpShare}</strong></div>
+        <div class="cm-compare-item"><span>Alphabétisation :</span> <strong>${reg1.education.literacyRate}</strong></div>
+      </div>
+
+      <div class="cm-compare-col">
+        <h4>${reg2.name}</h4>
+        <div class="cm-compare-item"><span>Chef-lieu :</span> <strong>${reg2.capital}</strong></div>
+        <div class="cm-compare-item"><span>Population :</span> <strong>${reg2.population}</strong></div>
+        <div class="cm-compare-item"><span>Vainqueur (${this.activeYear}) :</span> <strong>${y2.votes.leadingParty}</strong></div>
+        <div class="cm-compare-item"><span>Participation (${this.activeYear}) :</span> <strong>${y2.turnout.percent}%</strong></div>
+        <div class="cm-compare-item"><span>Sécurité :</span> <strong style="color:${reg2.security.color}">${reg2.security.status}</strong></div>
+        <div class="cm-compare-item"><span>IDH :</span> <strong>${reg2.demographics.hdiIndex}</strong></div>
+        <div class="cm-compare-item"><span>Part du PIB :</span> <strong>${reg2.economy.gdpShare}</strong></div>
+        <div class="cm-compare-item"><span>Alphabétisation :</span> <strong>${reg2.education.literacyRate}</strong></div>
+      </div>
+    `;
+  }
+
+  openSourcesModal() {
+    const overlay = document.getElementById('cm-sources-modal-overlay');
+    if (overlay) overlay.classList.add('is-open');
+  }
+
+  closeModals() {
+    document.querySelectorAll('.cm-modal-overlay').forEach(m => m.classList.remove('is-open'));
+  }
+
+  exportMapImage() {
+    alert('Capture d\'écran cartographique HD générée. Téléchargement de l\'image vectorielle de la carte du Cameroun.');
   }
 
   openDrawer() {

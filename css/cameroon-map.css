@@ -19,12 +19,12 @@
   --cm-shadow-lg: 0 24px 48px rgba(0, 0, 0, 0.16);
 
   /* Couleurs des Partis Politiques */
-  --cm-party-rdpc: #37463D;  /* Vert Forêt Solitiquo */
-  --cm-party-mrc: #C82823;   /* Rouge Impérial */
-  --cm-party-sdf: #D4AF37;   /* Or Vintage */
-  --cm-party-pcrn: #2563EB;  /* Bleu Saphir */
-  --cm-party-udc: #7C3AED;   /* Violet Royal */
-  --cm-party-undp: #059669;  /* Émeraude */
+  --cm-party-rdpc: #37463D;
+  --cm-party-mrc: #C82823;
+  --cm-party-sdf: #D4AF37;
+  --cm-party-pcrn: #2563EB;
+  --cm-party-udc: #7C3AED;
+  --cm-party-undp: #059669;
 }
 
 /* Icons Vectoriels Inline */
@@ -61,6 +61,90 @@
   padding: 2.25rem;
   box-sizing: border-box;
   overflow: hidden;
+}
+
+/* Barre de Contrôles Supérieure (Outils & Filtre Temporel) */
+.cm-top-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--cm-border);
+  flex-wrap: wrap;
+}
+
+.cm-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #F4F6F3;
+  border: 1px solid var(--cm-border);
+  border-radius: 30px;
+  padding: 8px 16px;
+  flex: 1;
+  min-width: 280px;
+  color: var(--cm-green-primary);
+}
+
+.cm-search-box input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 0.88rem;
+  color: var(--cm-text-main);
+  outline: none;
+}
+
+.cm-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.cm-year-picker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--cm-green-primary);
+  background: #F4F6F3;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--cm-border);
+}
+
+.cm-year-picker select {
+  border: none;
+  background: transparent;
+  font-weight: 700;
+  color: var(--cm-green-primary);
+  outline: none;
+  cursor: pointer;
+}
+
+.cm-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFFFFF;
+  border: 1px solid var(--cm-border);
+  border-radius: 20px;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--cm-text-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cm-tool-btn:hover {
+  background: var(--cm-green-bg);
+  border-color: var(--cm-gold-accent);
+  color: var(--cm-green-primary);
 }
 
 /* En-tête de la carte */
@@ -108,10 +192,10 @@
   gap: 6px;
 }
 
-/* Barre d'Onglets de Données (3 Onglets Électoraux Centraux) */
+/* Barre d'Onglets Thématiques Étendue */
 .cm-data-tabs {
   display: flex;
-  gap: 0.65rem;
+  gap: 0.5rem;
   margin-bottom: 1.5rem;
   background: #F1F4EF;
   padding: 6px;
@@ -122,17 +206,17 @@
 
 .cm-tab-btn {
   flex: 1;
-  min-width: 180px;
+  min-width: 140px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.65rem;
-  padding: 0.75rem 1.1rem;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
   background: transparent;
   border: none;
   border-radius: 12px;
   color: var(--cm-text-muted);
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -165,7 +249,7 @@
   }
 }
 
-/* Conteneur SVG Cartographique aux proportions géographiques exactes (Étallée verticalement) */
+/* Conteneur SVG Cartographique */
 .cm-svg-container {
   position: relative;
   width: 100%;
@@ -294,7 +378,7 @@
   box-shadow: var(--cm-shadow-sm);
 }
 
-/* Widget de Légende Cartographique Positionné sous la liste pour une hiérarchie visuelle parfaite */
+/* Widget de Légende Cartographique Positionné sous la liste */
 .cm-map-legend {
   background: #FFFFFF;
   border: 1px solid var(--cm-border-gold);
@@ -329,6 +413,13 @@
   font-size: 0.82rem;
   color: var(--cm-text-main);
   font-weight: 500;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.cm-legend-item:hover {
+  background: #F4F6F3;
 }
 
 .cm-legend-chip {
@@ -338,7 +429,17 @@
   flex-shrink: 0;
 }
 
-/* Échelle de gradient choroplèthe pour la participation électorale */
+.cm-reset-filter-btn {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--cm-red-accent);
+  background: transparent;
+  border: 1px solid var(--cm-red-accent);
+  padding: 3px 8px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
 .cm-legend-gradient-bar {
   height: 10px;
   border-radius: 5px;
@@ -361,7 +462,7 @@
   stroke-width: 1.25px;
   stroke-linejoin: round;
   stroke-linecap: round;
-  transition: fill 0.3s ease, fill-opacity 0.3s ease, stroke 0.3s ease, stroke-width 0.3s ease;
+  transition: fill 0.3s ease, fill-opacity 0.3s ease, stroke 0.3s ease, opacity 0.3s ease;
   cursor: pointer;
   outline: none;
 }
@@ -431,7 +532,6 @@
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Hover uniquement temporaire */
 .cm-region-item:hover,
 .cm-region-item.is-hovered {
   border-color: rgba(55, 70, 61, 0.35);
@@ -439,7 +539,6 @@
   transform: translateX(2px);
 }
 
-/* Sélection Unique Stricte (Golden Highlight) */
 .cm-region-item.is-selected {
   border-color: var(--cm-gold-accent);
   background: #F4F7F2;
@@ -519,9 +618,6 @@
   font-size: 1rem;
   color: #FFFFFF;
   margin-bottom: 3px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .cm-tooltip-sub {
@@ -539,7 +635,7 @@
   gap: 6px;
 }
 
-/* Sliding Info Drawer (Panneau Régional Détaillé) */
+/* Sliding Info Drawer */
 .cm-drawer-overlay {
   position: fixed;
   top: 0;
@@ -688,7 +784,7 @@
   gap: 0.6rem;
 }
 
-/* Graphiques de Barres de Statistique Régionale Détaillée */
+/* Graphiques de Barres de Statistique Régionale */
 .cm-breakdown-container {
   display: flex;
   flex-direction: column;
@@ -778,4 +874,160 @@
   background: var(--cm-red-hover);
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(200, 40, 35, 0.38);
+}
+
+/* Style des Modals (Comparer & Sources) */
+.cm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.cm-modal-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.cm-modal-content {
+  position: relative;
+  background: #FFFFFF;
+  border-radius: 24px;
+  padding: 2.25rem;
+  width: 100%;
+  max-width: 780px;
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--cm-border-gold);
+}
+
+.cm-modal-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #F4F6F3;
+  border: 1px solid var(--cm-border);
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cm-modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--cm-green-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.cm-modal-desc {
+  font-size: 0.92rem;
+  color: var(--cm-text-muted);
+  margin-bottom: 1.5rem;
+}
+
+/* Modale Comparateur Split-Screen */
+.cm-compare-selectors {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  background: #F4F6F3;
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
+}
+
+.cm-compare-select-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cm-compare-select-group label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--cm-green-primary);
+
+}
+
+.cm-compare-select-group select {
+  padding: 0.6rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid var(--cm-border);
+  font-weight: 600;
+  color: var(--cm-text-main);
+}
+
+.cm-compare-vs-badge {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--cm-red-accent);
+  background: #FFFFFF;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--cm-border-gold);
+}
+
+.cm-compare-results {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.cm-compare-col {
+  background: #F9FBF8;
+  border: 1px solid var(--cm-border);
+  border-radius: 16px;
+  padding: 1.25rem;
+}
+
+.cm-compare-col h4 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.35rem;
+  color: var(--cm-green-primary);
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--cm-border-gold);
+}
+
+.cm-compare-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.86rem;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--cm-border);
+}
+
+.cm-sources-list {
+  padding-left: 1.25rem;
+  line-height: 1.7;
+  font-size: 0.92rem;
+  color: var(--cm-text-muted);
+}
+
+.cm-sources-list li {
+  margin-bottom: 0.85rem;
 }
