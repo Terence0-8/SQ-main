@@ -2,7 +2,7 @@
 /**
  * js/cameroon-map.js - Plateforme Cartographique Interactive des 10 Régions du Cameroun
  * Écosystème Solitiquo (Ultra Luxury D.A.) :
- * - Multi-thématique (Électoral, Sécurité, Démographie, Économie, Éducation)
+ * - Multi-thématique (Électoral, Élus Locaux, Sécurité, Démographie, Économie, Éducation)
  * - Filtre temporel électoral (2018, 2020, 2025)
  * - Recherche rapide par ville/région
  * - Légende cliquable & filtrante
@@ -55,7 +55,7 @@ const CAMEROON_SVG_EMBED = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="260
 
     <!-- 7. LITTORAL (CM-LT) -->
     <path id="region-cm-lt" data-region="CM-LT" class="cm-region" tabindex="0" role="button" aria-label="Littoral (Chef-lieu: Douala)"
-      d="M308.6541 438.2405L306.7461 442.9149L304.8323 444.7567L306.78 445.4949L308.508 445.4333L308.8414 442.6353L307.6927 441.1225L308.5747 440.1329L309.4105 441.8558L310.7233 442.7156L311.1617 441.9174L309.6464 438.9586L308.6541 438.2405ZM323.6685 472.1808L326.6771 469.0446L327.9536 465.3608L327.9438 462.4064L330.1482 459.0026L331.8984 458.106L333.4679 459.3672L333.6926 460.1943L335.0129 460.3181L336.4147 458.7182L335.5417 456.7297L338.0477 450.2217L340.5175 448.1682L341.4455 449.3187L343.0199 450.0133L344.6284 452.1928L345.646 451.8911L346.4617 449.6334L346.701 446.9069L346.4763 444.3411L348.6173 438.9575L350.4456 437.8374L351.5218 437.8374L354.721 436.4285L357.2803 434.9546L358.9719 434.388L361.2154 432.2758L360.7856 431.4596L357.5197 427.537L355.9697 424.0529L354.9343 420.5102L355.0026 415.4045L353.2573 415.6715L351.7855 415.3676L351.1408 415.9993L350.2795 419.872L349.3467 421.1136L348.163 419.5138L345.3513 422.8221L343.2299 423.0044L340.2098 420.8228L338.5426 420.7316L338.6306 418.2981L339.8565 415.6346L341.2355 413.7373L341.7288 411.6447L341.2062 409.895L339.4365 410.7264L337.8963 411.9746L337.3639 411.6186L337.5886 409.3675L338.1356 408.2409L339.4218 407.3661L341.1525 405.1692L341.7581 403.3132L339.5439 401.3421L337.6863 395.7285L335.4476 396.358L334.0882 396.1192L333.4288 397.9514L331.8349 399.51L330.6611 402.4644L329.6598 402.5361L329.199 400.7604L328.1587 399.4318L327.7175 397.2893L326.5355 396.4253L325.7328 394.0787L326.0178 391.3782L325.1614 388.9165L323.3623 387.7747L321.5877 387.5511L321.8075 384.4664L320.7427 384.7899L319.6275 386.5439L318.2778 386.9845L318.4097 389.3398L318.9274 391.0374L320.1257 392.9803L321.1677 395.7806L320.9381 397.0483L319.3051 398.1923L318.5513 401.1207L319.4126 403.1439L316.9574 406.8993L316.7669 409.1135L314.7188 412.6953L314.5088 414.1063L312.5925 414.534L310.8374 418.1158L310.476 421.6911L310.6567 424.3568L308.4767 428.9719L308.2309 431.2512L311.111 432.2954L312.0943 434.5313L310.2264 437.1759L310.0925 438.2304L310.9771 439.9705L312.6385 440.9277L314.1846 440.1329L315.7742 437.2305L317.0356 437.292L315.6716 440.0525L314.5461 441.1054L313.8846 443.1395L315.3306 443.9787L318.4689 443.2609L318.4689 444.148L316.9126 444.3582L315.6921 445.2966L316.1178 447.3306L315.1486 448.1528L313.9538 446.7324L312.9488 449.4707L314.0538 451.9679L312.1898 451.0979L313.6846 453.8669L314.6153 456.8206L314.4999 458.5128L316.6562 458.2547L316.0819 460.1212L314.6153 460.8374L317.6689 463.6081L318.9894 465.1345L321.3328 469.0488L322.1584 471.117L323.6685 472.1808Z" />
+      d="M308.6541 438.2405L306.7461 442.9149L304.8323 444.7567L306.78 445.4949L308.508 445.4333L308.8414 442.6353L307.6927 441.1225L308.5747 440.1329L309.4105 441.8558L310.7233 442.7156L311.1617 441.9174L309.6464 438.9586L308.6541 438.2405ZM323.6685 472.1808L326.6771 469.0446L327.9536 465.3608L327.9438 462.4064L330.1482 459.0026L331.8984 458.106L333.4679 459.3672L333.6926 460.1943L335.0129 460.3181L336.4147 458.7182L335.5417 456.7297L338.0477 450.2217L340.5175 448.1682L341.4455 449.3187L343.0199 450.0133L344.6284 452.1928L345.646 451.8911L346.4617 449.6334L346.701 446.9069L346.4763 444.3411L348.6173 438.9575L350.4456 437.8374L351.5218 437.8374L354.721 436.4285L357.2803 434.9546L358.9719 434.388L361.2154 432.2758L360.7856 431.4596L357.5197 427.537L355.9697 424.0529L354.9343 420.5102L355.0026 415.4045L353.2573 415.6715L351.7855 415.3676L351.1408 415.9993L350.2795 419.872L349.3467 421.1136L348.163 419.5138L345.3513 422.8221L343.2299 423.0044L340.2098 420.8228L338.5426 420.7316L338.6306 418.2981L339.8565 415.6346L341.2355 413.7373L341.7288 411.6447L341.2062 409.895L339.4365 410.7264L337.8963 411.9746L337.3639 411.6186L337.5886 409.3675L338.1356 408.2409L339.4218 407.3661L341.1525 405.1692L341.7581 403.3132L339.5439 401.3421L337.6863 395.7285L335.4476 396.358L334.0882 396.1192L333.4288 397.9514L331.8349 399.51L330.6611 402.4644L329.6598 402.5361L329.199 400.7604L328.1587 399.4318L327.7175 397.2893L326.5355 396.4253L325.7328 394.0787L326.0178 391.3782L325.1614 388.9165L323.3623 387.7747L321.5877 385.511L321.8075 384.4664L320.7427 384.7899L319.6275 386.5439L318.2778 386.9845L318.4097 389.3398L318.9274 391.0374L320.1257 392.9803L321.1677 395.7806L320.9381 397.0483L319.3051 398.1923L318.5513 401.1207L319.4126 403.1439L316.9574 406.8993L316.7669 409.1135L314.7188 412.6953L314.5088 414.1063L312.5925 414.534L310.8374 418.1158L310.476 421.6911L310.6567 424.3568L308.4767 428.9719L308.2309 431.2512L311.111 432.2954L312.0943 434.5313L310.2264 437.1759L310.0925 438.2304L310.9771 439.9705L312.6385 440.9277L314.1846 440.1329L315.7742 437.2305L317.0356 437.292L315.6716 440.0525L314.5461 441.1054L313.8846 443.1395L315.3306 443.9787L318.4689 443.2609L318.4689 444.148L316.9126 444.3582L315.6921 445.2966L316.1178 447.3306L315.1486 448.1528L313.9538 446.7324L312.9488 449.4707L314.0538 451.9679L312.1898 451.0979L313.6846 453.8669L314.6153 456.8206L314.4999 458.5128L316.6562 458.2547L316.0819 460.1212L314.6153 460.8374L317.6689 463.6081L318.9894 465.1345L321.3328 469.0488L322.1584 471.117L323.6685 472.1808Z" />
 
     <!-- 8. CENTRE (CM-CE) -->
     <path id="region-cm-ce" data-region="CM-CE" class="cm-region" tabindex="0" role="button" aria-label="Centre (Chef-lieu: Yaoundé)"
@@ -155,6 +155,17 @@ const CAMEROON_REGIONS_DATA = {
     keyTopics: ['Sécurité transfrontalière', 'Commerce du lac Tchad', 'Climat & Environnement'],
     leadImage: 'https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?auto=format&fit=crop&w=600&q=80',
     
+    // Élus Locaux & Maires
+    localElected: {
+      councilPresident: 'Daniel Kalbassou (RDPC)',
+      totalRegionalCouncillors: 90,
+      municipalitiesCount: 47,
+      leadingParty: 'RDPC',
+      partyColor: '#37463D',
+      mayorsBreakdown: { RDPC: 38, UNDP: 9 },
+      traditionalChiefsCount: 20
+    },
+
     // Données Électorales par Année
     historicalElections: {
       '2025': {
@@ -174,7 +185,6 @@ const CAMEROON_REGIONS_DATA = {
       }
     },
 
-    // Indicateurs Thématiques
     security: {
       status: 'Sensible',
       color: '#EA580C',
@@ -216,6 +226,16 @@ const CAMEROON_REGIONS_DATA = {
     keyTopics: ['Filière Coton', 'Énergie hydroélectrique', 'Politiques agricoles'],
     leadImage: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=600&q=80',
     
+    localElected: {
+      councilPresident: 'Alim Boukar (RDPC)',
+      totalRegionalCouncillors: 90,
+      municipalitiesCount: 21,
+      leadingParty: 'RDPC',
+      partyColor: '#37463D',
+      mayorsBreakdown: { RDPC: 16, UNDP: 5 },
+      traditionalChiefsCount: 20
+    },
+
     historicalElections: {
       '2025': {
         seats: { total: 12, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 9, UNDP: 3 } },
@@ -272,6 +292,16 @@ const CAMEROON_REGIONS_DATA = {
     keyTopics: ['Ressources minières', 'Transhumance & Élevage', 'Transports Camrail'],
     leadImage: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80',
     
+    localElected: {
+      councilPresident: 'Mohaman Mohamadou (UNDP)',
+      totalRegionalCouncillors: 90,
+      municipalitiesCount: 21,
+      leadingParty: 'UNDP',
+      partyColor: '#059669',
+      mayorsBreakdown: { UNDP: 13, RDPC: 8 },
+      traditionalChiefsCount: 20
+    },
+
     historicalElections: {
       '2025': {
         seats: { total: 10, leadingParty: 'UNDP', partyColor: '#059669', breakdown: { UNDP: 6, RDPC: 4 } },
@@ -328,6 +358,16 @@ const CAMEROON_REGIONS_DATA = {
     keyTopics: ['Décentralisation', 'Agriculture de montagne', 'Patrimoine traditionnel'],
     leadImage: 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&w=600&q=80',
     
+    localElected: {
+      councilPresident: 'Fru Angwafor III (Assemblée Régionale)',
+      totalRegionalCouncillors: 90,
+      municipalitiesCount: 34,
+      leadingParty: 'SDF',
+      partyColor: '#D4AF37',
+      mayorsBreakdown: { SDF: 18, RDPC: 16 },
+      traditionalChiefsCount: 20
+    },
+
     historicalElections: {
       '2025': {
         seats: { total: 20, leadingParty: 'SDF', partyColor: '#D4AF37', breakdown: { SDF: 11, RDPC: 9 } },
@@ -387,6 +427,16 @@ const CAMEROON_REGIONS_DATA = {
     keyTopics: ['Chefferies traditionnelles', 'Microfinance & Commerce', 'Culture & Artisanat'],
     leadImage: 'https://images.unsplash.com/photo-1576085898323-218337e3e43c?auto=format&fit=crop&w=600&q=80',
     
+    localElected: {
+      councilPresident: 'Jules Hilaire Focka Focka (RDPC)',
+      totalRegionalCouncillors: 90,
+      municipalitiesCount: 40,
+      leadingParty: 'RDPC',
+      partyColor: '#37463D',
+      mayorsBreakdown: { RDPC: 26, UDC: 8, MRC: 6 },
+      traditionalChiefsCount: 20
+    },
+
     historicalElections: {
       '2025': {
         seats: { total: 25, leadingParty: 'UDC', partyColor: '#7C3AED', breakdown: { UDC: 12, RDPC: 10, MRC: 3 } },
@@ -443,6 +493,16 @@ const CAMEROON_REGIONS_DATA = {
     keyTopics: ['Silicon Mountain (Buea)', 'Agro-industrie CDC', 'Installations pétrolières'],
     leadImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80',
     
+    localElected: {
+      councilPresident: 'Zacheus Bakoma Elango (Assemblée Régionale)',
+      totalRegionalCouncillors: 90,
+      municipalitiesCount: 31,
+      leadingParty: 'RDPC',
+      partyColor: '#37463D',
+      mayorsBreakdown: { RDPC: 26, SDF: 5 },
+      traditionalChiefsCount: 20
+    },
+
     historicalElections: {
       '2025': {
         seats: { total: 15, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 12, SDF: 3 } },
@@ -499,6 +559,16 @@ const CAMEROON_REGIONS_DATA = {
     keyTopics: ['Port Autonome de Douala', 'Bourse BVMAC', 'Industrie & Commerce'],
     leadImage: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80',
     
+    localElected: {
+      councilPresident: 'Polycarpe Banlog (RDPC)',
+      totalRegionalCouncillors: 90,
+      municipalitiesCount: 34,
+      leadingParty: 'RDPC',
+      partyColor: '#37463D',
+      mayorsBreakdown: { RDPC: 22, PCRN: 7, MRC: 5 },
+      traditionalChiefsCount: 20
+    },
+
     historicalElections: {
       '2025': {
         seats: { total: 19, leadingParty: 'MRC', partyColor: '#C82823', breakdown: { MRC: 9, RDPC: 8, PCRN: 2 } },
@@ -555,6 +625,16 @@ const CAMEROON_REGIONS_DATA = {
     keyTopics: ['Gouvernance & Lois', 'Diplomatie centrale', 'Projets d\'infrastructures'],
     leadImage: 'https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?auto=format&fit=crop&w=600&q=80',
     
+    localElected: {
+      councilPresident: 'Gilbert Tsimi Evouna (RDPC)',
+      totalRegionalCouncillors: 90,
+      municipalitiesCount: 70,
+      leadingParty: 'RDPC',
+      partyColor: '#37463D',
+      mayorsBreakdown: { RDPC: 62, PCRN: 8 },
+      traditionalChiefsCount: 20
+    },
+
     historicalElections: {
       '2025': {
         seats: { total: 28, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 23, PCRN: 5 } },
@@ -611,6 +691,16 @@ const CAMEROON_REGIONS_DATA = {
     keyTopics: ['Exploitation forestière', 'Barrage Lom Pangar', 'Mines & Ressources'],
     leadImage: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80',
     
+    localElected: {
+      councilPresident: 'Françoise Angouing (RDPC)',
+      totalRegionalCouncillors: 90,
+      municipalitiesCount: 33,
+      leadingParty: 'RDPC',
+      partyColor: '#37463D',
+      mayorsBreakdown: { RDPC: 33 },
+      traditionalChiefsCount: 20
+    },
+
     historicalElections: {
       '2025': {
         seats: { total: 11, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 11 } },
@@ -667,6 +757,16 @@ const CAMEROON_REGIONS_DATA = {
     keyTopics: ['Port en eau profonde Kribi', 'Intégration CEMAC', 'Filière Cacao'],
     leadImage: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
     
+    localElected: {
+      councilPresident: 'Emmanuel Mvé (RDPC)',
+      totalRegionalCouncillors: 90,
+      municipalitiesCount: 29,
+      leadingParty: 'RDPC',
+      partyColor: '#37463D',
+      mayorsBreakdown: { RDPC: 29 },
+      traditionalChiefsCount: 20
+    },
+
     historicalElections: {
       '2025': {
         seats: { total: 11, leadingParty: 'RDPC', partyColor: '#37463D', breakdown: { RDPC: 11 } },
@@ -717,8 +817,8 @@ class CameroonMap {
     this.containerId = options.containerId || 'cm-map-root';
     this.onSelectCallback = options.onSelect || null;
     this.selectedRegionCode = null;
-    this.activeYear = '2025'; // '2018' | '2020' | '2025'
-    this.activeTab = options.initialTab || 'seats'; // 'seats' | 'turnout' | 'votes' | 'security' | 'demographics' | 'economy' | 'education'
+    this.activeYear = '2025';
+    this.activeTab = options.initialTab || 'seats';
     this.filterLegendKey = null;
 
     // Cadrage Pan & Zoom
@@ -744,7 +844,7 @@ class CameroonMap {
   createDomStructure() {
     this.container.innerHTML = `
       <div class="cm-map-wrapper" id="cm-map-export-node">
-        <!-- Barre de Contrôles Supérieure (Outils & Filtre Temporel) -->
+        <!-- Barre de Contrôles Supérieure -->
         <div class="cm-top-toolbar">
           <div class="cm-search-box">
             <svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -785,7 +885,7 @@ class CameroonMap {
               <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 3a8 8 0 0 1 8 7.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
               <span>Carte Interactive du Cameroun</span>
             </h2>
-            <p>Données électorales, indicateurs de développement, sécurité et économie territoriale Solitiquo.</p>
+            <p>Données électorales, élus locaux, indicateurs de développement, sécurité et économie territoriale Solitiquo.</p>
           </div>
           <span class="cm-map-badge" id="cm-header-badge">Données Électorales 2025</span>
         </div>
@@ -803,6 +903,10 @@ class CameroonMap {
           <button class="cm-tab-btn ${this.activeTab === 'votes' ? 'is-active' : ''}" data-tab="votes" role="tab">
             <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6M15 3h6v6M10 14L21 3M4 6h7v7H4z"/></svg>
             Suffrages Urnes
+          </button>
+          <button class="cm-tab-btn ${this.activeTab === 'localElected' ? 'is-active' : ''}" data-tab="localElected" role="tab">
+            <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Élus Locaux & Maires
           </button>
           <button class="cm-tab-btn ${this.activeTab === 'security' ? 'is-active' : ''}" data-tab="security" role="tab">
             <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -924,7 +1028,7 @@ class CameroonMap {
         <div class="cm-modal-content cm-compare-modal">
           <button class="cm-modal-close" id="cm-compare-modal-close">&times;</button>
           <h3 class="cm-modal-title">⚖️ Comparateur de Régions du Cameroun</h3>
-          <p class="cm-modal-desc">Sélectionnez 2 régions pour juxtaposer leurs indicateurs électoraux, socio-économiques et sécuritaires.</p>
+          <p class="cm-modal-desc">Sélectionnez 2 régions pour juxtaposer leurs indicateurs électoraux, élus locaux, socio-économiques et sécuritaires.</p>
 
           <div class="cm-compare-selectors">
             <div class="cm-compare-select-group">
@@ -954,18 +1058,17 @@ class CameroonMap {
           <div class="cm-sources-body">
             <p>Les données restituées sur la plateforme cartographique Solitiquo proviennent d'institutions publiques et d'observatoires indépendants :</p>
             <ul class="cm-sources-list">
-              <li><strong>Élections (Sièges, Participation, Votes)</strong> : Résultats officiels ELECAM (Élections Cameroon), Ministère de l'Administration Territoriale (MINAT), archives des scrutins 2018 & 2020. Projections 2025 établies par la rédaction Solitiquo.</li>
-              <li><strong>Sécurité & Conflits</strong> : Rapports ACLED (Armed Conflict Location & Event Data Project), International Crisis Group (ICG), bulletins d'information du Ministère de la Défense.</li>
-              <li><strong>Démographie & Développement (IDH, Accès Eau/Électricité)</strong> : Institut National de la Statistique du Cameroun (INS), Rapport sur le Développement Humain du PNUD (2024).</li>
-              <li><strong>Économie & Filières</strong> : Ministère de l'Économie, de la Planification et de l'Aménagement du Territoire (MINEPAT), Banque Mondiale (World Bank Data Cameroun).</li>
-              <li><strong>Éducation & Alphabétisation</strong> : Ministère de l'Éducation de Base (MINEDUB), Ministère des Enseignements Secondaires (MINESEC), Annuaire statistique INS.</li>
+              <li><strong>Élections & Élus Locaux</strong> : ELECAM (Élections Cameroon), Ministère de l'Administration Territoriale (MINAT), Conseil Régional, Annuaire des Maires du Cameroun.</li>
+              <li><strong>Sécurité & Conflits</strong> : Rapports ACLED (Armed Conflict Location & Event Data Project), International Crisis Group (ICG), bulletins du Ministère de la Défense.</li>
+              <li><strong>Démographie & Développement</strong> : Institut National de la Statistique du Cameroun (INS), Rapport sur le Développement Humain du PNUD.</li>
+              <li><strong>Économie & Filières</strong> : MINEPAT, Banque Mondiale (World Bank Data Cameroun).</li>
+              <li><strong>Éducation</strong> : MINEDUB, MINESEC, Annuaire statistique INS.</li>
             </ul>
           </div>
         </div>
       </div>
     `;
 
-    // Injecter le SVG nettoyé
     const mountEl = document.getElementById('cm-svg-mount');
     if (mountEl) {
       mountEl.insertAdjacentHTML('afterbegin', CAMEROON_SVG_EMBED);
@@ -979,11 +1082,9 @@ class CameroonMap {
     this.overlay = document.getElementById('cm-drawer-overlay');
     this.closeBtn = document.getElementById('cm-drawer-close');
 
-    // Fermeture tiroir
     this.closeBtn.addEventListener('click', () => this.closeDrawer());
     this.overlay.addEventListener('click', () => this.closeDrawer());
 
-    // Touche Echap
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         if (this.drawer.classList.contains('is-open')) this.closeDrawer();
@@ -991,7 +1092,6 @@ class CameroonMap {
       }
     });
 
-    // Barre de recherche par ville / chef-lieu / région
     const searchInput = document.getElementById('cm-search-input');
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
@@ -1000,7 +1100,6 @@ class CameroonMap {
       });
     }
 
-    // Sélecteur Temporel d'Année
     const yearSelect = document.getElementById('cm-year-select');
     if (yearSelect) {
       yearSelect.addEventListener('change', (e) => {
@@ -1011,7 +1110,6 @@ class CameroonMap {
       });
     }
 
-    // Boutons de Modals (Comparer, Export, Sources)
     const btnCompare = document.getElementById('cm-btn-compare');
     if (btnCompare) btnCompare.addEventListener('click', () => this.openCompareModal());
 
@@ -1021,7 +1119,6 @@ class CameroonMap {
     const btnSources = document.getElementById('cm-btn-sources');
     if (btnSources) btnSources.addEventListener('click', () => this.openSourcesModal());
 
-    // Boutons de fermeture Modals
     document.getElementById('cm-compare-modal-close').addEventListener('click', () => this.closeModals());
     document.getElementById('cm-sources-modal-close').addEventListener('click', () => this.closeModals());
     document.getElementById('cm-compare-modal-overlay').addEventListener('click', (e) => {
@@ -1031,13 +1128,11 @@ class CameroonMap {
       if (e.target.id === 'cm-sources-modal-overlay') this.closeModals();
     });
 
-    // Bouton d'annulation de filtre légende
     const resetFilterBtn = document.getElementById('cm-reset-filter');
     if (resetFilterBtn) {
       resetFilterBtn.addEventListener('click', () => this.clearLegendFilter());
     }
 
-    // Changement des sélecteurs du comparateur
     const compSel1 = document.getElementById('cm-compare-reg1');
     const compSel2 = document.getElementById('cm-compare-reg2');
     if (compSel1 && compSel2) {
@@ -1045,7 +1140,6 @@ class CameroonMap {
       compSel2.addEventListener('change', () => this.updateCompareResults());
     }
 
-    // Gestion des onglets thématiques (Data Tabs)
     const tabBtns = this.container.querySelectorAll('.cm-tab-btn');
     tabBtns.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1054,7 +1148,6 @@ class CameroonMap {
       });
     });
 
-    // Clics sur la liste latérale
     const listItems = this.container.querySelectorAll('.cm-region-item');
     listItems.forEach(item => {
       const code = item.getAttribute('data-region');
@@ -1206,6 +1299,9 @@ class CameroonMap {
     } else if (tabKey === 'votes') {
       if (headerBadge) headerBadge.textContent = `Résultats des Urnes (${this.activeYear})`;
       if (listTitle) listTitle.textContent = 'Score du Vainqueur Régional';
+    } else if (tabKey === 'localElected') {
+      if (headerBadge) headerBadge.textContent = 'Conseils Régionaux & Communes';
+      if (listTitle) listTitle.textContent = 'Majorités Municipales & Régionales';
     } else if (tabKey === 'security') {
       if (headerBadge) headerBadge.textContent = 'Statuts & Incidents Sécuritaires';
       if (listTitle) listTitle.textContent = 'Niveau de Sécurité Régional';
@@ -1242,6 +1338,8 @@ class CameroonMap {
         path.style.fill = yearData.turnout.fill;
       } else if (this.activeTab === 'votes') {
         path.style.fill = yearData.votes.partyColor;
+      } else if (this.activeTab === 'localElected') {
+        path.style.fill = data.localElected.partyColor;
       } else if (this.activeTab === 'security') {
         path.style.fill = SECURITY_LEVEL_COLORS[data.security.status] || data.security.color;
       } else if (this.activeTab === 'demographics') {
@@ -1292,6 +1390,15 @@ class CameroonMap {
           <div class="cm-legend-item" data-filter-party="SDF"><span class="cm-legend-chip" style="background:#D4AF37"></span> Joshua Osih (SDF)</div>
         </div>
       `;
+    } else if (this.activeTab === 'localElected') {
+      legendEl.innerHTML = `
+        <div class="cm-legend-title"><span>Majorités Municipales & Régionales</span></div>
+        <div class="cm-legend-items">
+          <div class="cm-legend-item" data-filter-party="RDPC"><span class="cm-legend-chip" style="background:#37463D"></span> Majorité RDPC</div>
+          <div class="cm-legend-item" data-filter-party="UNDP"><span class="cm-legend-chip" style="background:#059669"></span> Majorité UNDP</div>
+          <div class="cm-legend-item" data-filter-party="SDF"><span class="cm-legend-chip" style="background:#D4AF37"></span> Majorité SDF</div>
+        </div>
+      `;
     } else if (this.activeTab === 'security') {
       legendEl.innerHTML = `
         <div class="cm-legend-title"><span>Statut Sécuritaire Régional</span></div>
@@ -1333,7 +1440,6 @@ class CameroonMap {
       `;
     }
 
-    // Binder les clics sur la légende pour filtrer instantanément
     const legendFilterItems = legendEl.querySelectorAll('[data-filter-party], [data-filter-sec]');
     legendFilterItems.forEach(item => {
       item.style.cursor = 'pointer';
@@ -1360,6 +1466,8 @@ class CameroonMap {
         isMatch = (yearData.seats.leadingParty === filterKey);
       } else if (this.activeTab === 'votes') {
         isMatch = (yearData.votes.leadingParty === filterKey);
+      } else if (this.activeTab === 'localElected') {
+        isMatch = (data.localElected.leadingParty === filterKey);
       } else if (this.activeTab === 'security') {
         isMatch = (data.security.status === filterKey);
       }
@@ -1409,6 +1517,9 @@ class CameroonMap {
         if (dotEl) dotEl.style.background = yearData.votes.partyColor;
         const leaderScore = yearData.votes.breakdown[yearData.votes.leadingParty] || 'En tête';
         if (badgeEl) badgeEl.textContent = `${yearData.votes.leadingParty} — ${leaderScore}`;
+      } else if (this.activeTab === 'localElected') {
+        if (dotEl) dotEl.style.background = data.localElected.partyColor;
+        if (badgeEl) badgeEl.textContent = `${data.localElected.leadingParty} (${data.localElected.municipalitiesCount} mairies)`;
       } else if (this.activeTab === 'security') {
         if (dotEl) dotEl.style.background = data.security.color;
         if (badgeEl) badgeEl.textContent = data.security.status;
@@ -1475,6 +1586,9 @@ class CameroonMap {
     } else if (this.activeTab === 'votes') {
       subHtml = `Vainqueur Régional : <strong>${yearData.votes.leadingParty}</strong>`;
       statHtml = `<svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6M15 3h6v6M10 14L21 3M4 6h7v7H4z"/></svg> ${yearData.votes.leadingCandidate}`;
+    } else if (this.activeTab === 'localElected') {
+      subHtml = `Président Conseil Régional : <strong>${data.localElected.councilPresident}</strong>`;
+      statHtml = `${data.localElected.municipalitiesCount} communes • Majorité ${data.localElected.leadingParty}`;
     } else if (this.activeTab === 'security') {
       subHtml = `Statut Sécuritaire : <strong>${data.security.status}</strong>`;
       statHtml = `<svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> ${data.security.description.substring(0, 45)}...`;
@@ -1637,6 +1751,35 @@ class CameroonMap {
       }).join('');
       breakdownList.innerHTML = votesHtml;
 
+    } else if (this.activeTab === 'localElected') {
+      statVal1.textContent = data.localElected.councilPresident.split('(')[0];
+      statLbl1.textContent = 'Président Conseil Régional';
+      statVal2.textContent = `${data.localElected.municipalitiesCount} Mairies`;
+      statLbl2.textContent = 'Communes d\'Arrondissement';
+
+      breakdownTitle.textContent = 'Répartition des Mairies & Communes par Parti';
+
+      const mayorsHtml = Object.entries(data.localElected.mayorsBreakdown).map(([party, count]) => {
+        const pct = Math.round((count / data.localElected.municipalitiesCount) * 100);
+        const partyColor = PARTY_COLORS[party] || '#37463D';
+        return `
+          <div class="cm-breakdown-row">
+            <div class="cm-breakdown-header-line">
+              <span class="cm-breakdown-party-tag"><span class="cm-legend-chip" style="background:${partyColor}"></span><strong>Mairies ${party}</strong></span>
+              <span class="cm-breakdown-score">${count} commune(s) (${pct}%)</span>
+            </div>
+            <div class="cm-breakdown-track"><div class="cm-breakdown-bar" style="width:${pct}%; background:${partyColor}"></div></div>
+          </div>
+        `;
+      }).join('');
+
+      breakdownList.innerHTML = `
+        ${mayorsHtml}
+        <div style="font-size:0.83rem;color:#4B5563;margin-top:0.85rem;padding-top:0.75rem;border-top:1px dashed #E2E8F0;">
+          Conseillers Régionaux : <strong>${data.localElected.totalRegionalCouncillors}</strong> (dont <strong>${data.localElected.traditionalChiefsCount}</strong> sièges réservés au Commandement Traditionnel).
+        </div>
+      `;
+
     } else if (this.activeTab === 'security') {
       statVal1.textContent = data.security.status;
       statLbl1.textContent = 'Niveau de Sécurité';
@@ -1747,6 +1890,8 @@ class CameroonMap {
         <h4>${reg1.name}</h4>
         <div class="cm-compare-item"><span>Chef-lieu :</span> <strong>${reg1.capital}</strong></div>
         <div class="cm-compare-item"><span>Population :</span> <strong>${reg1.population}</strong></div>
+        <div class="cm-compare-item"><span>Président Régional :</span> <strong>${reg1.localElected.councilPresident.split('(')[0]}</strong></div>
+        <div class="cm-compare-item"><span>Communes (Mairies) :</span> <strong>${reg1.localElected.municipalitiesCount} mairies</strong></div>
         <div class="cm-compare-item"><span>Vainqueur (${this.activeYear}) :</span> <strong>${y1.votes.leadingParty}</strong></div>
         <div class="cm-compare-item"><span>Participation (${this.activeYear}) :</span> <strong>${y1.turnout.percent}%</strong></div>
         <div class="cm-compare-item"><span>Sécurité :</span> <strong style="color:${reg1.security.color}">${reg1.security.status}</strong></div>
@@ -1759,6 +1904,8 @@ class CameroonMap {
         <h4>${reg2.name}</h4>
         <div class="cm-compare-item"><span>Chef-lieu :</span> <strong>${reg2.capital}</strong></div>
         <div class="cm-compare-item"><span>Population :</span> <strong>${reg2.population}</strong></div>
+        <div class="cm-compare-item"><span>Président Régional :</span> <strong>${reg2.localElected.councilPresident.split('(')[0]}</strong></div>
+        <div class="cm-compare-item"><span>Communes (Mairies) :</span> <strong>${reg2.localElected.municipalitiesCount} mairies</strong></div>
         <div class="cm-compare-item"><span>Vainqueur (${this.activeYear}) :</span> <strong>${y2.votes.leadingParty}</strong></div>
         <div class="cm-compare-item"><span>Participation (${this.activeYear}) :</span> <strong>${y2.turnout.percent}%</strong></div>
         <div class="cm-compare-item"><span>Sécurité :</span> <strong style="color:${reg2.security.color}">${reg2.security.status}</strong></div>
