@@ -257,7 +257,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: radial-gradient(circle at center, #FAFDF9 0%, #E7ECE5 100%);
+  background: #FAFBF8;
   border-radius: 20px;
   border: 1px solid var(--cm-border-gold);
   overflow: hidden;

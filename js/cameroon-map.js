@@ -19,14 +19,14 @@ const CAMEROON_SVG_EMBED = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="260
       <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#C82823" flood-opacity="0.4"/>
     </filter>
 
-    <!-- Grille cartographique d'arrière-plan -->
-    <pattern id="cm-grid-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#37463D" stroke-width="0.5" stroke-opacity="0.08" stroke-dasharray="2,2"/>
+    <!-- Motif Hachuré Cartographique Style Gravure Géopolitique (Diagonales 45°) -->
+    <pattern id="cm-hatch-pattern" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="8" stroke="#37463D" stroke-width="0.75" stroke-opacity="0.075"/>
     </pattern>
   </defs>
 
-  <!-- Fond de carte avec grille lat/long -->
-  <rect x="0" y="0" width="800" height="600" fill="url(#cm-grid-pattern)" />
+  <!-- Arrière-plan hachuré cartographique -->
+  <rect x="0" y="0" width="800" height="600" fill="url(#cm-hatch-pattern)" />
 
   <g class="cm-map-regions" id="cm-map-regions-group">
     <!-- 1. EXTRÊME-NORD (CM-EN) -->
