@@ -1,7 +1,7 @@
 /* global document, window, alert */
 /**
  * js/cameroon-map.js - Composant Carte Interactive des 10 Régions du Cameroun
- * Fonctionnalités Solitiquo : Multi-données (Partis, Vote, Analyses), Pan & Zoom interactif, Accessibilité ARIA
+ * Fonctionnalités Solitiquo (Ultra Luxury D.A.) : Multi-données vectorielles, Pan & Zoom interactif, Accessibilité ARIA
  */
 
 const CAMEROON_SVG_EMBED = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" id="cm-svg-root" class="cm-map-svg" role="img" aria-label="Carte interactive des 10 régions du Cameroun">
@@ -33,7 +33,7 @@ const CAMEROON_SVG_EMBED = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0
 
     <!-- 3. ADAMAOUA (CM-AD) -->
     <path id="region-cm-ad" data-region="CM-AD" class="cm-region" tabindex="0" role="button" aria-label="Adamaoua (Chef-lieu: Ngaoundéré)"
-      d="M385.8632 296.3995L384.0103 298.8006L382.0566 302.6603L380.6043 304.3926L381.9784 305.326L385.163 311.1654L384.5736 312.2834L382.8804 312.431L381.0732 314.4455L380.7443 315.5569L379.0869 316.002L378.8558 316.7704L377.0323 318.2965L375.0949 320.6583L374.3492 322.8497L375.401 325.2723L375.1144 327.5299L373.457 331.738L371.3568 332.5379L370.5265 333.4312L369.6636 337.5514L367.4624 339.0904L366.0883 338.7996L365.2189 339.3542L363.7694 339.1133L363.9295 342.453L363.3092 345.2403L365.8164 346.0522L366.7151 346.7946L366.3146 350.0768L367.2442 355.2086L366.5865 357.7571L367.9215 357.6181L369.6685 356.6435L376.806 354.5356L378.2925 353.4633L379.8212 351.6007L382.2406 349.3496L384.1389 349.1608L385.4968 348.3814L386.936 346.8402L388.105 346.5971L389.4872 348.7114L390.9395 349.9249L393.419 350.359L396.4001 348.8026L398.738 349.2389L402.761 353.1528L404.6284 356.9604L405.3709 357.362L416.7186 357.4575L432.0145 357.4575L444.4043 357.3251L447.3121 356.8453L450.5976 355.1934L451.5907 355.1217L453.7219 355.9987L457.9549 355.2259L460.9425 354.2361L462.9759 353.8887L464.267 352.7491L465.5457 354.1358L466.6277 352.3094L468.0116 350.9343L468.767 349.4744L470.0728 349.4874L474.5663 346.6274L476.5623 343.3126L476.5558 340.9248L477.3471 339.4888L480.957 328.6251L482.2313 326.5129L484.1232 325.2593L484.7484 324.2412L486.9854 316.9354L488.0501 312.8543L489.4112 311.3022L489.2582 308.8622L490.4727 305.0547L491.1865 304.2476L490.4858 303.9628L488.8577 304.8029L486.9007 307.0649L485.9776 307.651L483.7536 308.0721L477.1875 311.884L474.8512 313.7921L473.3599 314.4434L471.9614 313.6727L471.4925 312.7306L469.5469 312.2096L468.2803 309.4875L466.5691 308.2762L464.2963 308.5649L462.7855 308.185L462.5315 303.7566L462.043 302.4064L460.6445 301.0214L458.9627 298.6379L457.7644 295.792L456.4587 294.4548L455.7114 291.8672L455.1839 291.3484L449.6989 290.5669L448.2906 289.5401L448.2466 287.6993L446.7748 287.1587L443.1767 288.2528L441.2165 287.8534L436.513 290.5669L433.6231 288.3375L431.9136 286.3382L429.6978 285.7108L428.8137 286.8939L428.3481 289.9287L426.6907 289.8158L424.3544 290.4453L423.4313 290.2478L420.2776 288.179L415.2322 287.1935L412.6859 286.2123L412.1616 285.5654L409.5029 284.1804L408.9836 283.0581L408.8468 280.8352L409.2636 278.7491L408.3193 276.9083L406.2028 276.6109L403.9788 275.6471L397.9647 268.4162L396.2653 265.5285L394.8338 268.4975L394.658 271.1492L395.1334 274.4878L390.6334 282.5219L389.5002 285.2549L389.1876 287.0415L389.6891 290.391L387.8363 293.8426L385.8632 296.3995Z" />
+      d="M385.8632 296.3995L384.0103 298.8006L382.0566 302.6603L380.6043 304.3926L381.9784 305.326L385.163 311.1654L384.5736 312.2834L382.8804 312.431L381.0732 314.4455L380.7443 315.5569L379.0869 316.002L378.8558 316.7704L377.0323 318.2965L375.0949 320.6583L374.3492 322.8497L375.401 325.2723L375.1144 327.5299L373.457 331.738L371.3568 332.5379L370.5265 333.4312L369.6636 337.5514L367.4624 339.0904L366.0883 338.7996L365.2189 339.3542L363.7694 339.1133L363.9295 42.453L363.3092 345.2403L365.8164 346.0522L366.7151 346.7946L366.3146 350.0768L367.2442 355.2086L366.5865 357.7571L367.9215 357.6181L369.6685 356.6435L376.806 354.5356L378.2925 353.4633L379.8212 351.6007L382.2406 349.3496L384.1389 349.1608L385.4968 348.3814L386.936 346.8402L388.105 346.5971L389.4872 348.7114L390.9395 349.9249L393.419 350.359L396.4001 348.8026L398.738 349.2389L402.761 353.1528L404.6284 356.9604L405.3709 357.362L416.7186 357.4575L432.0145 357.4575L444.4043 357.3251L447.3121 356.8453L450.5976 355.1934L451.5907 355.1217L453.7219 355.9987L457.9549 355.2259L460.9425 354.2361L462.9759 353.8887L464.267 352.7491L465.5457 354.1358L466.6277 352.3094L468.0116 350.9343L468.767 349.4744L470.0728 349.4874L474.5663 346.6274L476.5623 343.3126L476.5558 340.9248L477.3471 339.4888L480.957 328.6251L482.2313 326.5129L484.1232 325.2593L484.7484 324.2412L486.9854 316.9354L488.0501 312.8543L489.4112 311.3022L489.2582 308.8622L490.4727 305.0547L491.1865 304.2476L490.4858 303.9628L488.8577 304.8029L486.9007 307.0649L485.9776 307.651L483.7536 308.0721L477.1875 311.884L474.8512 313.7921L473.3599 314.4434L471.9614 313.6727L471.4925 312.7306L469.5469 312.2096L468.2803 309.4875L466.5691 308.2762L464.2963 308.5649L462.7855 308.185L462.5315 303.7566L462.043 302.4064L460.6445 301.0214L458.9627 298.6379L457.7644 295.792L456.4587 294.4548L455.7114 291.8672L455.1839 291.3484L449.6989 290.5669L448.2906 289.5401L448.2466 287.6993L446.7748 287.1587L443.1767 288.2528L441.2165 287.8534L436.513 290.5669L433.6231 288.3375L431.9136 286.3382L429.6978 285.7108L428.8137 286.8939L428.3481 289.9287L426.6907 289.8158L424.3544 290.4453L423.4313 290.2478L420.2776 288.179L415.2322 287.1935L412.6859 286.2123L412.1616 285.5654L409.5029 284.1804L408.9836 283.0581L408.8468 280.8352L409.2636 278.7491L408.3193 276.9083L406.2028 276.6109L403.9788 275.6471L397.9647 268.4162L396.2653 265.5285L394.8338 268.4975L394.658 271.1492L395.1334 274.4878L390.6334 282.5219L389.5002 285.2549L389.1876 287.0415L389.6891 290.391L387.8363 293.8426L385.8632 296.3995Z" />
 
     <!-- 4. NORD-OUEST (CM-NW) -->
     <path id="region-cm-nw" data-region="CM-NW" class="cm-region" tabindex="0" role="button" aria-label="Nord-Ouest (Chef-lieu: Bamenda)"
@@ -62,6 +62,50 @@ const CAMEROON_SVG_EMBED = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0
     <!-- 10. SUD (CM-SU) -->
     <path id="region-cm-su" data-region="CM-SU" class="cm-region" tabindex="0" role="button" aria-label="Sud (Chef-lieu: Ebolowa)"
       d="M367.5438 518.5255L367.9801 515.8619L368.6118 514.3489L368.4751 512.8619L376.8858 512.4495L378.5432 512.0045L381.1123 513.6477L385.43 513.6391L387.8363 513.359L392.0758 513.3699L395.2864 513.7454L399.425 512.4842L401.0271 513.4784L403.9739 513.0595L408.2656 514.6962L412.5279 515.545L414.3644 514.3967L416.2432 515.1977L418.0374 514.3967L419.532 514.9719L420.3102 514.566L421.6973 515.2302L423.0389 515.0066L424.6083 513.537L428.0599 514.0841L429.3754 515.3127L429.8085 516.422L429.688 518.723L441.2725 518.8615L440.2673 490.0122L439.9694 487.4182L438.8639 488.0412L437.1414 489.8277L436.285 490.0665L435.8438 492.4869L434.0057 492.4869L432.4802 491.3646L430.8179 491.1823L430.2204 490.1924L428.5076 490.8827L426.4367 489.3328L423.3385 489.0766L422.78 489.6454L420.3118 488.8856L419.5027 488.0347L418.4542 488.369L415.2175 487.5658L414.0193 486.6063L412.974 484.277L412.8764 479.5447L412.0786 475.6047L410.0988 471.5562L407.8895 468.7754L406.8915 467.0583L406.2761 465.0721L406.8427 460.025L405.6997 458.2428L404.941 456.2457L403.5962 455.792L401.8412 458.2732L398.4889 461.8637L397.0025 464.2732L395.9214 469.6329L393.7805 470.7465L392.6213 468.5236L385.728 464.0735L384.4727 467.1039L381.0114 469.6524L379.9938 472.075L379.2807 474.7972L376.5862 476.638L374.3378 477.3718L369.4243 477.3218L367.6008 477.7668L366.2804 477.4369L364.242 477.8363L362.36 475.1923L362.0572 473.5338L360.7612 472.1705L359.9064 467.9592L358.5665 466.0251L356.8652 466.0251L355.4178 465.5952L352.6028 465.9925L351.7318 463.3702L350.47 463.2682L348.4219 463.8521L337.6863 468.0591L334.9836 468.4455L333.4093 461.5424L333.6926 460.1943L333.4679 459.3672L331.8984 458.106L330.1482 459.0026L327.9438 462.4064L327.9536 465.3608L326.6771 469.0446L323.6685 472.1808L323.3608 473.8997L324.5684 480.0275L324.1069 482.5094L322.8455 484.8118L322.0404 488.4628L321.9302 493.7923L321.2661 496.211L320.3123 501.8413L320.1944 509.6544L319.5765 511.133L319.9384 511.8416L319.9319 514.3619L321.8628 516.6152L325.6074 518.532L331.8766 518.5315L338.7984 518.5299L348.6938 518.5298L367.5438 518.5255Z" />
+  </g>
+
+  <!-- Marqueurs et Chefs-lieux des Régions (Pins Cartographiques Vectoriels) -->
+  <g class="cm-map-pins">
+    <g class="cm-pin-group">
+      <circle cx="466" cy="125" r="3.5" class="cm-pin-dot" />
+      <text x="466" y="117" class="cm-pin-text">MAROUA</text>
+    </g>
+    <g class="cm-pin-group">
+      <circle cx="445" cy="235" r="3.5" class="cm-pin-dot" />
+      <text x="445" y="227" class="cm-pin-text">GAROUA</text>
+    </g>
+    <g class="cm-pin-group">
+      <circle cx="430" cy="325" r="3.5" class="cm-pin-dot" />
+      <text x="430" y="317" class="cm-pin-text">NGAOUNDÉRÉ</text>
+    </g>
+    <g class="cm-pin-group">
+      <circle cx="338" cy="340" r="3.5" class="cm-pin-dot" />
+      <text x="338" y="332" class="cm-pin-text">BAMENDA</text>
+    </g>
+    <g class="cm-pin-group">
+      <circle cx="348" cy="375" r="3.5" class="cm-pin-dot" />
+      <text x="348" y="367" class="cm-pin-text">BAFOUSSAM</text>
+    </g>
+    <g class="cm-pin-group">
+      <circle cx="298" cy="385" r="3.5" class="cm-pin-dot" />
+      <text x="298" y="377" class="cm-pin-text">BUEA</text>
+    </g>
+    <g class="cm-pin-group">
+      <circle cx="335" cy="435" r="3.5" class="cm-pin-dot" />
+      <text x="335" y="427" class="cm-pin-text">DOUALA</text>
+    </g>
+    <g class="cm-pin-group">
+      <circle cx="382" cy="418" r="3.5" class="cm-pin-dot" />
+      <text x="382" y="410" class="cm-pin-text">YAOUNDÉ</text>
+    </g>
+    <g class="cm-pin-group">
+      <circle cx="465" cy="440" r="3.5" class="cm-pin-dot" />
+      <text x="465" y="432" class="cm-pin-text">BERTOUA</text>
+    </g>
+    <g class="cm-pin-group">
+      <circle cx="385" cy="500" r="3.5" class="cm-pin-dot" />
+      <text x="385" y="492" class="cm-pin-text">EBOLOWA</text>
+    </g>
   </g>
 </svg>`;
 
@@ -238,27 +282,31 @@ class CameroonMap {
   createDomStructure() {
     this.container.innerHTML = `
       <div class="cm-map-wrapper">
-        <!-- En-tête -->
+        <!-- En-tête Haute Couture -->
         <div class="cm-map-header">
           <div class="cm-map-title-group">
             <h2>
-              <span> Carte Interactive du Cameroun</span>
+              <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 3a8 8 0 0 1 8 7.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>Carte Interactive du Cameroun</span>
             </h2>
-            <p>Données territoriales, représentativité politique et enquêtes exclusives Solitiquo.</p>
+            <p>Cartographie territoriale, représentativité politique et enquêtes exclusives de Solitiquo.</p>
           </div>
           <span class="cm-map-badge" id="cm-header-badge">Données Électorales</span>
         </div>
 
-        <!-- Onglets de Données (Data Tabs) -->
+        <!-- Onglets de Données Vectoriels sans Emojis -->
         <div class="cm-data-tabs" role="tablist">
           <button class="cm-tab-btn ${this.activeTab === 'seats' ? 'is-active' : ''}" data-tab="seats" role="tab">
-            <span class="cm-tab-icon">🏛️</span> Sièges Assemblée
+            <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 3l9 7H3l9-7z"/></svg>
+            Sièges Assemblée
           </button>
           <button class="cm-tab-btn ${this.activeTab === 'votes' ? 'is-active' : ''}" data-tab="votes" role="tab">
-            <span class="cm-tab-icon">🗳️</span> Participation & Votes
+            <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6M15 3h6v6M10 14L21 3M4 6h7v7H4z"/></svg>
+            Participation & Votes
           </button>
           <button class="cm-tab-btn ${this.activeTab === 'editorial' ? 'is-active' : ''}" data-tab="editorial" role="tab">
-            <span class="cm-tab-icon">📰</span> Analyses Solitiquo
+            <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15zM8 7h8M8 11h6"/></svg>
+            Analyses Solitiquo
           </button>
         </div>
 
@@ -266,17 +314,23 @@ class CameroonMap {
         <div class="cm-map-layout">
           <!-- Zone SVG avec Pan & Zoom -->
           <div class="cm-svg-container" id="cm-svg-mount">
-            <!-- Boutons de Zoom Flottants -->
+            <!-- Boutons de Zoom Flottants Vectoriels -->
             <div class="cm-zoom-controls">
-              <button class="cm-zoom-btn" id="cm-zoom-in" title="Zoom Avant (+)" aria-label="Zoom avant">+</button>
-              <button class="cm-zoom-btn" id="cm-zoom-out" title="Zoom Arrière (-)" aria-label="Zoom arrière">−</button>
-              <button class="cm-zoom-btn" id="cm-zoom-reset" title="Réinitialiser la vue" aria-label="Réinitialiser la vue">⟲</button>
+              <button class="cm-zoom-btn" id="cm-zoom-in" title="Zoom Avant (+)" aria-label="Zoom avant">
+                <svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+              <button class="cm-zoom-btn" id="cm-zoom-out" title="Zoom Arrière (-)" aria-label="Zoom arrière">
+                <svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/></svg>
+              </button>
+              <button class="cm-zoom-btn" id="cm-zoom-reset" title="Réinitialiser la vue" aria-label="Réinitialiser la vue">
+                <svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              </button>
               <div class="cm-zoom-level" id="cm-zoom-indicator">100%</div>
             </div>
 
-            <!-- Boussole N -->
+            <!-- Boussole N Vectorielle -->
             <div class="cm-compass-rose">
-              <span class="cm-compass-arrow">▲</span> N
+              <svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="#C82823" stroke-width="2.5"><path d="M12 2L19 21L12 17L5 21L12 2Z"/></svg> N
             </div>
 
             <!-- Légende Flottante Dynamique -->
@@ -333,7 +387,7 @@ class CameroonMap {
 
           <div>
             <div class="cm-drawer-sec-title">Enjeux & Présentation</div>
-            <p style="color:#4A5568;line-height:1.6;font-size:0.92rem;margin:0;" id="cm-drawer-summary">-</p>
+            <p style="color:#4B5563;line-height:1.6;font-size:0.92rem;margin:0;" id="cm-drawer-summary">-</p>
           </div>
 
           <div id="cm-drawer-breakdown-sec">
@@ -342,12 +396,12 @@ class CameroonMap {
           </div>
 
           <div>
-            <div class="cm-drawer-sec-title">Thématiques Clés</div>
+            <div class="cm-drawer-sec-title">Thématiques Clés Solitiquo</div>
             <div class="cm-tags-list" id="cm-drawer-topics"></div>
           </div>
 
           <button class="cm-drawer-cta" id="cm-drawer-cta">
-            Voir les analyses de la région →
+            Voir les enquêtes de la région →
           </button>
         </div>
       </div>
@@ -452,7 +506,7 @@ class CameroonMap {
 
   zoom(factor, mouseX = null, mouseY = null) {
     const newZoom = this.zoomLevel * (1 / factor);
-    if (newZoom < 0.5 || newZoom > 4.5) return; // Limites de zoom
+    if (newZoom < 0.5 || newZoom > 4.5) return;
 
     let cx = this.currentViewBox.x + this.currentViewBox.w / 2;
     let cy = this.currentViewBox.y + this.currentViewBox.h / 2;
@@ -500,7 +554,6 @@ class CameroonMap {
       }
     });
 
-    // Mettre à jour le badge d'en-tête et titre
     const headerBadge = document.getElementById('cm-header-badge');
     const listTitle = document.getElementById('cm-list-title');
 
@@ -515,12 +568,10 @@ class CameroonMap {
       if (listTitle) listTitle.textContent = 'Enquêtes par Région';
     }
 
-    // Mise à jour des couleurs sur la carte SVG et de la liste latérale
     this.updateMapColors();
     this.updateLegend();
     this.updateSidebar();
 
-    // Si une région est déjà sélectionnée dans le tiroir, rafraîchir ses stats
     if (this.selectedRegionCode) {
       this.selectRegion(this.selectedRegionCode, false);
     }
@@ -536,7 +587,7 @@ class CameroonMap {
       } else if (this.activeTab === 'votes') {
         path.style.fill = data.votes.fill;
       } else {
-        path.style.fill = '#37463D'; // Vert Solitiquo d'origine
+        path.style.fill = '#37463D';
       }
     });
   }
@@ -587,7 +638,7 @@ class CameroonMap {
         if (badgeEl) badgeEl.textContent = `${data.seats.total} sièges`;
       } else if (this.activeTab === 'votes') {
         if (dotEl) dotEl.style.background = data.votes.fill;
-        if (badgeEl) badgeEl.textContent = `${data.votes.turnoutPercent}% participation`;
+        if (badgeEl) badgeEl.textContent = `${data.votes.turnoutPercent}% part.`;
       } else {
         if (dotEl) dotEl.style.background = '#37463D';
         if (badgeEl) badgeEl.textContent = `${data.articlesCount} art.`;
@@ -633,14 +684,14 @@ class CameroonMap {
     if (!data) return;
 
     let subHtml = `Chef-lieu : <strong>${data.capital}</strong>`;
-    let statHtml = `📊 ${data.articlesCount} enquêtes Solitiquo`;
+    let statHtml = `<svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15z"/></svg> ${data.articlesCount} enquêtes Solitiquo`;
 
     if (this.activeTab === 'seats') {
       subHtml = `Parti Majoritaire : <strong>${data.seats.leadingParty}</strong>`;
-      statHtml = `🏛️ ${data.seats.total} sièges représentés`;
+      statHtml = `<svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 3l9 7H3l9-7z"/></svg> ${data.seats.total} sièges représentés`;
     } else if (this.activeTab === 'votes') {
       subHtml = `Taux de participation : <strong>${data.votes.turnoutPercent}%</strong>`;
-      statHtml = `🗳️ Tête de scrutin : ${data.votes.leadingCandidate}`;
+      statHtml = `<svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6M15 3h6v6M10 14L21 3M4 6h7v7H4z"/></svg> En tête : ${data.votes.leadingCandidate}`;
     }
 
     this.tooltip.innerHTML = `
@@ -751,7 +802,7 @@ class CameroonMap {
     topicsEl.innerHTML = data.keyTopics.map(t => `<span class="cm-tag"># ${t}</span>`).join('');
 
     const ctaBtn = document.getElementById('cm-drawer-cta');
-    ctaBtn.textContent = `Explorer les ${data.articlesCount} analyses de la région →`;
+    ctaBtn.textContent = `Explorer les ${data.articlesCount} enquêtes de la région →`;
     ctaBtn.onclick = () => {
       if (typeof this.onSelectCallback === 'function') {
         this.onSelectCallback(data);

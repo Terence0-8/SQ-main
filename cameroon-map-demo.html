@@ -22,30 +22,32 @@
     }
 
     .demo-header {
-      background: linear-gradient(135deg, #1E2822 0%, #37463D 100%);
+      background: linear-gradient(135deg, #1A241E 0%, #37463D 100%);
       color: #FFFFFF;
-      padding: 3.5rem 1.5rem;
+      padding: 4rem 1.5rem;
       text-align: center;
       margin-bottom: 2.5rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+      border-bottom: 2px solid rgba(212, 175, 55, 0.3);
     }
 
     .demo-header h1 {
       font-family: 'Playfair Display', serif;
-      font-size: 2.6rem;
-      margin: 0 0 0.5rem 0;
+      font-size: 2.8rem;
+      margin: 0 0 0.6rem 0;
+      letter-spacing: -0.02em;
     }
 
     .demo-header p {
-      font-size: 1.1rem;
-      opacity: 0.9;
-      max-width: 750px;
+      font-size: 1.15rem;
+      opacity: 0.92;
+      max-width: 780px;
       margin: 0 auto;
       line-height: 1.6;
     }
 
     .demo-container {
-      max-width: 1200px;
+      max-width: 1220px;
       margin: 0 auto;
       padding: 0 1.5rem 4rem 1.5rem;
     }
@@ -54,44 +56,59 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 1.5rem;
-      margin-top: 3rem;
+      margin-top: 3.5rem;
     }
 
     .demo-feature-card {
       background: #FFFFFF;
-      border: 1px solid #E2E6DF;
-      padding: 1.5rem;
-      border-radius: 14px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      border: 1px solid #E2E8F0;
+      padding: 1.75rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+      transition: transform 0.25s ease, border-color 0.25s ease;
     }
 
-    .demo-feature-icon {
-      font-size: 1.6rem;
-      margin-bottom: 0.5rem;
+    .demo-feature-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(212, 175, 55, 0.4);
+    }
+
+    .demo-feature-icon-wrapper {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: #F4F6F3;
+      color: #37463D;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      border: 1px solid #E2E8F0;
     }
 
     .demo-feature-title {
       font-weight: 700;
-      font-size: 1.05rem;
+      font-size: 1.08rem;
       color: #37463D;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.35rem;
     }
 
     .demo-feature-desc {
-      font-size: 0.88rem;
-      color: #556059;
-      line-height: 1.5;
+      font-size: 0.9rem;
+      color: #4B5563;
+      line-height: 1.55;
     }
 
     .demo-code-block {
-      background: #1E2822;
+      background: #1A241E;
       color: #EAE8DC;
-      padding: 1.5rem;
-      border-radius: 14px;
+      padding: 1.75rem;
+      border-radius: 16px;
       font-family: monospace;
-      font-size: 0.9rem;
+      font-size: 0.92rem;
       overflow-x: auto;
-      margin-top: 2.5rem;
+      margin-top: 2.75rem;
+      border: 1px solid rgba(212, 175, 55, 0.2);
     }
   </style>
 </head>
@@ -100,35 +117,43 @@
 
   <header class="demo-header">
     <h1>Carte Interactive du Cameroun</h1>
-    <p>Composant cartographique de précision pour Solitiquo. Pan & Zoom interactif, onglets multi-données électorales & politiques, accessibilité ARIA et design de luxe.</p>
+    <p>Composant cartographique d'exception pour Solitiquo. Données électorales, représentativité parlementaire, navigation Pan & Zoom vectorielle et design éditorial haut de gamme.</p>
   </header>
 
   <main class="demo-container">
     <!-- Point de montage du composant Carte -->
     <div id="cm-map-root"></div>
 
-    <!-- Présentation des fonctionnalités techniques du composant -->
+    <!-- Présentation des fonctionnalités techniques sans emojis -->
     <section class="demo-features-grid">
       <div class="demo-feature-card">
-        <div class="demo-feature-icon">🗳️</div>
+        <div class="demo-feature-icon-wrapper">
+          <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6M15 3h6v6M10 14L21 3M4 6h7v7H4z"/></svg>
+        </div>
         <div class="demo-feature-title">Onglets Multi-Données</div>
-        <div class="demo-feature-desc">Basculez en un clic entre la répartition des sièges par parti politique à l'Assemblée, les taux de participation électorale (gradient choroplèthe) et le volume d'enquêtes Solitiquo.</div>
+        <div class="demo-feature-desc">Basculez en un clic entre la répartition des sièges par parti à l'Assemblée, les taux de participation électorale (gradient choroplèthe) et les enquêtes Solitiquo.</div>
       </div>
 
       <div class="demo-feature-card">
-        <div class="demo-feature-icon">🔍</div>
+        <div class="demo-feature-icon-wrapper">
+          <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>
+        </div>
         <div class="demo-feature-title">Pan & Zoom Cartographique</div>
-        <div class="demo-feature-desc">Molette de souris, glisser-déposer par clic-maintien (drag) et boutons flottants (`+`, `-`, `⟲`) pour scruter précisément chaque région.</div>
+        <div class="demo-feature-desc">Molette de souris, glisser-déposer par clic-maintien (drag) et boutons flottants avec boussole vectorielle et indicateur d'échelle.</div>
       </div>
 
       <div class="demo-feature-card">
-        <div class="demo-feature-icon">🎨</div>
-        <div class="demo-feature-title">Charte Graphique Solitiquo</div>
-        <div class="demo-feature-desc">Vert Forêt Émeraude (`#37463D`), Rouge Impérial (`#C82823`), effet verre Dépoli (Glassmorphism), grille lat/long et boussole.</div>
+        <div class="demo-feature-icon-wrapper">
+          <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L19 21L12 17L5 21L12 2Z"/></svg>
+        </div>
+        <div class="demo-feature-title">Charte Éditoriale Solitiquo</div>
+        <div class="demo-feature-desc">Vert Forêt Émeraude (`#37463D`), Rouge Impérial (`#C82823`), bordures d'Or (`#D4AF37`), marqueurs des chefs-lieux et grille géographique.</div>
       </div>
 
       <div class="demo-feature-card">
-        <div class="demo-feature-icon">♿</div>
+        <div class="demo-feature-icon-wrapper">
+          <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
         <div class="demo-feature-title">Accessibilité (ARIA & Clavier)</div>
         <div class="demo-feature-desc">Support complet de la navigation au clavier (Tab, Entrée, Espace, Échap) avec annonces vocales ARIA et contrastes visuels respectés.</div>
       </div>
