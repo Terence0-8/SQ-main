@@ -86,9 +86,18 @@ class SolitiquoPodcastPlayer {
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                             MP3
                         </button>
-                        <div class="vol-box">
-                            <span style="font-size:1.2rem">🔊</span>
-                            <input type="range" id="vol-input" min="0" max="1" step="0.1" value="1">
+                        <div class="vol-box" id="vol-box">
+                            <button type="button" class="vol-btn" id="btn-vol-mute" title="Couper / Activer le son" aria-label="Mute/Unmute">
+                                <svg id="vol-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                                </svg>
+                            </button>
+                            <div class="vol-track-wrapper">
+                                <div class="vol-fill" id="vol-fill" style="width: 100%;"></div>
+                                <input type="range" id="vol-input" class="vol-range-input" min="0" max="1" step="0.01" value="1" aria-label="Volume">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -164,8 +173,61 @@ class SolitiquoPodcastPlayer {
     this.container.querySelector('#btn-rw').addEventListener('click', () => this.audio.currentTime -= 15);
     this.container.querySelector('#btn-fw').addEventListener('click', () => this.audio.currentTime += 15);
     
-    // Volume
-    this.container.querySelector('#vol-input').addEventListener('input', (e) => this.audio.volume = e.target.value);
+    // Volume Control Logic
+    const volInput = this.container.querySelector('#vol-input');
+    const volFill = this.container.querySelector('#vol-fill');
+    const btnMute = this.container.querySelector('#btn-vol-mute');
+    const volIcon = this.container.querySelector('#vol-icon');
+    let lastVolume = 1;
+
+    const updateVolumeUI = (val) => {
+      const v = parseFloat(val);
+      this.audio.volume = v;
+      if (volFill) volFill.style.width = (v * 100) + '%';
+
+      if (volIcon) {
+        if (v === 0) {
+          // Muted / 0%
+          volIcon.innerHTML = `
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <line x1="23" y1="9" x2="17" y2="15"/>
+            <line x1="17" y1="9" x2="23" y2="15"/>`;
+        } else if (v < 0.5) {
+          // Low volume
+          volIcon.innerHTML = `
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>`;
+        } else {
+          // Full volume
+          volIcon.innerHTML = `
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>`;
+        }
+      }
+    };
+
+    if (volInput) {
+      volInput.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        if (val > 0) lastVolume = val;
+        updateVolumeUI(val);
+      });
+    }
+
+    if (btnMute) {
+      btnMute.addEventListener('click', () => {
+        if (this.audio.volume > 0) {
+          lastVolume = this.audio.volume || 1;
+          if (volInput) volInput.value = 0;
+          updateVolumeUI(0);
+        } else {
+          const restoreVol = lastVolume > 0 ? lastVolume : 1;
+          if (volInput) volInput.value = restoreVol;
+          updateVolumeUI(restoreVol);
+        }
+      });
+    }
 
     // Transcript Toggle
     el.btnTrans.addEventListener('click', () => {

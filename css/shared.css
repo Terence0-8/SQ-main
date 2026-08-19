@@ -5685,6 +5685,74 @@ a.art-link {
     }
 }
 
+.vol-box {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.25s ease;
+}
+
+.vol-box:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.vol-btn {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.vol-btn:hover {
+    transform: scale(1.1);
+    color: #007A5E;
+}
+
+.vol-track-wrapper {
+    position: relative;
+    width: 75px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+}
+
+.vol-fill {
+    height: 100%;
+    background: #ffffff;
+    border-radius: 3px;
+    pointer-events: none;
+    transition: width 0.05s ease;
+}
+
+.vol-box:hover .vol-fill {
+    background: #ffffff;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+.vol-range-input {
+    position: absolute;
+    top: -8px;
+    left: 0;
+    width: 100%;
+    height: 20px;
+    opacity: 0;
+    cursor: pointer;
+    margin: 0;
+}
+
 @media (max-width: 600px) {
     .glass-h1 {
         font-size: 1.7rem !important;
