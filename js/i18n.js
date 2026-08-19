@@ -155,6 +155,18 @@ var TRANSLATIONS = {
     comment_deleted: 'Commentaire supprimé',
     comment_no_comments: 'Aucun commentaire pour le moment',
 
+    // ==================== PAYWALL ====================
+    paywall_title: 'Article réservé aux abonnés',
+    paywall_subtitle: 'Pour lire la suite de cet article et accéder à tous nos contenus exclusifs, abonnez-vous à Solitiquo.',
+    paywall_features_title: 'Votre abonnement inclut :',
+    paywall_feature_noad: 'Lecture sans publicité',
+    paywall_feature_enquetes: 'Accès illimité aux enquêtes & décryptages',
+    paywall_feature_comments: 'Participation aux débats & espace commentaires',
+    paywall_feature_newsletter: 'Newsletter quotidienne récapitulative',
+    paywall_cta_prefix: "S'abonner à partir de",
+    paywall_already: 'Déjà abonné ?',
+    paywall_login_link: 'Se connecter',
+
     // ==================== PODCASTS ====================
     podcast_duration: 'Durée :',
     podcast_play: 'Lire',
@@ -509,6 +521,18 @@ var TRANSLATIONS = {
     comment_pending: 'Pending moderation',
     comment_deleted: 'Comment deleted',
     comment_no_comments: 'No comments yet',
+
+    // ==================== PAYWALL ====================
+    paywall_title: 'Subscriber Exclusive Article',
+    paywall_subtitle: 'To continue reading this article and access all our exclusive content, subscribe to Solitiquo.',
+    paywall_features_title: 'Your subscription includes:',
+    paywall_feature_noad: 'Ad-free reading experience',
+    paywall_feature_enquetes: 'Unlimited access to investigations & in-depth analysis',
+    paywall_feature_comments: 'Participation in discussions & citizen debate section',
+    paywall_feature_newsletter: 'Daily summary newsletter',
+    paywall_cta_prefix: 'Subscribe starting at',
+    paywall_already: 'Already a subscriber?',
+    paywall_login_link: 'Log in',
 
     // ==================== PODCASTS ====================
     podcast_duration: 'Duration:',
