@@ -12,6 +12,10 @@ const { sanitizeHTML, sanitizeText, sanitizeArray } = require('../middleware/san
 
 
 const { imageUpload } = require('../middleware/upload');
+const articleUpload = imageUpload.fields([
+  { name: 'image', maxCount: 1 },
+  { name: 'image_file', maxCount: 1 }
+]);
 
 // ==========================================
 // VALIDATION SCHEMA
@@ -24,7 +28,7 @@ const articleSchema = Joi.object({
       'any.required': 'Le titre est requis'
     }),
 
-  slug: Joi.string().pattern(/^[a-z0-9-]+$/).max(500).optional()
+  slug: Joi.string().pattern(/^[a-z0-9-]+$/).max(500).allow('').optional()
     .messages({
       'string.pattern.base': 'Le slug ne doit contenir que des lettres minuscules, chiffres et tirets'
     }),
@@ -47,12 +51,12 @@ const articleSchema = Joi.object({
     Joi.string()
   ).optional(),
 
-  lang: Joi.string().valid('fr', 'en').optional(),
+  lang: Joi.string().valid('fr', 'en').allow('').optional(),
   image_url: Joi.string().uri().allow('').optional(),
   image_caption: Joi.string().allow('').optional(),
-  author_id: Joi.number().integer().optional(),
-  translation_id: Joi.number().integer().optional()
-});
+  author_id: Joi.alternatives().try(Joi.number().integer(), Joi.string()).optional(),
+  translation_id: Joi.alternatives().try(Joi.number().integer(), Joi.string()).allow(null, '').optional()
+}).unknown(true);
 
 // ==========================================
 // UTILITAIRE : CALCUL DU READ_TIME
@@ -280,7 +284,7 @@ router.get('/:id', async (req, res) => {
 // ==========================================
 // 3. CRÉATION ARTICLE (SLUG AUTO + READ_TIME)
 // ==========================================
-router.post('/', isWriter, imageUpload.single('image'), async (req, res) => {
+router.post('/', isWriter, articleUpload, async (req, res) => {
   try {
     // Validation des données
     const { error, value } = articleSchema.validate(req.body);
@@ -322,15 +326,16 @@ router.post('/', isWriter, imageUpload.single('image'), async (req, res) => {
       }
     }
 
-    // Gestion de l'upload image
+    // Gestion de l'upload image (support 'image' ou 'image_file')
+    const imageFile = req.file || (req.files && (req.files.image?.[0] || req.files.image_file?.[0]));
     let finalImageUrl = image_url;
-    if (req.file) {
+    if (imageFile) {
       try {
-        const result = await cloudinary.uploader.upload(req.file.path, {
+        const result = await cloudinary.uploader.upload(imageFile.path, {
           folder: "solitiquo_articles"
         });
         finalImageUrl = result.secure_url;
-        fs.unlinkSync(req.file.path);
+        fs.unlinkSync(imageFile.path);
       } catch (e) {
         console.error("❌ Erreur Cloudinary:", e);
         return res.status(500).json({
@@ -422,7 +427,7 @@ router.post('/', isWriter, imageUpload.single('image'), async (req, res) => {
 // ==========================================
 // 4. MODIFICATION ARTICLE (RÉGÉNÉRATION SLUG + READ_TIME)
 // ==========================================
-router.put('/:id', isWriter, imageUpload.single('image'), async (req, res) => {
+router.put('/:id', isWriter, articleUpload, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -471,15 +476,16 @@ router.put('/:id', isWriter, imageUpload.single('image'), async (req, res) => {
       }
     }
 
-    // Gestion Image
+    // Gestion Image (support 'image' ou 'image_file')
+    const imageFile = req.file || (req.files && (req.files.image?.[0] || req.files.image_file?.[0]));
     let finalImageUrl = image_url;
-    if (req.file) {
+    if (imageFile) {
       try {
-        const result = await cloudinary.uploader.upload(req.file.path, {
+        const result = await cloudinary.uploader.upload(imageFile.path, {
           folder: "solitiquo_articles"
         });
         finalImageUrl = result.secure_url;
-        fs.unlinkSync(req.file.path);
+        fs.unlinkSync(imageFile.path);
       } catch (e) {
         console.error("❌ Erreur Cloudinary:", e);
       }
