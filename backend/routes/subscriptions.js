@@ -157,14 +157,12 @@ router.post('/init-payment', isAuthenticated, verifyCsrf, async (req, res) => {
       return res.status(400).json({ success: false, error: 'Plan invalide' });
     }
 
-    // Vérifier abonnement actif existant
+    // Permettre le renouvellement / la prolongation d'abonnement
     const activeCheck = await pool.query(
-      "SELECT id FROM subscriptions WHERE user_id = $1 AND status = 'active' AND ends_at > NOW()",
+      "SELECT id, ends_at FROM subscriptions WHERE user_id = $1 AND status = 'active' AND ends_at > NOW() ORDER BY ends_at DESC LIMIT 1",
       [userId]
     );
-    if (activeCheck.rows.length > 0) {
-      return res.status(400).json({ success: false, error: 'Vous avez déjà un abonnement actif' });
-    }
+    const isExtension = activeCheck.rows.length > 0;
 
     // Détecter le pays pour choisir la devise (XOF ou XAF)
     const country = getCountryFromReq(req);
@@ -400,14 +398,17 @@ async function _activateFlutterwaveSubscription(userId, transactionId, paymentMe
   await pool.query(
     `UPDATE subscriptions
      SET status = 'active', payment_method = $1, updated_at = NOW(),
-         starts_at = NOW(), ends_at = NOW() + $2::INTERVAL
+         starts_at = COALESCE(starts_at, NOW()),
+         ends_at = GREATEST(COALESCE(ends_at, NOW()), NOW()) + $2::INTERVAL
      WHERE transaction_id = $3`,
     [paymentMethod, planConfig.interval, transactionId]
   );
   await pool.query(
     `UPDATE users
-     SET is_subscriber = TRUE, subscription_start_date = NOW(),
-         subscription_end_date = NOW() + $1::INTERVAL, updated_at = NOW()
+     SET is_subscriber = TRUE,
+         subscription_start_date = COALESCE(subscription_start_date, NOW()),
+         subscription_end_date = GREATEST(COALESCE(subscription_end_date, NOW()), NOW()) + $1::INTERVAL,
+         updated_at = NOW()
      WHERE id = $2`,
     [planConfig.interval, userId]
   );
@@ -440,12 +441,10 @@ router.post('/init-stripe-payment', isAuthenticated, verifyCsrf, async (req, res
     }
 
     const activeCheckStripe = await pool.query(
-      "SELECT id FROM subscriptions WHERE user_id = $1 AND status = 'active' AND ends_at > NOW()",
+      "SELECT id, ends_at FROM subscriptions WHERE user_id = $1 AND status = 'active' AND ends_at > NOW() ORDER BY ends_at DESC LIMIT 1",
       [userId]
     );
-    if (activeCheckStripe.rows.length > 0) {
-      return res.status(400).json({ success: false, error: 'Vous avez déjà un abonnement actif' });
-    }
+    const isExtensionStripe = activeCheckStripe.rows.length > 0;
 
     const country = getCountryFromReq(req);
     const geoPricing = getPricingForCountry(country);
@@ -597,14 +596,17 @@ async function _activateStripeSubscription(userId, transactionId, planConfig) {
   await pool.query(
     `UPDATE subscriptions
      SET status = 'active', payment_method = 'stripe_card',
-         starts_at = NOW(), ends_at = NOW() + $1::INTERVAL
+         starts_at = COALESCE(starts_at, NOW()),
+         ends_at = GREATEST(COALESCE(ends_at, NOW()), NOW()) + $1::INTERVAL
      WHERE transaction_id = $2`,
     [planConfig.interval, transactionId]
   );
   await pool.query(
     `UPDATE users
-     SET is_subscriber = TRUE, subscription_start_date = NOW(),
-         subscription_end_date = NOW() + $1::INTERVAL, updated_at = NOW()
+     SET is_subscriber = TRUE,
+         subscription_start_date = COALESCE(subscription_start_date, NOW()),
+         subscription_end_date = GREATEST(COALESCE(subscription_end_date, NOW()), NOW()) + $1::INTERVAL,
+         updated_at = NOW()
      WHERE id = $2`,
     [planConfig.interval, userId]
   );

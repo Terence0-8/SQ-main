@@ -237,9 +237,13 @@
       }).format(amount);
     }
 
-    function showGlobalError(msg) {
+    function showGlobalError(msg, isHtml = false) {
       const el = document.getElementById('globalErrorMsg');
-      el.textContent = msg;
+      if (isHtml || (typeof msg === 'string' && msg.includes('<'))) {
+        el.innerHTML = msg;
+      } else {
+        el.textContent = msg;
+      }
       el.style.display = 'block';
     }
 
@@ -263,9 +267,17 @@
           : `${window.API_URL}/subscriptions/pricing`;
         const r = await fetch(pricingUrl, { credentials: 'include' });
         pricing = await r.json();
-      } catch (e) {
-        console.warn('Pricing indisponible, fallback USD');
-        pricing = { currency: 'USD', symbol: '$', amount: 7.99, provider: 'stripe', publishableKey: '' };
+      } catch (err) {
+        console.error('Erreur chargement pricing:', err);
+        initLoader.style.display = 'none';
+        showGlobalError(t('payment_geo_error') || 'Impossible de déterminer vos tarifs régionaux.');
+        return;
+      }
+
+      if (!pricing || !pricing.success) {
+        initLoader.style.display = 'none';
+        showGlobalError((pricing && pricing.error) || t('payment_geo_error') || 'Erreur tarifaire.');
+        return;
       }
 
       const currency = pricing.currency || 'USD';
@@ -328,9 +340,7 @@
       const user = await SolitiquoAPI.getProfile().catch(() => null);
       if (!user) {
         initLoader.style.display = 'none';
-        showGlobalError(t('payment_not_logged_in'));
-        const el = document.getElementById('globalErrorMsg');
-        el.innerHTML += ` <a href="auth.html?redirect=paiement.html?plan=${plan}" style="color:#635BFF;font-weight:700;">${t('auth_login')} →</a>`;
+        showGlobalError(`${t('payment_not_logged_in') || 'Veuillez vous connecter.'} <a href="auth.html?redirect=paiement.html?plan=${plan}" style="color:#635BFF;font-weight:700;">${t('auth_login') || 'Se connecter'} →</a>`, true);
         return;
       }
 
