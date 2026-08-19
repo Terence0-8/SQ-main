@@ -275,7 +275,9 @@ router.get('/comments/pending', isAdmin, async (req, res) => {
   try {
     try {
       await pool.query('ALTER TABLE comments ADD COLUMN IF NOT EXISTS flag_reason VARCHAR(255);');
-    } catch (e) {}
+    } catch (_err) {
+      /* ignore */
+    }
 
     const query = `
       SELECT 
@@ -513,7 +515,11 @@ router.post('/polls/:id/reset-votes', isAdmin, async (req, res) => {
     if (pollRes.rows.length > 0) {
       let options = pollRes.rows[0].options;
       if (typeof options === 'string') {
-        try { options = JSON.parse(options); } catch (e) {}
+        try {
+          options = JSON.parse(options);
+        } catch (_err) {
+          /* ignore */
+        }
       }
       if (Array.isArray(options)) {
         options = options.map(opt => ({

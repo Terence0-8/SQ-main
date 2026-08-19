@@ -102,7 +102,9 @@ router.get(['/:articleId', '/article/:articleId'], async (req, res) => {
     try {
       await pool.query('ALTER TABLE comments ADD COLUMN IF NOT EXISTS upvotes INT DEFAULT 0;');
       await pool.query('CREATE TABLE IF NOT EXISTS comment_upvotes (user_id INT NOT NULL, comment_id INT NOT NULL, created_at TIMESTAMP DEFAULT NOW(), PRIMARY KEY (user_id, comment_id));');
-    } catch (e) {}
+    } catch (_err) {
+      /* ignore */
+    }
 
     let rows;
     try {
@@ -169,7 +171,9 @@ router.post('/:id/upvote', isAuthenticated, async (req, res) => {
     try {
       await pool.query('ALTER TABLE comments ADD COLUMN IF NOT EXISTS upvotes INT DEFAULT 0;');
       await pool.query('CREATE TABLE IF NOT EXISTS comment_upvotes (user_id INT NOT NULL, comment_id INT NOT NULL, created_at TIMESTAMP DEFAULT NOW(), PRIMARY KEY (user_id, comment_id));');
-    } catch (e) {}
+    } catch (_err) {
+      /* ignore */
+    }
 
     // Vérifier si l'utilisateur a déjà liké ce commentaire
     const checkVote = await pool.query(
@@ -262,7 +266,9 @@ router.post('/', isAuthenticated, verifyCsrf, async (req, res) => {
 
     try {
       await pool.query('ALTER TABLE comments ADD COLUMN IF NOT EXISTS flag_reason VARCHAR(255);');
-    } catch (e) {}
+    } catch (_err) {
+      /* ignore */
+    }
 
     // Insertion en base
     const insertQuery = `
