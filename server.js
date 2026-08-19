@@ -190,6 +190,7 @@ const csrfExemptPaths = [
   '/api/auth/register',
   '/api/subscriptions/webhook',
   '/api/subscriptions/stripe-webhook',
+  '/api/subscriptions/init-',
   '/api/language/preference',
   '/api/analytics/track',
   '/api/translate',
