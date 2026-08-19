@@ -108,7 +108,7 @@
   gap: 6px;
 }
 
-/* Barre d'Onglets de Données (Data Tabs) */
+/* Barre d'Onglets de Données (3 Onglets Électoraux Centraux) */
 .cm-data-tabs {
   display: flex;
   gap: 0.65rem;
@@ -122,7 +122,7 @@
 
 .cm-tab-btn {
   flex: 1;
-  min-width: 160px;
+  min-width: 180px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -294,14 +294,14 @@
   box-shadow: var(--cm-shadow-sm);
 }
 
-/* Widget de Légende Cartographique Intégré dans le Panneau Latéral (Ne recouvre pas la carte) */
+/* Widget de Légende Cartographique Positionné sous la liste pour une hiérarchie visuelle parfaite */
 .cm-map-legend {
   background: #FFFFFF;
   border: 1px solid var(--cm-border-gold);
   border-radius: 16px;
   padding: 1.1rem 1.25rem;
   box-shadow: var(--cm-shadow-sm);
-  margin-bottom: 1.25rem;
+  margin-top: 1.25rem;
 }
 
 .cm-legend-title {

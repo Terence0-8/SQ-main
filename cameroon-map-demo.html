@@ -117,21 +117,21 @@
 
   <header class="demo-header">
     <h1>Carte Interactive du Cameroun</h1>
-    <p>Composant cartographique d'exception pour Solitiquo. Données électorales, représentativité parlementaire, navigation Pan & Zoom vectorielle et design éditorial haut de gamme.</p>
+    <p>Composant cartographique électoral pour Solitiquo. Sièges parlementaires, taux de participation, vainqueurs des urnes et navigation vectorielle.</p>
   </header>
 
   <main class="demo-container">
     <!-- Point de montage du composant Carte -->
     <div id="cm-map-root"></div>
 
-    <!-- Présentation des fonctionnalités techniques sans emojis -->
+    <!-- Présentation des fonctionnalités techniques -->
     <section class="demo-features-grid">
       <div class="demo-feature-card">
         <div class="demo-feature-icon-wrapper">
           <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6M15 3h6v6M10 14L21 3M4 6h7v7H4z"/></svg>
         </div>
-        <div class="demo-feature-title">4 Onglets de Données Distincts</div>
-        <div class="demo-feature-desc">Basculez entre : 1. Sièges à l'Assemblée, 2. Participation Électorale (Gradient % choroplèthe), 3. Résultats des Votes (Vainqueurs des Urnes), 4. Enquêtes Solitiquo.</div>
+        <div class="demo-feature-title">3 Onglets Électoraux Spécialisés</div>
+        <div class="demo-feature-desc">Basculez entre : 1. Sièges Assemblée (Parti Majoritaire), 2. Participation Électorale (Suffrages & % Turnout), 3. Résultats des Votes (Vainqueurs des Urnes).</div>
       </div>
 
       <div class="demo-feature-card">
@@ -161,14 +161,14 @@
 
     <!-- Code d'intégration futur pour le site -->
     <div class="demo-code-block">
-      // Exemple d'intégration future dans Solitiquo :<br>
+      // Exemple d'intégration dans Solitiquo :<br>
       &lt;link rel="stylesheet" href="css/cameroon-map.css"&gt;<br>
       &lt;div id="cm-map-root"&gt;&lt;/div&gt;<br>
       &lt;script src="js/cameroon-map.js"&gt;&lt;/script&gt;<br>
       &lt;script&gt;<br>
       &nbsp;&nbsp;const map = new CameroonMap({<br>
       &nbsp;&nbsp;&nbsp;&nbsp;containerId: 'cm-map-root',<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;initialTab: 'seats', // 'seats' | 'turnout' | 'votes' | 'editorial'<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;initialTab: 'seats', // 'seats' | 'turnout' | 'votes'<br>
       &nbsp;&nbsp;&nbsp;&nbsp;onSelect: (regionData) => {<br>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;console.log('Région sélectionnée :', regionData.name);<br>
       &nbsp;&nbsp;&nbsp;&nbsp;}<br>
@@ -184,7 +184,7 @@
         containerId: 'cm-map-root',
         initialTab: 'seats',
         onSelect: (region) => {
-          console.log('Action de redirection ou filtrage pour la région :', region);
+          console.log('Action pour la région :', region);
         }
       });
     });

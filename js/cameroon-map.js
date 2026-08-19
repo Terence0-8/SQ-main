@@ -1,7 +1,7 @@
 /* global document, window, alert */
 /**
  * js/cameroon-map.js - Composant Carte Interactive des 10 Régions du Cameroun
- * Fonctionnalités Solitiquo (Ultra Luxury D.A.) : Multi-données vectorielles, Pan & Zoom interactif, Accessibilité ARIA
+ * Fonctionnalités Solitiquo (Ultra Luxury D.A.) : Données vectorielles électorales à 3 Onglets, Pan & Zoom interactif, Accessibilité ARIA
  */
 
 const CAMEROON_SVG_EMBED = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="260 45 275 510" id="cm-svg-root" class="cm-map-svg" role="img" aria-label="Carte interactive des 10 régions du Cameroun">
@@ -53,7 +53,7 @@ const CAMEROON_SVG_EMBED = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="260
 
     <!-- 8. CENTRE (CM-CE) -->
     <path id="region-cm-ce" data-region="CM-CE" class="cm-region" tabindex="0" role="button" aria-label="Centre (Chef-lieu: Yaoundé)"
-      d="M416.7186 357.4575L405.3709 357.362L404.6284 356.9604L402.761 353.1528L398.738 349.2389L396.4001 348.8026L393.419 350.359L390.9395 349.9249L389.4872 348.7114L388.105 346.5971L386.936 346.8402L385.4968 348.3814L384.1389 349.1608L382.2406 349.3496L379.8212 351.6007L378.2925 353.4633L376.806 354.5356L369.6685 356.6435L367.9215 357.6181L366.5865 357.7571L365.5624 360.6594L366.2267 363.6833L366.2267 365.561L367.1775 365.6804L365.9922 368.7152L364.0369 370.7492L363.3922 373.3303L364.0223 375.6509L364.0027 377.8716L362.9852 380.572L363.1626 382.5561L361.4613 385.1524L359.8723 386.685L359.7501 390.4383L359.9846 391.2892L358.4884 392.1098L357.4904 393.4274L356.7821 396.9788L355.6962 400.7517L355.0319 401.2944L353.1743 401.0512L351.0138 398.8045L349.3711 400.9253L345.0338 403.6909L344.1009 403.8754L341.7581 403.3132L341.1525 405.1692L339.4218 407.3661L338.1356 408.2409L337.5886 409.3675L337.3639 411.6186L337.8963 411.9746L339.4365 410.7264L341.2062 409.895L341.7288 411.6447L341.2355 413.7373L339.8565 415.6346L338.6306 418.2981L338.5426 420.7316L340.2098 420.8228L343.2299 423.0044L345.3513 422.8221L348.163 419.5138L349.3467 421.1136L350.2795 419.872L351.1408 415.9993L351.7855 415.3676L353.2573 415.6715L355.0026 415.4045L354.9343 420.5102L355.9697 424.0529L357.5197 427.537L360.7856 431.4596L361.2154 432.2758L358.9719 434.388L357.2803 434.9546L354.721 436.4285L351.5218 437.8374L350.4456 437.8374L348.6173 438.9575L346.4763 444.3411L346.701 446.9069L346.4617 449.6334L345.646 451.8911L344.6284 452.1928L343.0199 450.0133L341.4455 449.3187L340.5175 448.1682L338.0477 450.2217L336.5417 456.7297L336.4147 458.7182L335.0129 460.3181L333.6926 460.1943L333.4093 461.5424L334.9836 468.4455L337.6863 468.0591L348.4219 463.8521L350.47 463.2682L351.7318 463.3702L352.6028 465.9925L355.4178 465.5952L356.8652 466.2573L358.5665 466.0251L359.9064 467.9592L360.7612 472.1705L362.0572 473.5338L362.36 475.1923L364.242 477.8363L366.2804 477.4369L367.6008 477.7668L369.4243 477.3218L374.3378 477.3718L376.5862 476.638L379.2807 474.7972L379.9938 472.075L381.0114 469.6524L384.4727 467.1039L385.728 464.0735L392.6213 468.5236L393.7805 470.7465L395.9214 469.6329L397.0025 464.2732L398.4889 461.8637L401.8412 458.2732L403.5962 455.792L404.941 456.2457L405.6997 458.2428L406.8427 460.025L408.0849 456.1936L408.1826 451.9258L407.7625 451.0748L405.8707 449.9895L404.8189 448.014L404.9264 446.5357L406.5838 444.6797L408.9054 443.4684L409.6055 443.4879L412.1909 440.3229L413.6139 439.5415L413.9802 438.671L413.1303 435.7057L414.4996 429.1412L414.1072 426.7685L415.5448 424.5978L416.5379 420.0673L417.3096 418.6346L419.4848 417.1802L423.6169 417.8141L424.7207 417.343L426.1437 417.6426L427.0342 416.7786L427.9036 407.34L426.2951 402.7184L425.4257 401.798L423.9392 401.5787L421.8569 400.044L421.8911 396.9832L420.8833 394.7668L417.3438 389.8456L415.2029 387.6401L416.4744 386.3572L418.4542 386.4375L419.5922 385.6908L421.0787 382.287L422.4528 377.8195L422.5407 376.0525L421.0787 372.6877L420.2972 369.9156L419.0989 367.797L418.6544 365.8802L416.5086 361.3758L416.7186 357.4575Z" />
+      d="M416.7186 357.4575L405.3709 357.362L404.6284 356.9604L402.761 353.1528L398.738 349.2389L396.4001 348.8026L393.419 350.359L390.9395 349.9249L389.4872 348.7114L388.105 346.5971L386.936 346.8402L385.4968 348.3814L384.1389 349.1608L382.2406 349.3496L379.8212 351.6007L378.2925 353.4633L376.806 354.5356L369.6685 356.6435L367.9215 357.6181L366.5865 357.7571L365.5624 360.6594L366.2267 363.6833L366.2267 365.561L367.1775 365.6804L365.9922 368.7152L364.0369 370.7492L363.3922 373.3303L364.0223 375.6509L364.0027 377.8716L362.9852 380.572L363.1626 382.5561L361.4613 385.1524L359.8723 386.685L359.7501 390.4383L359.9846 391.2892L358.4884 392.1098L357.4904 393.4274L356.7821 396.9788L356.962 400.7517L355.0319 401.2944L353.1743 401.0512L351.0138 398.8045L349.3711 400.9253L345.0338 403.6909L344.1009 403.8754L341.7581 403.3132L341.1525 405.1692L339.4218 407.3661L338.1356 408.2409L337.5886 409.3675L337.3639 411.6186L337.8963 411.9746L339.4365 410.7264L341.2062 409.895L341.7288 411.6447L341.2355 413.7373L339.8565 415.6346L338.6306 418.2981L338.5426 420.7316L340.2098 420.8228L343.2299 423.0044L345.3513 422.8221L348.163 419.5138L349.3467 421.1136L350.2795 419.872L351.1408 415.9993L351.7855 415.3676L353.2573 415.6715L355.0026 415.4045L354.9343 420.5102L355.9697 424.0529L357.5197 427.537L360.7856 431.4596L361.2154 432.2758L358.9719 434.388L357.2803 434.9546L354.721 436.4285L351.5218 437.8374L350.4456 437.8374L348.6173 438.9575L346.4763 444.3411L346.701 446.9069L346.4617 449.6334L345.646 451.8911L344.6284 452.1928L343.0199 450.0133L341.4455 449.3187L340.5175 448.1682L338.0477 450.2217L336.5417 456.7297L336.4147 458.7182L335.0129 460.3181L333.6926 460.1943L333.4093 461.5424L334.9836 468.4455L337.6863 468.0591L348.4219 463.8521L350.47 463.2682L351.7318 463.3702L352.6028 465.9925L355.4178 465.5952L356.8652 466.2573L358.5665 466.0251L359.9064 467.9592L360.7612 472.1705L362.0572 473.5338L362.36 475.1923L364.242 477.8363L366.2804 477.4369L367.6008 477.7668L369.4243 477.3218L374.3378 477.3718L376.5862 476.638L379.2807 474.7972L379.9938 472.075L381.0114 469.6524L384.4727 467.1039L385.728 464.0735L392.6213 468.5236L393.7805 470.7465L395.9214 469.6329L397.0025 464.2732L398.4889 461.8637L401.8412 458.2732L403.5962 455.792L404.941 456.2457L405.6997 458.2428L406.8427 460.025L408.0849 456.1936L408.1826 451.9258L407.7625 451.0748L405.8707 449.9895L404.8189 448.014L404.9264 446.5357L406.5838 444.6797L408.9054 443.4684L409.6055 443.4879L412.1909 440.3229L413.6139 439.5415L413.9802 438.671L413.1303 435.7057L414.4996 429.1412L414.1072 426.7685L415.5448 424.5978L416.5379 420.0673L417.3096 418.6346L419.4848 417.1802L423.6169 417.8141L424.7207 417.343L426.1437 417.6426L427.0342 416.7786L427.9036 407.34L426.2951 402.7184L425.4257 401.798L423.9392 401.5787L421.8569 400.044L421.8911 396.9832L420.8833 394.7668L417.3438 389.8456L415.2029 387.6401L416.4744 386.3572L418.4542 386.4375L419.5922 385.6908L421.0787 382.287L422.4528 377.8195L422.5407 376.0525L421.0787 372.6877L420.2972 369.9156L419.0989 367.797L418.6544 365.8802L416.5086 361.3758L416.7186 357.4575Z" />
 
     <!-- 9. EST (CM-ES) -->
     <path id="region-cm-es" data-region="CM-ES" class="cm-region" tabindex="0" role="button" aria-label="Est (Chef-lieu: Bertoua)"
@@ -61,7 +61,7 @@ const CAMEROON_SVG_EMBED = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="260
 
     <!-- 10. SUD (CM-SU) -->
     <path id="region-cm-su" data-region="CM-SU" class="cm-region" tabindex="0" role="button" aria-label="Sud (Chef-lieu: Ebolowa)"
-      d="M367.5438 518.5255L367.9801 515.8619L368.6118 514.3489L368.4751 512.8619L376.8858 512.4495L378.5432 512.0045L381.1123 513.6477L385.43 513.6391L387.8363 513.359L392.0758 513.3699L395.2864 513.7454L399.425 512.4842L401.0271 513.4784L403.9739 513.0595L408.2656 514.6962L412.5279 515.545L414.3644 514.3967L416.2432 515.1977L418.0374 514.3967L419.532 514.9719L420.3102 514.566L421.6973 515.2302L423.0389 515.0066L424.6083 513.537L428.0599 514.0841L429.3754 515.3127L429.8085 516.422L429.688 518.723L441.2725 518.8615L440.2673 490.0122L439.9694 487.4182L438.8639 488.0412L437.1414 489.8277L436.285 490.0665L435.8438 492.4869L434.0057 492.4869L432.4802 491.3646L430.8179 491.1823L430.2204 490.1924L428.5076 490.8827L426.4367 489.3328L423.3385 489.0766L422.78 489.6454L420.3118 488.8856L419.5027 488.0347L418.4542 488.369L415.2175 487.5658L414.0193 486.6063L412.974 484.277L412.8764 479.5447L412.0786 475.6047L410.0988 471.5562L407.8895 468.7754L406.8915 467.0583L406.2761 465.0721L406.8427 460.025L405.6997 458.2428L404.941 456.2457L403.5962 455.792L401.8412 458.2732L398.4889 461.8637L397.0025 464.2732L395.9214 469.6329L393.7805 470.7465L392.6213 468.5236L385.728 464.0735L384.4727 467.1039L381.0114 469.6524L379.9938 472.075L379.2807 474.7972L376.5862 476.638L374.3378 477.3718L369.4243 477.3218L367.6008 477.7668L366.2804 477.4369L364.242 477.8363L362.36 475.1923L362.0572 473.5338L360.7612 472.1705L359.9064 467.9592L358.5665 466.0251L356.8652 466.2573L355.4178 465.5952L352.6028 465.9925L351.7318 463.3702L350.47 463.2682L348.4219 463.8521L337.6863 468.0591L334.9836 468.4455L333.4093 461.5424L333.6926 460.1943L333.4679 459.3672L331.8984 458.106L330.1482 459.0026L327.9438 462.4064L327.9536 465.3608L326.6771 469.0446L323.6685 472.1808L323.3608 473.8997L324.5684 480.0275L324.1069 482.5094L322.8455 484.8118L322.0404 488.4628L321.9302 493.7923L321.2661 496.211L320.3123 501.8413L320.1944 509.6544L319.5765 511.133L319.9384 511.8416L319.9319 514.3619L321.8628 516.6152L325.6074 518.532L331.8766 518.5315L338.7984 518.5299L348.6938 518.5298L367.5438 518.5255Z" />
+      d="M367.5438 518.5255L367.9801 515.8619L368.6118 514.3489L368.4751 512.8619L376.8858 512.4495L378.5432 512.0045L381.1123 513.6477L385.43 513.6391L387.8363 513.359L392.0758 513.3699L395.2864 513.7454L399.425 512.4842L401.0271 513.4784L403.9739 513.0595L408.2656 514.6962L412.5279 515.545L414.3644 514.3967L416.2432 515.1977L418.0374 514.3967L419.532 514.9719L420.3102 514.566L421.6973 515.2302L423.0389 515.0066L424.6083 513.537L428.0599 514.0841L429.3754 515.3127L429.8085 516.422L429.688 518.723L441.2725 518.8615L440.2673 490.0122L439.9694 487.4182L438.8639 488.0412L437.1414 489.8277L436.285 490.0665L435.8438 492.4869L434.0057 492.4869L432.4802 491.3646L430.8179 491.1823L430.2204 490.1924L428.5076 490.8827L426.4367 489.3328L423.3385 489.0766L422.78 489.6454L420.3118 488.8856L419.5027 488.0347L418.4542 488.369L415.2175 487.5658L414.0193 486.6063L412.974 484.277L412.8764 479.5447L412.0786 475.6047L410.0988 471.5562L407.8895 468.7754L406.8915 467.0583L406.2761 465.0721L406.8427 460.025L405.6997 458.2428L404.941 456.2457L403.5962 455.792L401.8412 458.2732L398.4889 461.8637L397.0025 464.2732L395.9214 469.6329L393.7805 470.7465L392.6213 468.5236L385.728 464.0735L384.4727 467.1039L381.0114 469.6524L379.9938 472.075L379.2807 474.7972L376.5862 476.638L374.3378 477.3718L369.4243 477.3218L367.6008 477.7668L366.2804 477.4369L364.242 477.8363L362.36 475.1923L362.0572 473.5338L360.7612 472.1705L359.9064 467.9592L358.5665 466.0251L356.8652 466.0251L355.4178 465.5952L352.6028 465.9925L351.7318 463.3702L350.47 463.2682L348.4219 463.8521L337.6863 468.0591L334.9836 468.4455L333.4093 461.5424L333.6926 460.1943L333.4679 459.3672L331.8984 458.106L330.1482 459.0026L327.9438 462.4064L327.9536 465.3608L326.6771 469.0446L323.6685 472.1808L323.3608 473.8997L324.5684 480.0275L324.1069 482.5094L322.8455 484.8118L322.0404 488.4628L321.9302 493.7923L321.2661 496.211L320.3123 501.8413L320.1944 509.6544L319.5765 511.133L319.9384 511.8416L319.9319 514.3619L321.8628 516.6152L325.6074 518.532L331.8766 518.5315L338.7984 518.5299L348.6938 518.5298L367.5438 518.5255Z" />
   </g>
 
   <!-- Marqueurs et Chefs-lieux des Régions (Pins Cartographiques Vectoriels) -->
@@ -287,7 +287,7 @@ class CameroonMap {
     this.containerId = options.containerId || 'cm-map-root';
     this.onSelectCallback = options.onSelect || null;
     this.selectedRegionCode = null;
-    this.activeTab = options.initialTab || 'seats'; // 'seats' | 'turnout' | 'votes' | 'editorial'
+    this.activeTab = options.initialTab || 'seats'; // 'seats' | 'turnout' | 'votes'
 
     // Cadrage Pan & Zoom calibré sur les coordonnées réelles du Cameroun
     this.baseViewBox = { x: 260, y: 45, w: 275, h: 510 };
@@ -319,12 +319,12 @@ class CameroonMap {
               <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 3a8 8 0 0 1 8 7.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
               <span>Carte Interactive du Cameroun</span>
             </h2>
-            <p>Cartographie territoriale, représentativité politique et enquêtes exclusives de Solitiquo.</p>
+            <p>Cartographie électorale, représentativité parlementaire et suffrages régionaux.</p>
           </div>
           <span class="cm-map-badge" id="cm-header-badge">Données Électorales</span>
         </div>
 
-        <!-- 4 Onglets de Données Vectoriels Distincts -->
+        <!-- 3 Onglets Électoraux Centraux (Onglet Analyses Solitiquo Retiré) -->
         <div class="cm-data-tabs" role="tablist">
           <button class="cm-tab-btn ${this.activeTab === 'seats' ? 'is-active' : ''}" data-tab="seats" role="tab">
             <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 3l9 7H3l9-7z"/></svg>
@@ -337,10 +337,6 @@ class CameroonMap {
           <button class="cm-tab-btn ${this.activeTab === 'votes' ? 'is-active' : ''}" data-tab="votes" role="tab">
             <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6M15 3h6v6M10 14L21 3M4 6h7v7H4z"/></svg>
             Résultats des Votes
-          </button>
-          <button class="cm-tab-btn ${this.activeTab === 'editorial' ? 'is-active' : ''}" data-tab="editorial" role="tab">
-            <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15zM8 7h8M8 11h6"/></svg>
-            Analyses Solitiquo
           </button>
         </div>
 
@@ -368,11 +364,8 @@ class CameroonMap {
             </div>
           </div>
 
-          <!-- Panneau latéral : Légende Intégrée + Liste des Régions -->
+          <!-- Panneau latéral : Liste des Régions d'abord, puis Légende sous la liste -->
           <div class="cm-region-list-container">
-            <!-- Légende Intégrée dans le Panneau Latéral (Lisibilité Maximale) -->
-            <div class="cm-map-legend" id="cm-map-legend"></div>
-
             <div class="cm-list-header">
               <h3 id="cm-list-title">Régions du Cameroun</h3>
             </div>
@@ -390,6 +383,9 @@ class CameroonMap {
                 </div>
               `).join('')}
             </div>
+
+            <!-- Légende Inversée et Placée sous la Liste -->
+            <div class="cm-map-legend" id="cm-map-legend"></div>
           </div>
         </div>
 
@@ -592,16 +588,13 @@ class CameroonMap {
 
     if (tabKey === 'seats') {
       if (headerBadge) headerBadge.textContent = 'Sièges Assemblée (180 Députés)';
-      if (listTitle) listTitle.textContent = 'Majorités Régionales';
+      if (listTitle) listTitle.textContent = 'Parti Majoritaire par Région';
     } else if (tabKey === 'turnout') {
       if (headerBadge) headerBadge.textContent = 'Participation Électorale (%)';
-      if (listTitle) listTitle.textContent = 'Taux de Participation';
+      if (listTitle) listTitle.textContent = 'Participation par Région';
     } else if (tabKey === 'votes') {
       if (headerBadge) headerBadge.textContent = 'Résultats des Urnes';
-      if (listTitle) listTitle.textContent = 'Candidats & Partis en Tête';
-    } else {
-      if (headerBadge) headerBadge.textContent = 'Écosystème Solitiquo';
-      if (listTitle) listTitle.textContent = 'Enquêtes par Région';
+      if (listTitle) listTitle.textContent = 'Score du Vainqueur Régional';
     }
 
     this.updateMapColors();
@@ -624,40 +617,40 @@ class CameroonMap {
         path.style.fill = data.turnout.fill;
       } else if (this.activeTab === 'votes') {
         path.style.fill = data.votes.partyColor;
-      } else {
-        path.style.fill = '#37463D';
       }
     });
   }
 
+  /* Inversion de la légende et de la statistique pour tous les onglets */
   updateLegend() {
     const legendEl = document.getElementById('cm-map-legend');
     if (!legendEl) return;
 
     if (this.activeTab === 'seats') {
+      // Inversé : La légende indique l'échelle de sièges (Volume parlementaire)
       legendEl.innerHTML = `
-        <div class="cm-legend-title"><span>Partis en Tête (Sièges)</span></div>
+        <div class="cm-legend-title"><span>Volume de Sièges Parlementaires</span></div>
         <div class="cm-legend-items">
-          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#37463D"></span> RDPC (Majorité)</div>
-          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#C82823"></span> MRC</div>
-          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#059669"></span> UNDP</div>
-          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#7C3AED"></span> UDC</div>
-          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#D4AF37"></span> SDF</div>
+          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#37463D"></span> > 20 Sièges (Grands Bassins)</div>
+          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#059669"></span> 15 - 20 Sièges</div>
+          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#C82823"></span> < 15 Sièges (Adamaoua, Est, Sud)</div>
         </div>
       `;
     } else if (this.activeTab === 'turnout') {
+      // Inversé : Légende par Paliers de Mobilisation
       legendEl.innerHTML = `
-        <div class="cm-legend-title"><span>Taux de Participation (%)</span></div>
+        <div class="cm-legend-title"><span>Niveaux de Mobilisation Électorale</span></div>
         <div class="cm-legend-gradient-bar"></div>
         <div class="cm-legend-gradient-labels">
-          <span>40% (Faible)</span>
-          <span>65% (Moyen)</span>
-          <span>85%+ (Fort)</span>
+          <span>Faible (< 60%)</span>
+          <span>Moyenne (60-75%)</span>
+          <span>Forte (> 75%)</span>
         </div>
       `;
     } else if (this.activeTab === 'votes') {
+      // Inversé : Légende des Candidats & Partis en compétition
       legendEl.innerHTML = `
-        <div class="cm-legend-title"><span>Vainqueur des Urnes</span></div>
+        <div class="cm-legend-title"><span>Partis & Candidats Électoraux</span></div>
         <div class="cm-legend-items">
           <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#37463D"></span> Paul Biya (RDPC)</div>
           <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#C82823"></span> Maurice Kamto (MRC)</div>
@@ -665,34 +658,28 @@ class CameroonMap {
           <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#D4AF37"></span> Joshua Osih (SDF)</div>
         </div>
       `;
-    } else {
-      legendEl.innerHTML = `
-        <div class="cm-legend-title"><span>Couverture Solitiquo</span></div>
-        <div class="cm-legend-items">
-          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#37463D"></span> Régions Analysées</div>
-          <div class="cm-legend-item"><span class="cm-legend-chip" style="background:#C82823"></span> Pôles d'enquêtes chaudes</div>
-        </div>
-      `;
     }
   }
 
+  /* Inversion des Badges dans la Liste Latérale */
   updateSidebar() {
     Object.values(CAMEROON_REGIONS_DATA).forEach(data => {
       const dotEl = document.getElementById(`dot-${data.code}`);
       const badgeEl = document.getElementById(`badge-${data.code}`);
 
       if (this.activeTab === 'seats') {
+        // Inversé : Le badge affiche le Parti Majoritaire + Nombre de sièges du Parti
         if (dotEl) dotEl.style.background = data.seats.partyColor;
-        if (badgeEl) badgeEl.textContent = `${data.seats.total} sièges`;
+        if (badgeEl) badgeEl.textContent = `${data.seats.leadingParty} (${data.seats.total} sièges)`;
       } else if (this.activeTab === 'turnout') {
+        // Inversé : Le badge affiche le Taux % + Total Votants
         if (dotEl) dotEl.style.background = data.turnout.fill;
-        if (badgeEl) badgeEl.textContent = `${data.turnout.percent}% part.`;
+        if (badgeEl) badgeEl.textContent = `${data.turnout.percent}% (${data.turnout.votesCast} votants)`;
       } else if (this.activeTab === 'votes') {
+        // Inversé : Le badge affiche le Score % du Vainqueur Régional
         if (dotEl) dotEl.style.background = data.votes.partyColor;
-        if (badgeEl) badgeEl.textContent = data.votes.leadingParty;
-      } else {
-        if (dotEl) dotEl.style.background = '#37463D';
-        if (badgeEl) badgeEl.textContent = `${data.articlesCount} art.`;
+        const leaderScore = data.votes.breakdown[data.votes.leadingParty] || 'En tête';
+        if (badgeEl) badgeEl.textContent = `${data.votes.leadingParty} — ${leaderScore}`;
       }
     });
   }
@@ -735,16 +722,16 @@ class CameroonMap {
     if (!data) return;
 
     let subHtml = `Chef-lieu : <strong>${data.capital}</strong>`;
-    let statHtml = `<svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15z"/></svg> ${data.articlesCount} enquêtes Solitiquo`;
+    let statHtml = '';
 
     if (this.activeTab === 'seats') {
       subHtml = `Parti Majoritaire : <strong>${data.seats.leadingParty}</strong>`;
-      statHtml = `<svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 3l9 7H3l9-7z"/></svg> ${data.seats.total} sièges représentés`;
+      statHtml = `<svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 3l9 7H3l9-7z"/></svg> ${data.seats.total} sièges au total`;
     } else if (this.activeTab === 'turnout') {
       subHtml = `Participation électorale : <strong>${data.turnout.percent}%</strong>`;
-      statHtml = `<svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg> ${data.turnout.votesCast} votants / ${data.turnout.registeredVoters}`;
+      statHtml = `<svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg> ${data.turnout.votesCast} votants exprimés`;
     } else if (this.activeTab === 'votes') {
-      subHtml = `En tête dans la région : <strong>${data.votes.leadingParty}</strong>`;
+      subHtml = `Vainqueur Régional : <strong>${data.votes.leadingParty}</strong>`;
       statHtml = `<svg class="cm-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6M15 3h6v6M10 14L21 3M4 6h7v7H4z"/></svg> ${data.votes.leadingCandidate}`;
     }
 
@@ -923,15 +910,6 @@ class CameroonMap {
       }).join('');
 
       breakdownList.innerHTML = votesHtml;
-
-    } else {
-      statVal1.textContent = data.population;
-      statLbl1.textContent = 'Population Estimée';
-      statVal2.textContent = `${data.departmentsCount} Dépts`;
-      statLbl2.textContent = 'Découpage Administratif';
-
-      breakdownTitle.textContent = 'Départements de la région';
-      breakdownList.innerHTML = `<div class="cm-tags-list">${data.departments.map(d => `<span class="cm-tag">${d}</span>`).join('')}</div>`;
     }
 
     document.getElementById('cm-drawer-summary').textContent = data.summary;
