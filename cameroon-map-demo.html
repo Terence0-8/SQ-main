@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carte Interactive du Cameroun — Écosystème Solitiquo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/shared.css">
+  <link rel="stylesheet" href="css/cameroon-map.css">
+
+  <style>
+    body {
+      background-color: #FAFCF9;
+      color: #1A1A1A;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .demo-header {
+      background: #37463D;
+      color: #FFFFFF;
+      padding: 3rem 1.5rem;
+      text-align: center;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .demo-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .demo-header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .demo-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem 1.5rem;
+    }
+
+    .demo-features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .demo-feature-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E6DF;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    .demo-feature-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .demo-feature-title {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: #37463D;
+      margin-bottom: 0.25rem;
+    }
+
+    .demo-feature-desc {
+      font-size: 0.88rem;
+      color: #556059;
+      line-height: 1.5;
+    }
+
+    .demo-code-block {
+      background: #1E2822;
+      color: #EAE8DC;
+      padding: 1.5rem;
+      border-radius: 12px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      overflow-x: auto;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="demo-header">
+    <h1>Carte Interactive du Cameroun</h1>
+    <p>Composant cartographique sur-mesure pour Solitiquo. Structuré, accessible (ARIA), responsive et prêt à l'emploi.</p>
+  </header>
+
+  <main class="demo-container">
+    <!-- Point de montage du composant Carte -->
+    <div id="cm-map-root"></div>
+
+    <!-- Présentation des fonctionnalités techniques du composant -->
+    <section class="demo-features-grid">
+      <div class="demo-feature-card">
+        <div class="demo-feature-icon">🧹</div>
+        <div class="demo-feature-title">SVG Structuré & Nettoyé</div>
+        <div class="demo-feature-desc">Fichier vectoriel dépourvu de styles inline moches, doté d'identifiants standardisés (`data-region="CM-XX"`) et d'un viewBox responsive.</div>
+      </div>
+
+      <div class="demo-feature-card">
+        <div class="demo-feature-icon">🎨</div>
+        <div class="demo-feature-title">Charte Graphique Solitiquo</div>
+        <div class="demo-feature-desc">Intégration du Vert Forêt Émeraude (`#37463D`), Rouge Impérial (`#C82823`), effet verre Dépoli (Glassmorphism) et ombres douces.</div>
+      </div>
+
+      <div class="demo-feature-card">
+        <div class="demo-feature-icon">⚡</div>
+        <div class="demo-feature-title">Interactivité & Tooltips</div>
+        <div class="demo-feature-desc">Surbrillance fluide au survol, tooltips volants avec détection de bordure d'écran, et ouverture d'un tiroir latéral informatif détaillé au clic.</div>
+      </div>
+
+      <div class="demo-feature-card">
+        <div class="demo-feature-icon">♿</div>
+        <div class="demo-feature-title">Accessibilité (ARIA & Clavier)</div>
+        <div class="demo-feature-desc">Support complet de la navigation au clavier (Tab, Entrée, Espace, Échap) avec annonces vocales ARIA et contrastes visuels respectés.</div>
+      </div>
+    </section>
+
+    <!-- Code d'intégration futur pour le site -->
+    <div class="demo-code-block">
+      // Exemple d'intégration future dans n'importe quelle page de Solitiquo :<br>
+      &lt;link rel="stylesheet" href="css/cameroon-map.css"&gt;<br>
+      &lt;div id="cm-map-root"&gt;&lt;/div&gt;<br>
+      &lt;script src="js/cameroon-map.js"&gt;&lt;/script&gt;<br>
+      &lt;script&gt;<br>
+      &nbsp;&nbsp;const map = new CameroonMap({<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;containerId: 'cm-map-root',<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;onSelect: (regionData) => {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;console.log('Région sélectionnée :', regionData.name);<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+      &nbsp;&nbsp;});<br>
+      &lt;/script&gt;
+    </div>
+  </main>
+
+  <script src="js/cameroon-map.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      new CameroonMap({
+        containerId: 'cm-map-root',
+        onSelect: (region) => {
+          console.log('Action de redirection ou filtrage pour la région :', region);
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>
