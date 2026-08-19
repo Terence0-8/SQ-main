@@ -130,8 +130,8 @@
         <div class="demo-feature-icon-wrapper">
           <svg class="cm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6M15 3h6v6M10 14L21 3M4 6h7v7H4z"/></svg>
         </div>
-        <div class="demo-feature-title">Onglets Multi-Données</div>
-        <div class="demo-feature-desc">Basculez en un clic entre la répartition des sièges par parti à l'Assemblée, les taux de participation électorale (gradient choroplèthe) et les enquêtes Solitiquo.</div>
+        <div class="demo-feature-title">4 Onglets de Données Distincts</div>
+        <div class="demo-feature-desc">Basculez entre : 1. Sièges à l'Assemblée, 2. Participation Électorale (Gradient % choroplèthe), 3. Résultats des Votes (Vainqueurs des Urnes), 4. Enquêtes Solitiquo.</div>
       </div>
 
       <div class="demo-feature-card">
@@ -168,7 +168,7 @@
       &lt;script&gt;<br>
       &nbsp;&nbsp;const map = new CameroonMap({<br>
       &nbsp;&nbsp;&nbsp;&nbsp;containerId: 'cm-map-root',<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;initialTab: 'seats', // 'seats' | 'votes' | 'editorial'<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;initialTab: 'seats', // 'seats' | 'turnout' | 'votes' | 'editorial'<br>
       &nbsp;&nbsp;&nbsp;&nbsp;onSelect: (regionData) => {<br>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;console.log('Région sélectionnée :', regionData.name);<br>
       &nbsp;&nbsp;&nbsp;&nbsp;}<br>
