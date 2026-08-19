@@ -122,17 +122,17 @@
 
 .cm-tab-btn {
   flex: 1;
-  min-width: 170px;
+  min-width: 160px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.65rem;
-  padding: 0.75rem 1.25rem;
+  padding: 0.75rem 1.1rem;
   background: transparent;
   border: none;
   border-radius: 12px;
   color: var(--cm-text-muted);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -156,7 +156,7 @@
   display: grid;
   grid-template-columns: minmax(320px, 460px) 1fr;
   gap: 2rem;
-  align-items: center;
+  align-items: flex-start;
 }
 
 @media (max-width: 980px) {
@@ -169,7 +169,7 @@
 .cm-svg-container {
   position: relative;
   width: 100%;
-  height: 570px;
+  height: 580px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -293,40 +293,38 @@
   box-shadow: var(--cm-shadow-sm);
 }
 
-/* Widget de Légende Cartographique Dynamique */
+/* Widget de Légende Cartographique Intégré dans le Panneau Latéral (Ne recouvre pas la carte) */
 .cm-map-legend {
-  position: absolute;
-  bottom: 1.25rem;
-  right: 1.25rem;
-  z-index: 10;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(12px);
-  padding: 12px 16px;
-  border-radius: 14px;
+  background: #FFFFFF;
   border: 1px solid var(--cm-border-gold);
+  border-radius: 16px;
+  padding: 1.1rem 1.25rem;
   box-shadow: var(--cm-shadow-sm);
-  max-width: 250px;
+  margin-bottom: 1.25rem;
 }
 
 .cm-legend-title {
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: var(--cm-green-primary);
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .cm-legend-items {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px 12px;
 }
 
 .cm-legend-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   font-size: 0.82rem;
   color: var(--cm-text-main);
   font-weight: 500;
@@ -344,13 +342,13 @@
   height: 10px;
   border-radius: 5px;
   background: linear-gradient(to right, #A7F3D0, #059669, #064E3B);
-  margin: 6px 0;
+  margin: 8px 0;
 }
 
 .cm-legend-gradient-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   color: var(--cm-text-muted);
   font-weight: 600;
 }
@@ -391,13 +389,13 @@
 .cm-region-list-container {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
 }
 
 .cm-list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 0.85rem;
 }
 
 .cm-list-header h3 {
@@ -411,7 +409,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  max-height: 520px;
+  max-height: 440px;
   overflow-y: auto;
   padding-right: 0.35rem;
 }
@@ -530,7 +528,7 @@
   gap: 6px;
 }
 
-/* Sliding Info Drawer (Panneau Régional) */
+/* Sliding Info Drawer (Panneau Régional Détaillé) */
 .cm-drawer-overlay {
   position: fixed;
   top: 0;
@@ -554,7 +552,7 @@
   position: fixed;
   top: 0;
   right: 0;
-  width: 480px;
+  width: 500px;
   max-width: 92vw;
   height: 100vh;
   background: #FFFFFF;
@@ -677,6 +675,57 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
+}
+
+/* Graphiques de Barres de Statistique Régionale Détaillée */
+.cm-breakdown-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+  background: #F9FBF8;
+  border: 1px solid var(--cm-border);
+  padding: 1.1rem;
+  border-radius: 16px;
+}
+
+.cm-breakdown-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.cm-breakdown-header-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.88rem;
+  color: var(--cm-text-main);
+}
+
+.cm-breakdown-party-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cm-breakdown-score {
+  font-weight: 700;
+  color: var(--cm-green-primary);
+  font-size: 0.88rem;
+}
+
+.cm-breakdown-track {
+  height: 9px;
+  width: 100%;
+  background: #E5E7EB;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.cm-breakdown-bar {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .cm-tags-list {
