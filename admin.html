@@ -1198,9 +1198,70 @@
             }
 
             async function modComment(id, action) {
-                const endpoint = action === 'approve' ? 'approve' : 'delete';
-                await fetch(`${API_URL}/admin/comments/${id}/${endpoint}`, { method: 'POST', credentials: 'include' });
-                loadOtherContent();
+                const isApprove = action === 'approve';
+                const title = isApprove ? 'Approuver ce commentaire ?' : 'Rejeter ce commentaire ?';
+                const text = isApprove 
+                    ? 'Le commentaire sera approuvé et immédiatement visible par tous les lecteurs.' 
+                    : 'Le commentaire sera rejeté et définitivement supprimé.';
+                const confirmButtonText = isApprove ? 'Oui, approuver' : 'Oui, rejeter';
+                const confirmButtonColor = isApprove ? '#059669' : '#C82823';
+                const icon = isApprove ? 'question' : 'warning';
+
+                if (typeof Swal !== 'undefined') {
+                    const result = await Swal.fire({
+                        title: title,
+                        text: text,
+                        icon: icon,
+                        showCancelButton: true,
+                        confirmButtonColor: confirmButtonColor,
+                        cancelButtonColor: '#64748b',
+                        confirmButtonText: confirmButtonText,
+                        cancelButtonText: 'Annuler',
+                        customClass: { popup: 'swal2-glass' }
+                    });
+
+                    if (!result.isConfirmed) return;
+                } else {
+                    if (!confirm(`${title}\n${text}`)) return;
+                }
+
+                const endpoint = isApprove ? 'approve' : 'delete';
+                let csrfToken = (window.SolitiquoAPI && SolitiquoAPI.csrfToken) || '';
+                if (!csrfToken) {
+                    try {
+                        const tokenRes = await fetch(`${API_URL}/csrf-token`, { credentials: 'include' });
+                        const tokenJson = await tokenRes.json();
+                        if (tokenJson && tokenJson.csrfToken) csrfToken = tokenJson.csrfToken;
+                    } catch (e) {}
+                }
+                try {
+                    const res = await fetch(`${API_URL}/admin/comments/${id}/${endpoint}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': csrfToken
+                        },
+                        credentials: 'include'
+                    });
+                    const json = await res.json();
+                    if (json.success) {
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: 'success',
+                                title: json.message || (isApprove ? 'Commentaire approuvé' : 'Commentaire rejeté'),
+                                showConfirmButton: false,
+                                timer: 2000
+                            });
+                        }
+                        loadOtherContent();
+                    } else {
+                        alert(json.error || 'Erreur lors du traitement du commentaire.');
+                    }
+                } catch (err) {
+                    console.error("Erreur modération:", err);
+                }
             }
 
             window.openNewPartyModal = () => window.location.href = 'editeur-parti.html';

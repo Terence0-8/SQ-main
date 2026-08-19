@@ -82,6 +82,10 @@ class SolitiquoPodcastPlayer {
                             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
                             Transcription
                         </button>
+                        <button class="g-text-btn" id="btn-download-audio" title="Télécharger cet épisode (MP3)">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            MP3
+                        </button>
                         <div class="vol-box">
                             <span style="font-size:1.2rem">🔊</span>
                             <input type="range" id="vol-input" min="0" max="1" step="0.1" value="1">
@@ -171,6 +175,43 @@ class SolitiquoPodcastPlayer {
         el.drawer.style.marginTop = this.transcriptOpen ? "2rem" : "0";
         el.btnTrans.style.color = this.transcriptOpen ? "var(--accent-red)" : "white";
     });
+
+    // Audio Download (Premium)
+    const dlBtn = this.container.querySelector('#btn-download-audio');
+    if (dlBtn) {
+      dlBtn.addEventListener('click', async () => {
+        const user = await window.SolitiquoAPI?.getProfile().catch(() => null);
+        const isPro = user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer');
+        if (!isPro) {
+          document.getElementById('premium-tooltip')?.remove();
+          const tip = document.createElement('div');
+          tip.id = 'premium-tooltip';
+          tip.innerHTML = '<strong>Fonctionnalité Premium 🔒</strong><p style="margin:.5rem 0;color:#64748b;font-size:.85rem;">Téléchargez nos podcasts audio en vous abonnant.</p><a href="abonnement.html" style="display:block;margin-top:10px;background:#37463D;color:#fff;padding:8px 16px;border-radius:20px;text-decoration:none;font-weight:700;">S\'abonner</a>';
+          tip.style.cssText = 'position:fixed;width:230px;background:#fff;border:1px solid #e0e0e0;border-radius:16px;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.15);z-index:9999;font-family:Inter,sans-serif;font-size:.85rem;text-align:center;';
+          document.body.appendChild(tip);
+          const r = dlBtn.getBoundingClientRect();
+          tip.style.top = (r.bottom + 8) + 'px';
+          tip.style.left = Math.min(r.left, window.innerWidth - 248) + 'px';
+          setTimeout(() => document.addEventListener('click', function h(ev) { if (!tip.contains(ev.target)) { tip.remove(); document.removeEventListener('click', h); } }, true), 10);
+          return;
+        }
+        if (this.data && this.data.episode) {
+          try {
+            const podData = await fetch((window.API_URL || '/api') + '/podcasts/' + this.data.episode).then(r => r.json());
+            const slug = podData.data?.slug;
+            if (slug) {
+              const lang = localStorage.getItem('lang') || 'fr';
+              const a = document.createElement('a');
+              a.href = '/api/podcasts/' + slug + '/download?lang=' + lang;
+              a.download = 'solitiquo-' + slug + '.mp3';
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+            }
+          } catch (err) { console.error(err); }
+        }
+      });
+    }
 
     // Time Update
     this.audio.addEventListener('timeupdate', () => {

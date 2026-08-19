@@ -47,7 +47,7 @@ const BANNED_WORDS = [
 // VALIDATION SCHEMA
 // ==========================================
 const commentSchema = Joi.object({
-  article_id: Joi.number().integer().required(),
+  article_id: Joi.alternatives().try(Joi.number().integer(), Joi.string()).required(),
   content: Joi.string().min(3).max(1000).required()
     .messages({
       'string.min': 'Le commentaire doit contenir au moins 3 caractères',
@@ -84,27 +84,63 @@ function containsBannedWord(text) {
 // ==========================================
 // 1. RÉCUPÉRER LES COMMENTAIRES D'UN ARTICLE
 // ==========================================
-router.get('/:articleId', async (req, res) => {
+router.get(['/:articleId', '/article/:articleId'], async (req, res) => {
   try {
     const { articleId } = req.params;
+    const currentUserId = (req.session && req.session.user) ? req.session.user.id : null;
 
-    if (isNaN(articleId)) {
-      return res.status(400).json({ success: false, error: 'ID article invalide' });
+    let numericId = parseInt(articleId, 10);
+    if (isNaN(numericId)) {
+      const artRes = await pool.query('SELECT id FROM articles WHERE slug = $1 OR id::text = $1', [articleId]);
+      if (artRes.rows.length > 0) {
+        numericId = artRes.rows[0].id;
+      } else {
+        return res.json({ success: true, count: 0, comments: [] });
+      }
     }
 
-    const query = `
-      SELECT 
-        c.id, 
-        c.content, 
-        c.created_at,
-        u.username
-      FROM comments c
-      JOIN users u ON c.user_id = u.id
-      WHERE c.article_id = $1 AND c.is_approved = TRUE
-      ORDER BY c.created_at DESC
-    `;
+    try {
+      await pool.query('ALTER TABLE comments ADD COLUMN IF NOT EXISTS upvotes INT DEFAULT 0;');
+      await pool.query('CREATE TABLE IF NOT EXISTS comment_upvotes (user_id INT NOT NULL, comment_id INT NOT NULL, created_at TIMESTAMP DEFAULT NOW(), PRIMARY KEY (user_id, comment_id));');
+    } catch (e) {}
 
-    const { rows } = await pool.query(query, [articleId]);
+    let rows;
+    try {
+      const query = `
+        SELECT 
+          c.id, 
+          c.content, 
+          c.created_at,
+          c.user_id,
+          COALESCE(c.upvotes, 0) AS upvotes,
+          COALESCE(u.username, 'Lecteur Solitiquo') AS username,
+          EXISTS(SELECT 1 FROM comment_upvotes cu WHERE cu.comment_id = c.id AND cu.user_id = $2) AS user_voted
+        FROM comments c
+        LEFT JOIN users u ON c.user_id = u.id
+        WHERE c.article_id = $1 AND (c.is_approved = TRUE OR c.is_approved IS NULL)
+        ORDER BY COALESCE(c.upvotes, 0) DESC, c.created_at DESC
+      `;
+      const result = await pool.query(query, [numericId, currentUserId || -1]);
+      rows = result.rows;
+    } catch (dbErr) {
+      console.warn('⚠️ Fallback query commentaires:', dbErr.message);
+      const fallbackQuery = `
+        SELECT 
+          c.id, 
+          c.content, 
+          c.created_at,
+          c.user_id,
+          0 AS upvotes,
+          COALESCE(u.username, 'Lecteur Solitiquo') AS username,
+          false AS user_voted
+        FROM comments c
+        LEFT JOIN users u ON c.user_id = u.id
+        WHERE c.article_id = $1 AND (c.is_approved = TRUE OR c.is_approved IS NULL)
+        ORDER BY c.created_at DESC
+      `;
+      const result = await pool.query(fallbackQuery, [numericId]);
+      rows = result.rows;
+    }
 
     res.json({
       success: true,
@@ -118,8 +154,66 @@ router.get('/:articleId', async (req, res) => {
 });
 
 // ==========================================
+// 1B. UPVOTER / RETIRER SON UPVOTE D'UN COMMENTAIRE (1 Vote strict par compte)
+// ==========================================
+router.post('/:id/upvote', isAuthenticated, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const commentId = parseInt(id, 10);
+    const userId = req.session.user.id;
+
+    if (isNaN(commentId)) {
+      return res.status(400).json({ success: false, error: 'ID invalide' });
+    }
+
+    try {
+      await pool.query('ALTER TABLE comments ADD COLUMN IF NOT EXISTS upvotes INT DEFAULT 0;');
+      await pool.query('CREATE TABLE IF NOT EXISTS comment_upvotes (user_id INT NOT NULL, comment_id INT NOT NULL, created_at TIMESTAMP DEFAULT NOW(), PRIMARY KEY (user_id, comment_id));');
+    } catch (e) {}
+
+    // Vérifier si l'utilisateur a déjà liké ce commentaire
+    const checkVote = await pool.query(
+      'SELECT 1 FROM comment_upvotes WHERE user_id = $1 AND comment_id = $2',
+      [userId, commentId]
+    );
+
+    let newUpvotes = 0;
+    let isVoted = false;
+
+    if (checkVote.rows.length > 0) {
+      // Retirer le vote
+      await pool.query('DELETE FROM comment_upvotes WHERE user_id = $1 AND comment_id = $2', [userId, commentId]);
+      const updateRes = await pool.query(
+        'UPDATE comments SET upvotes = GREATEST(COALESCE(upvotes, 0) - 1, 0) WHERE id = $1 RETURNING upvotes',
+        [commentId]
+      );
+      newUpvotes = updateRes.rows[0] ? updateRes.rows[0].upvotes : 0;
+      isVoted = false;
+    } else {
+      // Ajouter le vote (1 seul vote par compte)
+      await pool.query('INSERT INTO comment_upvotes (user_id, comment_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [userId, commentId]);
+      const updateRes = await pool.query(
+        'UPDATE comments SET upvotes = COALESCE(upvotes, 0) + 1 WHERE id = $1 RETURNING upvotes',
+        [commentId]
+      );
+      newUpvotes = updateRes.rows[0] ? updateRes.rows[0].upvotes : 0;
+      isVoted = true;
+    }
+
+    res.json({
+      success: true,
+      upvoted: isVoted,
+      upvotes: newUpvotes
+    });
+  } catch (err) {
+    console.error('❌ Erreur upvote commentaire:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
+// ==========================================
 // 2. POSTER UN COMMENTAIRE (Avec modération auto)
-// ==========================================// 1. CRÉER UN COMMENTAIRE
+// ==========================================
 router.post('/', isAuthenticated, verifyCsrf, async (req, res) => {
   try {
     // Validation
@@ -135,47 +229,54 @@ router.post('/', isAuthenticated, verifyCsrf, async (req, res) => {
     const { article_id, content } = value;
     const user_id = req.session.user.id;
 
-    // Vérifier que l'article existe
-    const articleCheck = await pool.query(
-      'SELECT id FROM articles WHERE id = $1',
-      [article_id]
-    );
-
-    if (articleCheck.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'Article introuvable'
-      });
+    let targetArticleId = parseInt(article_id, 10);
+    if (isNaN(targetArticleId)) {
+      const artCheck = await pool.query('SELECT id FROM articles WHERE slug = $1 OR id::text = $1', [article_id]);
+      if (artCheck.rows.length > 0) {
+        targetArticleId = artCheck.rows[0].id;
+      } else {
+        return res.status(404).json({
+          success: false,
+          error: 'Article introuvable'
+        });
+      }
     }
 
     // --- MODÉRATION AUTOMATIQUE ---
     const bannedCheck = containsBannedWord(content);
 
     let is_approved = true;
+    let flag_reason = null;
     let message = 'Commentaire publié !';
 
     if (bannedCheck.found) {
       is_approved = false;
+      flag_reason = `Mot sensible détecté : "${bannedCheck.word}"`;
       message = 'Votre commentaire a été soumis et sera vérifié par un modérateur avant publication.';
 
-      console.log('🚨 Commentaire soumis à modération');
+      console.log(`🚨 Commentaire soumis à modération (raison: ${flag_reason})`);
     }
 
     // ✅ SANITISATION XSS — strip tout HTML du commentaire
     const safeContent = sanitizeText(content);
 
+    try {
+      await pool.query('ALTER TABLE comments ADD COLUMN IF NOT EXISTS flag_reason VARCHAR(255);');
+    } catch (e) {}
+
     // Insertion en base
     const insertQuery = `
-      INSERT INTO comments (article_id, user_id, content, is_approved, created_at)
-      VALUES ($1, $2, $3, $4, NOW())
+      INSERT INTO comments (article_id, user_id, content, is_approved, flag_reason, created_at)
+      VALUES ($1, $2, $3, $4, $5, NOW())
       RETURNING id, is_approved
     `;
 
     const { rows } = await pool.query(insertQuery, [
-      article_id,
+      targetArticleId,
       user_id,
       safeContent,
-      is_approved
+      is_approved,
+      flag_reason
     ]);
 
     const newComment = rows[0];
@@ -218,7 +319,9 @@ router.delete('/:id', isAuthenticated, async (req, res) => {
       });
     }
 
-    if (checkResult.rows[0].user_id !== user_id) {
+    const user = req.session.user;
+
+    if (checkResult.rows[0].user_id !== user.id && user.role !== 'admin') {
       return res.status(403).json({
         success: false,
         error: 'Vous ne pouvez supprimer que vos propres commentaires'

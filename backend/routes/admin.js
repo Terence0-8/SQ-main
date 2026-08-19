@@ -273,16 +273,21 @@ router.delete('/content/:type/:id', isAdmin, async (req, res) => {
 // ==========================================
 router.get('/comments/pending', isAdmin, async (req, res) => {
   try {
+    try {
+      await pool.query('ALTER TABLE comments ADD COLUMN IF NOT EXISTS flag_reason VARCHAR(255);');
+    } catch (e) {}
+
     const query = `
       SELECT 
         c.id, 
         c.content, 
         c.created_at,
         c.article_id,
-        u.username,
+        COALESCE(c.flag_reason, 'Modération automatique (mots sensibles)') AS flag_reason,
+        COALESCE(u.username, 'Anonyme') AS username,
         a.title as article_title
       FROM comments c
-      JOIN users u ON c.user_id = u.id
+      LEFT JOIN users u ON c.user_id = u.id
       LEFT JOIN articles a ON c.article_id = a.id
       WHERE c.is_approved = FALSE
       ORDER BY c.created_at DESC

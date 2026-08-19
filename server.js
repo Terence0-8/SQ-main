@@ -116,8 +116,8 @@ const loginLimiter = rateLimit({
 
 const commentsLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
-  message: { success: false, error: 'Trop de commentaires, réessayez dans 15 minutes' }
+  max: 100,
+  message: { success: false, error: 'Trop de commentaires soumis, réessayez dans quelques minutes' }
 });
 
 const adminLimiter = rateLimit({
@@ -127,7 +127,7 @@ const adminLimiter = rateLimit({
 });
 
 app.use('/api/auth/login', loginLimiter);
-app.use('/api/comments', commentsLimiter);
+app.post('/api/comments', commentsLimiter);
 app.use('/api/admin', adminLimiter);
 app.use(globalLimiter);
 
@@ -193,6 +193,8 @@ const csrfExemptPaths = [
   '/api/language/preference',
   '/api/analytics/track',
   '/api/translate',
+  '/api/comments/',
+  '/api/admin/comments',
 ];
 
 app.use('/api', (req, res, next) => {

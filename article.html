@@ -187,84 +187,738 @@
     }
 
     /* 📣 Barre de partage */
-    .share-bar {
+    /* 🚀 Floating Quick Dock d'outils et de partage */
+    .share-quick-dock {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      z-index: 999;
       display: flex;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 2.5rem 0 2rem;
-      padding: 1.5rem 2rem;
-      background: #fafafa;
-      border: 1px solid #e8e8e8;
-      border-radius: 14px;
+      gap: 6px;
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(55, 70, 61, 0.18);
+      border-radius: 40px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .share-label {
-      font-weight: 700;
-      font-size: .9rem;
+    .share-quick-dock.visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .dock-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: none;
+      background: #f2f5ef;
       color: #37463D;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .dock-btn:hover {
+      transform: scale(1.1);
+      background: #37463D;
+      color: #ffffff;
+    }
+
+    .dock-btn.dock-wa:hover { background: #25D366; color: #fff; }
+    .dock-btn.dock-fb:hover { background: #1877F2; color: #fff; }
+    .dock-btn.dock-tw:hover { background: #14171A; color: #fff; }
+
+    .dock-divider {
+      width: 1px;
+      height: 20px;
+      background: rgba(55, 70, 61, 0.18);
+      margin: 0 4px;
+    }
+
+    /* 🏛️ Grand Bloc Éditorial de Fin d'Article */
+    .share-grand-card {
+      margin: 3.5rem 0 3rem;
+      padding: 2.5rem 2rem;
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .share-grand-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #007A5E 0%, #CE1126 50%, #FCD116 100%);
+    }
+
+    .share-grand-header {
+      margin-bottom: 2rem;
+    }
+
+    .share-grand-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 0.5rem;
+    }
+
+    .share-grand-sub {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      color: var(--secondary-gray);
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
+    .share-grand-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .share-column-card {
+      background: #fafafa;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      border-radius: 14px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .share-column-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(55, 70, 61, 0.08);
+    }
+
+    .share-col-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--secondary-gray);
       text-transform: uppercase;
-      letter-spacing: .5px;
-      margin-right: 6px;
-      flex-shrink: 0;
+      letter-spacing: 0.08em;
+    }
+
+    .share-buttons-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      width: 100%;
     }
 
     .share-btn {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      padding: 9px 18px;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
       border-radius: 30px;
-      font-size: .88rem;
-      font-weight: 700;
+      font-size: 0.85rem;
+      font-weight: 600;
       text-decoration: none;
-      border: none;
+      border: 1px solid transparent;
       cursor: pointer;
-      transition: all .2s ease;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       white-space: nowrap;
     }
 
     .share-btn:hover {
       transform: translateY(-2px);
-      opacity: .92;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     }
 
-    .share-wa {
-      background: #25D366;
-      color: #fff;
+    .share-btn:active {
+      transform: translateY(0);
     }
 
-    .share-fb {
-      background: #1877F2;
-      color: #fff;
-    }
+    .share-wa { background: #25D366; color: #ffffff; }
+    .share-wa:hover { background: #20bd5a; }
 
-    .share-tw {
-      background: #000;
-      color: #fff;
-    }
+    .share-fb { background: #1877F2; color: #ffffff; }
+    .share-fb:hover { background: #166fe5; }
+
+    .share-tw { background: #14171A; color: #ffffff; }
+    .share-tw:hover { background: #000000; }
 
     .share-copy {
+      background: #ffffff;
+      color: #37463D;
+      border-color: rgba(55, 70, 61, 0.25);
+    }
+
+    .share-copy:hover {
       background: #37463D;
-      color: #fff;
+      color: #ffffff;
+      border-color: #37463D;
     }
 
     .share-copy.copied {
-      background: #2e7d32;
+      background: #2e7d32 !important;
+      color: #ffffff !important;
+      border-color: #2e7d32 !important;
     }
 
     .share-download {
       background: linear-gradient(135deg, #7B6112, #C9A227);
-      color: #fff;
-      position: relative;
+      color: #ffffff;
+      border: none;
     }
 
     .share-download:hover {
       background: linear-gradient(135deg, #9a7a15, #e0b52c);
+      box-shadow: 0 4px 15px rgba(201, 162, 39, 0.3);
     }
 
     .premium-lock {
-      font-size: .75rem;
+      font-size: 0.75rem;
+      margin-left: 2px;
+    }
+
+    /* 📰 Section Articles Recommandés (À lire aussi) */
+    .related-articles-section {
+      margin: 3.5rem 0;
+      padding-top: 2.5rem;
+      border-top: 1px solid rgba(55, 70, 61, 0.12);
+    }
+
+    .related-section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 1.5rem;
+    }
+
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .related-card {
+      background: #ffffff;
+      border: 1px solid rgba(55, 70, 61, 0.12);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .related-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 25px rgba(55, 70, 61, 0.1);
+      border-color: rgba(55, 70, 61, 0.25);
+    }
+
+    .related-card-img-wrapper {
+      position: relative;
+      width: 100%;
+      height: 160px;
+      overflow: hidden;
+      background: #eef2eb;
+    }
+
+    .related-card-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .related-card:hover .related-card-img {
+      transform: scale(1.06);
+    }
+
+    .related-card-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: var(--primary-dark);
+      color: #ffffff;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .related-card-content {
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .related-card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      line-height: 1.4;
+      color: #1e2621;
+      margin-bottom: 0.8rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .related-card-meta {
+      margin-top: auto;
+      font-size: 0.8rem;
+      color: #6b6b6b;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* 💬 Section Discussions & Débats épurée */
+    .comments-section {
+      margin-top: 4rem;
+      padding-top: 3rem;
+      border-top: 1px solid rgba(55, 70, 61, 0.12);
+    }
+
+    .comments-header-box {
+      margin-bottom: 2rem;
+    }
+
+    .comments-badge-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(55, 70, 61, 0.08);
+      color: #37463D;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.75rem;
+    }
+
+    .comments-main-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .comments-count-pill {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      background: #C82823;
+      color: #ffffff;
+      padding: 2px 10px;
+      border-radius: 12px;
+      vertical-align: middle;
+    }
+
+    .comments-sub-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      color: var(--secondary-gray);
+      line-height: 1.5;
+    }
+
+    .comment-card-box {
+      background: #ffffff;
+      border: 1.5px solid rgba(55, 70, 61, 0.14);
+      border-radius: 18px;
+      padding: 1.8rem;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+      margin-bottom: 2.5rem;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .comment-card-box:focus-within {
+      border-color: #37463D;
+      box-shadow: 0 10px 35px rgba(55, 70, 61, 0.1);
+    }
+
+    .comment-user-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .comment-user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #37463D, #5B696B);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .comment-user-info {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #37463D;
+    }
+
+    .comment-input-textarea {
+      width: 100%;
+      min-height: 110px;
+      padding: 14px 16px;
+      border: 1px solid rgba(55, 70, 61, 0.16);
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.98rem;
+      line-height: 1.6;
+      color: #2c2c2c;
+      background: #fcfdfe;
+      resize: vertical;
+      transition: all 0.2s ease;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    .comment-input-textarea:focus {
+      background: #ffffff;
+      border-color: #37463D;
+    }
+
+    .comment-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .comment-hint-text {
+      font-size: 0.8rem;
+      color: #718096;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-comment-submit {
+      background: #37463D;
+      color: #ffffff;
+      border: none;
+      padding: 11px 26px;
+      border-radius: 30px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-comment-submit:hover {
+      background: #27332c;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(55, 70, 61, 0.2);
+    }
+
+    .btn-comment-submit:active {
+      transform: translateY(0);
+    }
+
+    .comment-item-card {
+      background: #ffffff;
+      border: 1px solid rgba(55, 70, 61, 0.1);
+      border-radius: 14px;
+      padding: 1.4rem 1.6rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .comment-item-card:hover {
+      box-shadow: 0 6px 18px rgba(55, 70, 61, 0.06);
+    }
+
+    .comment-item-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .comment-author-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .comment-author-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #eef2eb;
+      color: #37463D;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    .comment-author-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #1a202c;
+    }
+
+    .comment-time {
+      font-size: 0.78rem;
+      color: #a0aec0;
+    }
+
+    .comment-body-text {
+      font-size: 0.96rem;
+      line-height: 1.6;
+      color: #334155;
+    }
+
+    .comment-footer-bar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      margin-top: 0.75rem;
+      padding-top: 0.6rem;
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-upvote {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f4f6f4;
+      color: #37463D;
+      border: 1px solid rgba(55, 70, 61, 0.14);
+      border-radius: 20px;
+      padding: 5px 13px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-upvote:hover {
+      background: #37463D;
+      color: #ffffff;
+      border-color: #37463D;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(55, 70, 61, 0.15);
+    }
+
+    .btn-upvote.voted {
+      background: #37463D;
+      color: #ffffff;
+      border-color: #37463D;
+    }
+
+    .btn-delete-comment {
+      background: transparent;
+      border: none;
+      color: #a0aec0;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .btn-delete-comment:hover {
+      color: #C82823;
+      background: rgba(200, 40, 35, 0.08);
+    }
+
+    /* 🗑️ Modal de confirmation de suppression admin */
+    .confirm-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20000;
+      opacity: 0;
+      animation: fadeInModal 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes fadeInModal {
+      to { opacity: 1; }
+    }
+
+    .confirm-modal-card {
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+      transform: scale(0.95);
+      animation: scaleInModal 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes scaleInModal {
+      to { transform: scale(1); }
+    }
+
+    .confirm-modal-icon-badge {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #fff5f5;
+      color: #C82823;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+    }
+
+    .confirm-modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #37463D;
+      margin-bottom: 0.5rem;
+    }
+
+    .confirm-modal-text {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.92rem;
+      color: #64748b;
+      line-height: 1.5;
+      margin-bottom: 1.8rem;
+    }
+
+    .confirm-modal-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .btn-modal-cancel {
+      background: #f1f5f9;
+      color: #475569;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 30px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .btn-modal-cancel:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-modal-confirm {
+      background: #C82823;
+      color: #ffffff;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 30px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-modal-confirm:hover {
+      background: #a81e1a;
+      box-shadow: 0 4px 12px rgba(200, 40, 35, 0.3);
+    }
+
+    .comments-empty-card {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: #fafafa;
+      border: 1.5px dashed rgba(55, 70, 61, 0.18);
+      border-radius: 16px;
+      color: #64748b;
+    }
+
+    .comments-empty-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.8rem;
+      display: block;
+    }
+
+    .comments-empty-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #37463D;
+      margin-bottom: 0.4rem;
+    }
+
+    @media (max-width: 768px) {
+      .share-grand-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      .share-grand-card {
+        padding: 1.8rem 1.25rem;
+      }
+      .share-quick-dock {
+        bottom: 16px;
+        padding: 6px 10px;
+      }
     }
 
   </style>
@@ -317,7 +971,7 @@
     <h1 class="article-title" id="art-title"></h1>
     <div class="author-line"><strong data-i18n="article_by">Par</strong> <span id="art-author"></span></div>
     <div class="meta-info-simple" style="margin-bottom:1.5rem;">
-      <span class="time-read">⏱️ <span id="art-readtime">...</span> <span data-i18n="article_reading_time">min de lecture</span></span>
+      <span class="time-read"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> <span id="art-readtime">...</span> <span data-i18n="article_reading_time">min de lecture</span></span>
       <span class="date-publish" id="art-date"></span>
     </div>
 
@@ -347,49 +1001,143 @@
 
     <article class="article-content" id="art-content"></article>
 
-    <!-- 📣 BARRE DE PARTAGE — chaque bouton réseau ouvre la modale native -->
-    <div class="share-bar" id="share-bar">
-      <span class="share-label" data-i18n="btn_share">Partager</span>
-      <button class="share-btn share-wa" id="share-wa" type="button">
+    <!-- 🚀 FLOATING QUICK DOCK DE PARTAGE -->
+    <div class="share-quick-dock" id="quick-share-dock">
+      <button class="dock-btn dock-wa" id="dock-wa" type="button" title="Partager sur WhatsApp" aria-label="WhatsApp">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path
-            d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
         </svg>
-        WhatsApp
       </button>
-      <button class="share-btn share-fb" id="share-fb" type="button">
+      <button class="dock-btn dock-fb" id="dock-fb" type="button" title="Partager sur Facebook" aria-label="Facebook">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path
-            d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
         </svg>
-        Facebook
       </button>
-      <button class="share-btn share-tw" id="share-tw" type="button">
+      <button class="dock-btn dock-tw" id="dock-tw" type="button" title="Partager sur X" aria-label="X / Twitter">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path
-            d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
         </svg>
-        X / Twitter
       </button>
-      <button class="share-btn share-copy" id="share-copy" type="button">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <button class="dock-btn dock-copy" id="dock-copy" type="button" title="Copier le lien" aria-label="Copier le lien">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="9" y="9" width="13" height="13" rx="2" />
           <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
         </svg>
-        <span id="copy-label" data-i18n="copy_link">Copier le lien</span>
+      </button>
+      <div class="dock-divider"></div>
+      <button class="dock-btn dock-comments" id="dock-comments" type="button" title="Aller aux discussions" aria-label="Discussions">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
       </button>
     </div>
 
-    <section class="comments-section">
-      <h3 style="font-family:'Playfair Display';font-size:2rem;margin-bottom:2rem;color:var(--primary-dark);" data-i18n="comment_title">
-        Discussions</h3>
-      <form id="commentForm" class="comment-box">
-        <textarea id="commentInput" rows="3" class="comment-input" placeholder="Participez au débat..." data-i18n-placeholder="comment_placeholder"></textarea>
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <div id="commentMsg" style="font-size:.9rem;"></div>
-          <button type="submit" class="btn-comment" data-i18n="btn_publish">Publier</button>
+    <!-- 🏛️ GRAND BLOC ÉDITORIAL DE FIN D'ARTICLE -->
+    <div class="share-grand-card" id="share-bar">
+      <div class="share-grand-header">
+        <h3 class="share-grand-title" data-i18n="share_grand_title">Vous avez apprécié cette analyse ?</h3>
+        <p class="share-grand-sub" data-i18n="share_grand_sub">Faites circuler l'information ou conservez cet article au format PDF.</p>
+      </div>
+
+      <div class="share-grand-grid">
+        <!-- COLONNE RÉSEAUX SOCIAUX -->
+        <div class="share-column-card">
+          <span class="share-col-title" data-i18n="share_social_label">Partager sur les réseaux</span>
+          <div class="share-buttons-group">
+            <button class="share-btn share-wa" id="share-wa" type="button" aria-label="Partager sur WhatsApp">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+              </svg>
+              WhatsApp
+            </button>
+            <button class="share-btn share-fb" id="share-fb" type="button" aria-label="Partager sur Facebook">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+              </svg>
+              Facebook
+            </button>
+            <button class="share-btn share-tw" id="share-tw" type="button" aria-label="Partager sur X">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+              X / Twitter
+            </button>
+          </div>
         </div>
+
+        <!-- COLONNE OUTILS ET EXPORT -->
+        <div class="share-column-card">
+          <span class="share-col-title" data-i18n="share_tools_label">Outils & Export</span>
+          <div class="share-buttons-group" id="share-tools-buttons">
+            <button class="share-btn share-copy" id="share-copy" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" />
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 01-2-2h9a2 2 0 012 2v1" />
+              </svg>
+              <span id="copy-label" data-i18n="copy_link">Copier le lien</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 📰 SECTION ARTICLES RECOMMANDÉS -->
+    <section class="related-articles-section" id="related-articles-section" style="display:none;">
+      <h3 class="related-section-title" data-i18n="article_related">À lire aussi</h3>
+      <div class="related-grid" id="related-articles-grid"></div>
+    </section>
+
+    <!-- 💬 SECTION DISCUSSIONS & DÉBATS -->
+    <section class="comments-section" id="comments-section">
+      <div class="comments-header-box">
+        <span class="comments-badge-tag">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Espace de Débat Citoyen
+        </span>
+        <h3 class="comments-main-title">
+          <span data-i18n="comment_title">Discussions</span>
+          <span class="comments-count-pill" id="comments-count-badge">0</span>
+        </h3>
+        <p class="comments-sub-title" data-i18n="comment_subtitle">
+          Partagez votre point de vue et échangez avec la communauté des lecteurs.
+        </p>
+      </div>
+
+      <!-- FORMULAIRE DE COMMENTAIRE INTERACTIF -->
+      <form id="commentForm" class="comment-card-box">
+        <div class="comment-user-bar">
+          <div class="comment-user-avatar" id="comment-user-avatar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div class="comment-user-info" id="comment-user-name">Mon Compte</div>
+        </div>
+
+        <textarea
+          id="commentInput"
+          class="comment-input-textarea"
+          rows="3"
+          placeholder="Qu'avez-vous pensé de cette analyse ? Partagez vos réflexions ou apportez un éclairage..."
+          data-i18n-placeholder="comment_placeholder"
+          required
+        ></textarea>
+
+        <div class="comment-card-footer">
+          <div class="comment-hint-text">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span>Espace de discussion modéré & respectueux</span>
+          </div>
+          <button type="submit" class="btn-comment-submit" id="btn-submit-comment">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+            <span data-i18n="comment_submit">Publier mon commentaire</span>
+          </button>
+        </div>
+        <div id="commentMsg" style="margin-top:0.8rem;font-size:0.9rem;"></div>
       </form>
+
+      <!-- LISTE DES COMMENTAIRES DYNAMIQUES -->
       <div id="commentsList"></div>
     </section>
   </main>
@@ -527,19 +1275,379 @@
     }
 
     function initShareButtons(title, url) {
-      document.getElementById('share-wa').addEventListener('click', () => {
-        window.open(`https://wa.me/?text=${encodeURIComponent(title + ' ' + url)}`, '_blank');
-      });
-      document.getElementById('share-fb').addEventListener('click', () => {
-        openSharePopup(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, 600, 500);
-      });
-      document.getElementById('share-tw').addEventListener('click', () => {
-        openSharePopup(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}&via=Solitiquo`, 600, 450);
-      });
-      document.getElementById('share-copy').addEventListener('click', async () => {
+      const shareWa = document.getElementById('share-wa');
+      const shareFb = document.getElementById('share-fb');
+      const shareTw = document.getElementById('share-tw');
+      const shareCopy = document.getElementById('share-copy');
+
+      const dockWa = document.getElementById('dock-wa');
+      const dockFb = document.getElementById('dock-fb');
+      const dockTw = document.getElementById('dock-tw');
+      const dockCopy = document.getElementById('dock-copy');
+      const dockComments = document.getElementById('dock-comments');
+
+      const waAction = () => window.open(`https://wa.me/?text=${encodeURIComponent(title + ' ' + url)}`, '_blank');
+      const fbAction = () => openSharePopup(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, 600, 500);
+      const twAction = () => openSharePopup(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}&via=Solitiquo`, 600, 450);
+      const copyAction = async () => {
         await _copyToClipboard(url, 'copy-label', '✓ Lien copié !', 'Copier le lien');
-        document.getElementById('share-copy').classList.add('copied');
-        setTimeout(() => document.getElementById('share-copy').classList.remove('copied'), 2500);
+        if (shareCopy) shareCopy.classList.add('copied');
+        if (dockCopy) {
+          dockCopy.style.background = '#2e7d32';
+          dockCopy.style.color = '#ffffff';
+        }
+        setTimeout(() => {
+          if (shareCopy) shareCopy.classList.remove('copied');
+          if (dockCopy) {
+            dockCopy.style.background = '';
+            dockCopy.style.color = '';
+          }
+        }, 2500);
+      };
+
+      if (shareWa) shareWa.addEventListener('click', waAction);
+      if (dockWa) dockWa.addEventListener('click', waAction);
+
+      if (shareFb) shareFb.addEventListener('click', fbAction);
+      if (dockFb) dockFb.addEventListener('click', fbAction);
+
+      if (shareTw) shareTw.addEventListener('click', twAction);
+      if (dockTw) dockTw.addEventListener('click', twAction);
+
+      if (shareCopy) shareCopy.addEventListener('click', copyAction);
+      if (dockCopy) dockCopy.addEventListener('click', copyAction);
+
+      if (dockComments) {
+        dockComments.addEventListener('click', () => {
+          const comm = document.getElementById('comments-section');
+          if (comm) comm.scrollIntoView({ behavior: 'smooth' });
+        });
+      }
+
+      // Gestion du Quick Dock au scroll
+      const quickDock = document.getElementById('quick-share-dock');
+      if (quickDock) {
+        window.addEventListener('scroll', () => {
+          if (window.scrollY > 300) {
+            quickDock.classList.add('visible');
+          } else {
+            quickDock.classList.remove('visible');
+          }
+        });
+      }
+    }
+
+    async function loadRelatedArticles(currentArticle) {
+      if (!currentArticle || !window.SolitiquoAPI) return;
+      try {
+        const lang = (typeof getLanguage === 'function') ? getLanguage() : (localStorage.getItem('siteLanguage') || 'fr');
+        const allArticles = await SolitiquoAPI.getArticles(`?lang=${lang}`);
+        if (!allArticles || !allArticles.length) return;
+
+        const otherArticles = allArticles.filter(a => String(a.id) !== String(currentArticle.id) && a.slug !== currentArticle.slug);
+        if (!otherArticles.length) return;
+
+        // Priorité aux articles de la même catégorie
+        otherArticles.sort((a, b) => {
+          if (a.category === currentArticle.category && b.category !== currentArticle.category) return -1;
+          if (a.category !== currentArticle.category && b.category === currentArticle.category) return 1;
+          return 0;
+        });
+
+        const related = otherArticles.slice(0, 3);
+        const grid = document.getElementById('related-articles-grid');
+        const section = document.getElementById('related-articles-section');
+
+        if (!grid || !section) return;
+
+        grid.innerHTML = related.map(art => {
+          const catText = (typeof tCategory === 'function') ? tCategory(art.category) : (art.category || 'Solitiquo');
+          const dateStr = SolitiquoAPI.formatDate(art.published_at, lang);
+          const readTime = art.read_time || Math.max(Math.ceil((art.content || '').replace(/<[^>]*>/g, ' ').split(/\s+/).filter(w => w).length / 230), 1);
+          const imgUrl = art.image_url || 'https://placehold.co/600x400/eee/999?text=Solitiquo';
+
+          return `
+            <a href="article.html?id=${art.id}" class="related-card">
+              <div class="related-card-img-wrapper">
+                <img src="${imgUrl}" alt="${(art.title || '').replace(/"/g, '&quot;')}" class="related-card-img" onerror="handleImgError(this)" loading="lazy">
+                <span class="related-card-badge">${catText}</span>
+              </div>
+              <div class="related-card-content">
+                <h4 class="related-card-title">${art.title}</h4>
+                <div class="related-card-meta">
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${readTime} min</span>
+                  <span>${dateStr}</span>
+                </div>
+              </div>
+            </a>
+          `;
+        }).join('');
+
+        section.style.display = 'block';
+      } catch (err) {
+        console.error("Erreur chargement articles recommandés:", err);
+      }
+    }
+
+    async function loadComments(articleId) {
+      const targetArticleId = (window._currentArticle && window._currentArticle.id) ? window._currentArticle.id : parseInt(articleId, 10);
+      if (!targetArticleId || isNaN(targetArticleId)) return;
+      const baseUrl = window.API_URL || '/api';
+      const container = document.getElementById('commentsList');
+      const badge = document.getElementById('comments-count-badge');
+      if (!container) return;
+
+      try {
+        const res = await fetch(`${baseUrl}/comments/${targetArticleId}`, { credentials: 'include' });
+        const json = await res.json();
+        if (json.success && Array.isArray(json.comments)) {
+          if (badge) badge.textContent = json.count || json.comments.length;
+
+          if (json.comments.length === 0) {
+            container.innerHTML = `
+              <div class="comments-empty-card">
+                <span class="comments-empty-icon" style="display:inline-block;margin-bottom:0.8rem;color:#37463D;">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </span>
+                <h4 class="comments-empty-title" data-i18n="comment_empty_title">Soyez le premier à participer au débat !</h4>
+                <p class="comments-sub-title" data-i18n="comment_empty_sub">Exprimez votre opinion ou posez une question sur cette analyse.</p>
+              </div>`;
+            return;
+          }
+
+          const user = window._currentUser || null;
+          const isAdmin = user && user.role === 'admin';
+
+          container.innerHTML = json.comments.map(c => {
+            const username = c.username || 'Anonyme';
+            const initial = username.charAt(0).toUpperCase();
+            const dateStr = SolitiquoAPI.formatDate(c.created_at);
+            const safeContent = (c.content || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const upvotes = c.upvotes || 0;
+            const isVoted = c.user_voted || localStorage.getItem(`upvoted_comment_${c.id}`) === 'true';
+            const votedClass = isVoted ? 'voted' : '';
+            const canDelete = isAdmin || (user && user.id === c.user_id);
+
+            const deleteBtnHtml = canDelete ? `
+              <button type="button" class="btn-delete-comment" onclick="openDeleteCommentModal(${c.id})" title="Supprimer ce commentaire" aria-label="Supprimer">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>` : '';
+
+            return `
+              <div class="comment-item-card" id="comment-${c.id}">
+                <div class="comment-item-header">
+                  <div class="comment-author-group">
+                    <div class="comment-author-avatar">${initial}</div>
+                    <span class="comment-author-name">${username}</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="comment-time">${dateStr}</span>
+                    ${deleteBtnHtml}
+                  </div>
+                </div>
+                <div class="comment-body-text">${safeContent}</div>
+                <div class="comment-footer-bar">
+                  <button type="button" class="btn-upvote ${votedClass}" onclick="upvoteComment(${c.id}, this)" title="Approuver cette analyse" aria-label="Upvote">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                    </svg>
+                    <span class="upvote-count">${upvotes}</span>
+                  </button>
+                </div>
+              </div>`;
+          }).join('');
+        }
+      } catch (err) {
+        console.error("Erreur chargement commentaires:", err);
+      }
+    }
+
+    let _commentToDeleteId = null;
+
+    function openDeleteCommentModal(commentId) {
+      _commentToDeleteId = commentId;
+      const modal = document.getElementById('delete-comment-modal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeDeleteCommentModal() {
+      _commentToDeleteId = null;
+      const modal = document.getElementById('delete-comment-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function executeDeleteComment() {
+      if (!_commentToDeleteId) return;
+      const commentId = _commentToDeleteId;
+      const baseUrl = window.API_URL || '/api';
+      const confirmBtn = document.getElementById('btn-confirm-delete-action');
+      if (confirmBtn) confirmBtn.disabled = true;
+
+      try {
+        let csrfToken = (window.SolitiquoAPI && SolitiquoAPI.csrfToken) || '';
+        if (!csrfToken) {
+          const tokenRes = await fetch(`${baseUrl}/csrf-token`, { credentials: 'include' });
+          const tokenJson = await tokenRes.json();
+          if (tokenJson && tokenJson.csrfToken) {
+            csrfToken = tokenJson.csrfToken;
+            if (window.SolitiquoAPI) SolitiquoAPI.csrfToken = csrfToken;
+          }
+        }
+
+        const res = await fetch(`${baseUrl}/comments/${commentId}`, {
+          method: 'DELETE',
+          headers: {
+            'X-CSRF-Token': csrfToken
+          },
+          credentials: 'include'
+        });
+        const json = await res.json();
+        if (json.success) {
+          closeDeleteCommentModal();
+          const targetArticleId = (window._currentArticle && window._currentArticle.id) ? window._currentArticle.id : null;
+          if (targetArticleId) loadComments(targetArticleId);
+        } else {
+          alert(json.error || "Impossible de supprimer ce commentaire.");
+        }
+      } catch (err) {
+        console.error("Erreur suppression commentaire:", err);
+      } finally {
+        if (confirmBtn) confirmBtn.disabled = false;
+      }
+    }
+
+    async function upvoteComment(commentId, btn) {
+      if (!commentId || !btn) return;
+      const baseUrl = window.API_URL || '/api';
+      const storageKey = `upvoted_comment_${commentId}`;
+
+      btn.disabled = true;
+      try {
+        let csrfToken = (window.SolitiquoAPI && SolitiquoAPI.csrfToken) || '';
+        if (!csrfToken) {
+          try {
+            const tokenRes = await fetch(`${baseUrl}/csrf-token`, { credentials: 'include' });
+            const tokenJson = await tokenRes.json();
+            if (tokenJson && tokenJson.csrfToken) {
+              csrfToken = tokenJson.csrfToken;
+              if (window.SolitiquoAPI) SolitiquoAPI.csrfToken = csrfToken;
+            }
+          } catch (e) {}
+        }
+
+        const res = await fetch(`${baseUrl}/comments/${commentId}/upvote`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+          },
+          credentials: 'include'
+        });
+        const json = await res.json();
+        if (json.success) {
+          if (json.upvoted) {
+            btn.classList.add('voted');
+            localStorage.setItem(storageKey, 'true');
+          } else {
+            btn.classList.remove('voted');
+            localStorage.removeItem(storageKey);
+          }
+          const countEl = btn.querySelector('.upvote-count');
+          if (countEl) countEl.textContent = json.upvotes;
+        } else if (res.status === 401) {
+          alert("Vous devez être connecté pour liker un commentaire.");
+        }
+      } catch (err) {
+        console.error("Erreur upvote:", err);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function setupCommentForm(articleId, user) {
+      const form = document.getElementById('commentForm');
+      const input = document.getElementById('commentInput');
+      const msgDiv = document.getElementById('commentMsg');
+      const userAvatar = document.getElementById('comment-user-avatar');
+      const userName = document.getElementById('comment-user-name');
+
+      if (user && user.username) {
+        if (userAvatar) userAvatar.textContent = user.username.charAt(0).toUpperCase();
+        if (userName) userName.textContent = `@${user.username}`;
+      } else {
+        if (userAvatar) userAvatar.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+        if (userName) userName.textContent = 'Invité (Connexion recommandée)';
+      }
+
+      if (!form) return;
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const content = input.value.trim();
+        if (!content) return;
+
+        if (!user) {
+          if (msgDiv) {
+            msgDiv.style.color = '#C82823';
+            msgDiv.innerHTML = 'Vous devez être connecté pour publier un commentaire. <a href="auth.html" style="color:#37463D;font-weight:bold;">Se connecter</a>';
+          }
+          return;
+        }
+
+        const btn = document.getElementById('btn-submit-comment');
+        if (btn) btn.disabled = true;
+
+        try {
+          const baseUrl = window.API_URL || '/api';
+          const targetArticleId = (window._currentArticle && window._currentArticle.id) ? window._currentArticle.id : parseInt(articleId, 10);
+          let csrfToken = (window.SolitiquoAPI && SolitiquoAPI.csrfToken) || '';
+          if (!csrfToken) {
+            try {
+              const tokenRes = await fetch(`${baseUrl}/csrf-token`, { credentials: 'include' });
+              const tokenJson = await tokenRes.json();
+              if (tokenJson && tokenJson.csrfToken) {
+                csrfToken = tokenJson.csrfToken;
+                if (window.SolitiquoAPI) SolitiquoAPI.csrfToken = csrfToken;
+              }
+            } catch (e) {
+              console.warn('Erreur récupération CSRF:', e);
+            }
+          }
+          
+          const res = await fetch(`${baseUrl}/comments`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': csrfToken
+            },
+            credentials: 'include',
+            body: JSON.stringify({ article_id: targetArticleId, content })
+          });
+          const json = await res.json();
+          if (json.success) {
+            if (msgDiv) {
+              msgDiv.style.color = '#2e7d32';
+              msgDiv.textContent = json.message || '✓ Commentaire publié avec succès !';
+            }
+            input.value = '';
+            loadComments(targetArticleId);
+            setTimeout(() => { if (msgDiv) msgDiv.textContent = ''; }, 4000);
+          } else {
+            if (msgDiv) {
+              msgDiv.style.color = '#C82823';
+              msgDiv.textContent = json.error || 'Erreur lors de la publication.';
+            }
+          }
+        } catch (err) {
+          if (msgDiv) {
+            msgDiv.style.color = '#C82823';
+            msgDiv.textContent = 'Erreur de connexion.';
+          }
+        } finally {
+          if (btn) btn.disabled = false;
+        }
       });
     }
 
@@ -572,6 +1680,7 @@
       try {
         const article = await SolitiquoAPI.getArticleById(id);
         const user = await SolitiquoAPI.getProfile();
+        window._currentUser = user;
 
         if (article) {
           window._currentArticle = article;
@@ -674,6 +1783,7 @@
 
           // ── Bouton de téléchargement PDF (Premium) ──
           const shareBar = document.getElementById('share-bar');
+          const toolsGroup = document.getElementById('share-tools-buttons') || shareBar;
           if (shareBar && article.slug) {
             const isPremiumUser = user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer');
             const dlBtn = document.createElement('button');
@@ -710,11 +1820,14 @@
                 setTimeout(() => document.addEventListener('click', function rem(ev) { if (!tooltip.contains(ev.target)) { tooltip.remove(); document.removeEventListener('click', rem); } }, { capture: true }), 10);
               }
             });
-            shareBar.appendChild(dlBtn);
+            toolsGroup.appendChild(dlBtn);
           }
 
-          if (typeof loadComments === 'function') loadComments(id);
-          if (typeof initAnalytics === 'function') initAnalytics(id);
+          const realArticleId = article.id || id;
+          if (typeof loadRelatedArticles === 'function') loadRelatedArticles(article);
+          if (typeof loadComments === 'function') loadComments(realArticleId);
+          if (typeof setupCommentForm === 'function') setupCommentForm(realArticleId, user);
+          if (typeof initAnalytics === 'function') initAnalytics(realArticleId);
         } else {
           if (loadingDiv) {
             loadingDiv.style.display = 'block';
@@ -737,10 +1850,31 @@
               <a href="index.html" style="background:#37463D; color:#fff; padding:12px 24px; border-radius:30px; text-decoration:none; font-weight:700;">Retour à l'accueil</a>
             </div>`;
         }
+        const confirmBtn = document.getElementById('btn-confirm-delete-action');
+        if (confirmBtn) confirmBtn.addEventListener('click', executeDeleteComment);
       }
     });
 
   </script>
+
+  <!-- 🗑️ MODAL DE CONFIRMATION DE SUPPRESSION POUR ADMIN / AUTEUR -->
+  <div id="delete-comment-modal" class="confirm-modal-overlay" style="display:none;">
+    <div class="confirm-modal-card">
+      <div class="confirm-modal-icon-badge">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+      </div>
+      <h4 class="confirm-modal-title">Supprimer le commentaire ?</h4>
+      <p class="confirm-modal-text">Êtes-vous sûr de vouloir supprimer définitivement ce commentaire ? Cette action est irréversible.</p>
+      <div class="confirm-modal-actions">
+        <button type="button" class="btn-modal-cancel" onclick="closeDeleteCommentModal()">Annuler</button>
+        <button type="button" class="btn-modal-confirm" id="btn-confirm-delete-action" onclick="executeDeleteComment()">Supprimer</button>
+      </div>
+    </div>
+  </div>
+
   <script src="/js/lazyload.js"></script>
   <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js'); }</script>
 </body>
