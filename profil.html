@@ -517,6 +517,13 @@
     document.addEventListener('DOMContentLoaded', async () => {
       if (typeof initLanguageSwitcher === 'function') await initLanguageSwitcher();
 
+      // Support URL ?tab=downloads ou #downloads pour ouvrir automatiquement l'onglet Téléchargements
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('tab') === 'downloads' || window.location.hash === '#downloads' || window.location.hash === '#tab-downloads') {
+        const dlTabBtn = document.querySelector('.tab-btn[data-tab="tab-downloads"]');
+        if (dlTabBtn) dlTabBtn.click();
+      }
+
       const user = await SolitiquoAPI.getProfile();
       if (!user) {
         window.location.href = 'auth.html';

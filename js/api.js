@@ -284,26 +284,100 @@ document.addEventListener('languageChanged', (e) => {
   });
 });
 
-// ── DÉTECTION & BANNIÈRE MODE HORS-LIGNE ──
-window.showOfflineBanner = function() {
-  if (document.getElementById('offline-banner')) return;
-  const banner = document.createElement('div');
-  banner.id = 'offline-banner';
-  banner.innerHTML = `
-    <div style="background:#1E293B; color:#F8FAFC; padding:10px 16px; text-align:center; font-size:0.88rem; font-weight:600; display:flex; align-items:center; justify-content:center; gap:10px; position:sticky; top:0; z-index:99999; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2.5"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
-      <span>Mode Hors-ligne activé — Consultation des données locales et téléchargées.</span>
-      <a href="profil.html" style="color:#F59E0B; text-decoration:underline; font-weight:700; margin-left:6px;">Voir mes téléchargements →</a>
-    </div>
-  `;
-  document.body.prepend(banner);
+// ── DÉTECTION & BULLE FLOTTANTE MODE HORS-LIGNE (1s de délai) ──
+window.showOfflineBubble = function() {
+  if (document.getElementById('offline-bubble-toast')) return;
+
+  // Affichage après 1 seconde de délai
+  setTimeout(async () => {
+    if (navigator.onLine) return; // Annuler si le réseau est rétabli
+    if (document.getElementById('offline-bubble-toast')) return;
+
+    let isPremiumUser = false;
+    try {
+      const user = await SolitiquoAPI.getProfile();
+      if (user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer')) {
+        isPremiumUser = true;
+      }
+    } catch (_e) {}
+
+    const bubble = document.createElement('div');
+    bubble.id = 'offline-bubble-toast';
+    bubble.style.cssText = `
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 999999;
+      max-width: 360px;
+      width: calc(100% - 48px);
+      background: rgba(30, 41, 59, 0.96);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      color: #F8FAFC;
+      padding: 18px 20px;
+      border-radius: 18px;
+      border: 1px solid ${isPremiumUser ? 'rgba(201, 162, 39, 0.4)' : 'rgba(200, 40, 35, 0.4)'};
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      animation: offlineBubbleSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    `;
+
+    if (isPremiumUser) {
+      bubble.innerHTML = `
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9A227" stroke-width="2.5"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+            <strong style="font-size:0.95rem; font-weight:700; color:#FFF;">Mode Hors-connexion</strong>
+          </div>
+          <button type="button" onclick="this.closest('#offline-bubble-toast').remove()" style="background:none; border:none; color:#94A3B8; font-size:1.2rem; cursor:pointer; padding:0; line-height:1;">&times;</button>
+        </div>
+        <p style="margin:10px 0 14px 0; font-size:0.85rem; color:#CBD5E1; line-height:1.5;">
+          Vous êtes actuellement hors-connexion. Consultez vos contenus enregistrés dans votre espace Téléchargements.
+        </p>
+        <a href="profil.html?tab=downloads" style="display:block; text-align:center; background:linear-gradient(135deg, #C9A227, #B08B1E); color:#FFF; font-weight:700; font-size:0.88rem; padding:10px 16px; border-radius:30px; text-decoration:none; box-shadow:0 4px 15px rgba(201, 162, 39, 0.3); transition:transform 0.2s;">
+          Voir mes téléchargements →
+        </a>
+      `;
+    } else {
+      bubble.innerHTML = `
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+            <strong style="font-size:0.95rem; font-weight:700; color:#FFF;">Mode Hors-connexion</strong>
+          </div>
+          <button type="button" onclick="this.closest('#offline-bubble-toast').remove()" style="background:none; border:none; color:#94A3B8; font-size:1.2rem; cursor:pointer; padding:0; line-height:1;">&times;</button>
+        </div>
+        <p style="margin:10px 0 14px 0; font-size:0.85rem; color:#CBD5E1; line-height:1.5;">
+          Vous êtes actuellement hors-connexion. La disponibilité des contenus hors-ligne est réservée aux abonnés Premium.
+        </p>
+        <a href="abonnement.html" style="display:block; text-align:center; background:linear-gradient(135deg, #C82823, #901612); color:#FFF; font-weight:700; font-size:0.88rem; padding:10px 16px; border-radius:30px; text-decoration:none; box-shadow:0 4px 15px rgba(200, 40, 35, 0.3); transition:transform 0.2s;">
+          S'abonner au Premium →
+        </a>
+      `;
+    }
+
+    if (!document.getElementById('offline-bubble-anim')) {
+      const style = document.createElement('style');
+      style.id = 'offline-bubble-anim';
+      style.textContent = `
+        @keyframes offlineBubbleSlideUp {
+          from { opacity: 0; transform: translateY(20px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    document.body.appendChild(bubble);
+  }, 1000);
 };
 
-window.addEventListener('offline', window.showOfflineBanner);
+window.showOfflineBanner = window.showOfflineBubble;
+window.addEventListener('offline', window.showOfflineBubble);
 if (typeof navigator !== 'undefined' && !navigator.onLine) {
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', window.showOfflineBanner);
+    document.addEventListener('DOMContentLoaded', window.showOfflineBubble);
   } else {
-    window.showOfflineBanner();
+    window.showOfflineBubble();
   }
 }
