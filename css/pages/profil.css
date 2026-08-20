@@ -36,11 +36,11 @@
   font-size: 1.05rem;
 }
 
-/* ── TAB BAR NAVIGATION ── */
+/* ── TAB BAR NAVIGATION (CHARTE SOLITIQUO) ── */
 .profile-tabs-nav {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   border-bottom: 2px solid #E2E8F0;
   margin-bottom: 2.5rem;
   overflow-x: auto;
@@ -72,22 +72,27 @@
 
 .tab-btn:hover {
   color: var(--primary-dark);
-  background: rgba(55, 70, 61, 0.04);
+  background: rgba(55, 70, 61, 0.05);
   border-radius: 8px 8px 0 0;
 }
 
 .tab-btn.active {
   color: var(--primary-dark);
-  border-bottom-color: var(--accent-red);
+  border-bottom-color: var(--primary-dark);
   font-weight: 700;
 }
 
 .tab-btn svg {
   transition: transform 0.2s ease;
+  stroke: #64748B;
+}
+
+.tab-btn:hover svg {
+  stroke: var(--primary-dark);
 }
 
 .tab-btn.active svg {
-  stroke: var(--accent-red);
+  stroke: var(--primary-dark);
 }
 
 .tab-content {
@@ -134,7 +139,7 @@
   font-weight: 700;
   margin: 0 auto 1.2rem;
   font-family: 'Playfair Display', serif;
-  box-shadow: 0 6px 20px rgba(55, 70, 61, 0.2);
+  box-shadow: 0 6px 20px rgba(55, 70, 61, 0.15);
 }
 
 .user-name {
@@ -152,12 +157,14 @@
 }
 
 .user-role-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: #F1F5F9;
   color: #475569;
-  padding: 4px 12px;
+  padding: 5px 14px;
   border-radius: 20px;
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -168,9 +175,9 @@
   display: block;
   width: 100%;
   padding: 12px;
-  border: 1px solid #FECDD3;
-  color: #BE123C;
-  background: #FFF1F2;
+  border: 1px solid #E2E8F0;
+  color: #475569;
+  background: #F8FAFC;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
@@ -179,8 +186,9 @@
 }
 
 .btn-logout:hover {
-  background: #FFE4E6;
-  border-color: #FDA4AF;
+  background: #F1F5F9;
+  color: #1E293B;
+  border-color: #CBD5E1;
 }
 
 .sub-card {
@@ -213,21 +221,21 @@
 }
 
 .status-active {
-  border-color: #BBF7D0;
-  background: #F0FDF4;
+  border-color: rgba(55, 70, 61, 0.25);
+  background: rgba(55, 70, 61, 0.04);
 }
 
 .status-active .status-text {
-  color: #166534;
+  color: var(--primary-dark);
 }
 
 .status-inactive {
-  border-color: #FECACA;
-  background: #FEF2F2;
+  border-color: #E2E8F0;
+  background: #F8FAFC;
 }
 
 .status-inactive .status-text {
-  color: #991B1B;
+  color: #475569;
 }
 
 .status-label {
@@ -259,10 +267,10 @@
   margin-bottom: 1.8rem;
 }
 
-/* ── CARTE INCITATION ABONNEMENT ── */
+/* ── BANNIÈRE ABONNEMENT EN ACCORD AVEC LA CHARTE ── */
 .upgrade-banner-box {
-  background: linear-gradient(135deg, rgba(55, 70, 61, 0.08), rgba(200, 40, 35, 0.04));
-  border: 1px solid rgba(55, 70, 61, 0.15);
+  background: linear-gradient(135deg, rgba(55, 70, 61, 0.08), rgba(55, 70, 61, 0.02));
+  border: 1px solid rgba(55, 70, 61, 0.18);
   border-radius: 14px;
   padding: 1.8rem;
   margin-top: 1.5rem;
@@ -282,7 +290,7 @@
   margin: 0 0 1.5rem 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 12px;
 }
 
 @media (max-width: 600px) {
@@ -301,7 +309,7 @@
 }
 
 .upgrade-perks-list svg {
-  color: var(--accent-red);
+  color: var(--primary-dark);
   flex-shrink: 0;
 }
 
@@ -320,15 +328,15 @@
 }
 
 .btn-upgrade {
-  background: var(--accent-red);
+  background: var(--primary-dark);
   color: white;
-  box-shadow: 0 4px 15px rgba(200, 40, 35, 0.25);
+  box-shadow: 0 4px 15px rgba(55, 70, 61, 0.2);
 }
 
 .btn-upgrade:hover {
-  background: #A01B17;
+  background: #28332D;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(200, 40, 35, 0.35);
+  box-shadow: 0 6px 20px rgba(55, 70, 61, 0.3);
 }
 
 .btn-cancel {
@@ -418,7 +426,7 @@
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
-  color: var(--accent-red);
+  color: var(--primary-dark);
   letter-spacing: 0.5px;
   margin-bottom: 0.4rem;
 }
@@ -434,7 +442,7 @@
 }
 
 .item-card-title:hover {
-  color: var(--accent-red);
+  color: var(--primary-dark);
 }
 
 .item-card-meta {
@@ -514,12 +522,15 @@
 }
 
 .history-title:hover {
-  color: var(--accent-red);
+  color: var(--primary-dark);
 }
 
 .history-date {
   font-size: 0.8rem;
   color: #94A3B8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .btn-clear-history {
@@ -535,9 +546,9 @@
 }
 
 .btn-clear-history:hover {
-  background: #FFF1F2;
-  color: #BE123C;
-  border-color: #FECDD3;
+  background: #F1F5F9;
+  color: #1E293B;
+  border-color: #CBD5E1;
 }
 
 /* ── COMMENTAIRES HISTORIQUE ── */
@@ -573,10 +584,12 @@
   font-size: 0.95rem;
   color: var(--primary-dark);
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .comment-article-link:hover {
-  color: var(--accent-red);
   text-decoration: underline;
 }
 
@@ -600,21 +613,27 @@
 }
 
 .comment-badge-approved {
-  color: #166534;
-  background: #DCFCE7;
-  padding: 2px 8px;
+  color: var(--primary-dark);
+  background: rgba(55, 70, 61, 0.08);
+  padding: 3px 10px;
   border-radius: 12px;
   font-weight: 600;
   font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .comment-badge-pending {
   color: #854D0E;
   background: #FEF9C3;
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 12px;
   font-weight: 600;
   font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* ── NEWSLETTER CARDS & TOGGLES ── */
@@ -643,8 +662,8 @@
 }
 
 .newsletter-icon {
-  font-size: 2rem;
   margin-bottom: 0.8rem;
+  color: var(--primary-dark);
 }
 
 .newsletter-card-title {
@@ -719,18 +738,21 @@ input:checked + .slider:before {
   transform: translateX(22px);
 }
 
-/* ── EMPTY STATES ── */
+/* ── EMPTY STATES (PURES ICÔNES SVG) ── */
 .empty-state {
   text-align: center;
   padding: 3rem 1.5rem;
   color: #64748B;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .empty-state-icon {
-  font-size: 2.8rem;
   margin-bottom: 0.8rem;
-  display: block;
-  opacity: 0.7;
+  opacity: 0.8;
+  color: var(--primary-dark);
 }
 
 .empty-state-text {
@@ -775,9 +797,9 @@ input:checked + .slider:before {
 }
 
 .modal-icon {
-  font-size: 3rem;
   margin-bottom: 1rem;
-  display: block;
+  display: inline-block;
+  color: var(--primary-dark);
 }
 
 .modal-title {
@@ -820,7 +842,7 @@ input:checked + .slider:before {
 
 .btn-modal-confirm {
   background: transparent;
-  color: var(--accent-red);
+  color: #64748B;
   border: none;
   padding: 10px;
   font-weight: 600;
@@ -830,6 +852,7 @@ input:checked + .slider:before {
 
 .btn-modal-confirm:hover {
   text-decoration: underline;
+  color: var(--accent-red);
 }
 
 @media (max-width: 900px) {
