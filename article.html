@@ -149,6 +149,49 @@
       margin-bottom: 0.8rem;
     }
 
+    /* 🔖 Discret Bouton Favoris */
+    .btn-bookmark-article {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: transparent;
+      border: 1px solid rgba(55, 70, 61, 0.18);
+      color: #718096;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      font-family: inherit;
+      padding: 4px 12px;
+      border-radius: 20px;
+      transition: all 0.25s ease;
+      vertical-align: middle;
+      line-height: 1;
+    }
+
+    .btn-bookmark-article:hover {
+      color: #37463D;
+      border-color: rgba(55, 70, 61, 0.35);
+      background: rgba(55, 70, 61, 0.05);
+      transform: translateY(-1px);
+    }
+
+    .btn-bookmark-article .bookmark-icon-svg {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-bookmark-article.is-bookmarked {
+      color: #C82823;
+      border-color: rgba(200, 40, 35, 0.3);
+      background: rgba(200, 40, 35, 0.06);
+      font-weight: 600;
+    }
+
+    .btn-bookmark-article.is-bookmarked .bookmark-icon-svg {
+      fill: #C82823;
+      stroke: #C82823;
+      transform: scale(1.1);
+    }
+
     /* 🔊 TTS - Liquid Glass Green */
     .article-actions-row {
       display: flex;
@@ -1088,13 +1131,19 @@
     </div>
     <h1 class="article-title" id="art-title"></h1>
     <div class="author-line"><strong data-i18n="article_by">Par</strong> <span id="art-author"></span></div>
-    <div class="meta-info-simple" style="margin-bottom:1.5rem;">
+    <div class="meta-info-simple" style="margin-bottom:1.5rem;align-items:center;">
       <span class="time-read"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
           stroke-width="2" style="vertical-align:middle;margin-right:4px;">
           <circle cx="12" cy="12" r="10" />
           <polyline points="12 6 12 12 16 14" />
         </svg> <span id="art-readtime">...</span> <span data-i18n="article_reading_time">min de lecture</span></span>
       <span class="date-publish" id="art-date"></span>
+      <button type="button" class="btn-bookmark-article" id="btn-bookmark-article" title="Ajouter aux favoris" aria-label="Ajouter aux favoris">
+        <svg class="bookmark-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span class="bookmark-text" id="bookmark-text" data-i18n="bookmark_btn">Favoris</span>
+      </button>
     </div>
 
     <div class="article-actions-row">
@@ -2047,6 +2096,97 @@
       }
     }
 
+    // --- 🔖 GESTION DES FAVORIS / BOOKMARKS ---
+    function initBookmarkButton(articleId) {
+      const btn = document.getElementById('btn-bookmark-article');
+      const textSpan = document.getElementById('bookmark-text');
+      if (!btn) return;
+
+      const getLocalBookmarks = () => {
+        try { return JSON.parse(localStorage.getItem('solitiquo_bookmarks') || '[]'); }
+        catch { return []; }
+      };
+
+      const setLocalBookmark = (id, add) => {
+        let list = getLocalBookmarks();
+        id = Number(id);
+        if (add) {
+          if (!list.includes(id)) list.push(id);
+        } else {
+          list = list.filter(item => item !== id);
+        }
+        localStorage.setItem('solitiquo_bookmarks', JSON.stringify(list));
+      };
+
+      const updateUI = (isBookmarked) => {
+        if (isBookmarked) {
+          btn.classList.add('is-bookmarked');
+          btn.setAttribute('title', 'Retirer des favoris');
+          if (textSpan) textSpan.textContent = 'Enregistré';
+        } else {
+          btn.classList.remove('is-bookmarked');
+          btn.setAttribute('title', 'Ajouter aux favoris');
+          if (textSpan) textSpan.textContent = 'Favoris';
+        }
+      };
+
+      const numericId = Number(articleId);
+      let localList = getLocalBookmarks();
+      let isBookmarked = localList.includes(numericId);
+      updateUI(isBookmarked);
+
+      // Check backend status if user is logged in
+      const baseUrl = window.API_URL || '/api';
+      fetch(`${baseUrl}/articles/${numericId}/bookmark-status`, { credentials: 'include' })
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.success && typeof data.bookmarked === 'boolean') {
+            updateUI(data.bookmarked);
+            setLocalBookmark(numericId, data.bookmarked);
+          }
+        })
+        .catch(() => {});
+
+      btn.addEventListener('click', async () => {
+        const currentBookmarked = btn.classList.contains('is-bookmarked');
+        const nextState = !currentBookmarked;
+        
+        // Optimistic UI update
+        updateUI(nextState);
+        setLocalBookmark(numericId, nextState);
+
+        try {
+          let csrfToken = (window.SolitiquoAPI && SolitiquoAPI.csrfToken) || '';
+          if (!csrfToken) {
+            try {
+              const tokenRes = await fetch(`${baseUrl}/csrf-token`, { credentials: 'include' });
+              const tokenJson = await tokenRes.json();
+              if (tokenJson && tokenJson.csrfToken) {
+                csrfToken = tokenJson.csrfToken;
+                if (window.SolitiquoAPI) SolitiquoAPI.csrfToken = csrfToken;
+              }
+            } catch (e) {}
+          }
+
+          const res = await fetch(`${baseUrl}/articles/${numericId}/bookmark`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': csrfToken
+            },
+            credentials: 'include'
+          });
+          const json = await res.json();
+          if (json && json.success) {
+            updateUI(json.bookmarked);
+            setLocalBookmark(numericId, json.bookmarked);
+          }
+        } catch (err) {
+          console.warn('Erreur favoris:', err);
+        }
+      });
+    }
+
     // --- CHARGEMENT ARTICLE ---
     document.addEventListener('DOMContentLoaded', async () => {
       const params = new URLSearchParams(window.location.search);
@@ -2220,6 +2360,7 @@
           }
 
           const realArticleId = article.id || id;
+          if (typeof initBookmarkButton === 'function') initBookmarkButton(realArticleId);
           if (typeof loadRelatedArticles === 'function') loadRelatedArticles(article);
           if (typeof loadComments === 'function') loadComments(realArticleId);
           if (typeof setupCommentForm === 'function') setupCommentForm(realArticleId, user);

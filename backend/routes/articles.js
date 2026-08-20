@@ -5,7 +5,7 @@ const multer = require('multer');
 const cloudinary = require('../config/cloudinary');
 const fs = require('fs');
 const Joi = require('joi');
-const { isWriter } = require('../middleware/auth');
+const { isWriter, isAuthenticated } = require('../middleware/auth');
 const { createUniqueSlug } = require('../utils/slugify');
 const translationService = require('../services/translationService');
 const { sanitizeHTML, sanitizeText, sanitizeArray } = require('../middleware/sanitize');
@@ -704,6 +704,89 @@ router.get('/:slug/download', isSubscriber, async (req, res) => {
     if (!res.headersSent) {
       res.status(500).json({ success: false, error: 'Erreur lors de la génération du PDF' });
     }
+  }
+});
+
+// ==========================================
+// BOOKMARK / FAVORIS ENDPOINTS
+// ==========================================
+router.post('/:id/bookmark', isAuthenticated, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const articleId = parseInt(id, 10);
+    const userId = req.session.user.id;
+
+    if (isNaN(articleId)) {
+      return res.status(400).json({ success: false, error: 'ID invalide' });
+    }
+
+    try {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS user_bookmarks (
+          user_id INT NOT NULL,
+          article_id INT NOT NULL,
+          created_at TIMESTAMP DEFAULT NOW(),
+          PRIMARY KEY (user_id, article_id)
+        );
+      `);
+    } catch (_e) {}
+
+    const check = await pool.query(
+      'SELECT 1 FROM user_bookmarks WHERE user_id = $1 AND article_id = $2',
+      [userId, articleId]
+    );
+
+    let isBookmarked = false;
+    if (check.rows.length > 0) {
+      await pool.query(
+        'DELETE FROM user_bookmarks WHERE user_id = $1 AND article_id = $2',
+        [userId, articleId]
+      );
+      isBookmarked = false;
+    } else {
+      await pool.query(
+        'INSERT INTO user_bookmarks (user_id, article_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+        [userId, articleId]
+      );
+      isBookmarked = true;
+    }
+
+    res.json({ success: true, bookmarked: isBookmarked });
+  } catch (err) {
+    console.error('❌ Erreur favoris article:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
+router.get('/:id/bookmark-status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const articleId = parseInt(id, 10);
+    const userId = (req.session && req.session.user) ? req.session.user.id : null;
+
+    if (!userId || isNaN(articleId)) {
+      return res.json({ success: true, bookmarked: false });
+    }
+
+    try {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS user_bookmarks (
+          user_id INT NOT NULL,
+          article_id INT NOT NULL,
+          created_at TIMESTAMP DEFAULT NOW(),
+          PRIMARY KEY (user_id, article_id)
+        );
+      `);
+    } catch (_e) {}
+
+    const check = await pool.query(
+      'SELECT 1 FROM user_bookmarks WHERE user_id = $1 AND article_id = $2',
+      [userId, articleId]
+    );
+
+    res.json({ success: true, bookmarked: check.rows.length > 0 });
+  } catch (err) {
+    res.json({ success: true, bookmarked: false });
   }
 });
 
