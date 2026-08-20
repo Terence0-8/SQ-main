@@ -3885,9 +3885,9 @@ a[class*="btn"] {
     position: sticky;
     top: 0;
     z-index: 1000;
-    padding: 0 40px;
-    height: 100px;
-    min-height: 100px;
+    padding: 0 30px;
+    height: 80px;
+    min-height: 80px;
     display: flex;
     align-items: center;
     justify-content: space-between;

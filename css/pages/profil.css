@@ -25,9 +25,9 @@ body:not(.is-subscriber)#page-profil,
 }
 
 #page-profil .premium-header {
-  height: 100px;
-  min-height: 100px;
-  padding: 0 40px;
+  height: 80px;
+  min-height: 80px;
+  padding: 0 30px;
 }
 
 .profile-wrapper {
