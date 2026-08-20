@@ -1,7 +1,6 @@
 #page-profil {
   --primary-dark: #37463D;
-  --accent-gold: #C9A227;
-  --accent-gold-dark: #B08B1E;
+  --accent-red: #C82823;
   --bg-soft: #F8F9FA;
   background: var(--bg-soft);
   font-family: 'Inter', sans-serif;
@@ -37,7 +36,7 @@
   font-size: 1.05rem;
 }
 
-/* ── TAB BAR NAVIGATION (INDICATEUR DORÉ PRESTIGE) ── */
+/* ── TAB BAR NAVIGATION (SOULIGNEMENT EN VERT SOLITIQUO) ── */
 .profile-tabs-nav {
   display: flex;
   align-items: center;
@@ -79,7 +78,7 @@
 
 .tab-btn.active {
   color: var(--primary-dark);
-  border-bottom-color: var(--accent-gold);
+  border-bottom-color: var(--primary-dark);
   font-weight: 700;
 }
 
@@ -93,7 +92,7 @@
 }
 
 .tab-btn.active svg {
-  stroke: var(--accent-gold);
+  stroke: var(--primary-dark);
 }
 
 .tab-content {
@@ -222,12 +221,12 @@
 }
 
 .status-active {
-  border-color: rgba(201, 162, 39, 0.35);
-  background: rgba(201, 162, 39, 0.06);
+  border-color: rgba(55, 70, 61, 0.25);
+  background: rgba(55, 70, 61, 0.04);
 }
 
 .status-active .status-text {
-  color: var(--accent-gold-dark);
+  color: var(--primary-dark);
 }
 
 .status-inactive {
@@ -268,10 +267,10 @@
   margin-bottom: 1.8rem;
 }
 
-/* ── BANNIÈRE ABONNEMENT AVEC ACCENTUATION DORÉE ── */
+/* ── BANNIÈRE ABONNEMENT ROUGE SOLITIQUO ── */
 .upgrade-banner-box {
-  background: linear-gradient(135deg, rgba(55, 70, 61, 0.06), rgba(201, 162, 39, 0.06));
-  border: 1px solid rgba(201, 162, 39, 0.28);
+  background: linear-gradient(135deg, rgba(55, 70, 61, 0.06), rgba(200, 40, 35, 0.03));
+  border: 1px solid rgba(200, 40, 35, 0.2);
   border-radius: 14px;
   padding: 1.8rem;
   margin-top: 1.5rem;
@@ -310,7 +309,7 @@
 }
 
 .upgrade-perks-list svg {
-  color: var(--accent-gold);
+  color: var(--accent-red);
   flex-shrink: 0;
 }
 
@@ -329,15 +328,15 @@
 }
 
 .btn-upgrade {
-  background: linear-gradient(135deg, #C9A227, #B08B1E);
+  background: var(--accent-red);
   color: white;
-  box-shadow: 0 4px 15px rgba(201, 162, 39, 0.3);
+  box-shadow: 0 4px 15px rgba(200, 40, 35, 0.25);
 }
 
 .btn-upgrade:hover {
-  background: linear-gradient(135deg, #B08B1E, #967515);
+  background: #A01B17;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(201, 162, 39, 0.4);
+  box-shadow: 0 6px 20px rgba(200, 40, 35, 0.35);
 }
 
 .btn-cancel {
@@ -427,7 +426,7 @@
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
-  color: var(--accent-gold-dark);
+  color: var(--accent-red);
   letter-spacing: 0.5px;
   margin-bottom: 0.4rem;
 }
@@ -443,7 +442,7 @@
 }
 
 .item-card-title:hover {
-  color: var(--accent-gold-dark);
+  color: var(--accent-red);
 }
 
 .item-card-meta {
@@ -468,8 +467,8 @@
 }
 
 .btn-remove-fav:hover {
-  color: var(--accent-gold-dark);
-  background: rgba(201, 162, 39, 0.08);
+  color: var(--accent-red);
+  background: #FFF1F2;
 }
 
 /* ── HISTORIQUE DE LECTURE LISTE ── */
@@ -523,7 +522,7 @@
 }
 
 .history-title:hover {
-  color: var(--accent-gold-dark);
+  color: var(--accent-red);
 }
 
 .history-date {
@@ -547,9 +546,9 @@
 }
 
 .btn-clear-history:hover {
-  background: rgba(201, 162, 39, 0.06);
-  color: var(--accent-gold-dark);
-  border-color: rgba(201, 162, 39, 0.3);
+  background: #FFF1F2;
+  color: var(--accent-red);
+  border-color: #FECDD3;
 }
 
 /* ── COMMENTAIRES HISTORIQUE ── */
@@ -591,7 +590,7 @@
 }
 
 .comment-article-link:hover {
-  color: var(--accent-gold-dark);
+  color: var(--accent-red);
   text-decoration: underline;
 }
 
@@ -854,7 +853,7 @@ input:checked + .slider:before {
 
 .btn-modal-confirm:hover {
   text-decoration: underline;
-  color: var(--accent-gold-dark);
+  color: var(--accent-red);
 }
 
 @media (max-width: 900px) {
