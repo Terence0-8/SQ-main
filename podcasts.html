@@ -424,22 +424,31 @@
               <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>`;
 
-          btn.innerHTML = isPro ? `${downloadIcon} MP3` : `${lockIcon} MP3`;
-          btn.title = isPro ? "Télécharger l'épisode (MP3)" : 'Réservé aux abonnés Premium';
-          btn.style.cssText = 'position:absolute;top:10px;right:10px;background:rgba(17,24,20,0.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#ffffff;border:1px solid rgba(255,255,255,0.22);border-radius:20px;padding:5px 12px;font-family:Inter,sans-serif;font-size:0.75rem;font-weight:700;cursor:pointer;z-index:12;transition:all .25s ease;display:inline-flex;align-items:center;box-shadow:0 4px 15px rgba(0,0,0,0.2);';
+          const updatePodOfflineBtn = async () => {
+            if (!isPro) {
+              btn.innerHTML = `${lockIcon} Hors-ligne`;
+              btn.title = 'Réservé aux abonnés Premium';
+              return;
+            }
+            const isSaved = window.SolitiquoOffline && await SolitiquoOffline.isDownloaded(idParam, 'podcast');
+            if (isSaved) {
+              btn.innerHTML = `
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#86EFAC" stroke-width="2.5" style="vertical-align:middle;margin-right:4px;">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span style="color:#86EFAC;">Hors-ligne ✓</span>`;
+              btn.title = 'Disponible hors-ligne dans Mon Compte > Téléchargements';
+              btn.style.background = 'rgba(21, 128, 61, 0.9)';
+              btn.style.borderColor = '#86EFAC';
+            } else {
+              btn.innerHTML = `${downloadIcon} Hors-ligne`;
+              btn.title = 'Enregistrer pour l\'écoute hors-ligne (In-App)';
+              btn.style.background = 'rgba(17,24,20,0.78)';
+              btn.style.borderColor = 'rgba(255,255,255,0.22)';
+            }
+          };
 
-          btn.addEventListener('mouseenter', () => {
-            btn.style.background = isPro ? '#007A5E' : '#37463D';
-            btn.style.borderColor = 'rgba(255,255,255,0.4)';
-            btn.style.transform = 'scale(1.05)';
-          });
-          btn.addEventListener('mouseleave', () => {
-            btn.style.background = 'rgba(17,24,20,0.78)';
-            btn.style.borderColor = 'rgba(255,255,255,0.22)';
-            btn.style.transform = 'scale(1)';
-          });
-
-          imgWrap.appendChild(btn);
+          updatePodOfflineBtn();
 
           btn.addEventListener('click', async (e) => {
             e.preventDefault(); e.stopPropagation();
@@ -447,7 +456,7 @@
               document.getElementById('premium-tooltip') && document.getElementById('premium-tooltip').remove();
               const tip = document.createElement('div');
               tip.id = 'premium-tooltip';
-              tip.innerHTML = '<strong>Fonctionnalité Premium 🔒</strong><p style="margin:.5rem 0;color:#64748b;font-size:.85rem;">Téléchargez nos podcasts audio en vous abonnant.</p><a href="abonnement.html" style="display:block;margin-top:10px;background:#37463D;color:#fff;padding:8px 16px;border-radius:20px;text-decoration:none;font-weight:700;">S\'abonner</a>';
+              tip.innerHTML = '<strong>Disponible Hors-ligne 🔒</strong><p style="margin:.5rem 0;color:#64748b;font-size:.85rem;">Écoutez nos podcasts hors-connexion en vous abonnant.</p><a href="abonnement.html" style="display:block;margin-top:10px;background:#37463D;color:#fff;padding:8px 16px;border-radius:20px;text-decoration:none;font-weight:700;">S\'abonner</a>';
               tip.style.cssText = 'position:fixed;width:230px;background:#fff;border:1px solid #e0e0e0;border-radius:16px;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.15);z-index:9999;font-family:Inter,sans-serif;font-size:.85rem;text-align:center;';
               document.body.appendChild(tip);
               const r = btn.getBoundingClientRect();
@@ -456,20 +465,33 @@
               setTimeout(() => document.addEventListener('click', function h(ev) { if (!tip.contains(ev.target)) { tip.remove(); document.removeEventListener('click', h); } }, true), 10);
               return;
             }
-            // Abonné → on cherche le slug via l'API avec l'id
-            if (!idParam) return;
+
+            if (!idParam || !window.SolitiquoOffline) return;
             try {
-              const podData = await fetch(window.API_URL + '/podcasts/' + idParam).then(r => r.json());
-              const slug = podData.data && podData.data.slug;
-              if (slug) {
-                const lang = localStorage.getItem('lang') || 'fr';
-                const a = document.createElement('a');
-                a.href = '/api/podcasts/' + slug + '/download?lang=' + lang;
-                a.download = 'solitiquo-' + slug + '.mp3';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+              const isSaved = await window.SolitiquoOffline.isDownloaded(idParam, 'podcast');
+              if (isSaved) {
+                await window.SolitiquoOffline.removeContent(idParam, 'podcast');
+                alert("Podcast retiré des contenus hors-ligne.");
+              } else {
+                const podRes = await fetch(window.API_URL + '/podcasts/' + idParam).then(r => r.json());
+                const podData = podRes.podcast || podRes.data;
+                if (podData) {
+                  await window.SolitiquoOffline.saveContent({
+                    id: podData.id || idParam,
+                    type: 'podcast',
+                    title: podData.title,
+                    category: podData.category || 'Podcast',
+                    image_url: podData.image_url || podData.cover_image,
+                    audio_url: podData.audio_url,
+                    duration: podData.duration ? Math.floor(podData.duration / 60) + ' min' : 'Audio',
+                    author: podData.author || 'Média Audio Solitiquo',
+                    content: podData.description,
+                    published_at: podData.created_at
+                  });
+                  alert("✓ Podcast disponible hors-ligne dans Mon Compte > Téléchargements !");
+                }
               }
+              updatePodOfflineBtn();
             } catch (err) { console.error(err); }
           });
         });
@@ -477,6 +499,7 @@
       inject();
     });
   </script>
+  <script src="/js/offline-manager.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js');

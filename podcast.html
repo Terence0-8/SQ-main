@@ -301,21 +301,28 @@
         return;
       }
 
-      // 3. Appel API pour récupérer les infos du podcast
+      // 3. Récupération des infos du podcast (en ligne ou hors-ligne via IndexedDB)
       try {
-        // IMPORTANT : On utilise fetch directement ou via SolitiquoAPI si la méthode existe
-        const res = await fetch(`${window.API_URL}/podcasts/${id}?lang=${getLanguage()}`);
-        const json = await res.json();
+        let pod = null;
+        if (typeof SolitiquoAPI !== 'undefined' && SolitiquoAPI.getPodcastById) {
+          pod = await SolitiquoAPI.getPodcastById(id);
+        } else {
+          const res = await fetch(`${window.API_URL}/podcasts/${id}?lang=${getLanguage()}`);
+          const json = await res.json();
+          if (json.success) pod = json.podcast;
+        }
 
-        if (json.success) {
-          const pod = json.podcast;
+        if (!pod && window.SolitiquoOffline) {
+          pod = await window.SolitiquoOffline.getContent(id, 'podcast');
+        }
 
+        if (pod) {
           // 4. Remplir la page avec les données
           document.title = `${pod.title} — Solitiquo`;
-          document.getElementById('pod-desc').textContent = pod.description;
-          document.getElementById('pod-cat').textContent = pod.category;
-          document.getElementById('pod-date').textContent = SolitiquoAPI.formatDate(pod.created_at);
-          document.getElementById('pod-duration').textContent = Math.floor(pod.duration / 60) + " min";
+          document.getElementById('pod-desc').textContent = pod.content || pod.description;
+          document.getElementById('pod-cat').textContent = pod.category || 'Podcast';
+          document.getElementById('pod-date').textContent = pod.published_at ? SolitiquoAPI.formatDate(pod.published_at) : (pod.created_at ? SolitiquoAPI.formatDate(pod.created_at) : '');
+          document.getElementById('pod-duration').textContent = typeof pod.duration === 'number' ? Math.floor(pod.duration / 60) + " min" : (pod.duration || 'Audio');
 
           // Si des chapitres existent
           if (pod.chapters) {
@@ -330,12 +337,11 @@
                 li.style.cssText = "padding:8px 0; border-bottom:1px solid #eee; cursor:pointer; display:flex; gap:10px;";
                 li.innerHTML = `<span style="font-weight:700; color:#C82823;">${chap.time}</span> <span>${chap.title}</span>`;
 
-                // Clic pour se déplacer dans l'audio
                 li.onclick = () => {
                   const parts = chap.time.split(':');
                   const seconds = parseInt(parts[0]) * 60 + parseInt(parts[1]);
                   if (window.player) {
-                    window.player.seekTo(seconds); // Suppose que ton player a cette méthode
+                    window.player.seekTo(seconds);
                     window.player.play();
                   }
                 };
@@ -344,25 +350,25 @@
             }
           }
 
-          // Remplir la transcription cachée (pour que le player la lise)
           document.getElementById('transcript-data').innerHTML = pod.transcript || "<p>Pas de transcription disponible.</p>";
 
           // --- 📢 OPEN GRAPH DYNAMIQUE ---
-          updateOGTags(pod);
+          if (typeof updateOGTags === 'function') updateOGTags(pod);
 
-          // 5. Afficher la zone principale (supprimer le loading)
+          // 5. Afficher la zone principale
           document.getElementById('loading-container').style.display = 'none';
           document.getElementById('main-content').style.display = 'block';
 
           // 6. Lancer le Player V3
+          const durStr = typeof pod.duration === 'number' ? Math.floor(pod.duration / 60) + ':' + (pod.duration % 60).toString().padStart(2, '0') : (pod.duration || 'Audio');
           window.player = new SolitiquoPodcastPlayer('podcast-player-container',
             pod.audio_url,
             {
               title: pod.title,
               episode: id,
-              duration: Math.floor(pod.duration / 60) + ':' + (pod.duration % 60).toString().padStart(2, '0'),
-              date: SolitiquoAPI.formatDate(pod.created_at),
-              category: pod.category,
+              duration: durStr,
+              date: pod.published_at ? SolitiquoAPI.formatDate(pod.published_at) : '',
+              category: pod.category || 'Podcast',
               cover: pod.cover_image || pod.image_url || 'https://images.unsplash.com/photo-1589903308904-1010c2294adc?w=600',
               transcriptId: 'transcript-data'
             }
@@ -380,6 +386,7 @@
   <script src="/js/i18n.js"></script>
   <script src="/js/config.js"></script>
   <script src="/js/api.js?v=38"></script>
+  <script src="/js/offline-manager.js"></script>
   <script src="/js/podcast-player.js"></script>
   <script src="/js/lazyload.js"></script>
   <script>
