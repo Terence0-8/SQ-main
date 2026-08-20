@@ -377,22 +377,6 @@
     </div>
   </main>
 
-  <!-- Modal Lecteur Hors-ligne In-App -->
-  <div id="offlineReaderModal" class="modal-overlay">
-    <div class="modal-box offline-reader-box">
-      <div class="offline-reader-header">
-        <span class="offline-badge">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
-          Lecture Hors-ligne
-        </span>
-        <button type="button" class="btn-close-offline-modal" id="btnCloseOfflineReader">&times;</button>
-      </div>
-      <div id="offline-reader-body" class="offline-reader-content">
-        <!-- Rempli dynamiquement -->
-      </div>
-    </div>
-  </div>
-
   <div id="cancelModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-icon">
@@ -999,45 +983,14 @@
       }).join('');
     }
 
-    window.openOfflineReader = async function(id, type) {
-      if (!window.SolitiquoOffline) return;
-      const item = await SolitiquoOffline.getContent(id, type);
-      if (!item) return;
-
-      const modal = document.getElementById('offlineReaderModal');
-      const body = document.getElementById('offline-reader-body');
-      if (!modal || !body) return;
-
-      let mediaHTML = '';
-      if (item.audio_url) {
-        mediaHTML = `
-          <div style="background:#F8FAFC; border:1px solid #E2E8F0; padding:1.2rem; border-radius:12px; margin-bottom:1.5rem;">
-            <div style="font-weight:700; font-size:0.9rem; color:#37463D; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-              Écoute Audio Hors-ligne
-            </div>
-            <audio controls style="width:100%;">
-              <source src="${item.audio_url}" type="audio/mpeg">
-              Votre navigateur ne supporte pas la lecture audio hors-ligne.
-            </audio>
-          </div>
-        `;
+    window.openOfflineReader = function(id, type) {
+      if (type === 'podcast') {
+        window.location.href = `podcast.html?id=${id}`;
+      } else if (type === 'emission') {
+        window.location.href = `emissions.html?id=${id}`;
+      } else {
+        window.location.href = `article.html?id=${id}`;
       }
-
-      body.innerHTML = `
-        <h2 class="offline-article-title">${item.title}</h2>
-        <div class="offline-article-meta">
-          <span>Auteur: ${item.author || 'Équipe Éditoriale'}</span>
-          <span>Catégorie: ${item.category || 'Solitiquo'}</span>
-        </div>
-        ${item.image_url ? `<img src="${item.image_url}" style="width:100%; max-height:300px; object-fit:cover; border-radius:12px; margin-bottom:1.5rem;" alt="${item.title}">` : ''}
-        ${mediaHTML}
-        <div class="offline-article-body">
-          ${item.content || item.excerpt || 'Contenu disponible hors-ligne.'}
-        </div>
-      `;
-
-      modal.classList.add('active');
     };
 
     window.deleteOfflineItem = async function(id, type) {
@@ -1062,13 +1015,6 @@
           await SolitiquoOffline.clearAll();
           loadOfflineDownloads();
         }
-      });
-    }
-
-    const btnCloseReader = document.getElementById('btnCloseOfflineReader');
-    if (btnCloseReader) {
-      btnCloseReader.addEventListener('click', () => {
-        document.getElementById('offlineReaderModal')?.classList.remove('active');
       });
     }
   </script>

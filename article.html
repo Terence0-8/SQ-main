@@ -2253,7 +2253,8 @@
           if (typeof initTranslationButton === 'function') await initTranslationButton(article);
 
           const contentDiv = document.getElementById('art-content');
-          const canRead = user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer');
+          const isOfflineSaved = window.SolitiquoOffline && await SolitiquoOffline.isDownloaded(article.id, 'article');
+          const canRead = (user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer')) || isOfflineSaved;
           if (article.is_premium && !canRead) {
             const tmpDiv = document.createElement('div');
             tmpDiv.innerHTML = DOMPurify.sanitize(article.content, { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src'] });
