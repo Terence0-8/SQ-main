@@ -1,6 +1,7 @@
 #page-profil {
   --primary-dark: #37463D;
-  --accent-red: #C82823;
+  --accent-gold: #C9A227;
+  --accent-gold-dark: #B08B1E;
   --bg-soft: #F8F9FA;
   background: var(--bg-soft);
   font-family: 'Inter', sans-serif;
@@ -36,7 +37,7 @@
   font-size: 1.05rem;
 }
 
-/* ── TAB BAR NAVIGATION (AVEC INDICATEUR ROUGE SOLITIQUO) ── */
+/* ── TAB BAR NAVIGATION (INDICATEUR DORÉ PRESTIGE) ── */
 .profile-tabs-nav {
   display: flex;
   align-items: center;
@@ -78,7 +79,7 @@
 
 .tab-btn.active {
   color: var(--primary-dark);
-  border-bottom-color: var(--accent-red);
+  border-bottom-color: var(--accent-gold);
   font-weight: 700;
 }
 
@@ -92,7 +93,7 @@
 }
 
 .tab-btn.active svg {
-  stroke: var(--accent-red);
+  stroke: var(--accent-gold);
 }
 
 .tab-content {
@@ -221,12 +222,12 @@
 }
 
 .status-active {
-  border-color: rgba(55, 70, 61, 0.25);
-  background: rgba(55, 70, 61, 0.04);
+  border-color: rgba(201, 162, 39, 0.35);
+  background: rgba(201, 162, 39, 0.06);
 }
 
 .status-active .status-text {
-  color: var(--primary-dark);
+  color: var(--accent-gold-dark);
 }
 
 .status-inactive {
@@ -267,10 +268,10 @@
   margin-bottom: 1.8rem;
 }
 
-/* ── BANNIÈRE ABONNEMENT AVEC POINTE DE ROUGE ── */
+/* ── BANNIÈRE ABONNEMENT AVEC ACCENTUATION DORÉE ── */
 .upgrade-banner-box {
-  background: linear-gradient(135deg, rgba(55, 70, 61, 0.06), rgba(200, 40, 35, 0.03));
-  border: 1px solid rgba(55, 70, 61, 0.18);
+  background: linear-gradient(135deg, rgba(55, 70, 61, 0.06), rgba(201, 162, 39, 0.06));
+  border: 1px solid rgba(201, 162, 39, 0.28);
   border-radius: 14px;
   padding: 1.8rem;
   margin-top: 1.5rem;
@@ -309,7 +310,7 @@
 }
 
 .upgrade-perks-list svg {
-  color: var(--accent-red);
+  color: var(--accent-gold);
   flex-shrink: 0;
 }
 
@@ -328,15 +329,15 @@
 }
 
 .btn-upgrade {
-  background: var(--accent-red);
+  background: linear-gradient(135deg, #C9A227, #B08B1E);
   color: white;
-  box-shadow: 0 4px 15px rgba(200, 40, 35, 0.2);
+  box-shadow: 0 4px 15px rgba(201, 162, 39, 0.3);
 }
 
 .btn-upgrade:hover {
-  background: #A01B17;
+  background: linear-gradient(135deg, #B08B1E, #967515);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(200, 40, 35, 0.3);
+  box-shadow: 0 6px 20px rgba(201, 162, 39, 0.4);
 }
 
 .btn-cancel {
@@ -426,7 +427,7 @@
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
-  color: var(--accent-red);
+  color: var(--accent-gold-dark);
   letter-spacing: 0.5px;
   margin-bottom: 0.4rem;
 }
@@ -442,7 +443,7 @@
 }
 
 .item-card-title:hover {
-  color: var(--accent-red);
+  color: var(--accent-gold-dark);
 }
 
 .item-card-meta {
@@ -467,8 +468,8 @@
 }
 
 .btn-remove-fav:hover {
-  color: var(--accent-red);
-  background: #FFF1F2;
+  color: var(--accent-gold-dark);
+  background: rgba(201, 162, 39, 0.08);
 }
 
 /* ── HISTORIQUE DE LECTURE LISTE ── */
@@ -522,7 +523,7 @@
 }
 
 .history-title:hover {
-  color: var(--accent-red);
+  color: var(--accent-gold-dark);
 }
 
 .history-date {
@@ -546,9 +547,9 @@
 }
 
 .btn-clear-history:hover {
-  background: #FFF1F2;
-  color: var(--accent-red);
-  border-color: #FECDD3;
+  background: rgba(201, 162, 39, 0.06);
+  color: var(--accent-gold-dark);
+  border-color: rgba(201, 162, 39, 0.3);
 }
 
 /* ── COMMENTAIRES HISTORIQUE ── */
@@ -590,7 +591,7 @@
 }
 
 .comment-article-link:hover {
-  color: var(--accent-red);
+  color: var(--accent-gold-dark);
   text-decoration: underline;
 }
 
@@ -853,7 +854,7 @@ input:checked + .slider:before {
 
 .btn-modal-confirm:hover {
   text-decoration: underline;
-  color: var(--accent-red);
+  color: var(--accent-gold-dark);
 }
 
 @media (max-width: 900px) {
