@@ -150,6 +150,64 @@
     }
 
     /* 🔊 TTS - Liquid Glass Green */
+    .article-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      margin: 1rem 0 1.5rem 0;
+      flex-wrap: wrap;
+    }
+
+    .translate-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, rgba(55, 70, 61, 0.12), rgba(55, 70, 61, 0.04));
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      border: 1px solid rgba(55, 70, 61, 0.2);
+      border-radius: 30px;
+      padding: 10px 22px;
+      color: #37463D;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(55, 70, 61, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+
+    .translate-btn:hover {
+      background: linear-gradient(135deg, rgba(55, 70, 61, 0.18), rgba(55, 70, 61, 0.08));
+      border-color: rgba(55, 70, 61, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(55, 70, 61, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .translation-notice {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(55, 70, 61, 0.06);
+      border: 1px solid rgba(55, 70, 61, 0.15);
+      padding: 10px 22px;
+      border-radius: 30px;
+      font-size: 0.9rem;
+      color: #37463D;
+      font-weight: 600;
+    }
+
+    .translation-notice a {
+      color: #C82823;
+      font-weight: 700;
+      text-decoration: none;
+      margin-left: 6px;
+    }
+
+    .translation-notice a:hover {
+      text-decoration: underline;
+    }
+
     .tts-player {
       display: none;
       align-items: center;
@@ -1925,6 +1983,86 @@
           if (btn) btn.disabled = false;
         }
       });
+    }
+
+    // --- 🌍 TRADUCTION DE L'ARTICLE ---
+    async function initTranslationButton(article) {
+      const translationZone = document.getElementById('translation-zone');
+      if (!translationZone || !article) return;
+
+      const currentLang = article.language || 'fr';
+      const targetLang = currentLang === 'fr' ? 'en' : 'fr';
+      
+      const isFr = currentLang === 'fr';
+      const btnText = isFr ? 'Traduire en anglais' : 'Translate to French';
+
+      try {
+        const baseUrl = window.API_URL || '/api';
+        const res = await fetch(`${baseUrl}/translate/article/${article.id}?lang=${targetLang}`);
+        const data = await res.json();
+
+        if (data.has_translation && data.translation) {
+          const translation = data.translation;
+          const noticeText = isFr ? 'Disponible en anglais' : 'Available in French';
+          const linkText = isFr ? 'Lire la version anglaise →' : 'Read in French →';
+          translationZone.innerHTML = `
+            <div class="translation-notice">
+              <span>🌐 ${noticeText}</span>
+              <a href="article.html?id=${translation.id}">${linkText}</a>
+            </div>
+          `;
+        } else {
+          translationZone.innerHTML = `
+            <button id="translateBtn" class="translate-btn" type="button" aria-label="Traduire l'article">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span>${btnText}</span>
+            </button>
+          `;
+
+          const translateBtn = document.getElementById('translateBtn');
+          if (translateBtn) {
+            translateBtn.addEventListener('click', async () => {
+              translateBtn.disabled = true;
+              translateBtn.innerHTML = `
+                <span class="spinner" style="display:inline-block;width:14px;height:14px;border:2px solid rgba(55,70,61,0.3);border-top-color:#37463D;border-radius:50%;animation:spin 0.8s linear infinite;"></span>
+                <span>${isFr ? 'Traduction en cours...' : 'Translating...'}</span>
+              `;
+
+              try {
+                const translateRes = await fetch(`${baseUrl}/translate/article/${article.id}`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify({ targetLang })
+                });
+
+                const result = await translateRes.json();
+
+                if (result.success && result.translation) {
+                  window.location.href = `article.html?id=${result.translation.id}`;
+                } else {
+                  alert(result.error || (isFr ? 'Erreur lors de la traduction.' : 'Translation error.'));
+                  translateBtn.disabled = false;
+                  translateBtn.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    <span>${btnText}</span>
+                  `;
+                }
+              } catch (err) {
+                console.error('Erreur traduction:', err);
+                alert(isFr ? 'Erreur lors de la traduction.' : 'Translation error.');
+                translateBtn.disabled = false;
+                translateBtn.innerHTML = `
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  <span>${btnText}</span>
+                `;
+              }
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Erreur initialisation traduction:', err);
+      }
     }
 
     // --- CHARGEMENT ARTICLE ---
