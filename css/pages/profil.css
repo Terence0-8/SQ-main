@@ -919,6 +919,238 @@ input:checked + .slider:before {
   gap: 10px;
 }
 
+/* ── ESPACE TÉLÉCHARGEMENTS HORS-LIGNE (NETFLIX STYLE) ── */
+.downloads-category-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.dl-cat-btn {
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #64748B;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.dl-cat-btn:hover {
+  background: #E2E8F0;
+  color: var(--primary-dark);
+}
+
+.dl-cat-btn.active {
+  background: var(--primary-dark);
+  color: white;
+  border-color: var(--primary-dark);
+}
+
+.downloads-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.download-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s ease;
+}
+
+.download-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+  border-color: #CBD5E1;
+}
+
+.download-card-img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  background: #F1F5F9;
+}
+
+.download-card-body {
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.download-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.download-type-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(55, 70, 61, 0.08);
+  color: var(--primary-dark);
+}
+
+.download-badge-status {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #15803D;
+  background: #DCFCE7;
+  padding: 3px 9px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.download-card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 0.6rem;
+  line-height: 1.35;
+}
+
+.download-card-meta {
+  font-size: 0.8rem;
+  color: #64748B;
+  margin-bottom: 1rem;
+}
+
+.download-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-read-offline {
+  flex: 1;
+  background: var(--primary-dark);
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.2s ease;
+}
+
+.btn-read-offline:hover {
+  background: #25312B;
+}
+
+.btn-delete-offline {
+  background: #FFF1F2;
+  color: var(--accent-red);
+  border: 1px solid #FECDD3;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-delete-offline:hover {
+  background: #FFE4E6;
+  border-color: #FDA4AF;
+}
+
+/* Modal Lecteur Hors-ligne In-App */
+.offline-reader-box {
+  max-width: 750px !important;
+  width: 92% !important;
+  text-align: left !important;
+  padding: 2rem !important;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.offline-reader-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #E2E8F0;
+  margin-bottom: 1.2rem;
+}
+
+.offline-badge {
+  background: #F1F5F9;
+  color: var(--primary-dark);
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 5px 12px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-close-offline-modal {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  color: #64748B;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.offline-reader-content {
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 8px;
+}
+
+.offline-article-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  color: var(--primary-dark);
+  font-weight: 800;
+  margin-bottom: 0.8rem;
+  line-height: 1.3;
+}
+
+.offline-article-meta {
+  font-size: 0.88rem;
+  color: #64748B;
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 15px;
+}
+
+.offline-article-body {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: #1E293B;
+}
+
 .btn-modal-keep {
   background: var(--primary-dark);
   color: white;

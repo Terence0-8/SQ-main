@@ -14,13 +14,16 @@ const CACHE_NAME = 'solitiquo-20260226';
 const PRECACHE_URLS = [
     '/',
     '/index.html',
+    '/profil.html',
     '/offline.html',
     '/css/shared.css',
+    '/css/pages/profil.css',
     '/js/solitiquo.js',
     '/js/api.js',
     '/js/config.js',
     '/js/i18n.js',
     '/js/lazyload.js',
+    '/js/offline-manager.js',
     '/logo.svg',
     '/logo.png',
     '/manifest.json'

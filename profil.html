@@ -165,6 +165,10 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
         <span>Newsletters</span>
       </button>
+      <button class="tab-btn" data-tab="tab-downloads">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Téléchargements</span>
+      </button>
     </nav>
 
     <!-- ── TAB 1: PROFIL & ABONNEMENT ── -->
@@ -330,7 +334,52 @@
         </div>
       </div>
     </div>
+
+    <!-- ── TAB 6: TÉLÉCHARGEMENTS HORS-LIGNE (NETFLIX STYLE) ── -->
+    <div class="tab-content" id="tab-downloads">
+      <div class="section-panel-card">
+        <div class="panel-header-row">
+          <div>
+            <h2 class="panel-title">Espace Hors-ligne & Téléchargements</h2>
+            <div class="panel-subtitle" id="downloads-storage-summary">Vos contenus sauvegardés directement dans votre application pour une consultation sans connexion.</div>
+          </div>
+          <button class="btn-clear-history" id="btnClearDownloads">Vider les téléchargements</button>
+        </div>
+
+        <div class="downloads-category-bar">
+          <button class="dl-cat-btn active" data-dltype="all">Tous (<span id="dl-count-all">0</span>)</button>
+          <button class="dl-cat-btn" data-dltype="article">📰 Articles (<span id="dl-count-article">0</span>)</button>
+          <button class="dl-cat-btn" data-dltype="podcast">🎙️ Podcasts (<span id="dl-count-podcast">0</span>)</button>
+          <button class="dl-cat-btn" data-dltype="emission">📺 Émissions (<span id="dl-count-emission">0</span>)</button>
+        </div>
+
+        <div id="downloads-container" class="downloads-list-grid">
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </div>
+            <div class="empty-state-text">Vous n'avez encore aucun contenu téléchargé hors-ligne.</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
+
+  <!-- Modal Lecteur Hors-ligne In-App -->
+  <div id="offlineReaderModal" class="modal-overlay">
+    <div class="modal-box offline-reader-box">
+      <div class="offline-reader-header">
+        <span class="offline-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+          Lecture Hors-ligne
+        </span>
+        <button type="button" class="btn-close-offline-modal" id="btnCloseOfflineReader">&times;</button>
+      </div>
+      <div id="offline-reader-body" class="offline-reader-content">
+        <!-- Rempli dynamiquement -->
+      </div>
+    </div>
+  </div>
 
   <div id="cancelModal" class="modal-overlay">
     <div class="modal-box">
@@ -398,6 +447,7 @@
   <script src="/js/solitiquo.js?v=40"></script>
   <script src="js/config.js"></script>
   <script src="/js/api.js?v=40"></script>
+  <script src="/js/offline-manager.js"></script>
   <script>
     // --- NAVIGATION MOBILE ---
     const burger = document.getElementById('burgerBtn');
@@ -563,6 +613,9 @@
 
       // --- CHARGEMENT DES COMMENTAIRES ---
       loadUserComments();
+
+      // --- CHARGEMENT DES TÉLÉCHARGEMENTS HORS-LIGNE ---
+      if (typeof loadOfflineDownloads === 'function') loadOfflineDownloads();
 
       // --- NEWSLETTER PREFERENCES ---
       initNewsletterPreferences();
@@ -849,6 +902,160 @@
         window.location.href = 'index.html';
       }
     });
+
+    // --- ESPACE TÉLÉCHARGEMENTS HORS-LIGNE (NETFLIX STYLE) ---
+    let currentOfflineFilter = 'all';
+
+    async function loadOfflineDownloads() {
+      const container = document.getElementById('downloads-container');
+      const summary = document.getElementById('downloads-storage-summary');
+      if (!container || !window.SolitiquoOffline) return;
+
+      const downloads = await SolitiquoOffline.getAllDownloads();
+      const estimate = await SolitiquoOffline.getStorageEstimate();
+
+      const counts = {
+        all: downloads.length,
+        article: downloads.filter(d => d.type === 'article').length,
+        podcast: downloads.filter(d => d.type === 'podcast').length,
+        emission: downloads.filter(d => d.type === 'emission').length
+      };
+
+      const cAll = document.getElementById('dl-count-all');
+      const cArt = document.getElementById('dl-count-article');
+      const cPod = document.getElementById('dl-count-podcast');
+      const cEmi = document.getElementById('dl-count-emission');
+
+      if (cAll) cAll.textContent = counts.all;
+      if (cArt) cArt.textContent = counts.article;
+      if (cPod) cPod.textContent = counts.podcast;
+      if (cEmi) cEmi.textContent = counts.emission;
+
+      if (summary) {
+        summary.textContent = `${estimate.count} contenu(s) disponible(s) hors-ligne · Espace occupé : ${estimate.sizeMB} Mo`;
+      }
+
+      const filtered = currentOfflineFilter === 'all' 
+        ? downloads 
+        : downloads.filter(d => d.type === currentOfflineFilter);
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <div class="empty-state-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </div>
+            <div class="empty-state-text">Aucun contenu téléchargé hors-ligne dans cette catégorie.</div>
+            <a href="index.html" class="btn-action btn-upgrade" style="font-size:0.85rem; padding:8px 20px;">Explorer les articles & podcasts</a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => {
+        const typeLabel = item.type === 'podcast' ? '🎙️ Podcast' : item.type === 'emission' ? '📺 Émission' : '📰 Article';
+        const dateStr = item.downloaded_at ? new Date(item.downloaded_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : '';
+        const metaInfo = item.type === 'podcast' ? `${item.duration || 'Audio'}` : `${item.read_time || 3} min de lecture`;
+
+        return `
+          <div class="download-card" id="dl-card-${item.type}-${item.id}">
+            ${item.image_url ? `<img src="${item.image_url}" class="download-card-img" alt="${item.title}">` : `<div class="download-card-img" style="display:flex;align-items:center;justify-content:center;color:#94A3B8;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>`}
+            <div class="download-card-body">
+              <div>
+                <div class="download-card-header">
+                  <span class="download-type-tag">${typeLabel}</span>
+                  <span class="download-badge-status">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Disponible hors-ligne</span>
+                  </span>
+                </div>
+                <h3 class="download-card-title">${item.title}</h3>
+                <div class="download-card-meta">${item.category || 'Solitiquo'} · ${metaInfo} · Téléchargé le ${dateStr}</div>
+              </div>
+              <div class="download-card-actions">
+                <button type="button" class="btn-read-offline" onclick="openOfflineReader('${item.id}', '${item.type}')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span>${item.type === 'podcast' ? 'Écouter' : 'Lire hors-ligne'}</span>
+                </button>
+                <button type="button" class="btn-delete-offline" onclick="deleteOfflineItem('${item.id}', '${item.type}')" title="Supprimer le téléchargement">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.openOfflineReader = async function(id, type) {
+      if (!window.SolitiquoOffline) return;
+      const item = await SolitiquoOffline.getContent(id, type);
+      if (!item) return;
+
+      const modal = document.getElementById('offlineReaderModal');
+      const body = document.getElementById('offline-reader-body');
+      if (!modal || !body) return;
+
+      let mediaHTML = '';
+      if (item.audio_url) {
+        mediaHTML = `
+          <div style="background:#F8FAFC; border:1px solid #E2E8F0; padding:1.2rem; border-radius:12px; margin-bottom:1.5rem;">
+            <div style="font-weight:700; font-size:0.9rem; color:#37463D; margin-bottom:8px;">🎙️ Écoute Audio Hors-ligne</div>
+            <audio controls style="width:100%;">
+              <source src="${item.audio_url}" type="audio/mpeg">
+              Votre navigateur ne supporte pas la lecture audio hors-ligne.
+            </audio>
+          </div>
+        `;
+      }
+
+      body.innerHTML = `
+        <h2 class="offline-article-title">${item.title}</h2>
+        <div class="offline-article-meta">
+          <span>Auteur: ${item.author || 'Équipe Éditoriale'}</span>
+          <span>Catégorie: ${item.category || 'Solitiquo'}</span>
+        </div>
+        ${item.image_url ? `<img src="${item.image_url}" style="width:100%; max-height:300px; object-fit:cover; border-radius:12px; margin-bottom:1.5rem;" alt="${item.title}">` : ''}
+        ${mediaHTML}
+        <div class="offline-article-body">
+          ${item.content || item.excerpt || 'Contenu disponible hors-ligne.'}
+        </div>
+      `;
+
+      modal.classList.add('active');
+    };
+
+    window.deleteOfflineItem = async function(id, type) {
+      if (!window.SolitiquoOffline) return;
+      await SolitiquoOffline.removeContent(id, type);
+      loadOfflineDownloads();
+    };
+
+    document.querySelectorAll('.dl-cat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.dl-cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentOfflineFilter = btn.getAttribute('data-dltype');
+        loadOfflineDownloads();
+      });
+    });
+
+    const btnClearDl = document.getElementById('btnClearDownloads');
+    if (btnClearDl) {
+      btnClearDl.addEventListener('click', async () => {
+        if (confirm('Voulez-vous vraiment supprimer l\'ensemble des contenus enregistrés hors-ligne ?')) {
+          await SolitiquoOffline.clearAll();
+          loadOfflineDownloads();
+        }
+      });
+    }
+
+    const btnCloseReader = document.getElementById('btnCloseOfflineReader');
+    if (btnCloseReader) {
+      btnCloseReader.addEventListener('click', () => {
+        document.getElementById('offlineReaderModal')?.classList.remove('active');
+      });
+    }
   </script>
   <script src="/js/lazyload.js"></script>
   <script>

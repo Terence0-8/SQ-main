@@ -2317,7 +2317,7 @@
           if (typeof updateOGTags === 'function') updateOGTags(article);
           if (typeof initShareButtons === 'function') initShareButtons(article.title, window.location.href);
 
-          // ── Bouton de téléchargement PDF (Premium) ──
+          // ── Bouton de téléchargement In-App Hors-ligne (Netflix-style Premium) ──
           const shareBar = document.getElementById('share-bar');
           const toolsGroup = document.getElementById('share-tools-buttons') || shareBar;
           if (shareBar && article.slug) {
@@ -2326,29 +2326,75 @@
             dlBtn.className = 'share-btn share-download';
             dlBtn.id = 'btn-download-article';
             dlBtn.type = 'button';
-            dlBtn.innerHTML = `
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-              PDF ${isPremiumUser ? '' : '<span class="premium-lock">🔒</span>'}`;
-            dlBtn.title = isPremiumUser ? 'Télécharger en PDF' : 'Réservé aux abonnés Premium';
-            dlBtn.addEventListener('click', () => {
+
+            const updateOfflineBtnState = async () => {
+              if (!isPremiumUser) {
+                dlBtn.innerHTML = `
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  Hors-ligne <span class="premium-lock">🔒</span>`;
+                dlBtn.title = 'Réservé aux abonnés Premium';
+                return;
+              }
+
+              const isSaved = window.SolitiquoOffline && await SolitiquoOffline.isDownloaded(article.id, 'article');
+              if (isSaved) {
+                dlBtn.innerHTML = `
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#15803D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  <span style="color:#15803D; font-weight:700;">Hors-ligne ✓</span>`;
+                dlBtn.title = 'Disponible hors-ligne dans Mon Compte > Téléchargements';
+                dlBtn.style.background = '#DCFCE7';
+                dlBtn.style.borderColor = '#86EFAC';
+              } else {
+                dlBtn.innerHTML = `
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  Hors-ligne`;
+                dlBtn.title = 'Enregistrer pour la lecture hors-ligne (In-App)';
+                dlBtn.style.background = '';
+                dlBtn.style.borderColor = '';
+              }
+            };
+
+            updateOfflineBtnState();
+
+            dlBtn.addEventListener('click', async () => {
               if (isPremiumUser) {
-                const lang = localStorage.getItem('lang') || 'fr';
-                const a = document.createElement('a');
-                a.href = `${window.API_URL || '/api'}/articles/${article.slug}/download?lang=${lang}`;
-                a.download = `solitiquo-${article.slug}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                if (!window.SolitiquoOffline) return;
+                const isSaved = await SolitiquoOffline.isDownloaded(article.id, 'article');
+                if (isSaved) {
+                  await SolitiquoOffline.removeContent(article.id, 'article');
+                  alert("Retiré des contenus hors-ligne.");
+                } else {
+                  await SolitiquoOffline.saveContent({
+                    id: article.id,
+                    type: 'article',
+                    title: article.title,
+                    category: article.category,
+                    image_url: article.image_url,
+                    content: article.content,
+                    excerpt: article.excerpt,
+                    read_time: article.read_time,
+                    author: article.author || 'Équipe Éditoriale',
+                    published_at: article.created_at
+                  });
+                  alert("✓ Article disponible hors-ligne dans votre espace !");
+                }
+                updateOfflineBtnState();
               } else {
                 const existingTooltip = document.getElementById('premium-tooltip');
                 if (existingTooltip) { existingTooltip.remove(); return; }
                 const tooltip = document.createElement('div');
                 tooltip.id = 'premium-tooltip';
-                tooltip.innerHTML = `<strong>Fonctionnalité Premium 🔒</strong><p>Téléchargez nos articles en PDF en vous abonnant.</p><a href="abonnement.html" class="tooltip-cta">S'abonner</a>`;
+                tooltip.innerHTML = `<strong>Disponible Hors-ligne 🔒</strong><p>Téléchargez nos articles directement sur l'application pour une lecture hors-ligne sans connexion en vous abonnant.</p><a href="abonnement.html" class="tooltip-cta">S'abonner</a>`;
                 document.body.appendChild(tooltip);
                 const rect = dlBtn.getBoundingClientRect();
                 tooltip.style.cssText = `position:fixed;top:${rect.bottom + 8}px;left:${Math.min(rect.left, window.innerWidth - 240)}px;width:230px;background:#fff;border:1px solid #e0e8dc;border-radius:12px;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.15);z-index:9999;font-family:Inter,sans-serif;font-size:.85rem;text-align:center;`;
@@ -2433,6 +2479,7 @@
   </div>
 
   <script src="/js/lazyload.js"></script>
+  <script src="/js/offline-manager.js"></script>
   <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js'); }</script>
 </body>
 
