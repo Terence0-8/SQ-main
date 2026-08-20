@@ -159,7 +159,7 @@
       flex-wrap: wrap;
     }
 
-    .translate-btn {
+    .translate-btn, .translation-notice-link {
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -172,40 +172,18 @@
       color: #37463D;
       font-weight: 600;
       font-size: 0.9rem;
+      text-decoration: none;
       cursor: pointer;
       transition: all 0.3s ease;
       box-shadow: 0 4px 15px rgba(55, 70, 61, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
     }
 
-    .translate-btn:hover {
+    .translate-btn:hover, .translation-notice-link:hover {
       background: linear-gradient(135deg, rgba(55, 70, 61, 0.18), rgba(55, 70, 61, 0.08));
       border-color: rgba(55, 70, 61, 0.3);
+      color: #37463D;
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(55, 70, 61, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-    }
-
-    .translation-notice {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(55, 70, 61, 0.06);
-      border: 1px solid rgba(55, 70, 61, 0.15);
-      padding: 10px 22px;
-      border-radius: 30px;
-      font-size: 0.9rem;
-      color: #37463D;
-      font-weight: 600;
-    }
-
-    .translation-notice a {
-      color: #C82823;
-      font-weight: 700;
-      text-decoration: none;
-      margin-left: 6px;
-    }
-
-    .translation-notice a:hover {
-      text-decoration: underline;
     }
 
     .tts-player {
@@ -1994,13 +1972,12 @@
       const targetLang = currentLang === 'fr' ? 'en' : 'fr';
       
       const isFrArticle = currentLang === 'fr';
-      // Si l'article est en français, le lecteur cible est anglophone (textes en anglais)
-      // Si l'article est en anglais, le lecteur cible est francophone (textes en français)
-      const btnText = isFrArticle ? 'Translate to English' : 'Traduire en français';
-      const noticeText = isFrArticle ? 'Available in English' : 'Disponible en français';
-      const linkText = isFrArticle ? 'Read in English →' : 'Lire la version française →';
+      const actionText = isFrArticle ? 'Read in English' : 'Lire en français';
       const translatingText = isFrArticle ? 'Translating...' : 'Traduction en cours...';
       const errorText = isFrArticle ? 'Translation error.' : 'Erreur lors de la traduction.';
+
+      const globeSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`;
+      const arrowSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:2px;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`;
 
       try {
         const baseUrl = window.API_URL || '/api';
@@ -2010,16 +1987,17 @@
         if (data.has_translation && data.translation) {
           const translation = data.translation;
           translationZone.innerHTML = `
-            <div class="translation-notice">
-              <span>🌐 ${noticeText}</span>
-              <a href="article.html?id=${translation.id}">${linkText}</a>
-            </div>
+            <a href="article.html?id=${translation.id}" class="translation-notice-link" aria-label="${actionText}">
+              ${globeSvg}
+              <span>${actionText}</span>
+              ${arrowSvg}
+            </a>
           `;
         } else {
           translationZone.innerHTML = `
-            <button id="translateBtn" class="translate-btn" type="button" aria-label="Traduire l'article">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-              <span>${btnText}</span>
+            <button id="translateBtn" class="translate-btn" type="button" aria-label="${actionText}">
+              ${globeSvg}
+              <span>${actionText}</span>
             </button>
           `;
 
@@ -2048,8 +2026,8 @@
                   alert(result.error || errorText);
                   translateBtn.disabled = false;
                   translateBtn.innerHTML = `
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                    <span>${btnText}</span>
+                    ${globeSvg}
+                    <span>${actionText}</span>
                   `;
                 }
               } catch (err) {
@@ -2057,8 +2035,8 @@
                 alert(errorText);
                 translateBtn.disabled = false;
                 translateBtn.innerHTML = `
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                  <span>${btnText}</span>
+                  ${globeSvg}
+                  <span>${actionText}</span>
                 `;
               }
             });
