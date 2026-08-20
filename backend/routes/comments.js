@@ -82,7 +82,38 @@ function containsBannedWord(text) {
 }
 
 // ==========================================
-// 1. RÉCUPÉRER LES COMMENTAIRES D'UN ARTICLE
+// 1A. RÉCUPÉRER LES COMMENTAIRES DE L'UTILISATEUR CONNECTÉ (Max 30)
+// (Placé avant /:articleId pour éviter le conflit de routage Express)
+// ==========================================
+router.get('/user/my-comments', isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const query = `
+      SELECT 
+        c.id, 
+        c.content, 
+        c.created_at, 
+        c.is_approved, 
+        COALESCE(c.is_edited, false) AS is_edited,
+        a.id AS article_id, 
+        a.title AS article_title, 
+        a.slug AS article_slug
+      FROM comments c
+      LEFT JOIN articles a ON c.article_id = a.id
+      WHERE c.user_id = $1
+      ORDER BY c.created_at DESC
+      LIMIT 30
+    `;
+    const { rows } = await pool.query(query, [userId]);
+    res.json({ success: true, comments: rows });
+  } catch (err) {
+    console.error('❌ Erreur récupération commentaires utilisateur:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
+// ==========================================
+// 1B. RÉCUPÉRER LES COMMENTAIRES D'UN ARTICLE
 // ==========================================
 router.get(['/:articleId', '/article/:articleId'], async (req, res) => {
   try {
@@ -303,35 +334,7 @@ router.post('/', isAuthenticated, verifyCsrf, async (req, res) => {
   }
 });
 
-// ==========================================
-// 3B. RÉCUPÉRER LES COMMENTAIRES DE L'UTILISATEUR (Max 30)
-// ==========================================
-router.get('/user/my-comments', isAuthenticated, async (req, res) => {
-  try {
-    const userId = req.session.user.id;
-    const query = `
-      SELECT 
-        c.id, 
-        c.content, 
-        c.created_at, 
-        c.is_approved, 
-        COALESCE(c.is_edited, false) AS is_edited,
-        a.id AS article_id, 
-        a.title AS article_title, 
-        a.slug AS article_slug
-      FROM comments c
-      LEFT JOIN articles a ON c.article_id = a.id
-      WHERE c.user_id = $1
-      ORDER BY c.created_at DESC
-      LIMIT 30
-    `;
-    const { rows } = await pool.query(query, [userId]);
-    res.json({ success: true, comments: rows });
-  } catch (err) {
-    console.error('❌ Erreur récupération commentaires utilisateur:', err);
-    res.status(500).json({ success: false, error: 'Erreur serveur' });
-  }
-});
+
 
 // ==========================================
 // 3. SUPPRIMER SON PROPRE COMMENTAIRE
