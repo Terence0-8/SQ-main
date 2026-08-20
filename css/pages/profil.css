@@ -84,15 +84,14 @@
 
 .tab-btn svg {
   transition: transform 0.2s ease;
-  stroke: #64748B;
+  stroke: var(--accent-red);
+  color: var(--accent-red);
 }
 
-.tab-btn:hover svg {
-  stroke: var(--primary-dark);
-}
-
+.tab-btn:hover svg,
 .tab-btn.active svg {
-  stroke: var(--primary-dark);
+  stroke: var(--accent-red);
+  color: var(--accent-red);
 }
 
 .tab-content {
