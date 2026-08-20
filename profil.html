@@ -486,6 +486,15 @@
         return;
       }
 
+      const isSub = Boolean(user.is_subscriber || user.role === 'admin' || user.role === 'writer');
+      if (isSub) {
+        document.body.classList.add('is-subscriber');
+        document.getElementById('page-profil')?.classList.add('is-subscriber');
+      } else {
+        document.body.classList.remove('is-subscriber');
+        document.getElementById('page-profil')?.classList.remove('is-subscriber');
+      }
+
       // Carte identité utilisateur
       document.getElementById('user-name').textContent = user.username;
       document.getElementById('user-email').textContent = user.email;

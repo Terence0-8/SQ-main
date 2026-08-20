@@ -1,6 +1,8 @@
 #page-profil {
   --primary-dark: #37463D;
   --accent-red: #C82823;
+  --accent-gold: #C9A227;
+  --user-icon-color: #C82823;
   --bg-soft: #F8F9FA;
   background: var(--bg-soft);
   font-family: 'Inter', sans-serif;
@@ -8,6 +10,18 @@
   flex-direction: column;
   min-height: 100vh;
   margin: 0;
+}
+
+/* ── DIFFÉRENCIATION DES ICÔNES VECTORIELLES (ROUGE / DORÉ) ── */
+body.is-subscriber#page-profil,
+#page-profil.is-subscriber,
+body.is-subscriber #page-profil {
+  --user-icon-color: #C9A227;
+}
+
+body:not(.is-subscriber)#page-profil,
+#page-profil:not(.is-subscriber) {
+  --user-icon-color: #C82823;
 }
 
 .profile-wrapper {
@@ -84,14 +98,14 @@
 
 .tab-btn svg {
   transition: transform 0.2s ease;
-  stroke: var(--accent-red);
-  color: var(--accent-red);
+  stroke: var(--user-icon-color);
+  color: var(--user-icon-color);
 }
 
 .tab-btn:hover svg,
 .tab-btn.active svg {
-  stroke: var(--accent-red);
-  color: var(--accent-red);
+  stroke: var(--user-icon-color);
+  color: var(--user-icon-color);
 }
 
 .tab-content {
@@ -308,7 +322,8 @@
 }
 
 .upgrade-perks-list svg {
-  color: var(--accent-red);
+  color: var(--user-icon-color);
+  stroke: var(--user-icon-color);
   flex-shrink: 0;
 }
 
@@ -599,12 +614,14 @@
 
 .comment-article-link svg {
   flex-shrink: 0;
-  color: var(--primary-dark);
+  color: var(--user-icon-color);
+  stroke: var(--user-icon-color);
   transition: color 0.2s ease;
 }
 
 .comment-article-link:hover svg {
-  color: var(--accent-red);
+  color: var(--user-icon-color);
+  stroke: var(--user-icon-color);
 }
 
 .comment-item-body {
@@ -637,6 +654,11 @@
   font-weight: 500;
 }
 
+.comment-date-info svg {
+  color: var(--user-icon-color);
+  stroke: var(--user-icon-color);
+}
+
 .btn-delete-comment {
   background: transparent;
   border: 1px solid transparent;
@@ -650,6 +672,11 @@
   align-items: center;
   gap: 6px;
   transition: all 0.2s ease;
+}
+
+.btn-delete-comment svg {
+  color: var(--user-icon-color);
+  stroke: var(--user-icon-color);
 }
 
 .btn-delete-comment:hover {
@@ -711,7 +738,12 @@
 
 .newsletter-icon {
   margin-bottom: 0.8rem;
-  color: var(--primary-dark);
+  color: var(--user-icon-color);
+}
+
+.newsletter-icon svg {
+  color: var(--user-icon-color) !important;
+  stroke: var(--user-icon-color) !important;
 }
 
 .newsletter-card-title {
@@ -799,8 +831,13 @@ input:checked + .slider:before {
 
 .empty-state-icon {
   margin-bottom: 0.8rem;
-  opacity: 0.8;
-  color: var(--primary-dark);
+  opacity: 0.95;
+  color: var(--user-icon-color);
+}
+
+.empty-state-icon svg {
+  color: var(--user-icon-color) !important;
+  stroke: var(--user-icon-color) !important;
 }
 
 .empty-state-text {
@@ -847,7 +884,12 @@ input:checked + .slider:before {
 .modal-icon {
   margin-bottom: 1rem;
   display: inline-block;
-  color: var(--primary-dark);
+  color: var(--user-icon-color);
+}
+
+.modal-icon svg {
+  color: var(--user-icon-color) !important;
+  stroke: var(--user-icon-color) !important;
 }
 
 .modal-title {
