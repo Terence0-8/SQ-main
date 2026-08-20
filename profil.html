@@ -732,7 +732,7 @@
               <div class="comment-history-item" id="comment-item-${c.id}">
                 <div class="comment-item-header">
                   <a href="article.html?id=${c.article_id}" class="comment-article-link">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                     <span>${c.article_title || 'Article Solitiquo'}</span>
                   </a>
                   <span class="${c.is_approved ? 'comment-badge-approved' : 'comment-badge-pending'}">
@@ -740,10 +740,16 @@
                     <span>${c.is_approved ? 'Approuvé' : 'En modération'}</span>
                   </span>
                 </div>
-                <div class="comment-item-body">${c.content}</div>
+                <div class="comment-item-body">"${c.content}"</div>
                 <div class="comment-item-footer">
-                  <span>Publié le ${dateStr} ${isEdited}</span>
-                  <button type="button" onclick="deleteCommentFromProfile(${c.id})" style="background:none;border:none;color:#64748B;cursor:pointer;font-size:0.8rem;font-weight:600;transition:.2s;" onmouseover="this.style.color='#BE123C'" onmouseout="this.style.color='#64748B'">Supprimer</button>
+                  <span class="comment-date-info">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>Publié le ${dateStr} ${isEdited}</span>
+                  </span>
+                  <button type="button" onclick="deleteCommentFromProfile(${c.id})" class="btn-delete-comment">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    <span>Supprimer</span>
+                  </button>
                 </div>
               </div>
             `;
