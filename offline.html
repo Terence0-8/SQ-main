@@ -1,10 +1,17 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#37463D" />
-  <title>Hors ligne | Solitiquo</title>
+  <title>Solitiquo — Hors connexion</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/css/shared.css">
   <style>
     :root {
       --primary-dark: #37463D;
@@ -17,219 +24,151 @@
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    html, body {
-      height: 100%;
-      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
       background: var(--background-light);
       color: var(--text-dark);
-      line-height: 1.6;
     }
 
-    /* ── Header ── */
-    .main-header {
-      background: #fff;
-      padding: 1.25rem 2rem;
-      border-bottom: 4px solid var(--primary-dark);
-      box-shadow: 0 4px 20px rgba(55, 70, 61, .08);
-    }
-    .header-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .logo-block {
-      display: flex;
-      align-items: center;
-      gap: .9rem;
-      text-decoration: none;
-    }
-    .logo-img {
-      height: 40px;
-      width: auto;
-    }
-    .logo-sep {
-      width: 1px;
-      height: 32px;
-      background: #d0d5ce;
-    }
-    .logo-text { display: flex; flex-direction: column; }
-    .logo-name {
-      font-family: 'Playfair Display', 'Georgia', 'Times New Roman', serif;
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: var(--primary-dark);
-      line-height: 1;
-      letter-spacing: -.01em;
-    }
-    .logo-sub {
-      font-size: .72rem;
-      font-weight: 600;
-      color: var(--accent-red);
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      margin-top: 2px;
-    }
-
-    /* ── Main ── */
     main {
-      min-height: calc(100vh - 160px);
+      flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 3rem 1.5rem;
       background: linear-gradient(160deg, var(--light-cream) 0%, #fff 60%);
     }
+
     .offline-container {
       max-width: 560px;
       width: 100%;
       text-align: center;
+      padding: 2.5rem;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(55, 70, 61, 0.12);
+      border-radius: 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 20px 50px rgba(55, 70, 61, 0.08);
     }
 
-    /* Icon */
     .offline-icon {
-      width: 96px;
-      height: 96px;
-      margin: 0 auto 2rem;
-      background: linear-gradient(135deg, var(--light-cream), #eef2e8);
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+      background: rgba(55, 70, 61, 0.08);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 8px 32px rgba(55, 70, 61, .12);
     }
+
     .offline-icon svg {
-      width: 46px;
-      height: 46px;
+      width: 40px;
+      height: 40px;
       color: var(--primary-dark);
     }
 
-    /* Title */
     .offline-title {
-      font-family: 'Playfair Display', 'Georgia', 'Times New Roman', serif;
-      font-size: 2.4rem;
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem;
       font-weight: 700;
-      color: var(--text-dark);
-      margin-bottom: 1rem;
-      letter-spacing: -.02em;
+      color: var(--primary-dark);
+      margin-bottom: 0.8rem;
     }
 
-    /* Subtitle */
     .offline-sub {
-      font-size: 1.05rem;
+      font-size: 1rem;
       color: var(--text-light);
-      margin-bottom: .6rem;
-      line-height: 1.7;
-    }
-    .offline-hint {
-      font-size: .9rem;
-      color: #9ba8a0;
-      margin-bottom: 2.5rem;
+      margin-bottom: 1.8rem;
+      line-height: 1.6;
     }
 
-    /* Divider */
-    .offline-divider {
-      width: 48px;
-      height: 3px;
-      background: var(--accent-red);
-      border-radius: 2px;
-      margin: 1.8rem auto;
-      opacity: .7;
+    .btn-offline-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 28px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-decoration: none;
+      background: rgba(200, 40, 35, 0.08);
+      color: var(--accent-red);
+      border: 1px solid rgba(200, 40, 35, 0.25);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 16px rgba(200, 40, 35, 0.08);
+      transition: all 0.25s ease;
     }
 
-    /* Retry button */
+    .btn-offline-action:hover {
+      background: rgba(200, 40, 35, 0.16);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(200, 40, 35, 0.16);
+    }
+
+    body.is-subscriber .btn-offline-action {
+      background: rgba(201, 162, 39, 0.1);
+      color: #B08B1E;
+      border-color: rgba(201, 162, 39, 0.3);
+    }
+
     .btn-retry {
       display: inline-flex;
       align-items: center;
-      gap: .55rem;
-      padding: .9rem 2.2rem;
-      background: var(--primary-dark);
-      color: #fff;
-      font-size: 1rem;
+      gap: 6px;
+      margin-top: 10px;
+      padding: 10px 20px;
+      background: transparent;
+      border: 1px solid #CBD5E1;
+      border-radius: 20px;
+      color: #64748B;
+      font-size: 0.88rem;
       font-weight: 600;
-      border: none;
-      border-radius: 12px;
       cursor: pointer;
-      text-decoration: none;
-      transition: background .25s ease, transform .2s ease, box-shadow .25s ease;
-      box-shadow: 0 4px 14px rgba(55, 70, 61, .25);
+      transition: all 0.2s;
     }
-    .btn-retry:hover {
-      background: #2a3530;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(55, 70, 61, .35);
-    }
-    .btn-retry svg { flex-shrink: 0; }
 
-    /* Status indicator */
+    .btn-retry:hover {
+      background: #F8FAFC;
+      color: #1E293B;
+      border-color: #94A3B8;
+    }
+
     .status-bar {
-      margin-top: 2.5rem;
+      margin-top: 2rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: .5rem;
-      font-size: .82rem;
-      color: #aab5ae;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: #94A3B8;
     }
+
     .status-dot {
-      width: 7px;
-      height: 7px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
-      background: #d0d9d2;
+      background: #CBD5E1;
       animation: pulse 2s ease-in-out infinite;
     }
+
     @keyframes pulse {
-      0%, 100% { opacity: .4; transform: scale(1); }
-      50%       { opacity: 1; transform: scale(1.3); }
-    }
-
-    /* ── Footer ── */
-    footer {
-      background: var(--primary-dark);
-      color: rgba(255,255,255,.55);
-      text-align: center;
-      padding: 1.25rem 1rem;
-      font-size: .8rem;
-    }
-    footer a {
-      color: rgba(255,255,255,.7);
-      text-decoration: none;
-    }
-    footer a:hover { color: #fff; }
-
-    /* ── Responsive ── */
-    @media (max-width: 480px) {
-      .offline-title { font-size: 1.8rem; }
-      .offline-icon  { width: 76px; height: 76px; }
-      .offline-icon svg { width: 36px; height: 36px; }
-      .main-header { padding: 1rem 1.25rem; }
+      0%, 100% { opacity: 0.4; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.3); }
     }
   </style>
-  <!-- Favicon & icônes app -->
-  <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png">
-  <link rel="icon" href="/favicon.ico">
-  <!-- Apple / iOS -->
-  <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
-  <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-167x167.png">
-  <meta name="apple-mobile-web-app-title" content="Solitiquo">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
 </head>
 <body>
 
   <header class="premium-header">
     <div class="ph-left">
-      <div class="burger-container">
-        <button class="burger-btn" id="burgerBtn">
-          <div class="burger-line"></div>
-          <div class="burger-line"></div>
-          <div class="burger-line"></div>
-        </button>
-      </div>
-
       <a href="index.html" class="ph-brand">
         <img src="logo.svg" alt="S">
         <div class="brand-sep"></div>
@@ -239,61 +178,26 @@
 
     <div class="ph-center">
       <nav class="ph-nav">
-        <a href="politique.html" class="ph-link" data-i18n="nav_pol">Politique</a>
-        <a href="social.html" class="ph-link" data-i18n="nav_soc">Social</a>
-        <a href="partis-politiques.html" class="ph-link" data-i18n="nav_parties">Partis</a>
-        <a href="emissions.html" class="ph-link" data-i18n="nav_shows">Émissions</a>
-        <a href="podcasts.html" class="ph-link" data-i18n="nav_podcasts">Podcasts</a>
+        <a href="politique.html" class="ph-link">Politique</a>
+        <a href="social.html" class="ph-link">Social</a>
+        <a href="partis-politiques.html" class="ph-link">Partis</a>
+        <a href="emissions.html" class="ph-link">Émissions</a>
+        <a href="podcasts.html" class="ph-link">Podcasts</a>
       </nav>
     </div>
 
-    <div class="ph-right" style="justify-content: flex-end; gap: 20px;">
-      <div class="lang-switch-container">
-        <button class="lang-seg-btn active" data-lang="fr">FR</button>
-        <button class="lang-seg-btn" data-lang="en">EN</button>
-      </div>
-      <div class="search-stack">
-        <div class="search-row">
-          <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8" />
-              <path d="M21 21l-4.35-4.35" />
-            </svg>
-          </button>
-          <span class="search-label" id="searchLabel">Rechercher</span>
-        </div>
-
-        <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
-
-          <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput"
-            autocomplete="off" required />
-
-          <button class="search-submit" type="submit" aria-label="Lancer">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </button>
-
-        </form>
-      </div>
-      <a href="auth.html" class="ph-btn-auth" data-i18n="nav_login">S'identifier</a>
+    <div class="ph-right">
+      <a href="auth.html" class="ph-btn-auth">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px; margin-right:4px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        S'identifier
+      </a>
     </div>
-  
-      <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <circle cx="11" cy="11" r="7"/>
-          <path d="M21 21l-4.35-4.35"/>
-        </svg>
-      </button>
   </header>
 
   <main>
     <div class="offline-container">
-
-      <!-- Icône WiFi coupé -->
       <div class="offline-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
-             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
           <line x1="1" y1="1" x2="23" y2="23"/>
           <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
           <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
@@ -304,51 +208,45 @@
         </svg>
       </div>
 
-      <h1 class="offline-title">Vous êtes hors ligne</h1>
+      <h1 class="offline-title">Vous êtes hors-connexion</h1>
 
       <p class="offline-sub">
-        Impossible de charger cette page sans connexion internet.
-      </p>
-      <p class="offline-hint">
-        Vérifiez votre réseau Wi-Fi ou données mobiles, puis réessayez.
+        Cette page nécessite une connexion réseau. Retrouvez tous vos articles et podcasts enregistrés directement dans votre espace dédié.
       </p>
 
-      <div class="offline-divider"></div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:12px;">
+        <a href="profil.html?tab=downloads" class="btn-offline-action">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Consulter mes téléchargements →
+        </a>
 
-      <!-- Pas de onclick inline : addEventListener dans le script ci-dessous (compatible CSP stricte) -->
-      <button class="btn-retry" id="retryBtn" type="button">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="1 4 1 10 7 10"/>
-          <path d="M3.51 15a9 9 0 1 0 .49-3.86"/>
-        </svg>
-        Réessayer
-      </button>
+        <button class="btn-retry" id="retryBtn" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.86"/></svg>
+          Réessayer la connexion
+        </button>
+      </div>
 
       <div class="status-bar">
         <span class="status-dot"></span>
-        En attente de connexion…
+        <span>Reconnexion automatique dès le rétablissement du réseau…</span>
       </div>
-
     </div>
   </main>
 
-  <footer>
-    <p>© 2025 <a href="/">Solitiquo</a> — L'actualité politique et sociale de référence</p>
+  <footer style="background:#37463D; color:rgba(255,255,255,0.7); text-align:center; padding:1.2rem; font-size:0.85rem;">
+    <p>© 2026 Solitiquo — L'actualité politique et sociale de référence</p>
   </footer>
 
+  <script src="/js/solitiquo.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/offline-manager.js"></script>
   <script>
-    // Bouton Réessayer — addEventListener (compatible CSP, pas de onclick inline)
     document.getElementById('retryBtn').addEventListener('click', function () {
       window.location.reload();
     });
-
-    // Recharger automatiquement dès que la connexion revient
     window.addEventListener('online', function () {
       window.location.reload();
     });
   </script>
-
-  <script src="/js/solitiquo.js?v=38"></script>
 </body>
 </html>
