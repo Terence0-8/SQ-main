@@ -36,7 +36,7 @@
   font-size: 1.05rem;
 }
 
-/* ── TAB BAR NAVIGATION (CHARTE SOLITIQUO) ── */
+/* ── TAB BAR NAVIGATION (AVEC INDICATEUR ROUGE SOLITIQUO) ── */
 .profile-tabs-nav {
   display: flex;
   align-items: center;
@@ -78,7 +78,7 @@
 
 .tab-btn.active {
   color: var(--primary-dark);
-  border-bottom-color: var(--primary-dark);
+  border-bottom-color: var(--accent-red);
   font-weight: 700;
 }
 
@@ -92,7 +92,7 @@
 }
 
 .tab-btn.active svg {
-  stroke: var(--primary-dark);
+  stroke: var(--accent-red);
 }
 
 .tab-content {
@@ -267,9 +267,9 @@
   margin-bottom: 1.8rem;
 }
 
-/* ── BANNIÈRE ABONNEMENT EN ACCORD AVEC LA CHARTE ── */
+/* ── BANNIÈRE ABONNEMENT AVEC POINTE DE ROUGE ── */
 .upgrade-banner-box {
-  background: linear-gradient(135deg, rgba(55, 70, 61, 0.08), rgba(55, 70, 61, 0.02));
+  background: linear-gradient(135deg, rgba(55, 70, 61, 0.06), rgba(200, 40, 35, 0.03));
   border: 1px solid rgba(55, 70, 61, 0.18);
   border-radius: 14px;
   padding: 1.8rem;
@@ -309,7 +309,7 @@
 }
 
 .upgrade-perks-list svg {
-  color: var(--primary-dark);
+  color: var(--accent-red);
   flex-shrink: 0;
 }
 
@@ -328,15 +328,15 @@
 }
 
 .btn-upgrade {
-  background: var(--primary-dark);
+  background: var(--accent-red);
   color: white;
-  box-shadow: 0 4px 15px rgba(55, 70, 61, 0.2);
+  box-shadow: 0 4px 15px rgba(200, 40, 35, 0.2);
 }
 
 .btn-upgrade:hover {
-  background: #28332D;
+  background: #A01B17;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(55, 70, 61, 0.3);
+  box-shadow: 0 6px 20px rgba(200, 40, 35, 0.3);
 }
 
 .btn-cancel {
@@ -426,7 +426,7 @@
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
-  color: var(--primary-dark);
+  color: var(--accent-red);
   letter-spacing: 0.5px;
   margin-bottom: 0.4rem;
 }
@@ -442,7 +442,7 @@
 }
 
 .item-card-title:hover {
-  color: var(--primary-dark);
+  color: var(--accent-red);
 }
 
 .item-card-meta {
@@ -522,7 +522,7 @@
 }
 
 .history-title:hover {
-  color: var(--primary-dark);
+  color: var(--accent-red);
 }
 
 .history-date {
@@ -546,9 +546,9 @@
 }
 
 .btn-clear-history:hover {
-  background: #F1F5F9;
-  color: #1E293B;
-  border-color: #CBD5E1;
+  background: #FFF1F2;
+  color: var(--accent-red);
+  border-color: #FECDD3;
 }
 
 /* ── COMMENTAIRES HISTORIQUE ── */
@@ -590,6 +590,7 @@
 }
 
 .comment-article-link:hover {
+  color: var(--accent-red);
   text-decoration: underline;
 }
 
