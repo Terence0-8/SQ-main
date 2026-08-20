@@ -12,22 +12,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#37463D">
-  <meta name="description" content="Mon profil  Gérez votre compte et vos préférences Solitiquo.">
-  <meta property="og:title" content="Solitiquo  L'Actualité Premium" />
+  <meta name="description" content="Mon espace utilisateur  Gérez votre compte, vos favoris, votre historique et vos préférences Solitiquo.">
+  <meta property="og:title" content="Solitiquo  Mon Espace" />
   <meta property="og:description" content="Le média de référence pour l'analyse politique et sociale au Cameroun." />
   <meta property="og:image" content="https://solitiquo.com/logo.png" />
   <meta property="og:url" content="https://solitiquo.com" />
   <meta property="og:type" content="website" />
-    <link rel="alternate" hreflang="fr" href="https://solitiquo.com/fr/" />
-    <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
-    <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
+  <link rel="alternate" hreflang="fr" href="https://solitiquo.com/fr/" />
+  <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
+  <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
   <title>Mon Espace — Solitiquo</title>
-  <link rel="stylesheet" href="css/shared.css?v=38" />
-  <link rel="stylesheet" href="css/pages/profil.css?v=38" />
+  <link rel="stylesheet" href="css/shared.css?v=39" />
+  <link rel="stylesheet" href="css/pages/profil.css?v=39" />
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
     rel="stylesheet" />
-
 
   <!-- Favicon & icônes app -->
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
@@ -51,6 +50,7 @@
     </svg>
     <span data-i18n="btn_back">Retour</span>
   </a>
+
   <header class="premium-header">
     <div class="ph-left">
       <div class="burger-container">
@@ -95,27 +95,24 @@
         </div>
 
         <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
-
           <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput"
             autocomplete="off" required />
-
           <button class="search-submit" type="submit" aria-label="Lancer">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
-
         </form>
       </div>
       <a href="auth.html" class="ph-btn-auth" data-i18n="nav_login">S'identifier</a>
     </div>
   
-      <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <circle cx="11" cy="11" r="7"/>
-          <path d="M21 21l-4.35-4.35"/>
-        </svg>
-      </button>
+    <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="11" cy="11" r="7"/>
+        <path d="M21 21l-4.35-4.35"/>
+      </svg>
+    </button>
   </header>
 
   <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
@@ -135,7 +132,7 @@
       <li><a href="emissions.html" class="mobile-nav-link" data-i18n="nav_shows">Émissions</a></li>
       <li><a href="podcasts.html" class="mobile-nav-link" data-i18n="nav_podcasts">Podcasts</a></li>
     </ul>
-        <div style="margin-top:auto; padding-top:2rem; border-top:1px solid #333;">
+    <div style="margin-top:auto; padding-top:2rem; border-top:1px solid #333;">
       <a href="auth.html"
         style="color:white; text-decoration:none; font-weight:700; display:flex; align-items:center; gap:10px;"><span>👤</span> <span data-i18n="nav_login">S'identifier</span></a>
       <div style="display:flex; gap:8px; margin-top:1rem; margin-bottom:1rem;">
@@ -146,32 +143,186 @@
     </div>
   </nav>
 
-
   <main class="profile-wrapper">
     <div class="profile-header">
       <h1 class="profile-title" data-i18n="profile_title">Mon Espace</h1>
-      <div class="profile-sub" data-i18n="profile_sub">Gérez vos informations et votre abonnement</div>
+      <div class="profile-sub" data-i18n="profile_sub">Gérez votre profil, vos contenus enregistrés et vos préférences.</div>
     </div>
 
-    <div class="profile-grid">
-      <aside class="id-card">
-        <div class="avatar-circle" id="user-initial">?</div>
-        <div class="user-name" id="user-name">Chargement...</div>
-        <div class="user-email" id="user-email">...</div>
-        <button id="btn-logout" class="btn-logout" data-i18n="auth_logout">Se déconnecter</button>
-      </aside>
+    <!-- ── TAB BAR NAVIGATION ── -->
+    <nav class="profile-tabs-nav" aria-label="Navigation profil">
+      <button class="tab-btn active" data-tab="tab-profile">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profil & Abonnement</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-bookmarks">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        <span>Favoris</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-history">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>Historique de lecture</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-comments">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>Mes commentaires</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-newsletter">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <span>Newsletters</span>
+      </button>
+    </nav>
 
-      <section class="sub-card">
-        <span class="section-label" data-i18n="profile_sub_label">VOTRE ABONNEMENT</span>
+    <!-- ── TAB 1: PROFIL & ABONNEMENT ── -->
+    <div class="tab-content active" id="tab-profile">
+      <div class="profile-grid">
+        <aside class="id-card">
+          <div class="avatar-circle" id="user-initial">?</div>
+          <div class="user-name" id="user-name">Chargement...</div>
+          <div class="user-email" id="user-email">...</div>
+          <div class="user-role-badge" id="user-role-badge">Lecteur</div>
+          <button id="btn-logout" class="btn-logout" data-i18n="auth_logout">Se déconnecter</button>
+        </aside>
 
-        <div id="subscription-status-box" class="status-box">
-          <span class="status-label" data-i18n="profile_status_label">Statut actuel</span>
-          <span class="status-text" id="status-text">...</span>
+        <section class="sub-card">
+          <span class="section-label" data-i18n="profile_sub_label">VOTRE STATUT & ABONNEMENT</span>
+
+          <div id="subscription-status-box" class="status-box">
+            <span class="status-label" data-i18n="profile_status_label">Statut actuel</span>
+            <span class="status-text" id="status-text">...</span>
+          </div>
+
+          <div class="actions-area" id="subscription-actions">
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ── TAB 2: FAVORIS (À LIRE PLUS TARD) ── -->
+    <div class="tab-content" id="tab-bookmarks">
+      <div class="section-panel-card">
+        <div class="panel-header-row">
+          <div>
+            <h2 class="panel-title">Mes Favoris</h2>
+            <div class="panel-subtitle">Vos articles et contenus sauvegardés pour une lecture ultérieure.</div>
+          </div>
         </div>
 
-        <div class="actions-area" id="subscription-actions">
+        <div id="bookmarks-container" class="cards-list-grid">
+          <div class="empty-state">
+            <span class="empty-state-icon">🔖</span>
+            <div class="empty-state-text">Chargement de vos favoris...</div>
+          </div>
         </div>
-      </section>
+      </div>
+    </div>
+
+    <!-- ── TAB 3: HISTORIQUE DE LECTURE (20 DERNIERS ARTICLES) ── -->
+    <div class="tab-content" id="tab-history">
+      <div class="section-panel-card">
+        <div class="panel-header-row">
+          <div>
+            <h2 class="panel-title">Historique de lecture</h2>
+            <div class="panel-subtitle">Les 20 derniers articles consultés lors de votre navigation.</div>
+          </div>
+          <button class="btn-clear-history" id="btnClearHistory">Effacer l'historique</button>
+        </div>
+
+        <div id="history-container" class="history-list">
+          <div class="empty-state">
+            <span class="empty-state-icon">📜</span>
+            <div class="empty-state-text">Chargement de votre historique...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB 4: MES COMMENTAIRES (30 DERNIERS) ── -->
+    <div class="tab-content" id="tab-comments">
+      <div class="section-panel-card">
+        <div class="panel-header-row">
+          <div>
+            <h2 class="panel-title">Mes Commentaires</h2>
+            <div class="panel-subtitle">Retrouvez l'ensemble de vos contributions et interventions récentes (30 derniers).</div>
+          </div>
+        </div>
+
+        <div id="comments-container" class="comments-list">
+          <div class="empty-state">
+            <span class="empty-state-icon">💬</span>
+            <div class="empty-state-text">Chargement de vos commentaires...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB 5: NEWSLETTERS & ALERTES ── -->
+    <div class="tab-content" id="tab-newsletter">
+      <div class="section-panel-card">
+        <div class="panel-header-row">
+          <div>
+            <h2 class="panel-title">Espace Newsletter</h2>
+            <div class="panel-subtitle">Gérez vos abonnements aux synthèses par email pour rester informé des enjeux majeurs.</div>
+          </div>
+        </div>
+
+        <div class="newsletter-cards-grid">
+          <div class="newsletter-card">
+            <div>
+              <div class="newsletter-icon">📰</div>
+              <h3 class="newsletter-card-title">Le Briefing Quotidien</h3>
+              <div class="newsletter-card-desc">L'essentiel de l'actualité politique, économique et sociale au Cameroun envoyé chaque matin à 7h.</div>
+            </div>
+            <div class="newsletter-card-footer">
+              <span class="switch-label">Recevoir par email</span>
+              <label class="switch">
+                <input type="checkbox" id="nl-daily" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="newsletter-card">
+            <div>
+              <div class="newsletter-icon">🏛️</div>
+              <h3 class="newsletter-card-title">L'Hebdo Politique</h3>
+              <div class="newsletter-card-desc">Chaque samedi, une synthèse analytique des décryptages et des évolutions institutionnelles de la semaine.</div>
+            </div>
+            <div class="newsletter-card-footer">
+              <span class="switch-label">Recevoir par email</span>
+              <label class="switch">
+                <input type="checkbox" id="nl-weekly" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="newsletter-card">
+            <div>
+              <div class="newsletter-icon">🔍</div>
+              <h3 class="newsletter-card-title">Grand Format & Enquêtes</h3>
+              <div class="newsletter-card-desc">Notification exclusive dès la parution d'un dossier d'investigation ou d'une grande enquête inédite.</div>
+            </div>
+            <div class="newsletter-card-footer">
+              <span class="switch-label">Recevoir par email</span>
+              <label class="switch">
+                <input type="checkbox" id="nl-special" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:1.5rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:15px;">
+          <div>
+            <strong style="color:var(--primary-dark); font-size:1rem; display:block; margin-bottom:2px;">Email de réception :</strong>
+            <span id="nl-user-email" style="color:#64748B; font-size:0.9rem;">...</span>
+          </div>
+          <button type="button" class="btn-action btn-upgrade" id="btnSaveNewsletter" style="padding:10px 22px; font-size:0.9rem;">
+            Enregistrer mes préférences
+          </button>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -179,15 +330,13 @@
     <div class="modal-box">
       <span class="modal-icon">👋</span>
       <h3 class="modal-title" data-i18n="profile_cancel_modal_title">Nous sommes tristes de vous voir partir</h3>
-      <p class="modal-text" data-i18n="profile_cancel_modal_text">En résiliant maintenant, vous perdrez immédiatement l'accès aux articles d'analyse et aux
-        enquêtes exclusives de Solitiquo.</p>
+      <p class="modal-text" data-i18n="profile_cancel_modal_text">En résiliant maintenant, vous perdrez l'accès aux articles d'analyse et aux enquêtes exclusives de Solitiquo à l'échéance de votre abonnement.</p>
       <div class="modal-actions">
         <button class="btn-modal-keep" id="btn-keep-sub" data-i18n="btn_keep_sub">Je garde mon abonnement</button>
         <button class="btn-modal-confirm" id="btn-confirm-cancel" data-i18n="btn_confirm_cancel">Je confirme la résiliation</button>
       </div>
     </div>
   </div>
-
 
   <footer class="premium-footer">
     <div class="footer-inner">
@@ -238,11 +387,11 @@
   </footer>
 
   <script src="js/i18n.js"></script>
-  <script src="/js/solitiquo.js?v=38"></script>
+  <script src="/js/solitiquo.js?v=39"></script>
   <script src="js/config.js"></script>
-  <script src="/js/api.js?v=38"></script>
+  <script src="/js/api.js?v=39"></script>
   <script>
-    // --- NAVIGATION & RECHERCHE ---
+    // --- NAVIGATION MOBILE ---
     const burger = document.getElementById('burgerBtn');
     const mobileNav = document.getElementById('mobileNav');
     const mobileClose = document.getElementById('mobileNavClose');
@@ -255,23 +404,12 @@
     if (mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
     if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
 
-    // 🔥 FONCTIONS GLOBALES POUR LA MODALE (accessible depuis onclick)
+    // --- MODALE DE RÉSILIATION ---
     const modal = document.getElementById('cancelModal');
+    window.openCancelModal = function () { modal.classList.add('active'); }
+    window.closeCancelModal = function () { modal.classList.remove('active'); }
+    if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) window.closeCancelModal(); });
 
-    window.openCancelModal = function () {
-      modal.classList.add('active');
-    }
-
-    window.closeCancelModal = function () {
-      modal.classList.remove('active');
-    }
-
-    // Fermeture si on clique en dehors
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) window.closeCancelModal();
-    });
-
-    // Fonction réelle de résiliation
     window.confirmCancelAction = async function () {
       const btn = document.getElementById('btn-confirm-cancel');
       const originalText = btn.textContent;
@@ -279,7 +417,7 @@
       btn.disabled = true;
 
       try {
-        const res = await fetch(`${window.API_URL}/subscriptions/cancel`, {
+        const res = await fetch(`${window.API_URL || '/api'}/subscriptions/cancel`, {
           method: 'POST',
           headers: { 'X-CSRF-Token': SolitiquoAPI.csrfToken },
           credentials: 'include'
@@ -299,95 +437,364 @@
         btn.textContent = originalText;
         btn.disabled = false;
       }
-    }
+    };
 
-    // Boutons de la modale
-    document.getElementById('btn-keep-sub').addEventListener('click', window.closeCancelModal);
-    document.getElementById('btn-confirm-cancel').addEventListener('click', window.confirmCancelAction);
+    const keepBtn = document.getElementById('btn-keep-sub');
+    const confirmBtn = document.getElementById('btn-confirm-cancel');
+    if (keepBtn) keepBtn.addEventListener('click', window.closeCancelModal);
+    if (confirmBtn) confirmBtn.addEventListener('click', window.confirmCancelAction);
 
-    // Gestion Auth & Profil
+    // --- NAVIGATION PAR ONGLETS ---
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetTab = btn.getAttribute('data-tab');
+        tabBtns.forEach(b => b.classList.remove('active'));
+        tabContents.forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        const activeContent = document.getElementById(targetTab);
+        if (activeContent) activeContent.classList.add('active');
+      });
+    });
+
+    // --- CHARGEMENT DES DONNÉES DU PROFIL ---
     document.addEventListener('DOMContentLoaded', async () => {
-      await initLanguageSwitcher();
+      if (typeof initLanguageSwitcher === 'function') await initLanguageSwitcher();
 
-      // Récupérer infos utilisateur
       const user = await SolitiquoAPI.getProfile();
       if (!user) {
         window.location.href = 'auth.html';
         return;
       }
 
-      // Remplir carte identité
+      // Carte identité utilisateur
       document.getElementById('user-name').textContent = user.username;
       document.getElementById('user-email').textContent = user.email;
       document.getElementById('user-initial').textContent = user.username.charAt(0).toUpperCase();
+      document.getElementById('nl-user-email').textContent = user.email;
 
-      // Gérer l'affichage abonnement
+      const roleBadge = document.getElementById('user-role-badge');
+      if (user.role === 'admin' || user.role === 'writer') {
+        roleBadge.textContent = '⚡ Équipe Éditoriale';
+        roleBadge.style.background = '#FEF3C7';
+        roleBadge.style.color = '#92400E';
+      } else if (user.is_subscriber) {
+        roleBadge.textContent = '⭐ Abonné Premium';
+        roleBadge.style.background = '#DCFCE7';
+        roleBadge.style.color = '#166534';
+      } else {
+        roleBadge.textContent = 'Membre Gratuit';
+      }
+
+      // Statut d'abonnement
       const statusBox = document.getElementById('subscription-status-box');
       const statusText = document.getElementById('status-text');
       const actionArea = document.getElementById('subscription-actions');
 
-      // Cas Admin
       if (user.role === 'admin' || user.role === 'writer') {
         statusBox.className = "status-box status-active";
-        statusText.innerHTML = "⚡ ADMIN / ÉQUIPE";
+        statusText.innerHTML = "⚡ ADMIN / ÉQUIPE Éditoriale";
         actionArea.innerHTML = `
-                <h3>Compte Administrateur</h3>
-                <p>Vous disposez d'un accès illimité à tous les contenus et outils de gestion.</p>
-                <a href="admin.html" class="btn-action btn-upgrade">Accéder au Dashboard</a>
-            `;
-      }
-      // Cas Abonné
-      else if (user.is_subscriber) {
+          <h3>Compte Administrateur</h3>
+          <p>Vous disposez d'un accès illimité à tous les contenus, fonctionnalités d'édition et outils de gestion.</p>
+          <a href="admin.html" class="btn-action btn-upgrade">Accéder au Dashboard</a>
+        `;
+      } else if (user.is_subscriber) {
         statusBox.className = "status-box status-active";
         statusText.innerHTML = "✅ ACTIF (PREMIUM)";
 
-        // Affichage des dates si disponibles
         let dateInfo = '';
         if (user.subscription_end_date) {
           const endDate = new Date(user.subscription_end_date);
-          const formattedDate = endDate.toLocaleDateString('fr-FR', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          });
-          dateInfo = `<p style="font-size:0.9rem; color:#666; margin-top:10px;">Votre abonnement est valide jusqu'au <strong>${formattedDate}</strong>.</p>`;
+          const formattedDate = endDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' });
+          dateInfo = `<p style="font-size:0.9rem; color:#64748B; margin-top:10px;">Votre abonnement est valide jusqu'au <strong>${formattedDate}</strong>.</p>`;
         }
 
         actionArea.innerHTML = `
-                <h3>Profitez de votre lecture</h3>
-                <p>Vous avez accès à l'intégralité des articles et enquêtes sans publicité. Merci de votre soutien.</p>
-                ${dateInfo}
-                <button class="btn-action btn-cancel">Résilier mon abonnement</button>
-            `;
-      }
-      // Cas Gratuit
-      else {
+          <h3>Merci de votre soutien</h3>
+          <p>Vous avez accès à l'intégralité des articles, enquêtes exclusives et fonctionnalités audio sans publicité.</p>
+          ${dateInfo}
+          <button class="btn-action btn-cancel" onclick="window.openCancelModal()">Résilier mon abonnement</button>
+        `;
+      } else {
         statusBox.className = "status-box status-inactive";
-        statusText.innerHTML = "GRATUIT (LIMITÉ)";
+        statusText.innerHTML = "GRATUIT (ACCÈS LIMITÉ)";
         actionArea.innerHTML = `
-                <h3>Passez à la vitesse supérieure</h3>
-                <p>Débloquez les articles exclusifs et soutenez notre rédaction indépendante.</p>
-                <a href="abonnement.html" class="btn-action btn-upgrade">Découvrir les offres</a>
-            `;
+          <h3>Passez au Premium pour tout débloquer</h3>
+          <p>Profitez d'un accès illimité à l'ensemble de nos enquêtes exclusives et décryptages indépendants.</p>
+          
+          <div class="upgrade-banner-box">
+            <div class="upgrade-banner-title">Avantages réservés aux abonnés :</div>
+            <ul class="upgrade-perks-list">
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Accès illimité aux enquêtes</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Écoute audio & PDF imprimables</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Navigation sans publicité</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Soutien au journalisme libre</li>
+            </ul>
+            <a href="abonnement.html" class="btn-action btn-upgrade">S'abonner maintenant →</a>
+          </div>
+        `;
       }
 
-      // 🔥 IMPORTANT : Event listener APRES injection du HTML dynamique
-      // On utilise setTimeout pour s'assurer que le DOM est bien mis à jour
-      setTimeout(() => {
-        const cancelBtn = document.querySelector('.btn-cancel');
-        if (cancelBtn) {
-          console.log('✅ Bouton résiliation trouvé, ajout listener');
-          cancelBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('🔥 CLICK DÉTECTÉ !');
-            window.openCancelModal();
-          });
-        } else {
-          console.log('⚠️ Pas de bouton résiliation (utilisateur non abonné)');
-        }
-      }, 100);
+      // --- CHARGEMENT DES FAVORIS ---
+      loadUserBookmarks();
+
+      // --- CHARGEMENT DE L'HISTORIQUE DE LECTURE ---
+      loadReadingHistory();
+
+      // --- CHARGEMENT DES COMMENTAIRES ---
+      loadUserComments();
+
+      // --- NEWSLETTER PREFERENCES ---
+      initNewsletterPreferences();
     });
+
+    // --- CHARGEMENT FAVORIS ---
+    async function loadUserBookmarks() {
+      const container = document.getElementById('bookmarks-container');
+      if (!container) return;
+
+      const baseUrl = window.API_URL || '/api';
+      let bookmarks = [];
+
+      try {
+        const res = await fetch(`${baseUrl}/articles/bookmarks/my-bookmarks`, { credentials: 'include' });
+        const json = await res.json();
+        if (json.success && Array.isArray(json.bookmarks)) {
+          bookmarks = json.bookmarks;
+        }
+      } catch (err) {
+        console.warn('Fallback favoris local:', err);
+      }
+
+      // Si pas de résultat API, charger les favoris enregistrés en localStorage
+      if (!bookmarks || bookmarks.length === 0) {
+        try {
+          const localIds = JSON.parse(localStorage.getItem('solitiquo_bookmarks') || '[]');
+          if (localIds.length > 0) {
+            const allArticles = await SolitiquoAPI.getArticles();
+            if (Array.isArray(allArticles)) {
+              bookmarks = allArticles.filter(a => localIds.map(Number).includes(Number(a.id)));
+            }
+          }
+        } catch (_e) {}
+      }
+
+      if (!bookmarks || bookmarks.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <span class="empty-state-icon">🔖</span>
+            <div class="empty-state-text">Vous n'avez aucun article enregistré en favoris.</div>
+            <a href="index.html" class="btn-action btn-upgrade" style="font-size:0.85rem; padding:8px 20px;">Découvrir les articles</a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = bookmarks.map(art => `
+        <div class="item-card" id="bookmark-card-${art.id}">
+          ${art.image_url ? `<img src="${art.image_url}" class="item-card-img" alt="${art.title}" loading="lazy">` : `<div class="item-card-img" style="background:#E2E8F0;display:flex;align-items:center;justify-content:center;color:#94A3B8;font-size:2rem;">📰</div>`}
+          <div class="item-card-body">
+            <span class="item-card-cat">${art.category || 'Actualité'}</span>
+            <a href="article.html?id=${art.id}" class="item-card-title">${art.title}</a>
+            <div class="item-card-meta">
+              <span>⏱️ ${art.read_time || 3} min</span>
+              <button type="button" class="btn-remove-fav" onclick="removeBookmarkFromProfile(${art.id})" title="Retirer des favoris" aria-label="Retirer des favoris">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#C82823" stroke="#C82823" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function removeBookmarkFromProfile(articleId) {
+      const card = document.getElementById(`bookmark-card-${articleId}`);
+      if (card) card.remove();
+
+      // Mettre à jour localStorage
+      try {
+        let list = JSON.parse(localStorage.getItem('solitiquo_bookmarks') || '[]');
+        list = list.filter(id => Number(id) !== Number(articleId));
+        localStorage.setItem('solitiquo_bookmarks', JSON.stringify(list));
+      } catch (e) {}
+
+      // Mettre à jour backend API
+      const baseUrl = window.API_URL || '/api';
+      try {
+        let csrfToken = (window.SolitiquoAPI && SolitiquoAPI.csrfToken) || '';
+        if (!csrfToken) {
+          const tRes = await fetch(`${baseUrl}/csrf-token`, { credentials: 'include' });
+          const tJson = await tRes.json();
+          csrfToken = tJson?.csrfToken || '';
+        }
+        await fetch(`${baseUrl}/articles/${articleId}/bookmark`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+          credentials: 'include'
+        });
+      } catch (e) {}
+
+      const container = document.getElementById('bookmarks-container');
+      if (container && container.children.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <span class="empty-state-icon">🔖</span>
+            <div class="empty-state-text">Vous n'avez aucun article enregistré en favoris.</div>
+            <a href="index.html" class="btn-action btn-upgrade" style="font-size:0.85rem; padding:8px 20px;">Découvrir les articles</a>
+          </div>
+        `;
+      }
+    }
+
+    // --- CHARGEMENT HISTORIQUE LECTURE ---
+    function loadReadingHistory() {
+      const container = document.getElementById('history-container');
+      if (!container) return;
+
+      let history = [];
+      try {
+        history = JSON.parse(localStorage.getItem('solitiquo_reading_history') || '[]');
+      } catch (e) {}
+
+      if (!history || history.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <span class="empty-state-icon">📜</span>
+            <div class="empty-state-text">Votre historique de lecture est vide pour le moment.</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = history.slice(0, 20).map(art => {
+        const readDateStr = art.read_at ? new Date(art.read_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+        return `
+          <div class="history-item">
+            ${art.image_url ? `<img src="${art.image_url}" class="history-thumb" alt="${art.title}" loading="lazy">` : `<div class="history-thumb" style="display:flex;align-items:center;justify-content:center;color:#94A3B8;font-size:1.2rem;">📰</div>`}
+            <div class="history-info">
+              <a href="article.html?id=${art.id}" class="history-title">${art.title}</a>
+              <div class="history-date">Lu le ${readDateStr} · ${art.category || 'Actualité'}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const btnClear = document.getElementById('btnClearHistory');
+      if (btnClear) {
+        btnClear.addEventListener('click', () => {
+          localStorage.removeItem('solitiquo_reading_history');
+          loadReadingHistory();
+        });
+      }
+    }
+
+    // --- CHARGEMENT COMMENTAIRES (MAX 30) ---
+    async function loadUserComments() {
+      const container = document.getElementById('comments-container');
+      if (!container) return;
+
+      const baseUrl = window.API_URL || '/api';
+      try {
+        const res = await fetch(`${baseUrl}/comments/user/my-comments`, { credentials: 'include' });
+        const json = await res.json();
+
+        if (json.success && Array.isArray(json.comments) && json.comments.length > 0) {
+          container.innerHTML = json.comments.map(c => {
+            const dateStr = new Date(c.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const isEdited = c.is_edited ? '<span style="font-size:0.75rem; color:#94A3B8; margin-left:6px;">(modifié)</span>' : '';
+            return `
+              <div class="comment-history-item" id="comment-item-${c.id}">
+                <div class="comment-item-header">
+                  <a href="article.html?id=${c.article_id}" class="comment-article-link">📌 ${c.article_title || 'Article Solitiquo'}</a>
+                  <span class="${c.is_approved ? 'comment-badge-approved' : 'comment-badge-pending'}">${c.is_approved ? 'Approuvé' : 'En modération'}</span>
+                </div>
+                <div class="comment-item-body">${c.content}</div>
+                <div class="comment-item-footer">
+                  <span>Publié le ${dateStr} ${isEdited}</span>
+                  <button type="button" onclick="deleteCommentFromProfile(${c.id})" style="background:none;border:none;color:#BE123C;cursor:pointer;font-size:0.8rem;font-weight:600;">Supprimer</button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          container.innerHTML = `
+            <div class="empty-state">
+              <span class="empty-state-icon">💬</span>
+              <div class="empty-state-text">Vous n'avez pas encore publié de commentaire.</div>
+            </div>
+          `;
+        }
+      } catch (err) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <span class="empty-state-icon">💬</span>
+            <div class="empty-state-text">Aucun commentaire trouvé.</div>
+          </div>
+        `;
+      }
+    }
+
+    async function deleteCommentFromProfile(commentId) {
+      if (!confirm("Voulez-vous vraiment supprimer ce commentaire ?")) return;
+
+      const baseUrl = window.API_URL || '/api';
+      try {
+        let csrfToken = (window.SolitiquoAPI && SolitiquoAPI.csrfToken) || '';
+        if (!csrfToken) {
+          const tRes = await fetch(`${baseUrl}/csrf-token`, { credentials: 'include' });
+          const tJson = await tRes.json();
+          csrfToken = tJson?.csrfToken || '';
+        }
+
+        const res = await fetch(`${baseUrl}/comments/${commentId}`, {
+          method: 'DELETE',
+          headers: { 'X-CSRF-Token': csrfToken },
+          credentials: 'include'
+        });
+        const json = await res.json();
+        if (json.success) {
+          const item = document.getElementById(`comment-item-${commentId}`);
+          if (item) item.remove();
+        } else {
+          alert("❌ " + (json.error || "Erreur lors de la suppression"));
+        }
+      } catch (err) {
+        alert("❌ Erreur serveur lors de la suppression.");
+      }
+    }
+
+    // --- PREFERENCES NEWSLETTER ---
+    function initNewsletterPreferences() {
+      const btnSave = document.getElementById('btnSaveNewsletter');
+      if (!btnSave) return;
+
+      // Charger états sauvegardés
+      try {
+        const prefs = JSON.parse(localStorage.getItem('solitiquo_newsletter_prefs') || '{}');
+        if (typeof prefs.daily === 'boolean') document.getElementById('nl-daily').checked = prefs.daily;
+        if (typeof prefs.weekly === 'boolean') document.getElementById('nl-weekly').checked = prefs.weekly;
+        if (typeof prefs.special === 'boolean') document.getElementById('nl-special').checked = prefs.special;
+      } catch (e) {}
+
+      btnSave.addEventListener('click', () => {
+        const daily = document.getElementById('nl-daily').checked;
+        const weekly = document.getElementById('nl-weekly').checked;
+        const special = document.getElementById('nl-special').checked;
+
+        localStorage.setItem('solitiquo_newsletter_prefs', JSON.stringify({ daily, weekly, special }));
+
+        const origText = btnSave.textContent;
+        btnSave.textContent = '✓ Préférences enregistrées !';
+        btnSave.style.backgroundColor = '#166534';
+        setTimeout(() => {
+          btnSave.textContent = origText;
+          btnSave.style.backgroundColor = '';
+        }, 2500);
+      });
+    }
 
     // Bouton déconnexion
     document.getElementById('btn-logout').addEventListener('click', async (e) => {

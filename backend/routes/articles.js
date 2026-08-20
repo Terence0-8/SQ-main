@@ -758,6 +758,45 @@ router.post('/:id/bookmark', isAuthenticated, async (req, res) => {
   }
 });
 
+router.get('/bookmarks/my-bookmarks', isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    try {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS user_bookmarks (
+          user_id INT NOT NULL,
+          article_id INT NOT NULL,
+          created_at TIMESTAMP DEFAULT NOW(),
+          PRIMARY KEY (user_id, article_id)
+        );
+      `);
+    } catch (_e) {}
+
+    const query = `
+      SELECT 
+        a.id, 
+        a.title, 
+        a.slug, 
+        a.excerpt, 
+        a.category, 
+        a.image_url, 
+        a.read_time, 
+        a.is_premium, 
+        a.published_at,
+        b.created_at AS bookmarked_at
+      FROM user_bookmarks b
+      JOIN articles a ON b.article_id = a.id
+      WHERE b.user_id = $1
+      ORDER BY b.created_at DESC
+    `;
+    const { rows } = await pool.query(query, [userId]);
+    res.json({ success: true, bookmarks: rows });
+  } catch (err) {
+    console.error('❌ Erreur récupération favoris:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
 router.get('/:id/bookmark-status', async (req, res) => {
   try {
     const { id } = req.params;

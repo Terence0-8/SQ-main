@@ -2360,6 +2360,23 @@
           }
 
           const realArticleId = article.id || id;
+          try {
+            let history = JSON.parse(localStorage.getItem('solitiquo_reading_history') || '[]');
+            history = history.filter(item => String(item.id) !== String(realArticleId));
+            history.unshift({
+              id: realArticleId,
+              title: article.title,
+              slug: article.slug,
+              category: article.category,
+              published_at: article.published_at,
+              image_url: article.image_url,
+              read_time: article.read_time,
+              read_at: Date.now()
+            });
+            if (history.length > 20) history = history.slice(0, 20);
+            localStorage.setItem('solitiquo_reading_history', JSON.stringify(history));
+          } catch (_hErr) {}
+
           if (typeof initBookmarkButton === 'function') initBookmarkButton(realArticleId);
           if (typeof loadRelatedArticles === 'function') loadRelatedArticles(article);
           if (typeof loadComments === 'function') loadComments(realArticleId);
