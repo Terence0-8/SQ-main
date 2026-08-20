@@ -10,8 +10,25 @@ const SolitiquoAPI = {
       const response = await fetch(`${API_URL}/articles${query}`);
       if (!response.ok) throw new Error('Erreur réseau');
       const json = await response.json();
-      return json.data || [];
-    } catch (error) { console.error("Err articles:", error); return []; }
+      const articles = json.data || [];
+      if (articles.length > 0) {
+        try { localStorage.setItem('solitiquo_cached_articles', JSON.stringify(articles)); } catch (_e) {}
+      }
+      return articles;
+    } catch (error) {
+      console.warn("⚠️ Client Hors-ligne — Récupération des articles en cache/IndexedDB");
+      if (typeof showOfflineBanner === 'function') showOfflineBanner();
+      try {
+        if (window.SolitiquoOffline) {
+          const downloads = await window.SolitiquoOffline.getAllDownloads();
+          const offlineArticles = downloads.filter(d => d.type === 'article');
+          if (offlineArticles.length > 0) return offlineArticles;
+        }
+        const cached = localStorage.getItem('solitiquo_cached_articles');
+        if (cached) return JSON.parse(cached);
+      } catch (_e) {}
+      return [];
+    }
   },
 
   getArticleById: async (id) => {
@@ -27,7 +44,19 @@ const SolitiquoAPI = {
       if (!response.ok) throw new Error('Introuvable');
       const json = await response.json();
       return json.article || json.data;
-    } catch (error) { console.error("Err article:", error); return null; }
+    } catch (error) {
+      if (typeof showOfflineBanner === 'function') showOfflineBanner();
+      try {
+        if (window.SolitiquoOffline) {
+          const item = await window.SolitiquoOffline.getContent(id, 'article');
+          if (item) return item;
+        }
+        const cachedArticles = JSON.parse(localStorage.getItem('solitiquo_cached_articles') || '[]');
+        const found = cachedArticles.find(a => String(a.id) === String(id) || a.slug === id);
+        if (found) return found;
+      } catch (_e) {}
+      return null;
+    }
   },
 
   formatDate: (dateString, customLang) => {
@@ -45,8 +74,24 @@ const SolitiquoAPI = {
       const response = await fetch(`${API_URL}/podcasts?lang=${lang}`);
       if (!response.ok) throw new Error('Erreur réseau');
       const json = await response.json();
-      return json.data || [];
-    } catch (error) { console.error("Err podcasts:", error); return []; }
+      const podcasts = json.data || [];
+      if (podcasts.length > 0) {
+        try { localStorage.setItem('solitiquo_cached_podcasts', JSON.stringify(podcasts)); } catch (_e) {}
+      }
+      return podcasts;
+    } catch (error) {
+      if (typeof showOfflineBanner === 'function') showOfflineBanner();
+      try {
+        if (window.SolitiquoOffline) {
+          const downloads = await window.SolitiquoOffline.getAllDownloads();
+          const offlinePodcasts = downloads.filter(d => d.type === 'podcast');
+          if (offlinePodcasts.length > 0) return offlinePodcasts;
+        }
+        const cached = localStorage.getItem('solitiquo_cached_podcasts');
+        if (cached) return JSON.parse(cached);
+      } catch (_e) {}
+      return [];
+    }
   },
 
   getPodcastById: async (id) => {
@@ -56,7 +101,16 @@ const SolitiquoAPI = {
       if (!response.ok) throw new Error('Introuvable');
       const json = await response.json();
       return json.podcast;
-    } catch (error) { return null; }
+    } catch (error) {
+      if (typeof showOfflineBanner === 'function') showOfflineBanner();
+      try {
+        if (window.SolitiquoOffline) {
+          const item = await window.SolitiquoOffline.getContent(id, 'podcast');
+          if (item) return item;
+        }
+      } catch (_e) {}
+      return null;
+    }
   },
 
   // --- AUTHENTIFICATION ---
@@ -87,7 +141,7 @@ const SolitiquoAPI = {
         headers: { 'X-CSRF-Token': SolitiquoAPI.csrfToken },
         credentials: 'include'
       });
-      localStorage.clear(); // Nettoyage complet du localStorage
+      localStorage.clear();
       window.location.href = 'index.html';
     } catch (e) { console.error(e); }
   },
@@ -96,8 +150,19 @@ const SolitiquoAPI = {
     try {
       const res = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
       const json = await res.json();
-      return json.success && json.isLoggedIn ? json.user : null;
-    } catch (e) { return null; }
+      if (json.success && json.isLoggedIn && json.user) {
+        try { localStorage.setItem('solitiquo_cached_user', JSON.stringify(json.user)); } catch (_e) {}
+        return json.user;
+      }
+      return null;
+    } catch (e) {
+      if (typeof showOfflineBanner === 'function') showOfflineBanner();
+      try {
+        const cached = localStorage.getItem('solitiquo_cached_user');
+        if (cached) return JSON.parse(cached);
+      } catch (_err) {}
+      return null;
+    }
   },
 
   // --- UI MANAGEMENT (Cerveau Interface) ---
@@ -210,13 +275,34 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Réagir au changement de langue pour les éléments dynamiques
 document.addEventListener('languageChanged', (e) => {
   const lang = e.detail.lang;
-  // Si l'utilisateur n'est pas connecté, le bouton auth doit être retraduit
-  // (quand connecté, le texte est remplacé par le nom d'utilisateur — pas besoin de retraduire)
   const authBtns = document.querySelectorAll('.ph-btn-auth');
   authBtns.forEach(btn => {
-    // Seulement si le bouton pointe encore vers auth.html (= utilisateur non connecté)
     if (btn.href && btn.href.includes('auth.html')) {
       btn.textContent = lang === 'en' ? 'Sign in' : "S'identifier";
     }
   });
 });
+
+// ── DÉTECTION & BANNIÈRE MODE HORS-LIGNE ──
+window.showOfflineBanner = function() {
+  if (document.getElementById('offline-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'offline-banner';
+  banner.innerHTML = `
+    <div style="background:#1E293B; color:#F8FAFC; padding:10px 16px; text-align:center; font-size:0.88rem; font-weight:600; display:flex; align-items:center; justify-content:center; gap:10px; position:sticky; top:0; z-index:99999; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2.5"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+      <span>Mode Hors-ligne activé — Consultation des données locales et téléchargées.</span>
+      <a href="profil.html" style="color:#F59E0B; text-decoration:underline; font-weight:700; margin-left:6px;">Voir mes téléchargements →</a>
+    </div>
+  `;
+  document.body.prepend(banner);
+};
+
+window.addEventListener('offline', window.showOfflineBanner);
+if (typeof navigator !== 'undefined' && !navigator.onLine) {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', window.showOfflineBanner);
+  } else {
+    window.showOfflineBanner();
+  }
+}

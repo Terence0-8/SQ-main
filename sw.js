@@ -59,8 +59,21 @@ self.addEventListener('fetch', (event) => {
     // Ignorer les requêtes non-GET
     if (request.method !== 'GET') return;
 
-    // ── API : Network-Only (données toujours fraîches) ──
+    // ── API GET : Network-First avec fallback Cache si offline ──
     if (url.pathname.startsWith('/api/')) {
+        event.respondWith(
+            fetch(request)
+                .then((response) => {
+                    if (response && response.status === 200) {
+                        const clone = response.clone();
+                        caches.open('solitiquo-api-cache').then((cache) => cache.put(request, clone));
+                    }
+                    return response;
+                })
+                .catch(() => {
+                    return caches.match(request);
+                })
+        );
         return;
     }
 
