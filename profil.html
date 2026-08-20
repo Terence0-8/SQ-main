@@ -347,10 +347,22 @@
         </div>
 
         <div class="downloads-category-bar">
-          <button class="dl-cat-btn active" data-dltype="all">Tous (<span id="dl-count-all">0</span>)</button>
-          <button class="dl-cat-btn" data-dltype="article">📰 Articles (<span id="dl-count-article">0</span>)</button>
-          <button class="dl-cat-btn" data-dltype="podcast">🎙️ Podcasts (<span id="dl-count-podcast">0</span>)</button>
-          <button class="dl-cat-btn" data-dltype="emission">📺 Émissions (<span id="dl-count-emission">0</span>)</button>
+          <button class="dl-cat-btn active" data-dltype="all">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px; margin-right:4px;"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Tous (<span id="dl-count-all">0</span>)
+          </button>
+          <button class="dl-cat-btn" data-dltype="article">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px; margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Articles (<span id="dl-count-article">0</span>)
+          </button>
+          <button class="dl-cat-btn" data-dltype="podcast">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px; margin-right:4px;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            Podcasts (<span id="dl-count-podcast">0</span>)
+          </button>
+          <button class="dl-cat-btn" data-dltype="emission">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px; margin-right:4px;"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
+            Émissions (<span id="dl-count-emission">0</span>)
+          </button>
         </div>
 
         <div id="downloads-container" class="downloads-list-grid">
@@ -953,7 +965,7 @@
       }
 
       container.innerHTML = filtered.map(item => {
-        const typeLabel = item.type === 'podcast' ? '🎙️ Podcast' : item.type === 'emission' ? '📺 Émission' : '📰 Article';
+        const typeLabel = item.type === 'podcast' ? 'Podcast' : item.type === 'emission' ? 'Émission' : 'Article';
         const dateStr = item.downloaded_at ? new Date(item.downloaded_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : '';
         const metaInfo = item.type === 'podcast' ? `${item.duration || 'Audio'}` : `${item.read_time || 3} min de lecture`;
 
@@ -1000,7 +1012,10 @@
       if (item.audio_url) {
         mediaHTML = `
           <div style="background:#F8FAFC; border:1px solid #E2E8F0; padding:1.2rem; border-radius:12px; margin-bottom:1.5rem;">
-            <div style="font-weight:700; font-size:0.9rem; color:#37463D; margin-bottom:8px;">🎙️ Écoute Audio Hors-ligne</div>
+            <div style="font-weight:700; font-size:0.9rem; color:#37463D; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+              Écoute Audio Hors-ligne
+            </div>
             <audio controls style="width:100%;">
               <source src="${item.audio_url}" type="audio/mpeg">
               Votre navigateur ne supporte pas la lecture audio hors-ligne.

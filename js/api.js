@@ -118,12 +118,13 @@ const SolitiquoAPI = {
     const nav = document.querySelector('.ph-right');
 
     // 1. Bouton Profil (ciblé spécifiquement sans toucher au Dashboard)
+    const userIconSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px; margin-right:4px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
     const profileBtn = nav ? nav.querySelector('.ph-btn-auth:not(#nav-dash-btn)') : document.querySelector('.ph-btn-auth');
     if (profileBtn) {
       profileBtn.id = 'nav-profile-btn';
       profileBtn.removeAttribute('data-i18n');
       profileBtn.dataset.loggedIn = 'true';
-      profileBtn.textContent = `👤 ${user.username}`;
+      profileBtn.innerHTML = `${userIconSvg} <span>${user.username}</span>`;
       profileBtn.href = "profil.html";
       profileBtn.style.backgroundColor = "#f0f0f0";
       profileBtn.style.color = "#37463D";
@@ -141,7 +142,7 @@ const SolitiquoAPI = {
       link.dataset.loggedIn = 'true';
       const textSpan = link.querySelector('[data-i18n]');
       if (textSpan) textSpan.removeAttribute('data-i18n');
-      link.innerHTML = `👤 ${user.username}`;
+      link.innerHTML = `${userIconSvg} <span>${user.username}</span>`;
     });
 
     // 2. SI ADMIN : Ajouter le bouton Dashboard (une seule fois)
