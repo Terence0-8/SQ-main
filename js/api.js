@@ -284,14 +284,15 @@ document.addEventListener('languageChanged', (e) => {
   });
 });
 
-// ── DÉTECTION & BULLE FLOTTANTE MODE HORS-LIGNE (1s de délai) ──
-window.showOfflineBubble = function() {
-  if (document.getElementById('offline-bubble-toast')) return;
+// ── GESTION HORS-CONNEXION SOLITIQUO (CHARTE MARQUE) ──
 
-  // Affichage après 1 seconde de délai
+// 1. MODALE CENTRÉE DE PANNE SANS RÉSEAU (1s de délai + Flou d'arrière-plan)
+window.showOfflineModal = function() {
+  if (document.getElementById('offline-modal-overlay')) return;
+
   setTimeout(async () => {
-    if (navigator.onLine) return; // Annuler si le réseau est rétabli
-    if (document.getElementById('offline-bubble-toast')) return;
+    if (navigator.onLine) return; // Si la connexion est revenue entre-temps
+    if (document.getElementById('offline-modal-overlay')) return;
 
     let isPremiumUser = false;
     try {
@@ -301,83 +302,175 @@ window.showOfflineBubble = function() {
       }
     } catch (_e) {}
 
-    const bubble = document.createElement('div');
-    bubble.id = 'offline-bubble-toast';
-    bubble.style.cssText = `
+    const overlay = document.createElement('div');
+    overlay.id = 'offline-modal-overlay';
+    overlay.style.cssText = `
       position: fixed;
-      bottom: 24px;
-      right: 24px;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
       z-index: 999999;
-      max-width: 360px;
-      width: calc(100% - 48px);
-      background: rgba(30, 41, 59, 0.96);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      color: #F8FAFC;
-      padding: 18px 20px;
-      border-radius: 18px;
-      border: 1px solid ${isPremiumUser ? 'rgba(201, 162, 39, 0.4)' : 'rgba(200, 40, 35, 0.4)'};
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-      font-family: Inter, system-ui, -apple-system, sans-serif;
-      animation: offlineBubbleSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(55, 70, 61, 0.55);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      animation: offlineFadeIn 0.3s ease;
+      padding: 20px;
     `;
 
+    const box = document.createElement('div');
+    box.style.cssText = `
+      max-width: 440px;
+      width: 100%;
+      background: #FFFFFF;
+      border-radius: 24px;
+      padding: 32px 28px;
+      text-align: center;
+      border: 1px solid rgba(55, 70, 61, 0.12);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      position: relative;
+    `;
+
+    const accentColor = isPremiumUser ? '#C9A227' : '#C82823';
+
     if (isPremiumUser) {
-      bubble.innerHTML = `
-        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9A227" stroke-width="2.5"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
-            <strong style="font-size:0.95rem; font-weight:700; color:#FFF;">Mode Hors-connexion</strong>
-          </div>
-          <button type="button" onclick="this.closest('#offline-bubble-toast').remove()" style="background:none; border:none; color:#94A3B8; font-size:1.2rem; cursor:pointer; padding:0; line-height:1;">&times;</button>
+      box.innerHTML = `
+        <div style="width:64px; height:64px; margin:0 auto 18px auto; background:rgba(201, 162, 39, 0.12); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="1" y1="1" x2="23" y2="23"/>
+            <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
+            <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+            <path d="M10.71 5.05A16 16 0 0 1 22.56 9"/>
+            <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+            <circle cx="12" cy="20" r="1" fill="${accentColor}" stroke="none"/>
+          </svg>
         </div>
-        <p style="margin:10px 0 14px 0; font-size:0.85rem; color:#CBD5E1; line-height:1.5;">
-          Vous êtes actuellement hors-connexion. Consultez vos contenus enregistrés dans votre espace Téléchargements.
+        <h3 style="font-family:'Playfair Display', Georgia, serif; font-size:1.6rem; font-weight:700; color:#37463D; margin-bottom:10px; line-height:1.2;">
+          Mode Hors-connexion
+        </h3>
+        <p style="font-size:0.92rem; color:#475569; line-height:1.6; margin-bottom:24px;">
+          Vous êtes actuellement hors-connexion. Consultez vos contenus enregistrés en disponibilité hors-ligne directement dans votre espace Téléchargements.
         </p>
-        <a href="profil.html?tab=downloads" style="display:block; text-align:center; background:linear-gradient(135deg, #C9A227, #B08B1E); color:#FFF; font-weight:700; font-size:0.88rem; padding:10px 16px; border-radius:30px; text-decoration:none; box-shadow:0 4px 15px rgba(201, 162, 39, 0.3); transition:transform 0.2s;">
+        <a href="profil.html?tab=downloads" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:rgba(201, 162, 39, 0.12); color:#B08B1E; border:1px solid rgba(201, 162, 39, 0.4); padding:13px 24px; border-radius:30px; font-weight:700; font-size:0.95rem; text-decoration:none; box-shadow:0 4px 16px rgba(201, 162, 39, 0.15); transition:all 0.2s;">
           Voir mes téléchargements →
         </a>
+        <button type="button" onclick="document.getElementById('offline-modal-overlay')?.remove()" style="margin-top:14px; background:none; border:none; color:#94A3B8; font-size:0.85rem; font-weight:600; cursor:pointer; text-decoration:underline;">
+          Continuer la navigation hors-ligne
+        </button>
       `;
     } else {
-      bubble.innerHTML = `
-        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
-            <strong style="font-size:0.95rem; font-weight:700; color:#FFF;">Mode Hors-connexion</strong>
-          </div>
-          <button type="button" onclick="this.closest('#offline-bubble-toast').remove()" style="background:none; border:none; color:#94A3B8; font-size:1.2rem; cursor:pointer; padding:0; line-height:1;">&times;</button>
+      box.innerHTML = `
+        <div style="width:64px; height:64px; margin:0 auto 18px auto; background:rgba(200, 40, 35, 0.08); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="1" y1="1" x2="23" y2="23"/>
+            <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
+            <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+            <path d="M10.71 5.05A16 16 0 0 1 22.56 9"/>
+            <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+            <circle cx="12" cy="20" r="1" fill="${accentColor}" stroke="none"/>
+          </svg>
         </div>
-        <p style="margin:10px 0 14px 0; font-size:0.85rem; color:#CBD5E1; line-height:1.5;">
-          Vous êtes actuellement hors-connexion. La disponibilité des contenus hors-ligne est réservée aux abonnés Premium.
+        <h3 style="font-family:'Playfair Display', Georgia, serif; font-size:1.6rem; font-weight:700; color:#37463D; margin-bottom:10px; line-height:1.2;">
+          Mode Hors-connexion
+        </h3>
+        <p style="font-size:0.92rem; color:#475569; line-height:1.6; margin-bottom:24px;">
+          Vous êtes actuellement hors-connexion. La disponibilité des contenus hors-ligne est une fonctionnalité réservée aux abonnés Premium.
         </p>
-        <a href="abonnement.html" style="display:block; text-align:center; background:linear-gradient(135deg, #C82823, #901612); color:#FFF; font-weight:700; font-size:0.88rem; padding:10px 16px; border-radius:30px; text-decoration:none; box-shadow:0 4px 15px rgba(200, 40, 35, 0.3); transition:transform 0.2s;">
+        <a href="abonnement.html" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:rgba(200, 40, 35, 0.08); color:#C82823; border:1px solid rgba(200, 40, 35, 0.3); padding:13px 24px; border-radius:30px; font-weight:700; font-size:0.95rem; text-decoration:none; box-shadow:0 4px 16px rgba(200, 40, 35, 0.12); transition:all 0.2s;">
           S'abonner au Premium →
         </a>
+        <button type="button" onclick="document.getElementById('offline-modal-overlay')?.remove()" style="margin-top:14px; background:none; border:none; color:#94A3B8; font-size:0.85rem; font-weight:600; cursor:pointer; text-decoration:underline;">
+          Fermer cette fenêtre
+        </button>
       `;
     }
 
-    if (!document.getElementById('offline-bubble-anim')) {
+    if (!document.getElementById('offline-modal-style')) {
       const style = document.createElement('style');
-      style.id = 'offline-bubble-anim';
+      style.id = 'offline-modal-style';
       style.textContent = `
-        @keyframes offlineBubbleSlideUp {
-          from { opacity: 0; transform: translateY(20px) scale(0.95); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
+        @keyframes offlineFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
       `;
       document.head.appendChild(style);
     }
 
-    document.body.appendChild(bubble);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
   }, 1000);
 };
 
-window.showOfflineBanner = window.showOfflineBubble;
-window.addEventListener('offline', window.showOfflineBubble);
+// 2. BULLE DISCRÈTE LORSQUE LA CONNEXION EST RÉTABLIE
+window.showOnlineToast = function() {
+  // Fermer la modale hors-ligne si elle est encore affichée
+  document.getElementById('offline-modal-overlay')?.remove();
+  if (document.getElementById('online-bubble-toast')) return;
+
+  const bubble = document.createElement('div');
+  bubble.id = 'online-bubble-toast';
+  bubble.style.cssText = `
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 999999;
+    max-width: 320px;
+    width: calc(100% - 48px);
+    background: rgba(55, 70, 61, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #F8FBF1;
+    padding: 14px 18px;
+    border-radius: 16px;
+    border: 1px solid rgba(134, 239, 172, 0.4);
+    box-shadow: 0 12px 30px rgba(55, 70, 61, 0.25);
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: offlineFadeIn 0.3s ease;
+  `;
+
+  bubble.innerHTML = `
+    <div style="width:32px; height:32px; border-radius:50%; background:rgba(134, 239, 172, 0.2); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#86EFAC" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <div style="flex:1;">
+      <div style="font-weight:700; font-size:0.88rem; color:#FFF;">Connexion rétablie</div>
+      <div style="font-size:0.78rem; color:#D1FAE5; margin-top:2px;">Vous êtes à nouveau connecté.</div>
+    </div>
+    <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:#A7F3D0; font-size:1.1rem; cursor:pointer; padding:0; line-height:1;">&times;</button>
+  `;
+
+  document.body.appendChild(bubble);
+
+  // Disparaît automatiquement après 4 secondes
+  setTimeout(() => {
+    bubble.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+    bubble.style.opacity = '0';
+    bubble.style.transform = 'translateY(10px)';
+    setTimeout(() => bubble.remove(), 400);
+  }, 4000);
+};
+
+// Listeners
+window.showOfflineBanner = window.showOfflineModal;
+window.addEventListener('offline', window.showOfflineModal);
+window.addEventListener('online', window.showOnlineToast);
+
 if (typeof navigator !== 'undefined' && !navigator.onLine) {
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', window.showOfflineBubble);
+    document.addEventListener('DOMContentLoaded', window.showOfflineModal);
   } else {
-    window.showOfflineBubble();
+    window.showOfflineModal();
   }
 }
