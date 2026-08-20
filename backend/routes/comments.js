@@ -101,6 +101,7 @@ router.get(['/:articleId', '/article/:articleId'], async (req, res) => {
 
     try {
       await pool.query('ALTER TABLE comments ADD COLUMN IF NOT EXISTS upvotes INT DEFAULT 0;');
+      await pool.query('ALTER TABLE comments ADD COLUMN IF NOT EXISTS is_edited BOOLEAN DEFAULT FALSE;');
       await pool.query('CREATE TABLE IF NOT EXISTS comment_upvotes (user_id INT NOT NULL, comment_id INT NOT NULL, created_at TIMESTAMP DEFAULT NOW(), PRIMARY KEY (user_id, comment_id));');
     } catch (_err) {
       /* ignore */
@@ -114,6 +115,7 @@ router.get(['/:articleId', '/article/:articleId'], async (req, res) => {
           c.content, 
           c.created_at,
           c.user_id,
+          COALESCE(c.is_edited, false) AS is_edited,
           COALESCE(c.upvotes, 0) AS upvotes,
           COALESCE(u.username, 'Lecteur Solitiquo') AS username,
           EXISTS(SELECT 1 FROM comment_upvotes cu WHERE cu.comment_id = c.id AND cu.user_id = $2) AS user_voted
@@ -132,6 +134,7 @@ router.get(['/:articleId', '/article/:articleId'], async (req, res) => {
           c.content, 
           c.created_at,
           c.user_id,
+          COALESCE(c.is_edited, false) AS is_edited,
           0 AS upvotes,
           COALESCE(u.username, 'Lecteur Solitiquo') AS username,
           false AS user_voted
@@ -348,9 +351,9 @@ router.delete('/:id', isAuthenticated, async (req, res) => {
 });
 
 // ==========================================
-// 4. MODIFIER SON PROPRE COMMENTAIRE
+// 4. MODIFIER SON PROPRE COMMENTAIRE (1 seule fois)
 // ==========================================
-router.put('/:id', isAuthenticated, async (req, res) => {
+router.put('/:id', isAuthenticated, verifyCsrf, async (req, res) => {
   try {
     const { id } = req.params;
     const user_id = req.session.user.id;
@@ -372,7 +375,7 @@ router.put('/:id', isAuthenticated, async (req, res) => {
 
     // Vérifier que le commentaire appartient à l'utilisateur
     const checkQuery = `
-      SELECT id, user_id FROM comments WHERE id = $1
+      SELECT id, user_id, COALESCE(is_edited, false) AS is_edited FROM comments WHERE id = $1
     `;
     const checkResult = await pool.query(checkQuery, [id]);
 
@@ -390,6 +393,13 @@ router.put('/:id', isAuthenticated, async (req, res) => {
       });
     }
 
+    if (checkResult.rows[0].is_edited) {
+      return res.status(403).json({
+        success: false,
+        error: 'Ce commentaire a déjà été modifié une fois. Modification supplémentaire non autorisée.'
+      });
+    }
+
     // Modération automatique du nouveau contenu
     const bannedCheck = containsBannedWord(content);
 
@@ -404,8 +414,12 @@ router.put('/:id', isAuthenticated, async (req, res) => {
     // ✅ SANITISATION XSS — strip tout HTML du commentaire modifié
     const safeContent = sanitizeText(content);
 
+    try {
+      await pool.query('ALTER TABLE comments ADD COLUMN IF NOT EXISTS is_edited BOOLEAN DEFAULT FALSE;');
+    } catch (_e) {}
+
     await pool.query(
-      'UPDATE comments SET content = $1, is_approved = $2, updated_at = NOW() WHERE id = $3',
+      'UPDATE comments SET content = $1, is_approved = $2, is_edited = TRUE, updated_at = NOW() WHERE id = $3',
       [safeContent, is_approved, id]
     );
 
