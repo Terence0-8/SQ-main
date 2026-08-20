@@ -178,6 +178,7 @@
             <li><strong data-i18n="podcast_duration">Durée :</strong> <span id="pod-duration"></span></li>
             <li><strong data-i18n="article_published">Date :</strong> <span id="pod-date"></span></li>
           </ul>
+          <div id="pod-actions-bar" style="margin-top:18px;"></div>
           <div id="chapters-block" style="display:none; margin-top:30px;">
             <h3 class="info-title">Sommaire</h3>
             <ul id="chapters-list" style="list-style:none; padding:0;"></ul>
@@ -370,9 +371,71 @@
               date: pod.published_at ? SolitiquoAPI.formatDate(pod.published_at) : '',
               category: pod.category || 'Podcast',
               cover: pod.cover_image || pod.image_url || 'https://images.unsplash.com/photo-1589903308904-1010c2294adc?w=600',
-              transcriptId: 'transcript-data'
-            }
-          );
+          // 7. Bouton de sauvegarde Hors-ligne
+          const user = await SolitiquoAPI.getProfile();
+          const isPro = user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer');
+          const actionsBar = document.getElementById('pod-actions-bar');
+          if (actionsBar) {
+            const dlBtn = document.createElement('button');
+            dlBtn.className = 'btn-action btn-upgrade';
+            dlBtn.style.cssText = 'font-size:0.88rem; padding:10px 22px;';
+
+            const updateOfflineState = async () => {
+              if (!isPro) {
+                dlBtn.innerHTML = `
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Hors-ligne <span class="premium-lock">🔒</span>`;
+                dlBtn.title = 'Réservé aux abonnés Premium';
+                return;
+              }
+              const isSaved = window.SolitiquoOffline && await SolitiquoOffline.isDownloaded(pod.id || id, 'podcast');
+              if (isSaved) {
+                dlBtn.innerHTML = `
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#15803D" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span style="color:#15803D; font-weight:700;">Hors-ligne ✓</span>`;
+                dlBtn.style.background = '#DCFCE7';
+                dlBtn.style.borderColor = '#86EFAC';
+              } else {
+                dlBtn.innerHTML = `
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Hors-ligne`;
+                dlBtn.style.background = '';
+                dlBtn.style.borderColor = '';
+              }
+            };
+
+            updateOfflineState();
+
+            dlBtn.addEventListener('click', async () => {
+              if (!isPro) {
+                alert("La sauvegarde hors-ligne est réservée aux abonnés Premium.");
+                return;
+              }
+              if (!window.SolitiquoOffline) return;
+              const isSaved = await SolitiquoOffline.isDownloaded(pod.id || id, 'podcast');
+              if (isSaved) {
+                await SolitiquoOffline.removeContent(pod.id || id, 'podcast');
+                alert("Podcast retiré des contenus hors-ligne.");
+              } else {
+                await SolitiquoOffline.saveContent({
+                  id: pod.id || id,
+                  type: 'podcast',
+                  title: pod.title,
+                  category: pod.category || 'Podcast',
+                  image_url: pod.cover_image || pod.image_url,
+                  audio_url: pod.audio_url,
+                  duration: durStr,
+                  author: pod.author || 'Média Audio Solitiquo',
+                  content: pod.description,
+                  published_at: pod.created_at
+                });
+                alert("✓ Podcast disponible hors-ligne dans Mon Compte > Téléchargements !");
+              }
+              updateOfflineState();
+            });
+
+            actionsBar.appendChild(dlBtn);
+          }
         } else {
           document.getElementById('loading-container').innerHTML = "<p>Épisode introuvable.</p>";
         }
