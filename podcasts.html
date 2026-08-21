@@ -329,8 +329,8 @@
                           <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                           ${t('btn_listen_now', 'Écouter maintenant')}
                       </a>
-                      <button type="button" id="hero-pod-dl-btn" class="btn-action btn-upgrade" style="padding:14px 26px; font-size:0.92rem; border-radius:30px; display:inline-flex; align-items:center; gap:8px;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      <button type="button" id="hero-pod-dl-btn" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; background:rgba(255,255,255,0.12); color:#FFFFFF; border:1px solid rgba(255,255,255,0.25); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); padding:13px 26px; border-radius:30px; font-weight:700; font-size:0.92rem; cursor:pointer; transition:all 0.25s ease; width:auto;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         <span>Télécharger</span>
                       </button>
                     </div>
@@ -344,26 +344,47 @@
             const user = await SolitiquoAPI.getProfile().catch(() => null);
             const isPro = user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer');
 
+            heroDlBtn.addEventListener('mouseenter', () => {
+              if (heroDlBtn.dataset.saved === 'true') {
+                heroDlBtn.style.background = '#BBF7D0';
+              } else {
+                heroDlBtn.style.background = 'rgba(255,255,255,0.22)';
+                heroDlBtn.style.borderColor = 'rgba(255,255,255,0.45)';
+              }
+              heroDlBtn.style.transform = 'translateY(-2px)';
+            });
+            heroDlBtn.addEventListener('mouseleave', () => {
+              if (heroDlBtn.dataset.saved === 'true') {
+                heroDlBtn.style.background = '#DCFCE7';
+              } else {
+                heroDlBtn.style.background = 'rgba(255,255,255,0.12)';
+                heroDlBtn.style.borderColor = 'rgba(255,255,255,0.25)';
+              }
+              heroDlBtn.style.transform = 'translateY(0)';
+            });
+
             const updateHeroBtn = async () => {
               if (!isPro) {
                 heroDlBtn.innerHTML = `
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   <span>Télécharger <span class="premium-lock">🔒</span></span>`;
                 return;
               }
               const isSaved = window.SolitiquoOffline && await SolitiquoOffline.isDownloaded(une.id, 'podcast');
               if (isSaved) {
+                heroDlBtn.dataset.saved = 'true';
                 heroDlBtn.innerHTML = `
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#15803D" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                   <span style="color:#15803D; font-weight:700;">Téléchargé ✓</span>`;
                 heroDlBtn.style.background = '#DCFCE7';
                 heroDlBtn.style.borderColor = '#86EFAC';
               } else {
+                heroDlBtn.dataset.saved = 'false';
                 heroDlBtn.innerHTML = `
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   <span>Télécharger</span>`;
-                heroDlBtn.style.background = '';
-                heroDlBtn.style.borderColor = '';
+                heroDlBtn.style.background = 'rgba(255,255,255,0.12)';
+                heroDlBtn.style.borderColor = 'rgba(255,255,255,0.25)';
               }
             };
 
@@ -372,14 +393,16 @@
             heroDlBtn.addEventListener('click', async (e) => {
               e.preventDefault(); e.stopPropagation();
               if (!isPro) {
-                if (typeof showSolitiquoToast === 'function') showSolitiquoToast("Le téléchargement est réservé aux abonnés Premium.", true);
+                if (typeof showPodcastPremiumModal === 'function') showPodcastPremiumModal();
                 return;
               }
               if (!window.SolitiquoOffline) return;
               const isSaved = await SolitiquoOffline.isDownloaded(une.id, 'podcast');
               if (isSaved) {
                 await SolitiquoOffline.removeContent(une.id, 'podcast');
-                if (typeof showSolitiquoToast === 'function') showSolitiquoToast("Podcast retiré des téléchargements.");
+                if (typeof showPodcastDownloadToast === 'function') {
+                  showPodcastDownloadToast("Podcast retiré de vos téléchargements.", false);
+                }
               } else {
                 await SolitiquoOffline.saveContent({
                   id: une.id,
@@ -393,7 +416,9 @@
                   content: une.description,
                   published_at: une.created_at
                 });
-                if (typeof showSolitiquoToast === 'function') showSolitiquoToast("✓ Podcast disponible hors-ligne dans Mon Compte > Téléchargements !");
+                if (typeof showPodcastDownloadToast === 'function') {
+                  showPodcastDownloadToast("🎧 Épisode ajouté à vos téléchargements ! Vous pouvez l'écouter à tout moment hors-ligne.", true);
+                }
               }
               updateHeroBtn();
             });
@@ -532,16 +557,7 @@
           btn.addEventListener('click', async (e) => {
             e.preventDefault(); e.stopPropagation();
             if (!isPro) {
-              document.getElementById('premium-tooltip') && document.getElementById('premium-tooltip').remove();
-              const tip = document.createElement('div');
-              tip.id = 'premium-tooltip';
-              tip.innerHTML = '<strong>Disponible Hors-ligne 🔒</strong><p style="margin:.5rem 0;color:#64748b;font-size:.85rem;">Écoutez nos podcasts hors-connexion en vous abonnant.</p><a href="abonnement.html" style="display:block;margin-top:10px;background:#37463D;color:#fff;padding:8px 16px;border-radius:20px;text-decoration:none;font-weight:700;">S\'abonner</a>';
-              tip.style.cssText = 'position:fixed;width:230px;background:#fff;border:1px solid #e0e0e0;border-radius:16px;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.15);z-index:9999;font-family:Inter,sans-serif;font-size:.85rem;text-align:center;';
-              document.body.appendChild(tip);
-              const r = btn.getBoundingClientRect();
-              tip.style.top = (r.bottom + 8) + 'px';
-              tip.style.left = Math.min(r.left, window.innerWidth - 248) + 'px';
-              setTimeout(() => document.addEventListener('click', function h(ev) { if (!tip.contains(ev.target)) { tip.remove(); document.removeEventListener('click', h); } }, true), 10);
+              if (typeof showPodcastPremiumModal === 'function') showPodcastPremiumModal();
               return;
             }
 
@@ -550,7 +566,9 @@
               const isSaved = await window.SolitiquoOffline.isDownloaded(idParam, 'podcast');
               if (isSaved) {
                 await window.SolitiquoOffline.removeContent(idParam, 'podcast');
-                if (typeof showSolitiquoToast === 'function') showSolitiquoToast("Podcast retiré des téléchargements.");
+                if (typeof showPodcastDownloadToast === 'function') {
+                  showPodcastDownloadToast("Podcast retiré de vos téléchargements.", false);
+                }
               } else {
                 const podRes = await fetch(window.API_URL + '/podcasts/' + idParam).then(r => r.json());
                 const podData = podRes.podcast || podRes.data;
@@ -567,7 +585,9 @@
                     content: podData.description,
                     published_at: podData.created_at
                   });
-                  if (typeof showSolitiquoToast === 'function') showSolitiquoToast("✓ Podcast disponible hors-ligne dans Mon Compte > Téléchargements !");
+                  if (typeof showPodcastDownloadToast === 'function') {
+                    showPodcastDownloadToast("🎧 Épisode ajouté à vos téléchargements ! Vous pouvez l'écouter à tout moment hors-ligne.", true);
+                  }
                 }
               }
               updatePodOfflineBtn();

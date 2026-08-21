@@ -517,6 +517,143 @@ window.showSolitiquoToast = function(message, isWarning = false) {
   }, 3500);
 };
 
+// ── BULLES DE DIALOGUE DÉDIÉES AU TÉLÉCHARGEMENT DES PODCASTS ──
+
+window.showPodcastDownloadToast = function(message, isSuccess = true, linkUrl = 'profil.html?tab=downloads', linkText = 'Voir mes téléchargements →') {
+  const existing = document.getElementById('podcast-download-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'podcast-download-toast';
+  toast.style.cssText = `
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 999999;
+    max-width: 380px;
+    width: calc(100% - 48px);
+    background: rgba(30, 41, 35, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    color: #F8FBF1;
+    padding: 18px 20px;
+    border-radius: 20px;
+    border: 1px solid ${isSuccess ? 'rgba(201, 162, 39, 0.4)' : 'rgba(239, 68, 68, 0.4)'};
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    animation: podToastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  `;
+
+  if (!document.getElementById('pod-toast-anim')) {
+    const style = document.createElement('style');
+    style.id = 'pod-toast-anim';
+    style.textContent = `
+      @keyframes podToastSlideIn {
+        from { opacity: 0; transform: translateY(20px) scale(0.95); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  toast.innerHTML = `
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="width:36px; height:36px; border-radius:50%; background:${isSuccess ? 'rgba(201, 162, 39, 0.15)' : 'rgba(239, 68, 68, 0.15)'}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${isSuccess ? '#C9A227' : '#EF4444'}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+        </div>
+        <div>
+          <strong style="font-size:0.95rem; font-weight:700; color:#FFF; font-family:'Playfair Display', serif;">Podcast Solitiquo</strong>
+          <p style="margin:2px 0 0 0; font-size:0.83rem; color:#CBD5E1; line-height:1.4;">${message}</p>
+        </div>
+      </div>
+      <button type="button" onclick="this.closest('#podcast-download-toast').remove()" style="background:none; border:none; color:#94A3B8; font-size:1.2rem; cursor:pointer; padding:0; line-height:1;">&times;</button>
+    </div>
+    ${isSuccess ? `
+      <a href="${linkUrl}" style="display:inline-flex; align-items:center; gap:6px; margin-top:12px; font-size:0.82rem; font-weight:700; color:#C9A227; text-decoration:none; transition:opacity 0.2s;">
+        ${linkText}
+      </a>
+    ` : ''}
+  `;
+
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(10px)';
+    setTimeout(() => toast.remove(), 400);
+  }, 4500);
+};
+
+window.showPodcastPremiumModal = function() {
+  const existing = document.getElementById('pod-premium-modal-overlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'pod-premium-modal-overlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(55, 70, 61, 0.6);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    animation: podModalFade 0.3s ease;
+    padding: 20px;
+  `;
+
+  const box = document.createElement('div');
+  box.style.cssText = `
+    max-width: 420px;
+    width: 100%;
+    background: #FFFFFF;
+    border-radius: 24px;
+    padding: 32px 28px;
+    text-align: center;
+    border: 1px solid rgba(55, 70, 61, 0.12);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.28);
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+  `;
+
+  box.innerHTML = `
+    <div style="width:64px; height:64px; margin:0 auto 18px auto; background:rgba(200, 40, 35, 0.08); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C82823" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        <line x1="12" y1="19" x2="12" y2="23"/>
+        <line x1="8" y1="23" x2="16" y2="23"/>
+      </svg>
+    </div>
+    <h3 style="font-family:'Playfair Display', Georgia, serif; font-size:1.5rem; font-weight:700; color:#37463D; margin-bottom:10px; line-height:1.2;">
+      Téléchargement des Podcasts 🔒
+    </h3>
+    <p style="font-size:0.9rem; color:#475569; line-height:1.6; margin-bottom:24px;">
+      La sauvegarde et l'écoute hors-ligne de nos émissions audio sont réservées aux abonnés Premium Solitiquo.
+    </p>
+    <a href="abonnement.html" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:#C82823; color:#FFFFFF; border:none; padding:13px 24px; border-radius:30px; font-weight:700; font-size:0.95rem; text-decoration:none; box-shadow:0 4px 16px rgba(200, 40, 35, 0.25); transition:all 0.2s;">
+      S'abonner au Premium →
+    </a>
+    <button type="button" onclick="document.getElementById('pod-premium-modal-overlay')?.remove()" style="margin-top:14px; background:none; border:none; color:#94A3B8; font-size:0.85rem; font-weight:600; cursor:pointer; text-decoration:underline;">
+      Fermer cette fenêtre
+    </button>
+  `;
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+};
+
 if (typeof navigator !== 'undefined' && !navigator.onLine) {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', window.showOfflineModal);

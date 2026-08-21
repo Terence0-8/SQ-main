@@ -412,14 +412,16 @@
 
             dlBtn.addEventListener('click', async () => {
               if (!isPro) {
-                if (typeof showSolitiquoToast === 'function') showSolitiquoToast("Le téléchargement est réservé aux abonnés Premium.", true);
+                if (typeof showPodcastPremiumModal === 'function') showPodcastPremiumModal();
                 return;
               }
               if (!window.SolitiquoOffline) return;
               const isSaved = await SolitiquoOffline.isDownloaded(pod.id || id, 'podcast');
               if (isSaved) {
                 await SolitiquoOffline.removeContent(pod.id || id, 'podcast');
-                if (typeof showSolitiquoToast === 'function') showSolitiquoToast("Podcast retiré des téléchargements.");
+                if (typeof showPodcastDownloadToast === 'function') {
+                  showPodcastDownloadToast("Podcast retiré de vos téléchargements.", false);
+                }
               } else {
                 await SolitiquoOffline.saveContent({
                   id: pod.id || id,
@@ -433,7 +435,9 @@
                   content: pod.description,
                   published_at: pod.created_at
                 });
-                if (typeof showSolitiquoToast === 'function') showSolitiquoToast("✓ Podcast disponible hors-ligne dans Mon Compte > Téléchargements !");
+                if (typeof showPodcastDownloadToast === 'function') {
+                  showPodcastDownloadToast("🎧 Épisode ajouté à vos téléchargements ! Vous pouvez l'écouter à tout moment hors-ligne.", true);
+                }
               }
               updateOfflineState();
             });
