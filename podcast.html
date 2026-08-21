@@ -305,19 +305,28 @@
       // 3. Récupération des infos du podcast (en ligne ou hors-ligne via IndexedDB)
       try {
         let pod = null;
-        if (typeof SolitiquoAPI !== 'undefined' && SolitiquoAPI.getPodcastById) {
-          pod = await SolitiquoAPI.getPodcastById(id);
-        } else {
-          const res = await fetch(`${window.API_URL}/podcasts/${id}?lang=${getLanguage()}`);
-          const json = await res.json();
-          if (json.success) pod = json.podcast;
-        }
+        try {
+          if (navigator.onLine && typeof SolitiquoAPI !== 'undefined' && SolitiquoAPI.getPodcastById) {
+            pod = await SolitiquoAPI.getPodcastById(id);
+          }
+        } catch (_netErr) {}
 
         if (!pod && window.SolitiquoOffline) {
           pod = await window.SolitiquoOffline.getContent(id, 'podcast');
         }
 
         if (pod) {
+          // Si disponible hors-ligne avec un Blob audio/image local
+          if (pod.audio_blob) {
+            try { pod.audio_url = URL.createObjectURL(pod.audio_blob); } catch(_e) {}
+          }
+          if (pod.image_blob) {
+            try {
+              const imgUrl = URL.createObjectURL(pod.image_blob);
+              pod.image_url = imgUrl;
+              pod.cover_image = imgUrl;
+            } catch(_e) {}
+          }
           // 4. Remplir la page avec les données
           document.title = `${pod.title} — Solitiquo`;
           document.getElementById('pod-desc').textContent = pod.content || pod.description;

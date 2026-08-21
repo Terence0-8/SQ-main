@@ -40,11 +40,12 @@ self.addEventListener('install', (event) => {
 
 // ── ACTIVATE : nettoyage des anciens caches ──
 self.addEventListener('activate', (event) => {
+    const PRESERVED_CACHES = [CACHE_NAME, 'solitiquo-offline-media', 'solitiquo-api-cache'];
     event.waitUntil(
         caches.keys().then((keys) =>
             Promise.all(
                 keys
-                    .filter((key) => key !== CACHE_NAME)
+                    .filter((key) => !PRESERVED_CACHES.includes(key))
                     .map((key) => caches.delete(key))
             )
         ).then(() => self.clients.claim())

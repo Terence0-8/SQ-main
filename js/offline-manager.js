@@ -73,13 +73,35 @@ const SolitiquoOffline = (function() {
         downloaded_at: new Date().toISOString()
       };
 
+      // Téléchargement réel des fichiers audio et image en Blob pour l'écoute 100% hors-ligne
+      if (item.audio_url) {
+        try {
+          const audioRes = await fetch(item.audio_url).catch(() => null);
+          if (audioRes && audioRes.ok) {
+            record.audio_blob = await audioRes.blob();
+          }
+        } catch (e) {
+          console.warn('⚠️ Pré-téléchargement du flux audio en Blob impossible:', e);
+        }
+      }
+
+      if (item.image_url) {
+        try {
+          const imgRes = await fetch(item.image_url).catch(() => null);
+          if (imgRes && imgRes.ok) {
+            record.image_blob = await imgRes.blob();
+          }
+        } catch (e) {
+          console.warn('⚠️ Pré-téléchargement de l\'image en Blob impossible:', e);
+        }
+      }
+
       return new Promise((resolve) => {
         const tx = db.transaction(STORE_NAME, 'readwrite');
         const store = tx.objectStore(STORE_NAME);
         const req = store.put(record);
 
         req.onsuccess = () => {
-          // Pré-cacher les ressources médias (images, audio) dans le cache SW si possible
           if ('caches' in window && record.image_url) {
             caches.open('solitiquo-offline-media').then(cache => {
               cache.add(record.image_url).catch(() => {});
