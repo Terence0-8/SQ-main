@@ -438,7 +438,12 @@
                                 <span>• ${Math.floor(pod.duration / 60)} min</span>
                             </div>
                         </div>
-                        <div class="hl-play-icon">▶</div>
+                        <div style="display:flex; align-items:center; gap:8px; margin-right:12px; align-self:center; flex-shrink:0;">
+                          <button type="button" class="btn-dl-circle-icon" data-pod-id="${pod.id}" title="Télécharger l'épisode" style="width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.25); color:#FFF; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.25s ease;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                          </button>
+                          <div class="hl-play-icon">▶</div>
+                        </div>
                     </a>
                 `).join('');
             setTimeout(initScrollObserver, 100);
@@ -456,9 +461,14 @@
                         <div class="pc-content">
                             <span class="pc-cat">${tCategory(pod.category)}</span>
                             <h3 class="pc-title">${pod.title}</h3>
-                            <div class="pc-footer">
-                                <span>${SolitiquoAPI.formatDate(pod.created_at)}</span>
-                                <span>${Math.floor((pod.duration_seconds || pod.duration || 0) / 60)} MIN</span>
+                            <div class="pc-footer" style="display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:12px; border-top:1px solid #f5f5f5;">
+                                <div>
+                                  <span>${SolitiquoAPI.formatDate(pod.created_at)}</span>
+                                  <span> • ${Math.floor((pod.duration_seconds || pod.duration || 0) / 60)} MIN</span>
+                                </div>
+                                <button type="button" class="btn-dl-circle-icon" data-pod-id="${pod.id}" title="Télécharger l'épisode" style="width:34px; height:34px; border-radius:50%; background:rgba(55,70,61,0.08); border:1px solid rgba(55,70,61,0.18); color:#37463D; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.25s ease; flex-shrink:0;">
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                </button>
                             </div>
                         </div>
                     </a>
@@ -466,6 +476,73 @@
           } else {
             document.getElementById('podcasts-grid').innerHTML = '';
           }
+
+          // Ingestion des boutons circulaires de téléchargement
+          setTimeout(async () => {
+            const user = await SolitiquoAPI.getProfile().catch(() => null);
+            const isPro = user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer');
+            const btns = document.querySelectorAll('.btn-dl-circle-icon');
+
+            btns.forEach(btn => {
+              const podId = btn.dataset.podId;
+              if (!podId) return;
+
+              const updateBtnState = async () => {
+                const isSaved = window.SolitiquoOffline && await SolitiquoOffline.isDownloaded(podId, 'podcast');
+                if (isSaved) {
+                  btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#15803D" stroke-width="2.8"><polyline points="20 6 9 17 4 12"/></svg>`;
+                  btn.style.background = '#DCFCE7';
+                  btn.style.borderColor = '#86EFAC';
+                  btn.style.color = '#15803D';
+                  btn.title = 'Épisode disponible hors-ligne';
+                } else {
+                  btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
+                  btn.title = isPro ? "Télécharger l'épisode" : "Réservé aux abonnés Premium";
+                }
+              };
+
+              updateBtnState();
+
+              btn.addEventListener('click', async (e) => {
+                e.preventDefault(); e.stopPropagation();
+                if (!isPro) {
+                  if (typeof showPodcastPremiumModal === 'function') showPodcastPremiumModal();
+                  return;
+                }
+                if (!window.SolitiquoOffline) return;
+                try {
+                  const isSaved = await window.SolitiquoOffline.isDownloaded(podId, 'podcast');
+                  if (isSaved) {
+                    await window.SolitiquoOffline.removeContent(podId, 'podcast');
+                    if (typeof showPodcastDownloadToast === 'function') {
+                      showPodcastDownloadToast("Podcast retiré de vos téléchargements.", false);
+                    }
+                  } else {
+                    const podRes = await fetch(window.API_URL + '/podcasts/' + podId).then(r => r.json()).catch(() => null);
+                    const podData = podRes ? (podRes.podcast || podRes.data) : null;
+                    if (podData) {
+                      await window.SolitiquoOffline.saveContent({
+                        id: podData.id || podId,
+                        type: 'podcast',
+                        title: podData.title,
+                        category: podData.category || 'Podcast',
+                        image_url: podData.image_url || podData.cover_image,
+                        audio_url: podData.audio_url,
+                        duration: podData.duration ? Math.floor(podData.duration / 60) + ' min' : 'Audio',
+                        author: podData.author || 'Média Audio Solitiquo',
+                        content: podData.description,
+                        published_at: podData.created_at
+                      });
+                      if (typeof showPodcastDownloadToast === 'function') {
+                        showPodcastDownloadToast("🎧 Épisode ajouté à vos téléchargements ! Vous pouvez l'écouter à tout moment hors-ligne.", true);
+                      }
+                    }
+                  }
+                  updateBtnState();
+                } catch (err) { console.error(err); }
+              });
+            });
+          }, 100);
 
         } else {
           document.getElementById('podcasts-grid').innerHTML = '<p>Aucun podcast trouvé.</p>';
@@ -484,115 +561,6 @@
 
   </script>
   <script src="/js/lazyload.js"></script>
-  <script>
-    // Boutons de téléchargement audio (Premium) — injectés après rendu dynamique
-    document.addEventListener('DOMContentLoaded', async () => {
-      const user = await SolitiquoAPI.getProfile().catch(() => null);
-      const isPro = user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer');
-      // Attendre que les cartes pod-card soient disponibles dans le DOM
-      let tries = 0;
-      const inject = () => {
-        const cards = document.querySelectorAll('.pod-card');
-        if (cards.length === 0 && tries++ < 20) { setTimeout(inject, 300); return; }
-        cards.forEach(card => {
-          if (card.querySelector('.btn-dl-audio-badge')) return; // éviter les doublons
-          const idParam = card.href ? new URL(card.href, location.origin).searchParams.get('id') : null;
-          const imgWrap = card.querySelector('.pc-img-wrap') || card;
-          if (imgWrap.style.position !== 'relative') imgWrap.style.position = 'relative';
-
-          const btn = document.createElement('button');
-          btn.className = 'btn-dl-audio-badge';
-          btn.dataset.podId = idParam;
-
-          const downloadIcon = `
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>`;
-
-          const lockIcon = `
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;color:#FCD116;">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>`;
-
-          const updatePodOfflineBtn = async () => {
-            if (!isPro) {
-              btn.innerHTML = `${lockIcon} Télécharger`;
-              btn.title = 'Réservé aux abonnés Premium';
-              return;
-            }
-            const isSaved = window.SolitiquoOffline && await SolitiquoOffline.isDownloaded(idParam, 'podcast');
-            if (isSaved) {
-              btn.innerHTML = `
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#86EFAC" stroke-width="2.5" style="vertical-align:middle;margin-right:4px;">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-                <span style="color:#86EFAC;">Téléchargé ✓</span>`;
-              btn.title = 'Disponible hors-ligne dans Mon Compte > Téléchargements';
-              btn.style.background = 'rgba(21, 128, 61, 0.9)';
-              btn.style.borderColor = '#86EFAC';
-            } else {
-              btn.innerHTML = `${downloadIcon} Télécharger`;
-              btn.title = 'Enregistrer pour l\'écoute hors-ligne (In-App)';
-              btn.style.background = 'rgba(17,24,20,0.78)';
-              btn.style.borderColor = 'rgba(255,255,255,0.22)';
-            }
-          };
-
-          btn.style.cssText = 'position:absolute;top:10px;right:10px;background:rgba(17,24,20,0.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#ffffff;border:1px solid rgba(255,255,255,0.22);border-radius:20px;padding:5px 12px;font-family:Inter,sans-serif;font-size:0.75rem;font-weight:700;cursor:pointer;z-index:12;transition:all .25s ease;display:inline-flex;align-items:center;box-shadow:0 4px 15px rgba(0,0,0,0.2);';
-
-          btn.addEventListener('mouseenter', () => {
-            btn.style.transform = 'scale(1.05)';
-          });
-          btn.addEventListener('mouseleave', () => {
-            btn.style.transform = 'scale(1)';
-          });
-
-          imgWrap.appendChild(btn);
-
-          updatePodOfflineBtn();
-
-          btn.addEventListener('click', async (e) => {
-            e.preventDefault(); e.stopPropagation();
-            if (!isPro) {
-              if (typeof showPodcastPremiumModal === 'function') showPodcastPremiumModal();
-              return;
-            }
-
-            if (!idParam || !window.SolitiquoOffline) return;
-            try {
-              const isSaved = await window.SolitiquoOffline.isDownloaded(idParam, 'podcast');
-              if (isSaved) {
-                await window.SolitiquoOffline.removeContent(idParam, 'podcast');
-                if (typeof showPodcastDownloadToast === 'function') {
-                  showPodcastDownloadToast("Podcast retiré de vos téléchargements.", false);
-                }
-              } else {
-                const podRes = await fetch(window.API_URL + '/podcasts/' + idParam).then(r => r.json());
-                const podData = podRes.podcast || podRes.data;
-                if (podData) {
-                  await window.SolitiquoOffline.saveContent({
-                    id: podData.id || idParam,
-                    type: 'podcast',
-                    title: podData.title,
-                    category: podData.category || 'Podcast',
-                    image_url: podData.image_url || podData.cover_image,
-                    audio_url: podData.audio_url,
-                    duration: podData.duration ? Math.floor(podData.duration / 60) + ' min' : 'Audio',
-                    author: podData.author || 'Média Audio Solitiquo',
-                    content: podData.description,
-                    published_at: podData.created_at
-                  });
-                  if (typeof showPodcastDownloadToast === 'function') {
-                    showPodcastDownloadToast("🎧 Épisode ajouté à vos téléchargements ! Vous pouvez l'écouter à tout moment hors-ligne.", true);
-                  }
-                }
-              }
-              updatePodOfflineBtn();
-            } catch (err) { console.error(err); }
-          });
         });
       };
       inject();
