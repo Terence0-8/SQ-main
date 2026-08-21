@@ -739,6 +739,53 @@ window.confirmDownloadModal = function({ title = '', type = 'podcast', onConfirm
   });
 };
 
+// ── ANALYTICS DE LECTURE & SUIVI DES VUES ──
+window.initAnalytics = function(articleId) {
+  if (!articleId) return;
+
+  const trackedMilestones = new Set();
+
+  const sendTrack = (milestone) => {
+    if (trackedMilestones.has(milestone)) return;
+    trackedMilestones.add(milestone);
+
+    fetch(`${window.API_URL || (window.location.origin + '/api')}/analytics/track`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ article_id: articleId, milestone: String(milestone) })
+    }).catch(err => console.error('❌ Erreur Analytics track:', err));
+  };
+
+  // 1. Envoyer immédiatement le milestone 'start' (incrémente views_count et reads_start)
+  sendTrack('start');
+
+  // 2. Détection du défilement pour la rétention de lecture (25%, 50%, 75%, 100%)
+  const handleScroll = () => {
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    if (docHeight <= 0) {
+      sendTrack('25');
+      sendTrack('50');
+      sendTrack('75');
+      sendTrack('100');
+      window.removeEventListener('scroll', handleScroll);
+      return;
+    }
+
+    const scrollPercent = (window.scrollY / docHeight) * 100;
+
+    if (scrollPercent >= 25) sendTrack('25');
+    if (scrollPercent >= 50) sendTrack('50');
+    if (scrollPercent >= 75) sendTrack('75');
+    if (scrollPercent >= 90) {
+      sendTrack('100');
+      window.removeEventListener('scroll', handleScroll);
+    }
+  };
+
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  setTimeout(handleScroll, 500);
+};
+
 if (typeof navigator !== 'undefined' && !navigator.onLine) {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', window.showOfflineModal);
