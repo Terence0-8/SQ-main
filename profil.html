@@ -996,8 +996,23 @@
 
     window.deleteOfflineItem = async function(id, type) {
       if (!window.SolitiquoOffline) return;
-      await SolitiquoOffline.removeContent(id, type);
-      loadOfflineDownloads();
+      const item = await SolitiquoOffline.getContent(id, type);
+      const title = item ? item.title : '';
+
+      if (typeof confirmDeleteDownloadModal === 'function') {
+        confirmDeleteDownloadModal({
+          title: title,
+          type: 'single',
+          onConfirm: async () => {
+            await SolitiquoOffline.removeContent(id, type);
+            if (typeof showSolitiquoToast === 'function') showSolitiquoToast("Contenu retiré des téléchargements.");
+            loadOfflineDownloads();
+          }
+        });
+      } else {
+        await SolitiquoOffline.removeContent(id, type);
+        loadOfflineDownloads();
+      }
     };
 
     document.querySelectorAll('.dl-cat-btn').forEach(btn => {
@@ -1012,7 +1027,17 @@
     const btnClearDl = document.getElementById('btnClearDownloads');
     if (btnClearDl) {
       btnClearDl.addEventListener('click', async () => {
-        if (confirm('Voulez-vous vraiment supprimer l\'ensemble des contenus enregistrés hors-ligne ?')) {
+        if (typeof confirmDeleteDownloadModal === 'function') {
+          confirmDeleteDownloadModal({
+            title: 'Tous les téléchargements',
+            type: 'all',
+            onConfirm: async () => {
+              await SolitiquoOffline.clearAll();
+              if (typeof showSolitiquoToast === 'function') showSolitiquoToast("Tous les téléchargements ont été supprimés.");
+              loadOfflineDownloads();
+            }
+          });
+        } else if (confirm('Voulez-vous vraiment supprimer l\'ensemble des contenus enregistrés hors-ligne ?')) {
           await SolitiquoOffline.clearAll();
           loadOfflineDownloads();
         }

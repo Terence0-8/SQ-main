@@ -399,11 +399,22 @@
               if (!window.SolitiquoOffline) return;
               const isSaved = await SolitiquoOffline.isDownloaded(une.id, 'podcast');
               if (isSaved) {
-                await SolitiquoOffline.removeContent(une.id, 'podcast');
-                if (typeof showPodcastDownloadToast === 'function') {
-                  showPodcastDownloadToast("Podcast retiré de vos téléchargements.", false);
+                if (typeof confirmDeleteDownloadModal === 'function') {
+                  confirmDeleteDownloadModal({
+                    title: une.title,
+                    type: 'podcast',
+                    onConfirm: async () => {
+                      await SolitiquoOffline.removeContent(une.id, 'podcast');
+                      if (typeof showPodcastDownloadToast === 'function') {
+                        showPodcastDownloadToast("Podcast retiré de vos téléchargements.", false);
+                      }
+                      updateHeroBtn();
+                    }
+                  });
+                } else {
+                  await SolitiquoOffline.removeContent(une.id, 'podcast');
+                  updateHeroBtn();
                 }
-                updateHeroBtn();
               } else {
                 if (typeof confirmDownloadModal === 'function') {
                   confirmDownloadModal({
@@ -522,11 +533,23 @@
                 try {
                   const isSaved = await window.SolitiquoOffline.isDownloaded(podId, 'podcast');
                   if (isSaved) {
-                    await window.SolitiquoOffline.removeContent(podId, 'podcast');
-                    if (typeof showPodcastDownloadToast === 'function') {
-                      showPodcastDownloadToast("Podcast retiré de vos téléchargements.", false);
+                    const podItem = await window.SolitiquoOffline.getContent(podId, 'podcast');
+                    if (typeof confirmDeleteDownloadModal === 'function') {
+                      confirmDeleteDownloadModal({
+                        title: podItem ? podItem.title : 'ce podcast',
+                        type: 'podcast',
+                        onConfirm: async () => {
+                          await window.SolitiquoOffline.removeContent(podId, 'podcast');
+                          if (typeof showPodcastDownloadToast === 'function') {
+                            showPodcastDownloadToast("Podcast retiré de vos téléchargements.", false);
+                          }
+                          updateBtnState();
+                        }
+                      });
+                    } else {
+                      await window.SolitiquoOffline.removeContent(podId, 'podcast');
+                      updateBtnState();
                     }
-                    updateBtnState();
                   } else {
                     const podRes = await fetch(window.API_URL + '/podcasts/' + podId).then(r => r.json()).catch(() => null);
                     const podData = podRes ? (podRes.podcast || podRes.data) : null;

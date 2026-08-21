@@ -427,11 +427,22 @@
               if (!window.SolitiquoOffline) return;
               const isSaved = await SolitiquoOffline.isDownloaded(pod.id || id, 'podcast');
               if (isSaved) {
-                await SolitiquoOffline.removeContent(pod.id || id, 'podcast');
-                if (typeof showPodcastDownloadToast === 'function') {
-                  showPodcastDownloadToast("Podcast retiré de vos téléchargements.", false);
+                if (typeof confirmDeleteDownloadModal === 'function') {
+                  confirmDeleteDownloadModal({
+                    title: pod.title,
+                    type: 'podcast',
+                    onConfirm: async () => {
+                      await SolitiquoOffline.removeContent(pod.id || id, 'podcast');
+                      if (typeof showPodcastDownloadToast === 'function') {
+                        showPodcastDownloadToast("Podcast retiré de vos téléchargements.", false);
+                      }
+                      updateOfflineState();
+                    }
+                  });
+                } else {
+                  await SolitiquoOffline.removeContent(pod.id || id, 'podcast');
+                  updateOfflineState();
                 }
-                updateOfflineState();
               } else {
                 if (typeof confirmDownloadModal === 'function') {
                   confirmDownloadModal({

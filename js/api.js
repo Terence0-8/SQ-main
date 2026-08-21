@@ -739,6 +739,83 @@ window.confirmDownloadModal = function({ title = '', type = 'podcast', onConfirm
   });
 };
 
+// ── BULLE DE CONSENTEMENT DE SUPPRESSION DE TÉLÉCHARGEMENT SOLITIQUO ──
+window.confirmDeleteDownloadModal = function({ title = '', type = 'single', onConfirm }) {
+  const existing = document.getElementById('dl-delete-modal-overlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'dl-delete-modal-overlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(55, 70, 61, 0.6);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    animation: dlConsentFade 0.25s ease;
+    padding: 20px;
+  `;
+
+  const box = document.createElement('div');
+  box.style.cssText = `
+    max-width: 420px;
+    width: 100%;
+    background: #FFFFFF;
+    border-radius: 24px;
+    padding: 30px 26px;
+    text-align: center;
+    border: 1px solid rgba(200, 40, 35, 0.15);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.28);
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+  `;
+
+  const isBulk = type === 'all';
+  const heading = isBulk ? 'Vider tous les téléchargements ?' : 'Supprimer ce téléchargement ?';
+  const message = isBulk 
+    ? 'Voulez-vous vraiment supprimer l\'ensemble de vos contenus hors-ligne ? Ces éléments ne seront plus accessibles sans connexion Internet.'
+    : `Voulez-vous vraiment retirer <strong>« ${title} »</strong> de vos téléchargements hors-ligne ?`;
+
+  box.innerHTML = `
+    <div style="width:60px; height:60px; margin:0 auto 16px auto; background:rgba(200, 40, 35, 0.1); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C82823" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        <line x1="10" y1="11" x2="10" y2="17"/>
+        <line x1="14" y1="11" x2="14" y2="17"/>
+      </svg>
+    </div>
+    <h3 style="font-family:'Playfair Display', Georgia, serif; font-size:1.45rem; font-weight:700; color:#37463D; margin-bottom:10px; line-height:1.25;">
+      ${heading}
+    </h3>
+    <p style="font-size:0.9rem; color:#475569; line-height:1.55; margin-bottom:22px;">
+      ${message}
+    </p>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <button type="button" id="btn-delete-confirm" style="width:100%; background:#C82823; color:#FFFFFF; border:none; padding:13px 20px; border-radius:30px; font-weight:700; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 16px rgba(200, 40, 35, 0.25); transition:all 0.2s;">
+        Confirmer la suppression
+      </button>
+      <button type="button" onclick="document.getElementById('dl-delete-modal-overlay')?.remove()" style="width:100%; background:transparent; color:#64748B; border:none; padding:10px 20px; font-weight:600; font-size:0.88rem; cursor:pointer; text-decoration:underline;">
+        Annuler
+      </button>
+    </div>
+  `;
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  document.getElementById('btn-delete-confirm').addEventListener('click', () => {
+    overlay.remove();
+    if (typeof onConfirm === 'function') onConfirm();
+  });
+};
+
 // ── ANALYTICS DE LECTURE & SUIVI DES VUES ──
 window.initAnalytics = function(articleId) {
   if (!articleId) return;

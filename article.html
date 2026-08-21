@@ -2372,9 +2372,20 @@
                 if (!window.SolitiquoOffline) return;
                 const isSaved = await SolitiquoOffline.isDownloaded(article.id, 'article');
                 if (isSaved) {
-                  await SolitiquoOffline.removeContent(article.id, 'article');
-                  if (typeof showSolitiquoToast === 'function') showSolitiquoToast("Article retiré des téléchargements.");
-                  updateOfflineBtnState();
+                  if (typeof confirmDeleteDownloadModal === 'function') {
+                    confirmDeleteDownloadModal({
+                      title: article.title,
+                      type: 'article',
+                      onConfirm: async () => {
+                        await SolitiquoOffline.removeContent(article.id, 'article');
+                        if (typeof showSolitiquoToast === 'function') showSolitiquoToast("Article retiré des téléchargements.");
+                        updateOfflineBtnState();
+                      }
+                    });
+                  } else {
+                    await SolitiquoOffline.removeContent(article.id, 'article');
+                    updateOfflineBtnState();
+                  }
                 } else {
                   if (typeof confirmDownloadModal === 'function') {
                     confirmDownloadModal({
