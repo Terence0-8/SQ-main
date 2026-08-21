@@ -371,8 +371,12 @@
               date: pod.published_at ? SolitiquoAPI.formatDate(pod.published_at) : '',
               category: pod.category || 'Podcast',
               cover: pod.cover_image || pod.image_url || 'https://images.unsplash.com/photo-1589903308904-1010c2294adc?w=600',
+              transcriptId: 'transcript-data'
+            }
+          );
+
           // 7. Bouton de sauvegarde Hors-ligne
-          const user = await SolitiquoAPI.getProfile();
+          const user = await SolitiquoAPI.getProfile().catch(() => null);
           const isPro = user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer');
           const actionsBar = document.getElementById('pod-actions-bar');
           if (actionsBar) {

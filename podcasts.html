@@ -448,6 +448,17 @@
             }
           };
 
+          btn.style.cssText = 'position:absolute;top:10px;right:10px;background:rgba(17,24,20,0.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#ffffff;border:1px solid rgba(255,255,255,0.22);border-radius:20px;padding:5px 12px;font-family:Inter,sans-serif;font-size:0.75rem;font-weight:700;cursor:pointer;z-index:12;transition:all .25s ease;display:inline-flex;align-items:center;box-shadow:0 4px 15px rgba(0,0,0,0.2);';
+
+          btn.addEventListener('mouseenter', () => {
+            btn.style.transform = 'scale(1.05)';
+          });
+          btn.addEventListener('mouseleave', () => {
+            btn.style.transform = 'scale(1)';
+          });
+
+          imgWrap.appendChild(btn);
+
           updatePodOfflineBtn();
 
           btn.addEventListener('click', async (e) => {
