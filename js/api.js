@@ -467,6 +467,56 @@ window.showOfflineBanner = window.showOfflineModal;
 window.addEventListener('offline', window.showOfflineModal);
 window.addEventListener('online', window.showOnlineToast);
 
+// ── BULLE NOTIFICATION DE CONFIRMATION SOLITIQUO (TOAST ÉLÉGANT) ──
+window.showSolitiquoToast = function(message, isWarning = false) {
+  const existing = document.getElementById('solitiquo-toast-notification');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'solitiquo-toast-notification';
+  toast.style.cssText = `
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    z-index: 999999;
+    background: rgba(55, 70, 61, 0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    color: #F8FBF1;
+    padding: 14px 24px;
+    border-radius: 30px;
+    border: 1px solid ${isWarning ? 'rgba(200, 40, 35, 0.4)' : 'rgba(201, 162, 39, 0.4)'};
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  `;
+
+  const iconSvg = isWarning
+    ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
+    : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9A227" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+  toast.innerHTML = `${iconSvg} <span>${message}</span>`;
+  document.body.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+  });
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(10px)';
+    setTimeout(() => toast.remove(), 400);
+  }, 3500);
+};
+
 if (typeof navigator !== 'undefined' && !navigator.onLine) {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', window.showOfflineModal);

@@ -2336,7 +2336,7 @@
                     <polyline points="7 10 12 15 17 10"/>
                     <line x1="12" y1="15" x2="12" y2="3"/>
                   </svg>
-                  Hors-ligne <span class="premium-lock">🔒</span>`;
+                  Télécharger <span class="premium-lock">🔒</span>`;
                 dlBtn.title = 'Réservé aux abonnés Premium';
                 return;
               }
@@ -2347,7 +2347,7 @@
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#15803D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="20 6 9 17 4 12"/>
                   </svg>
-                  <span style="color:#15803D; font-weight:700;">Hors-ligne ✓</span>`;
+                  <span style="color:#15803D; font-weight:700;">Téléchargé ✓</span>`;
                 dlBtn.title = 'Disponible hors-ligne dans Mon Compte > Téléchargements';
                 dlBtn.style.background = '#DCFCE7';
                 dlBtn.style.borderColor = '#86EFAC';
@@ -2358,7 +2358,7 @@
                     <polyline points="7 10 12 15 17 10"/>
                     <line x1="12" y1="15" x2="12" y2="3"/>
                   </svg>
-                  Hors-ligne`;
+                  Télécharger`;
                 dlBtn.title = 'Enregistrer pour la lecture hors-ligne (In-App)';
                 dlBtn.style.background = '';
                 dlBtn.style.borderColor = '';
@@ -2373,7 +2373,7 @@
                 const isSaved = await SolitiquoOffline.isDownloaded(article.id, 'article');
                 if (isSaved) {
                   await SolitiquoOffline.removeContent(article.id, 'article');
-                  alert("Retiré des contenus hors-ligne.");
+                  if (typeof showSolitiquoToast === 'function') showSolitiquoToast("Article retiré des téléchargements.");
                 } else {
                   await SolitiquoOffline.saveContent({
                     id: article.id,
@@ -2387,7 +2387,7 @@
                     author: article.author || 'Équipe Éditoriale',
                     published_at: article.created_at
                   });
-                  alert("✓ Article disponible hors-ligne dans votre espace !");
+                  if (typeof showSolitiquoToast === 'function') showSolitiquoToast("✓ Article disponible hors-ligne dans Mon Compte > Téléchargements !");
                 }
                 updateOfflineBtnState();
               } else {
