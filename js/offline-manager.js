@@ -203,16 +203,41 @@ const SolitiquoOffline = (function() {
     },
 
     /**
-     * Estimer l'espace occupé (en Mo)
+     * Estimer l'espace occupé réel (en Mo) incluant les fichiers binaires Audio (Blobs)
      */
     async getStorageEstimate() {
       const downloads = await this.getAllDownloads();
       let totalBytes = 0;
+
       downloads.forEach(d => {
+        // 1. Poids des textes et métadonnées JSON
         totalBytes += JSON.stringify(d).length;
+
+        // 2. Poids binaire du fichier Audio (MP3)
+        if (d.audio_blob && typeof d.audio_blob.size === 'number') {
+          totalBytes += d.audio_blob.size;
+        }
+
+        // 3. Poids binaire de l'image de couverture
+        if (d.image_blob && typeof d.image_blob.size === 'number') {
+          totalBytes += d.image_blob.size;
+        }
       });
-      const mb = (totalBytes / (1024 * 1024)).toFixed(2);
-      return { count: downloads.length, sizeMB: mb };
+
+      // Formatage en Mégaoctets (Mo)
+      let sizeMB = (totalBytes / (1024 * 1024)).toFixed(2);
+
+      // Si pas de blob calculé mais StorageManager dispo, obtenir l'usage IndexedDB exact du navigateur
+      if (totalBytes < 100000 && navigator.storage && navigator.storage.estimate) {
+        try {
+          const est = await navigator.storage.estimate();
+          if (est.usage && est.usage > 0) {
+            sizeMB = (est.usage / (1024 * 1024)).toFixed(2);
+          }
+        } catch (_e) {}
+      }
+
+      return { count: downloads.length, sizeMB: sizeMB };
     }
   };
 })();
