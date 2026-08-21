@@ -743,6 +743,7 @@ window.confirmDownloadModal = function({ title = '', type = 'podcast', onConfirm
 window.initAnalytics = function(articleId) {
   if (!articleId) return;
 
+  const startTime = Date.now();
   const trackedMilestones = new Set();
 
   const sendTrack = (milestone) => {
@@ -756,46 +757,44 @@ window.initAnalytics = function(articleId) {
     }).catch(err => console.error('❌ Erreur Analytics track:', err));
   };
 
-  // 1. Envoyer immédiatement le milestone 'start' (incrémente views_count et reads_start)
+  // 1. Envoyer le milestone 'start' (incrémente views_count et reads_start)
   sendTrack('start');
 
-  // 2. Suivi précis du défilement réel de l'article
+  // 2. Suivi temporel & défilement réel pour la rétention de lecture
   const setupScrollTracking = () => {
     const handleScroll = () => {
-      const targetEl = document.getElementById('article-content') || document.querySelector('.article-body') || document.body;
-      const rect = targetEl.getBoundingClientRect();
-      const elementHeight = targetEl.offsetHeight;
-
+      const elapsedSeconds = (Date.now() - startTime) / 1000;
+      const targetEl = document.getElementById('article-content') || document.querySelector('.article-body') || document.querySelector('.article-main-column');
+      
       let scrollPercent = 0;
-      if (elementHeight > 500) {
-        // Calcul de la progression dans l'article principal
-        const scrolledDistance = window.innerHeight - rect.top;
-        scrollPercent = Math.max(0, Math.min(100, (scrolledDistance / elementHeight) * 100));
+      if (targetEl && targetEl.offsetHeight > 400) {
+        const rect = targetEl.getBoundingClientRect();
+        const scrolled = window.innerHeight - rect.top;
+        scrollPercent = Math.max(0, Math.min(100, (scrolled / targetEl.offsetHeight) * 100));
       } else {
         const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-        if (docHeight > 100) {
+        if (docHeight > 200) {
           scrollPercent = (window.scrollY / docHeight) * 100;
         }
       }
 
-      // Seuls les défilements réellement effectifs déclenchent les jalons de rétention
-      if (scrollPercent >= 25) sendTrack('25');
-      if (scrollPercent >= 50) sendTrack('50');
-      if (scrollPercent >= 75) sendTrack('75');
-      if (scrollPercent >= 92) {
+      // Condition double : Pourcentage de défilement + Temps de présence effectif
+      if (scrollPercent >= 25 && elapsedSeconds >= 2.5) sendTrack('25');
+      if (scrollPercent >= 50 && elapsedSeconds >= 5.0) sendTrack('50');
+      if (scrollPercent >= 75 && elapsedSeconds >= 8.0) sendTrack('75');
+      if (scrollPercent >= 92 && elapsedSeconds >= 12.0) {
         sendTrack('100');
         window.removeEventListener('scroll', handleScroll);
       }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    setTimeout(handleScroll, 800);
   };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', setupScrollTracking);
   } else {
-    setTimeout(setupScrollTracking, 400);
+    setTimeout(setupScrollTracking, 300);
   }
 };
 
