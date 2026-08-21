@@ -2374,22 +2374,31 @@
                 if (isSaved) {
                   await SolitiquoOffline.removeContent(article.id, 'article');
                   if (typeof showSolitiquoToast === 'function') showSolitiquoToast("Article retiré des téléchargements.");
+                  updateOfflineBtnState();
                 } else {
-                  await SolitiquoOffline.saveContent({
-                    id: article.id,
-                    type: 'article',
-                    title: article.title,
-                    category: article.category,
-                    image_url: article.image_url,
-                    content: article.content,
-                    excerpt: article.excerpt,
-                    read_time: article.read_time,
-                    author: article.author || 'Équipe Éditoriale',
-                    published_at: article.created_at
-                  });
-                  if (typeof showSolitiquoToast === 'function') showSolitiquoToast("✓ Article disponible hors-ligne dans Mon Compte > Téléchargements !");
+                  if (typeof confirmDownloadModal === 'function') {
+                    confirmDownloadModal({
+                      title: article.title,
+                      type: 'article',
+                      onConfirm: async () => {
+                        await SolitiquoOffline.saveContent({
+                          id: article.id,
+                          type: 'article',
+                          title: article.title,
+                          category: article.category,
+                          image_url: article.image_url,
+                          content: article.content,
+                          excerpt: article.excerpt,
+                          read_time: article.read_time,
+                          author: article.author || 'Équipe Éditoriale',
+                          published_at: article.created_at
+                        });
+                        if (typeof showSolitiquoToast === 'function') showSolitiquoToast("✓ Article disponible hors-ligne dans Mon Compte > Téléchargements !");
+                        updateOfflineBtnState();
+                      }
+                    });
+                  }
                 }
-                updateOfflineBtnState();
               } else {
                 const existingTooltip = document.getElementById('premium-tooltip');
                 if (existingTooltip) { existingTooltip.remove(); return; }

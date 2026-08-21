@@ -654,6 +654,91 @@ window.showPodcastPremiumModal = function() {
   document.body.appendChild(overlay);
 };
 
+// ── BULLE DE CONSENTEMENT DE TÉLÉCHARGEMENT SOLITIQUO ──
+window.confirmDownloadModal = function({ title = '', type = 'podcast', onConfirm }) {
+  const existing = document.getElementById('dl-consent-modal-overlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'dl-consent-modal-overlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(55, 70, 61, 0.6);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    animation: dlConsentFade 0.25s ease;
+    padding: 20px;
+  `;
+
+  if (!document.getElementById('dl-consent-anim')) {
+    const style = document.createElement('style');
+    style.id = 'dl-consent-anim';
+    style.textContent = `
+      @keyframes dlConsentFade {
+        from { opacity: 0; transform: scale(0.97); }
+        to { opacity: 1; transform: scale(1); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  const box = document.createElement('div');
+  box.style.cssText = `
+    max-width: 420px;
+    width: 100%;
+    background: #FFFFFF;
+    border-radius: 24px;
+    padding: 30px 26px;
+    text-align: center;
+    border: 1px solid rgba(55, 70, 61, 0.12);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.28);
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+  `;
+
+  const isPodcast = type === 'podcast';
+  const typeLabel = isPodcast ? 'ce podcast' : 'cet article';
+
+  box.innerHTML = `
+    <div style="width:60px; height:60px; margin:0 auto 16px auto; background:rgba(201, 162, 39, 0.12); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C9A227" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+    </div>
+    <h3 style="font-family:'Playfair Display', Georgia, serif; font-size:1.45rem; font-weight:700; color:#37463D; margin-bottom:10px; line-height:1.25;">
+      Télécharger ${typeLabel} ?
+    </h3>
+    <p style="font-size:0.9rem; color:#475569; line-height:1.55; margin-bottom:22px;">
+      Souhaitez-vous enregistrer <strong>« ${title} »</strong> pour la consultation hors-connexion dans votre application Solitiquo ?
+    </p>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <button type="button" id="btn-consent-confirm" style="width:100%; background:#37463D; color:#FFFFFF; border:none; padding:13px 20px; border-radius:30px; font-weight:700; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 16px rgba(55, 70, 61, 0.25); transition:all 0.2s;">
+        Confirmer le téléchargement
+      </button>
+      <button type="button" onclick="document.getElementById('dl-consent-modal-overlay')?.remove()" style="width:100%; background:transparent; color:#64748B; border:none; padding:10px 20px; font-weight:600; font-size:0.88rem; cursor:pointer; text-decoration:underline;">
+        Annuler
+      </button>
+    </div>
+  `;
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  document.getElementById('btn-consent-confirm').addEventListener('click', () => {
+    overlay.remove();
+    if (typeof onConfirm === 'function') onConfirm();
+  });
+};
+
 if (typeof navigator !== 'undefined' && !navigator.onLine) {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', window.showOfflineModal);

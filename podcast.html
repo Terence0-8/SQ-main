@@ -422,24 +422,33 @@
                 if (typeof showPodcastDownloadToast === 'function') {
                   showPodcastDownloadToast("Podcast retiré de vos téléchargements.", false);
                 }
+                updateOfflineState();
               } else {
-                await SolitiquoOffline.saveContent({
-                  id: pod.id || id,
-                  type: 'podcast',
-                  title: pod.title,
-                  category: pod.category || 'Podcast',
-                  image_url: pod.cover_image || pod.image_url,
-                  audio_url: pod.audio_url,
-                  duration: durStr,
-                  author: pod.author || 'Média Audio Solitiquo',
-                  content: pod.description,
-                  published_at: pod.created_at
-                });
-                if (typeof showPodcastDownloadToast === 'function') {
-                  showPodcastDownloadToast("🎧 Épisode ajouté à vos téléchargements ! Vous pouvez l'écouter à tout moment hors-ligne.", true);
+                if (typeof confirmDownloadModal === 'function') {
+                  confirmDownloadModal({
+                    title: pod.title,
+                    type: 'podcast',
+                    onConfirm: async () => {
+                      await SolitiquoOffline.saveContent({
+                        id: pod.id || id,
+                        type: 'podcast',
+                        title: pod.title,
+                        category: pod.category || 'Podcast',
+                        image_url: pod.cover_image || pod.image_url,
+                        audio_url: pod.audio_url,
+                        duration: durStr,
+                        author: pod.author || 'Média Audio Solitiquo',
+                        content: pod.description,
+                        published_at: pod.created_at
+                      });
+                      if (typeof showPodcastDownloadToast === 'function') {
+                        showPodcastDownloadToast("🎧 Épisode ajouté à vos téléchargements ! Vous pouvez l'écouter à tout moment hors-ligne.", true);
+                      }
+                      updateOfflineState();
+                    }
+                  });
                 }
               }
-              updateOfflineState();
             });
 
             actionsBar.appendChild(dlBtn);

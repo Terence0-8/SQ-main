@@ -403,24 +403,33 @@
                 if (typeof showPodcastDownloadToast === 'function') {
                   showPodcastDownloadToast("Podcast retiré de vos téléchargements.", false);
                 }
+                updateHeroBtn();
               } else {
-                await SolitiquoOffline.saveContent({
-                  id: une.id,
-                  type: 'podcast',
-                  title: une.title,
-                  category: une.category || 'Podcast',
-                  image_url: une.image_url || une.cover_image,
-                  audio_url: une.audio_url,
-                  duration: Math.floor((une.duration || 0) / 60) + ' min',
-                  author: une.author || 'Média Audio Solitiquo',
-                  content: une.description,
-                  published_at: une.created_at
-                });
-                if (typeof showPodcastDownloadToast === 'function') {
-                  showPodcastDownloadToast("🎧 Épisode ajouté à vos téléchargements ! Vous pouvez l'écouter à tout moment hors-ligne.", true);
+                if (typeof confirmDownloadModal === 'function') {
+                  confirmDownloadModal({
+                    title: une.title,
+                    type: 'podcast',
+                    onConfirm: async () => {
+                      await SolitiquoOffline.saveContent({
+                        id: une.id,
+                        type: 'podcast',
+                        title: une.title,
+                        category: une.category || 'Podcast',
+                        image_url: une.image_url || une.cover_image,
+                        audio_url: une.audio_url,
+                        duration: Math.floor((une.duration || 0) / 60) + ' min',
+                        author: une.author || 'Média Audio Solitiquo',
+                        content: une.description,
+                        published_at: une.created_at
+                      });
+                      if (typeof showPodcastDownloadToast === 'function') {
+                        showPodcastDownloadToast("🎧 Épisode ajouté à vos téléchargements ! Vous pouvez l'écouter à tout moment hors-ligne.", true);
+                      }
+                      updateHeroBtn();
+                    }
+                  });
                 }
               }
-              updateHeroBtn();
             });
           }, 50);
 
@@ -517,28 +526,37 @@
                     if (typeof showPodcastDownloadToast === 'function') {
                       showPodcastDownloadToast("Podcast retiré de vos téléchargements.", false);
                     }
+                    updateBtnState();
                   } else {
                     const podRes = await fetch(window.API_URL + '/podcasts/' + podId).then(r => r.json()).catch(() => null);
                     const podData = podRes ? (podRes.podcast || podRes.data) : null;
                     if (podData) {
-                      await window.SolitiquoOffline.saveContent({
-                        id: podData.id || podId,
-                        type: 'podcast',
-                        title: podData.title,
-                        category: podData.category || 'Podcast',
-                        image_url: podData.image_url || podData.cover_image,
-                        audio_url: podData.audio_url,
-                        duration: podData.duration ? Math.floor(podData.duration / 60) + ' min' : 'Audio',
-                        author: podData.author || 'Média Audio Solitiquo',
-                        content: podData.description,
-                        published_at: podData.created_at
-                      });
-                      if (typeof showPodcastDownloadToast === 'function') {
-                        showPodcastDownloadToast("🎧 Épisode ajouté à vos téléchargements ! Vous pouvez l'écouter à tout moment hors-ligne.", true);
+                      if (typeof confirmDownloadModal === 'function') {
+                        confirmDownloadModal({
+                          title: podData.title,
+                          type: 'podcast',
+                          onConfirm: async () => {
+                            await window.SolitiquoOffline.saveContent({
+                              id: podData.id || podId,
+                              type: 'podcast',
+                              title: podData.title,
+                              category: podData.category || 'Podcast',
+                              image_url: podData.image_url || podData.cover_image,
+                              audio_url: podData.audio_url,
+                              duration: podData.duration ? Math.floor(podData.duration / 60) + ' min' : 'Audio',
+                              author: podData.author || 'Média Audio Solitiquo',
+                              content: podData.description,
+                              published_at: podData.created_at
+                            });
+                            if (typeof showPodcastDownloadToast === 'function') {
+                              showPodcastDownloadToast("🎧 Épisode ajouté à vos téléchargements ! Vous pouvez l'écouter à tout moment hors-ligne.", true);
+                            }
+                            updateBtnState();
+                          }
+                        });
                       }
                     }
                   }
-                  updateBtnState();
                 } catch (err) { console.error(err); }
               });
             });
