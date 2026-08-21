@@ -759,31 +759,44 @@ window.initAnalytics = function(articleId) {
   // 1. Envoyer immédiatement le milestone 'start' (incrémente views_count et reads_start)
   sendTrack('start');
 
-  // 2. Détection du défilement pour la rétention de lecture (25%, 50%, 75%, 100%)
-  const handleScroll = () => {
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    if (docHeight <= 0) {
-      sendTrack('25');
-      sendTrack('50');
-      sendTrack('75');
-      sendTrack('100');
-      window.removeEventListener('scroll', handleScroll);
-      return;
-    }
+  // 2. Suivi précis du défilement réel de l'article
+  const setupScrollTracking = () => {
+    const handleScroll = () => {
+      const targetEl = document.getElementById('article-content') || document.querySelector('.article-body') || document.body;
+      const rect = targetEl.getBoundingClientRect();
+      const elementHeight = targetEl.offsetHeight;
 
-    const scrollPercent = (window.scrollY / docHeight) * 100;
+      let scrollPercent = 0;
+      if (elementHeight > 500) {
+        // Calcul de la progression dans l'article principal
+        const scrolledDistance = window.innerHeight - rect.top;
+        scrollPercent = Math.max(0, Math.min(100, (scrolledDistance / elementHeight) * 100));
+      } else {
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        if (docHeight > 100) {
+          scrollPercent = (window.scrollY / docHeight) * 100;
+        }
+      }
 
-    if (scrollPercent >= 25) sendTrack('25');
-    if (scrollPercent >= 50) sendTrack('50');
-    if (scrollPercent >= 75) sendTrack('75');
-    if (scrollPercent >= 90) {
-      sendTrack('100');
-      window.removeEventListener('scroll', handleScroll);
-    }
+      // Seuls les défilements réellement effectifs déclenchent les jalons de rétention
+      if (scrollPercent >= 25) sendTrack('25');
+      if (scrollPercent >= 50) sendTrack('50');
+      if (scrollPercent >= 75) sendTrack('75');
+      if (scrollPercent >= 92) {
+        sendTrack('100');
+        window.removeEventListener('scroll', handleScroll);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    setTimeout(handleScroll, 800);
   };
 
-  window.addEventListener('scroll', handleScroll, { passive: true });
-  setTimeout(handleScroll, 500);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupScrollTracking);
+  } else {
+    setTimeout(setupScrollTracking, 400);
+  }
 };
 
 if (typeof navigator !== 'undefined' && !navigator.onLine) {
