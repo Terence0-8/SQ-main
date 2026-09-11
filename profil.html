@@ -517,130 +517,153 @@
     });
 
     // --- CHARGEMENT DES DONNÉES DU PROFIL ---
-    document.addEventListener('DOMContentLoaded', async () => {
-      if (typeof initLanguageSwitcher === 'function') await initLanguageSwitcher();
+    async function initProfilePage() {
+      try {
+        if (typeof initLanguageSwitcher === 'function') await initLanguageSwitcher();
 
-      // Support URL ?tab=downloads ou #downloads pour ouvrir automatiquement l'onglet Téléchargements
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('tab') === 'downloads' || window.location.hash === '#downloads' || window.location.hash === '#tab-downloads') {
-        const dlTabBtn = document.querySelector('.tab-btn[data-tab="tab-downloads"]');
-        if (dlTabBtn) dlTabBtn.click();
-      }
-
-      let user = await SolitiquoAPI.getProfile();
-      if (!user) {
-        const cached = localStorage.getItem('solitiquo_cached_user');
-        if (cached) {
-          try { user = JSON.parse(cached); } catch (_e) {}
+        // Support URL ?tab=downloads ou #downloads pour ouvrir automatiquement l'onglet Téléchargements
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('tab') === 'downloads' || window.location.hash === '#downloads' || window.location.hash === '#tab-downloads') {
+          const dlTabBtn = document.querySelector('.tab-btn[data-tab="tab-downloads"]');
+          if (dlTabBtn) dlTabBtn.click();
         }
-        if (!user && !navigator.onLine) {
+
+        let user = await SolitiquoAPI.getProfile();
+        if (!user) {
+          const cached = localStorage.getItem('solitiquo_cached_user') || localStorage.getItem('user');
+          if (cached) {
+            try { user = JSON.parse(cached); } catch (_e) {}
+          }
+          if (!user && !navigator.onLine) {
+            user = {
+              username: 'Abonné Hors-ligne',
+              email: 'Mode hors-connexion',
+              is_subscriber: true,
+              role: 'user'
+            };
+          }
+        }
+
+        if (!user && navigator.onLine) {
+          window.location.href = 'auth.html';
+          return;
+        }
+
+        if (!user) {
           user = {
-            username: 'Utilisateur Hors-ligne',
+            username: 'Abonné Solitiquo',
             email: 'Mode hors-connexion',
             is_subscriber: true,
             role: 'user'
           };
         }
-      }
 
-      if (!user && navigator.onLine) {
-        window.location.href = 'auth.html';
-        return;
-      }
-
-      const isSub = Boolean(user.is_subscriber || user.role === 'admin' || user.role === 'writer');
-      if (isSub) {
-        document.body.classList.add('is-subscriber');
-        document.getElementById('page-profil')?.classList.add('is-subscriber');
-      } else {
-        document.body.classList.remove('is-subscriber');
-        document.getElementById('page-profil')?.classList.remove('is-subscriber');
-      }
-
-      // Carte identité utilisateur
-      document.getElementById('user-name').textContent = user.username;
-      document.getElementById('user-email').textContent = user.email;
-      document.getElementById('user-initial').textContent = user.username.charAt(0).toUpperCase();
-      document.getElementById('nl-user-email').textContent = user.email;
-
-      const roleBadge = document.getElementById('user-role-badge');
-      if (user.role === 'admin' || user.role === 'writer') {
-        roleBadge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> <span>Équipe Éditoriale</span>`;
-        roleBadge.style.background = 'rgba(55, 70, 61, 0.1)';
-        roleBadge.style.color = '#37463D';
-      } else if (user.is_subscriber) {
-        roleBadge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> <span>Abonné Premium</span>`;
-        roleBadge.style.background = 'rgba(55, 70, 61, 0.1)';
-        roleBadge.style.color = '#37463D';
-      } else {
-        roleBadge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg> <span>Membre Gratuit</span>`;
-      }
-
-      // Statut d'abonnement
-      const statusBox = document.getElementById('subscription-status-box');
-      const statusText = document.getElementById('status-text');
-      const actionArea = document.getElementById('subscription-actions');
-
-      if (user.role === 'admin' || user.role === 'writer') {
-        statusBox.className = "status-box status-active";
-        statusText.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> <span>ADMIN / ÉQUIPE ÉDITORIALE</span>`;
-        actionArea.innerHTML = `
-          <h3>Compte Administrateur</h3>
-          <p>Vous disposez d'un accès illimité à tous les contenus, fonctionnalités d'édition et outils de gestion.</p>
-          <a href="admin.html" class="btn-action btn-upgrade">Accéder au Dashboard</a>
-        `;
-      } else if (user.is_subscriber) {
-        statusBox.className = "status-box status-active";
-        statusText.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> <span>ACTIF (PREMIUM)</span>`;
-
-        let dateInfo = '';
-        if (user.subscription_end_date) {
-          const endDate = new Date(user.subscription_end_date);
-          const formattedDate = endDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' });
-          dateInfo = `<p style="font-size:0.9rem; color:#64748B; margin-top:10px;">Votre abonnement est valide jusqu'au <strong>${formattedDate}</strong>.</p>`;
+        const isSub = Boolean(user.is_subscriber || user.role === 'admin' || user.role === 'writer');
+        if (isSub) {
+          document.body.classList.add('is-subscriber');
+          document.getElementById('page-profil')?.classList.add('is-subscriber');
+        } else {
+          document.body.classList.remove('is-subscriber');
+          document.getElementById('page-profil')?.classList.remove('is-subscriber');
         }
 
-        actionArea.innerHTML = `
-          <h3>Merci de votre soutien</h3>
-          <p>Vous avez accès à l'intégralité des articles, enquêtes exclusives et fonctionnalités audio sans publicité.</p>
-          ${dateInfo}
-          <button class="btn-action btn-cancel" onclick="window.openCancelModal()">Résilier mon abonnement</button>
-        `;
-      } else {
-        statusBox.className = "status-box status-inactive";
-        statusText.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> <span>GRATUIT (ACCÈS LIMITÉ)</span>`;
-        actionArea.innerHTML = `
-          <h3>Passez au Premium pour tout débloquer</h3>
-          <p>Profitez d'un accès illimité à l'ensemble de nos enquêtes exclusives et décryptages indépendants.</p>
-          
-          <div class="upgrade-banner-box">
-            <div class="upgrade-banner-title">Avantages réservés aux abonnés :</div>
-            <ul class="upgrade-perks-list">
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Accès illimité aux enquêtes</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Écoute audio & PDF imprimables</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Navigation sans publicité</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Soutien au journalisme libre</li>
-            </ul>
-            <a href="abonnement.html" class="btn-action btn-upgrade">S'abonner maintenant →</a>
-          </div>
-        `;
+        // Carte identité utilisateur
+        const nameEl = document.getElementById('user-name');
+        const emailEl = document.getElementById('user-email');
+        const initialEl = document.getElementById('user-initial');
+        const nlEmailEl = document.getElementById('nl-user-email');
+
+        if (nameEl) nameEl.textContent = user.username || 'Abonné Solitiquo';
+        if (emailEl) emailEl.textContent = user.email || 'abonne@solitiquo.com';
+        if (initialEl) initialEl.textContent = (user.username || 'S').charAt(0).toUpperCase();
+        if (nlEmailEl) nlEmailEl.textContent = user.email || '';
+
+        const roleBadge = document.getElementById('user-role-badge');
+        if (roleBadge) {
+          if (user.role === 'admin' || user.role === 'writer') {
+            roleBadge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> <span>Équipe Éditoriale</span>`;
+            roleBadge.style.background = 'rgba(55, 70, 61, 0.1)';
+            roleBadge.style.color = '#37463D';
+          } else if (user.is_subscriber) {
+            roleBadge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> <span>Abonné Premium</span>`;
+            roleBadge.style.background = 'rgba(55, 70, 61, 0.1)';
+            roleBadge.style.color = '#37463D';
+          } else {
+            roleBadge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg> <span>Membre Gratuit</span>`;
+          }
+        }
+
+        // Statut d'abonnement
+        const statusBox = document.getElementById('subscription-status-box');
+        const statusText = document.getElementById('status-text');
+        const actionArea = document.getElementById('subscription-actions');
+
+        if (statusBox && statusText && actionArea) {
+          if (user.role === 'admin' || user.role === 'writer') {
+            statusBox.className = "status-box status-active";
+            statusText.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> <span>ADMIN / ÉQUIPE ÉDITORIALE</span>`;
+            actionArea.innerHTML = `
+              <h3>Compte Administrateur</h3>
+              <p>Vous disposez d'un accès illimité à tous les contenus, fonctionnalités d'édition et outils de gestion.</p>
+              <a href="admin.html" class="btn-action btn-upgrade">Accéder au Dashboard</a>
+            `;
+          } else if (user.is_subscriber) {
+            statusBox.className = "status-box status-active";
+            statusText.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> <span>ACTIF (PREMIUM)</span>`;
+
+            let dateInfo = '';
+            if (user.subscription_end_date) {
+              const endDate = new Date(user.subscription_end_date);
+              const formattedDate = endDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' });
+              dateInfo = `<p style="font-size:0.9rem; color:#64748B; margin-top:10px;">Votre abonnement est valide jusqu'au <strong>${formattedDate}</strong>.</p>`;
+            }
+
+            actionArea.innerHTML = `
+              <h3>Merci de votre soutien</h3>
+              <p>Vous avez accès à l'intégralité des articles, enquêtes exclusives et fonctionnalités audio sans publicité.</p>
+              ${dateInfo}
+              <button class="btn-action btn-cancel" onclick="window.openCancelModal()">Résilier mon abonnement</button>
+            `;
+          } else {
+            statusBox.className = "status-box status-inactive";
+            statusText.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> <span>GRATUIT (ACCÈS LIMITÉ)</span>`;
+            actionArea.innerHTML = `
+              <h3>Passez au Premium pour tout débloquer</h3>
+              <p>Profitez d'un accès illimité à l'ensemble de nos enquêtes exclusives et décryptages indépendants.</p>
+              
+              <div class="upgrade-banner-box">
+                <div class="upgrade-banner-title">Avantages réservés aux abonnés :</div>
+                <ul class="upgrade-perks-list">
+                  <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Accès illimité aux enquêtes</li>
+                  <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Écoute audio & PDF imprimables</li>
+                  <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Navigation sans publicité</li>
+                  <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Soutien au journalisme libre</li>
+                </ul>
+                <a href="abonnement.html" class="btn-action btn-upgrade">S'abonner maintenant →</a>
+              </div>
+            `;
+          }
+        }
+
+        try { loadUserBookmarks(); } catch (_e) {}
+        try { loadReadingHistory(); } catch (_e) {}
+        try { loadUserComments(); } catch (_e) {}
+        if (typeof loadOfflineDownloads === 'function') {
+          try { loadOfflineDownloads(); } catch (_e) {}
+        }
+        if (typeof initNewsletterPreferences === 'function') {
+          try { initNewsletterPreferences(); } catch (_e) {}
+        }
+      } catch (err) {
+        console.error("Erreur initProfilePage:", err);
       }
+    }
 
-      // --- CHARGEMENT DES FAVORIS ---
-      loadUserBookmarks();
-
-      // --- CHARGEMENT DE L'HISTORIQUE DE LECTURE ---
-      loadReadingHistory();
-
-      // --- CHARGEMENT DES COMMENTAIRES ---
-      loadUserComments();
-
-      // --- CHARGEMENT DES TÉLÉCHARGEMENTS HORS-LIGNE ---
-      if (typeof loadOfflineDownloads === 'function') loadOfflineDownloads();
-
-      // --- NEWSLETTER PREFERENCES ---
-      initNewsletterPreferences();
-    });
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initProfilePage);
+    } else {
+      initProfilePage();
+    }
 
     // --- CHARGEMENT FAVORIS ---
     async function loadUserBookmarks() {

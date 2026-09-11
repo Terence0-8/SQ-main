@@ -161,7 +161,22 @@ const SolitiquoAPI = {
   // --- UI MANAGEMENT (Cerveau Interface) ---
   initUserInterface: async () => {
     if (document.body.dataset.uiInited === 'true') return;
-    const user = await SolitiquoAPI.getProfile();
+    let user = await SolitiquoAPI.getProfile();
+
+    if (!user) {
+      const cached = localStorage.getItem('solitiquo_cached_user') || localStorage.getItem('user');
+      if (cached) {
+        try { user = JSON.parse(cached); } catch (_e) {}
+      }
+      if (!user && !navigator.onLine) {
+        user = {
+          username: 'Abonné Hors-ligne',
+          email: 'Mode hors-connexion',
+          is_subscriber: true,
+          role: 'user'
+        };
+      }
+    }
 
     if (user) {
       document.body.classList.add('user-logged-in');
@@ -292,6 +307,8 @@ document.addEventListener('languageChanged', (e) => {
 // 1. MODALE CENTRÉE DE PANNE SANS RÉSEAU (Mandatoire, sans bouton fermer, redirection directe)
 window.showOfflineModal = function() {
   if (document.getElementById('offline-modal-overlay')) return;
+  const currentPath = window.location.pathname;
+  if (currentPath.endsWith('profil.html') || currentPath.endsWith('offline.html')) return;
 
   setTimeout(async () => {
     if (navigator.onLine) return; // Si la connexion est revenue entre-temps
