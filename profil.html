@@ -513,6 +513,9 @@
         btn.classList.add('active');
         const activeContent = document.getElementById(targetTab);
         if (activeContent) activeContent.classList.add('active');
+        if (targetTab === 'tab-downloads' && typeof loadOfflineDownloads === 'function') {
+          loadOfflineDownloads();
+        }
       });
     });
 
@@ -523,7 +526,8 @@
 
         // Support URL ?tab=downloads ou #downloads pour ouvrir automatiquement l'onglet Téléchargements
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('tab') === 'downloads' || window.location.hash === '#downloads' || window.location.hash === '#tab-downloads') {
+        const isDownloadsTabRequested = urlParams.get('tab') === 'downloads' || window.location.hash === '#downloads' || window.location.hash === '#tab-downloads';
+        if (isDownloadsTabRequested) {
           const dlTabBtn = document.querySelector('.tab-btn[data-tab="tab-downloads"]');
           if (dlTabBtn) dlTabBtn.click();
         }
@@ -534,24 +538,28 @@
           if (cached) {
             try { user = JSON.parse(cached); } catch (_e) {}
           }
-          if (!user && !navigator.onLine) {
-            user = {
-              username: 'Abonné Hors-ligne',
-              email: 'Mode hors-connexion',
-              is_subscriber: true,
-              role: 'user'
-            };
-          }
         }
 
-        if (!user && navigator.onLine) {
+        let offlineDownloadsCount = 0;
+        if (window.SolitiquoOffline) {
+          try {
+            const dls = await SolitiquoOffline.getAllDownloads();
+            offlineDownloadsCount = dls ? dls.length : 0;
+          } catch (_e) {}
+        }
+
+        // RÈGLE IMPÉRATIVE HORS-CONNEXION : Ne JAMAIS rediriger vers auth.html si l'user est hors-ligne,
+        // si l'onglet téléchargements est demandé, s'il possède des téléchargements, ou si l'API est indisponible
+        const isOffline = !navigator.onLine || isDownloadsTabRequested || offlineDownloadsCount > 0 || (user && user.offline);
+
+        if (!user && !isOffline) {
           window.location.href = 'auth.html';
           return;
         }
 
         if (!user) {
           user = {
-            username: 'Abonné Solitiquo',
+            username: 'Abonné Hors-ligne',
             email: 'Mode hors-connexion',
             is_subscriber: true,
             role: 'user'

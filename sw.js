@@ -80,13 +80,18 @@ self.addEventListener('fetch', (event) => {
                 .then((response) => {
                     // Mettre à jour le cache avec la nouvelle version
                     const clone = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(request, clone);
+                        if (url.pathname === '/profil.html') {
+                            cache.put('/profil.html', response.clone());
+                        }
+                    });
                     return response;
                 })
                 .catch(() => {
-                    // Offline → servir depuis le cache, sinon page hors ligne
-                    return caches.match(request).then((cached) => {
-                        return cached || caches.match('/offline.html');
+                    // Offline → servir depuis le cache (en ignorant ?tab=downloads), sinon /profil.html puis /offline.html
+                    return caches.match(request, { ignoreSearch: true }).then((cached) => {
+                        return cached || caches.match('/profil.html') || caches.match('/offline.html');
                     });
                 })
         );

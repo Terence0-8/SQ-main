@@ -168,14 +168,23 @@ const SolitiquoAPI = {
       if (cached) {
         try { user = JSON.parse(cached); } catch (_e) {}
       }
-      if (!user && !navigator.onLine) {
-        user = {
-          username: 'Abonné Hors-ligne',
-          email: 'Mode hors-connexion',
-          is_subscriber: true,
-          role: 'user'
-        };
-      }
+    }
+
+    let hasOfflineDownloads = false;
+    if (window.SolitiquoOffline) {
+      try {
+        const dls = await SolitiquoOffline.getAllDownloads();
+        if (dls && dls.length > 0) hasOfflineDownloads = true;
+      } catch (_e) {}
+    }
+
+    if (!user && (!navigator.onLine || hasOfflineDownloads)) {
+      user = {
+        username: 'Abonné Hors-ligne',
+        email: 'Mode hors-connexion',
+        is_subscriber: true,
+        role: 'user'
+      };
     }
 
     if (user) {
@@ -308,7 +317,7 @@ document.addEventListener('languageChanged', (e) => {
 window.showOfflineModal = function() {
   if (document.getElementById('offline-modal-overlay')) return;
   const currentPath = window.location.pathname;
-  if (currentPath.endsWith('profil.html') || currentPath.endsWith('offline.html')) return;
+  if (currentPath.includes('profil.html') || currentPath.includes('offline.html')) return;
 
   setTimeout(async () => {
     if (navigator.onLine) return; // Si la connexion est revenue entre-temps
@@ -317,7 +326,7 @@ window.showOfflineModal = function() {
     let user = window._currentUser;
     if (!user) {
       try {
-        const cached = localStorage.getItem('solitiquo_cached_user');
+        const cached = localStorage.getItem('solitiquo_cached_user') || localStorage.getItem('user');
         if (cached) user = JSON.parse(cached);
       } catch (_e) {}
     }
@@ -327,7 +336,15 @@ window.showOfflineModal = function() {
       } catch (_e) {}
     }
 
-    const isPremiumUser = Boolean(user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer'));
+    let hasOfflineDownloads = false;
+    if (window.SolitiquoOffline) {
+      try {
+        const dls = await SolitiquoOffline.getAllDownloads();
+        if (dls && dls.length > 0) hasOfflineDownloads = true;
+      } catch (_e) {}
+    }
+
+    const isPremiumUser = hasOfflineDownloads || Boolean(user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer'));
 
     const overlay = document.createElement('div');
     overlay.id = 'offline-modal-overlay';
