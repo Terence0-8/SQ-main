@@ -206,7 +206,21 @@ const SolitiquoOffline = (function() {
         const tx = db.transaction(STORE_NAME, 'readonly');
         const store = tx.objectStore(STORE_NAME);
         const req = store.get(storage_key);
-        req.onsuccess = () => resolve(req.result || null);
+        req.onsuccess = () => {
+          if (req.result) return resolve(req.result);
+          // Recherche fallback par id (string/number) ou par slug
+          const reqAll = store.getAll();
+          reqAll.onsuccess = () => {
+            const all = reqAll.result || [];
+            const targetType = type || 'article';
+            const found = all.find(item => 
+              (!item.type || item.type === targetType) &&
+              (String(item.id) === String(id) || item.slug === id || item.storage_key === storage_key)
+            );
+            resolve(found || null);
+          };
+          reqAll.onerror = () => resolve(null);
+        };
         req.onerror = () => resolve(null);
       });
     },

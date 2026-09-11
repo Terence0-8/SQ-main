@@ -140,7 +140,7 @@ router.get('/pricing', async (req, res) => {
 // Retourne un payment_link vers la page de paiement Flutterwave
 // Compatible Orange Money, MTN MoMo, Visa (Cameroun + UEMOA)
 // ==========================================
-router.post('/init-payment', isAuthenticated, verifyCsrf, async (req, res) => {
+router.post('/init-payment', verifyCsrf, isAuthenticated, async (req, res) => {
   try {
     if (!isFlutterwaveConfigured()) {
       return res.status(503).json({
@@ -421,7 +421,7 @@ async function _activateFlutterwaveSubscription(userId, transactionId, paymentMe
 // Apple Pay, Google Pay et PayPal sont automatiquement inclus via
 // automatic_payment_methods: { enabled: true }.
 // ==========================================
-router.post('/init-stripe-payment', isAuthenticated, verifyCsrf, async (req, res) => {
+router.post('/init-stripe-payment', verifyCsrf, isAuthenticated, async (req, res) => {
   try {
     if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.startsWith('sk_test_REMPLACER')) {
       return res.status(503).json({ success: false, error: 'Stripe non configuré — ajoutez STRIPE_SECRET_KEY dans .env' });
@@ -616,7 +616,7 @@ async function _activateStripeSubscription(userId, transactionId, planConfig) {
 // 7. SIMULATEUR (MODE DEV)
 // POST /api/subscriptions/simulate-payment
 // ==========================================
-router.post('/simulate-payment', isAuthenticated, verifyCsrf, async (req, res) => {
+router.post('/simulate-payment', verifyCsrf, isAuthenticated, async (req, res) => {
   if (process.env.NODE_ENV === 'production') {
     return res.status(403).json({ success: false, error: 'Interdit en production' });
   }
@@ -676,7 +676,7 @@ router.post('/simulate-payment', isAuthenticated, verifyCsrf, async (req, res) =
 // 8. RÉSILIER ABONNEMENT
 // POST /api/subscriptions/cancel
 // ==========================================
-router.post('/cancel', isAuthenticated, verifyCsrf, async (req, res) => {
+router.post('/cancel', verifyCsrf, isAuthenticated, async (req, res) => {
   try {
     const userId = req.session.user.id;
 

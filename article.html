@@ -2209,35 +2209,45 @@
       }
 
       // Fetch geo-pricing in parallel with article (for paywall price display)
-      const pricingPromise = fetch(`${window.API_URL || API_URL || "/api"}/subscriptions/pricing`, { credentials: 'include' })
-        .then(r => r.json())
-        .catch(() => ({ currency: 'USD', amount: 7.99, success: true }));
-
-      try {
+      const pricingPromise = fetch(`${window.API_URL || API_URL || "/api"}/subscr      try {
         const article = await SolitiquoAPI.getArticleById(id);
-        const user = await SolitiquoAPI.getProfile();
+        let user = null;
+        try {
+          user = await SolitiquoAPI.getProfile();
+        } catch (_e) {}
+        if (!user && window._currentUser) user = window._currentUser;
         window._currentUser = user;
 
         if (article) {
           window._currentArticle = article;
           document.title = `${article.title} — Solitiquo`;
+
+          // Support des images/audio stockés sous forme de Blob IndexedDB pour le 100% hors-ligne
+          if (article.image_blob && (!article.image_url || article.image_url.startsWith('http'))) {
+            try { article.image_url = URL.createObjectURL(article.image_blob); } catch (_e) {}
+          }
+
           const titleEl = document.getElementById('art-title');
           if (titleEl) titleEl.textContent = article.title;
 
           const badge = document.getElementById('art-category-badge');
           if (badge) {
-            badge.textContent = typeof tCategory === 'function' ? tCategory(article.category) : article.category;
+            badge.textContent = typeof tCategory === 'function' ? tCategory(article.category) : (article.category || 'Décryptage');
             if (article.is_premium) { badge.innerHTML += ' <img src="GOLD.png" alt="Premium" style="height:1.2em;vertical-align:middle;margin-left:5px;" loading="lazy">'; badge.style.backgroundColor = '#222'; }
           }
           const authorEl = document.getElementById('art-author');
-          if (authorEl) authorEl.textContent = article.author_name || 'La Rédaction';
+          if (authorEl) authorEl.textContent = article.author_name || article.author || 'La Rédaction';
           const dateEl = document.getElementById('art-date');
           if (dateEl) dateEl.textContent = SolitiquoAPI.formatDate(article.published_at);
 
           const excerptEl = document.getElementById('art-excerpt');
           if (excerptEl) {
-            if (article.excerpt) excerptEl.textContent = article.excerpt;
-            else excerptEl.style.display = 'none';
+            if (article.excerpt) {
+              excerptEl.textContent = article.excerpt;
+              excerptEl.style.display = 'block';
+            } else {
+              excerptEl.style.display = 'none';
+            }
           }
 
           const imgEl = document.getElementById('art-image');
@@ -2250,14 +2260,31 @@
             figEl.style.display = 'none';
           }
 
-          if (typeof initTranslationButton === 'function') await initTranslationButton(article);
+          try {
+            if (typeof initTranslationButton === 'function') await initTranslationButton(article);
+          } catch (_trErr) {}
 
           const contentDiv = document.getElementById('art-content');
-          const isOfflineSaved = window.SolitiquoOffline && await SolitiquoOffline.isDownloaded(article.id, 'article');
-          const canRead = (user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer')) || isOfflineSaved;
+          let isOfflineSaved = Boolean(article._fromOffline);
+          if (!isOfflineSaved && window.SolitiquoOffline) {
+            try {
+              isOfflineSaved = await SolitiquoOffline.isDownloaded(article.id, 'article');
+            } catch (_e) {}
+          }
+
+          const canRead = Boolean(
+            isOfflineSaved ||
+            (user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer')) ||
+            !navigator.onLine
+          );
+
+          const sanitizedContent = (window.DOMPurify && typeof window.DOMPurify.sanitize === 'function')
+            ? DOMPurify.sanitize(article.content, { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src'] })
+            : article.content;
+
           if (article.is_premium && !canRead) {
             const tmpDiv = document.createElement('div');
-            tmpDiv.innerHTML = DOMPurify.sanitize(article.content, { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src'] });
+            tmpDiv.innerHTML = sanitizedContent;
             const teaserText = (tmpDiv.textContent || tmpDiv.innerText || '').substring(0, 300);
 
             // Geo-pricing for paywall CTA
@@ -2293,10 +2320,10 @@
                 <div style="margin-top:1.5rem;font-size:.9rem;color:#666;">${t('paywall_already')} <a href="auth.html" style="color:#37463D;font-weight:bold;">${t('paywall_login_link')}</a></div>
               </div>`;
           } else {
-            contentDiv.innerHTML = DOMPurify.sanitize(article.content, { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src'] });
-            if (typeof initTTS === 'function') initTTS(article);
+            contentDiv.innerHTML = sanitizedContent;
+            try { if (typeof initTTS === 'function') initTTS(article); } catch (_ttsErr) {}
           }
-          const readTime = article.read_time || Math.max(Math.ceil(article.content.replace(/<[^>]*>/g, ' ').split(/\s+/).filter(w => w).length / 230), 1);
+          const readTime = article.read_time || Math.max(Math.ceil((article.content || '').replace(/<[^>]*>/g, ' ').split(/\s+/).filter(w => w).length / 230), 1);
           const rtEl = document.getElementById('art-readtime');
           if (rtEl) rtEl.textContent = readTime;
 
@@ -2310,13 +2337,13 @@
             }
           }
 
-          // HIDE LOADING SKELETON AND DISPLAY REAL ARTICLE
+          // MASQUER LE SKELETON ET AFFICHER L'ARTICLE
           if (loadingDiv) loadingDiv.style.display = 'none';
           if (mainArticle) mainArticle.style.display = 'block';
 
-          if (typeof updateReadingProgressBar === 'function') updateReadingProgressBar();
-          if (typeof updateOGTags === 'function') updateOGTags(article);
-          if (typeof initShareButtons === 'function') initShareButtons(article.title, window.location.href);
+          try { if (typeof updateReadingProgressBar === 'function') updateReadingProgressBar(); } catch (_e) {}
+          try { if (typeof updateOGTags === 'function') updateOGTags(article); } catch (_e) {}
+          try { if (typeof initShareButtons === 'function') initShareButtons(article.title, window.location.href); } catch (_e) {}
 
           // ── Bouton de téléchargement In-App Hors-ligne (Netflix-style Premium) ──
           const shareBar = document.getElementById('share-bar');
@@ -2365,7 +2392,7 @@
               }
             };
 
-            updateOfflineBtnState();
+            try { updateOfflineBtnState(); } catch (_e) {}
 
             dlBtn.addEventListener('click', async () => {
               if (isPremiumUser) {
@@ -2444,14 +2471,15 @@
             localStorage.setItem('solitiquo_reading_history', JSON.stringify(history));
           } catch (_hErr) {}
 
-          if (typeof initBookmarkButton === 'function') initBookmarkButton(realArticleId);
-          if (typeof loadRelatedArticles === 'function') loadRelatedArticles(article);
-          if (typeof loadComments === 'function') loadComments(realArticleId);
-          if (typeof setupCommentForm === 'function') setupCommentForm(realArticleId, user);
-          if (typeof initAnalytics === 'function') initAnalytics(realArticleId);
+          try { if (typeof initBookmarkButton === 'function') initBookmarkButton(realArticleId); } catch (_e) {}
+          try { if (typeof loadRelatedArticles === 'function') loadRelatedArticles(article); } catch (_e) {}
+          try { if (typeof loadComments === 'function') loadComments(realArticleId); } catch (_e) {}
+          try { if (typeof setupCommentForm === 'function') setupCommentForm(realArticleId, user); } catch (_e) {}
+          try { if (typeof initAnalytics === 'function') initAnalytics(realArticleId); } catch (_e) {}
         } else {
           if (loadingDiv) {
             loadingDiv.style.display = 'block';
+            if (mainArticle) mainArticle.style.display = 'none';
             const isOffline = !navigator.onLine;
             loadingDiv.innerHTML = isOffline ? `
               <div style="text-align:center; padding: 4rem 1.5rem; max-width:620px; margin: 0 auto; background:#fff; border:1px solid #e5e7eb; border-radius:16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
@@ -2478,6 +2506,7 @@
         console.error("Erreur chargement article:", err);
         if (loadingDiv) {
           loadingDiv.style.display = 'block';
+          if (mainArticle) mainArticle.style.display = 'none';
           const isOffline = !navigator.onLine;
           loadingDiv.innerHTML = isOffline ? `
             <div style="text-align:center; padding: 4rem 1.5rem; max-width:620px; margin: 0 auto; background:#fff; border:1px solid #e5e7eb; border-radius:16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">

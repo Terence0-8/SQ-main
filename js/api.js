@@ -25,25 +25,38 @@ const SolitiquoAPI = {
   },
 
   getArticleById: async (id) => {
+    // 1. Si l'utilisateur est hors-ligne, chercher DIRECTEMENT dans les téléchargements IndexedDB
+    if (!navigator.onLine && window.SolitiquoOffline) {
+      try {
+        const offlineItem = await window.SolitiquoOffline.getContent(id, 'article');
+        if (offlineItem) {
+          offlineItem._fromOffline = true;
+          return offlineItem;
+        }
+      } catch (_e) {}
+    }
+
     try {
       const lang = localStorage.getItem('siteLanguage') || 'fr';
       let response;
       if (!isNaN(id)) {
-        response = await fetch(`${API_URL}/articles/${id}?lang=${lang}`);
+        response = await fetch(`${API_URL}/articles/${id}?lang=${lang}`).catch(() => null);
       }
       if (!response || !response.ok) {
-        response = await fetch(`${API_URL}/articles/by-slug/${encodeURIComponent(id)}?lang=${lang}`);
+        response = await fetch(`${API_URL}/articles/by-slug/${encodeURIComponent(id)}?lang=${lang}`).catch(() => null);
       }
-      if (!response.ok) throw new Error('Introuvable');
+      if (!response || !response.ok) throw new Error('Introuvable');
       const json = await response.json();
       return json.article || json.data;
     } catch (error) {
       if (typeof showOfflineBanner === 'function') showOfflineBanner();
       try {
-        // RUPTURE STRICTE: Recherche UNIQUE dans le stockage In-App des téléchargements explicites
         if (window.SolitiquoOffline) {
           const item = await window.SolitiquoOffline.getContent(id, 'article');
-          if (item) return item;
+          if (item) {
+            item._fromOffline = true;
+            return item;
+          }
         }
       } catch (_e) {}
       return null;
