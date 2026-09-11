@@ -114,7 +114,12 @@ const SolitiquoAPI = {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials), credentials: 'include'
       });
-      return await res.json();
+      const json = await res.json();
+      if (json.success && json.user) {
+        try { localStorage.setItem('solitiquo_cached_user', JSON.stringify(json.user)); } catch (_e) {}
+        window._currentUser = json.user;
+      }
+      return json;
     } catch (e) { return { success: false, error: e.message }; }
   },
 
@@ -136,14 +141,18 @@ const SolitiquoAPI = {
       const json = await res.json();
       if (json.success && json.isLoggedIn && json.user) {
         try { localStorage.setItem('solitiquo_cached_user', JSON.stringify(json.user)); } catch (_e) {}
+        window._currentUser = json.user;
         return json.user;
       }
       return null;
     } catch (e) {
-      if (typeof showOfflineBanner === 'function') showOfflineBanner();
       try {
         const cached = localStorage.getItem('solitiquo_cached_user');
-        if (cached) return JSON.parse(cached);
+        if (cached) {
+          const user = JSON.parse(cached);
+          window._currentUser = user;
+          return user;
+        }
       } catch (_err) {}
       return null;
     }
@@ -280,7 +289,7 @@ document.addEventListener('languageChanged', (e) => {
 
 // ── GESTION HORS-CONNEXION SOLITIQUO (CHARTE MARQUE) ──
 
-// 1. MODALE CENTRÉE DE PANNE SANS RÉSEAU (1s de délai + Flou d'arrière-plan)
+// 1. MODALE CENTRÉE DE PANNE SANS RÉSEAU (Mandatoire, sans bouton fermer, redirection directe)
 window.showOfflineModal = function() {
   if (document.getElementById('offline-modal-overlay')) return;
 
@@ -288,13 +297,20 @@ window.showOfflineModal = function() {
     if (navigator.onLine) return; // Si la connexion est revenue entre-temps
     if (document.getElementById('offline-modal-overlay')) return;
 
-    let isPremiumUser = false;
-    try {
-      const user = await SolitiquoAPI.getProfile();
-      if (user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer')) {
-        isPremiumUser = true;
-      }
-    } catch (_e) {}
+    let user = window._currentUser;
+    if (!user) {
+      try {
+        const cached = localStorage.getItem('solitiquo_cached_user');
+        if (cached) user = JSON.parse(cached);
+      } catch (_e) {}
+    }
+    if (!user) {
+      try {
+        user = await SolitiquoAPI.getProfile();
+      } catch (_e) {}
+    }
+
+    const isPremiumUser = Boolean(user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer'));
 
     const overlay = document.createElement('div');
     overlay.id = 'offline-modal-overlay';
@@ -308,9 +324,9 @@ window.showOfflineModal = function() {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(55, 70, 61, 0.55);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      background: rgba(55, 70, 61, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       animation: offlineFadeIn 0.3s ease;
       padding: 20px;
     `;
@@ -321,10 +337,10 @@ window.showOfflineModal = function() {
       width: 100%;
       background: #FFFFFF;
       border-radius: 24px;
-      padding: 32px 28px;
+      padding: 36px 30px;
       text-align: center;
       border: 1px solid rgba(55, 70, 61, 0.12);
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
       font-family: Inter, system-ui, -apple-system, sans-serif;
       position: relative;
     `;
@@ -333,8 +349,8 @@ window.showOfflineModal = function() {
 
     if (isPremiumUser) {
       box.innerHTML = `
-        <div style="width:64px; height:64px; margin:0 auto 18px auto; background:rgba(201, 162, 39, 0.12); border-radius:50%; display:flex; align-items:center; justify-content:center;">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <div style="width:68px; height:68px; margin:0 auto 20px auto; background:rgba(201, 162, 39, 0.12); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="1" y1="1" x2="23" y2="23"/>
             <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
             <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
@@ -344,23 +360,20 @@ window.showOfflineModal = function() {
             <circle cx="12" cy="20" r="1" fill="${accentColor}" stroke="none"/>
           </svg>
         </div>
-        <h3 style="font-family:'Playfair Display', Georgia, serif; font-size:1.6rem; font-weight:700; color:#37463D; margin-bottom:10px; line-height:1.2;">
+        <h3 style="font-family:'Playfair Display', Georgia, serif; font-size:1.65rem; font-weight:700; color:#37463D; margin-bottom:12px; line-height:1.2;">
           Mode Hors-connexion
         </h3>
-        <p style="font-size:0.92rem; color:#475569; line-height:1.6; margin-bottom:24px;">
+        <p style="font-size:0.95rem; color:#475569; line-height:1.6; margin-bottom:28px;">
           Vous êtes actuellement hors-connexion. Consultez vos contenus enregistrés en disponibilité hors-ligne directement dans votre espace Téléchargements.
         </p>
-        <a href="profil.html?tab=downloads" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:rgba(201, 162, 39, 0.12); color:#B08B1E; border:1px solid rgba(201, 162, 39, 0.4); padding:13px 24px; border-radius:30px; font-weight:700; font-size:0.95rem; text-decoration:none; box-shadow:0 4px 16px rgba(201, 162, 39, 0.15); transition:all 0.2s;">
-          Voir mes téléchargements →
+        <a href="profil.html?tab=downloads" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:#37463D; color:#FFFFFF; padding:14px 24px; border-radius:30px; font-weight:700; font-size:0.95rem; text-decoration:none; box-shadow:0 4px 16px rgba(55, 70, 61, 0.25); transition:all 0.2s;">
+          Consulter mes téléchargements →
         </a>
-        <button type="button" onclick="document.getElementById('offline-modal-overlay')?.remove()" style="margin-top:14px; background:none; border:none; color:#94A3B8; font-size:0.85rem; font-weight:600; cursor:pointer; text-decoration:underline;">
-          Continuer la navigation hors-ligne
-        </button>
       `;
     } else {
       box.innerHTML = `
-        <div style="width:64px; height:64px; margin:0 auto 18px auto; background:rgba(200, 40, 35, 0.08); border-radius:50%; display:flex; align-items:center; justify-content:center;">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <div style="width:68px; height:68px; margin:0 auto 20px auto; background:rgba(200, 40, 35, 0.08); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="1" y1="1" x2="23" y2="23"/>
             <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
             <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
@@ -370,18 +383,15 @@ window.showOfflineModal = function() {
             <circle cx="12" cy="20" r="1" fill="${accentColor}" stroke="none"/>
           </svg>
         </div>
-        <h3 style="font-family:'Playfair Display', Georgia, serif; font-size:1.6rem; font-weight:700; color:#37463D; margin-bottom:10px; line-height:1.2;">
+        <h3 style="font-family:'Playfair Display', Georgia, serif; font-size:1.65rem; font-weight:700; color:#37463D; margin-bottom:12px; line-height:1.2;">
           Mode Hors-connexion
         </h3>
-        <p style="font-size:0.92rem; color:#475569; line-height:1.6; margin-bottom:24px;">
+        <p style="font-size:0.95rem; color:#475569; line-height:1.6; margin-bottom:28px;">
           Vous êtes actuellement hors-connexion. La disponibilité des contenus hors-ligne est une fonctionnalité réservée aux abonnés Premium.
         </p>
-        <a href="abonnement.html" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:rgba(200, 40, 35, 0.08); color:#C82823; border:1px solid rgba(200, 40, 35, 0.3); padding:13px 24px; border-radius:30px; font-weight:700; font-size:0.95rem; text-decoration:none; box-shadow:0 4px 16px rgba(200, 40, 35, 0.12); transition:all 0.2s;">
+        <a href="abonnement.html" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:#C82823; color:#FFFFFF; padding:14px 24px; border-radius:30px; font-weight:700; font-size:0.95rem; text-decoration:none; box-shadow:0 4px 16px rgba(200, 40, 35, 0.25); transition:all 0.2s;">
           S'abonner au Premium →
         </a>
-        <button type="button" onclick="document.getElementById('offline-modal-overlay')?.remove()" style="margin-top:14px; background:none; border:none; color:#94A3B8; font-size:0.85rem; font-weight:600; cursor:pointer; text-decoration:underline;">
-          Fermer cette fenêtre
-        </button>
       `;
     }
 
