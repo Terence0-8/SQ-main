@@ -2209,7 +2209,11 @@
       }
 
       // Fetch geo-pricing in parallel with article (for paywall price display)
-      const pricingPromise = fetch(`${window.API_URL || API_URL || "/api"}/subscr      try {
+      const pricingPromise = fetch(`${window.API_URL || API_URL || "/api"}/subscriptions/pricing`, { credentials: 'include' })
+        .then(r => r.json())
+        .catch(() => ({ currency: 'USD', amount: 7.99, success: true }));
+
+      try {
         const article = await SolitiquoAPI.getArticleById(id);
         let user = null;
         try {
