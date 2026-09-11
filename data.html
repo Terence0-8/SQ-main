@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solitiquo Data — Cartographie & Analyse Territoriale du Cameroun</title>
+  <meta name="description" content="Plateforme cartographique interactive et données socio-politiques du Cameroun par Solitiquo Dataviz.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/shared.css">
+  <link rel="stylesheet" href="css/cameroon-map.css">
+
+  <style>
+    #page-data {
+      background-color: #FAFCF9;
+      color: #1A1A1A;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .data-hero {
+      background: linear-gradient(135deg, #1A241E 0%, #37463D 100%);
+      color: #FFFFFF;
+      padding: 4rem 1.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+      border-bottom: 2px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .data-hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(212, 175, 55, 0.15);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      color: #E2B714;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1.2rem;
+    }
+
+    .data-hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem;
+      margin: 0 0 0.8rem 0;
+      letter-spacing: -0.02em;
+    }
+
+    .data-hero p {
+      font-size: 1.15rem;
+      opacity: 0.92;
+      max-width: 840px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .data-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 5rem 1.5rem;
+      flex: 1;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .data-features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-top: 4rem;
+    }
+
+    .data-feature-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      padding: 1.75rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+      transition: transform 0.25s ease, border-color 0.25s ease;
+    }
+
+    .data-feature-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(55, 70, 61, 0.4);
+    }
+
+    .data-feature-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: #F4F6F3;
+      color: #37463D;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      border: 1px solid #E2E8F0;
+    }
+
+    .data-feature-title {
+      font-weight: 700;
+      font-size: 1.08rem;
+      color: #37463D;
+      margin-bottom: 0.35rem;
+    }
+
+    .data-feature-desc {
+      font-size: 0.9rem;
+      color: #4B5563;
+      line-height: 1.55;
+    }
+  </style>
+</head>
+
+<body id="page-data">
+
+  <header class="premium-header">
+    <div class="ph-left">
+      <div class="burger-container">
+        <button class="burger-btn" id="burgerBtn">
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+        </button>
+      </div>
+
+      <a href="index.html" class="ph-brand">
+        <img src="logo.svg" alt="S">
+        <div class="brand-sep"></div>
+        <span class="brand-text">Solitiquo</span>
+      </a>
+    </div>
+
+    <div class="ph-center">
+      <nav class="ph-nav">
+        <a href="politique.html" class="ph-link" data-i18n="nav_pol">Politique</a>
+        <a href="social.html" class="ph-link" data-i18n="nav_soc">Social</a>
+        <a href="partis-politiques.html" class="ph-link" data-i18n="nav_parties">Partis</a>
+        <a href="emissions.html" class="ph-link" data-i18n="nav_shows">Émissions</a>
+        <a href="podcasts.html" class="ph-link" data-i18n="nav_podcasts">Podcasts</a>
+        <a href="data.html" class="ph-link ph-link-data">
+          <span class="ph-data-dot"></span>
+          <span data-i18n="nav_data">DATA</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="ph-right" style="justify-content: flex-end; gap: 15px;">
+      <div class="search-stack">
+        <div class="search-row">
+          <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche" title="Rechercher">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
+            </svg>
+          </button>
+        </div>
+
+        <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
+
+          <input type="text" name="q" class="search-input" placeholder="Rechercher..." id="searchInput"
+            autocomplete="off" required />
+
+          <button class="search-submit" type="submit" aria-label="Lancer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+
+        </form>
+      </div>
+
+      <div class="lang-switch-container">
+        <button class="lang-toggle-btn" id="langToggleBtn" type="button" aria-label="Passer en anglais" title="Passer en anglais (EN)">
+          <svg class="lang-flag-svg" viewBox="0 0 60 30" width="26" height="18" aria-hidden="true"><clipPath id="uk-clip-hdr"><path d="M0 0v30h60V0z"/></clipPath><clipPath id="uk-t-hdr"><path d="M30 15h30v15zm0 0V0H0zm0 0H0v15zm0 0v-15h30z"/></clipPath><g clip-path="url(#uk-clip-hdr)"><path d="M0 0v30h60V0z" fill="#012169"/><path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30m0-30L0 30" clip-path="url(#uk-t-hdr)" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/></g></svg>
+        </button>
+      </div>
+
+      <a href="auth.html" class="ph-btn-auth" data-i18n="nav_login">S'identifier</a>
+    </div>
+
+    <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="11" cy="11" r="7" />
+        <path d="M21 21l-4.35-4.35" />
+      </svg>
+    </button>
+  </header>
+
+  <section class="data-hero">
+    <div class="data-hero-badge">✦ Solitiquo Dataviz</div>
+    <h1>Plateforme Cartographique Interactive du Cameroun</h1>
+    <p>Analyse territoriale multi-thématique : Électoral, Sécurité, IDH & Démographie, PIB & Économie, Éducation, filtres temporels et comparateur régional.</p>
+  </section>
+
+  <main class="data-container">
+    <!-- Point de montage de la carte interactive -->
+    <div id="cm-map-root"></div>
+
+    <!-- Présentation des fonctionnalités Dataviz -->
+    <section class="data-features-grid">
+      <div class="data-feature-card">
+        <div class="data-feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6M15 3h6v6M10 14L21 3M4 6h7v7H4z"/></svg>
+        </div>
+        <div class="data-feature-title">7 Thématiques Cartographiques</div>
+        <div class="data-feature-desc">Données électorales, incidents sécuritaires (ACLED), indicateurs de développement humain et démographiques par région.</div>
+      </div>
+
+      <div class="data-feature-card">
+        <div class="data-feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div class="data-feature-title">Filtre Temporel Électoral</div>
+        <div class="data-feature-desc">Explorez l'évolution des tendances politiques entre la Présidentielle 2018, les Législatives 2020 et les Projections 2025.</div>
+      </div>
+
+      <div class="data-feature-card">
+        <div class="data-feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 21h5v-5M21 3l-7 7M3 21l7-7"/></svg>
+        </div>
+        <div class="data-feature-title">Comparateur Régional Côte à Côte</div>
+        <div class="data-feature-desc">Sélectionnez 2 régions pour juxtaposer leurs métriques économiques, sociales et politiques en temps réel.</div>
+      </div>
+
+      <div class="data-feature-card">
+        <div class="data-feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </div>
+        <div class="data-feature-title">Recherche & Légende Cliquez-Filtrer</div>
+        <div class="data-feature-desc">Localisation rapide de chefs-lieux et filtrage visuel des régions par simple clic sur les éléments de la légende.</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="main-footer">
+    <div class="footer-container">
+      <div class="footer-grid">
+        <div class="footer-col brand-col">
+          <div class="footer-logo">
+            <img src="logo.svg" alt="Solitiquo" class="footer-logo-img">
+            <span class="footer-brand-text">Solitiquo</span>
+          </div>
+          <p class="footer-desc" data-i18n="footer_summary">Le média de référence pour l'analyse politique, économique et sociale au Cameroun.</p>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading" data-i18n="footer_rubriques">Rubriques</h4>
+          <ul class="footer-links">
+            <li><a href="politique.html" data-i18n="nav_pol">Politique</a></li>
+            <li><a href="social.html" data-i18n="nav_soc">Social</a></li>
+            <li><a href="partis-politiques.html" data-i18n="nav_parties">Partis</a></li>
+            <li><a href="emissions.html" data-i18n="nav_shows">Émissions</a></li>
+            <li><a href="podcasts.html" data-i18n="nav_podcasts">Podcasts</a></li>
+            <li><a href="data.html" data-i18n="nav_data">Data</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-heading" data-i18n="footer_legal_contact">Légal & Contact</h4>
+          <ul class="footer-links">
+            <li><a href="contact.html" data-i18n="footer_contact">Contact</a></li>
+            <li><a href="mentions-legales.html" data-i18n="footer_legal">Mentions légales</a></li>
+            <li><a href="conditions-utilisation.html" data-i18n="footer_terms">CGU</a></li>
+            <li><a href="politique-confidentialite.html" data-i18n="footer_privacy">Confidentialité</a></li>
+            <li><a href="cookies.html" data-i18n="footer_cookies">Cookies</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p data-i18n="footer_copyright">© 2026 Solitiquo. Tous droits réservés.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/solitiquo.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/cameroon-map.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof initLanguageSwitcher === 'function') {
+        initLanguageSwitcher();
+      }
+      if (typeof CameroonMap === 'function') {
+        new CameroonMap({
+          containerId: 'cm-map-root',
+          initialTab: 'seats'
+        });
+      }
+    });
+  </script>
+</body>
+
+</html>

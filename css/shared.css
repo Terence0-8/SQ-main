@@ -506,14 +506,64 @@ body.menu-open {
     gap: .6rem
 }
 
-.search-btn {
-    background: none;
-    border: 2px solid var(--secondary-gray);
-    color: var(--secondary-gray);
-    padding: .6rem;
-    border-radius: 12px;
+/* --- COMPACT HEADER LAYOUT & DATA TAB STYLES --- */
+
+.lang-switch-container {
+    display: inline-flex;
+    align-items: center;
+}
+
+.lang-toggle-btn {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
     cursor: pointer;
-    transition: all .3s ease
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.lang-toggle-btn:hover,
+.lang-toggle-btn:focus,
+.lang-toggle-btn:active {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    transform: scale(1.12);
+}
+
+.lang-flag-svg {
+    width: 26px;
+    height: 18px;
+    border-radius: 4px;
+    box-shadow: 0 1.5px 5px rgba(0, 0, 0, 0.25);
+    display: block;
+    object-fit: cover;
+    pointer-events: none;
+    transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lang-toggle-btn:hover .lang-flag-svg {
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+}
+
+/* 2. Bouton Recherche Icône Seule */
+.search-btn {
+    background: transparent;
+    border: 1px solid rgba(55, 70, 61, 0.18);
+    color: var(--primary-dark);
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0;
 }
 
 .search-btn svg {
@@ -521,16 +571,68 @@ body.menu-open {
 }
 
 .search-btn:hover {
-    background: var(--secondary-gray);
-    color: #fff
+    background: var(--primary-dark);
+    color: #ffffff;
+    border-color: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(55, 70, 61, 0.18);
 }
 
 .search-label {
-    color: var(--secondary-gray);
-    font-weight: 500;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: opacity .25s ease, transform .25s ease
+    display: none !important;
+}
+
+/* 3. Onglet DATA aligné & très propre avec point pulse rouge */
+.ph-link-data {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+}
+
+.ph-data-dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--accent-red);
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 0 2px rgba(200, 40, 35, 0.25);
+    animation: phDataPulse 2s infinite ease-in-out;
+    flex-shrink: 0;
+}
+
+@keyframes phDataPulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(200, 40, 35, 0.5);
+    }
+    70% {
+        transform: scale(1.15);
+        box-shadow: 0 0 0 6px rgba(200, 40, 35, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(200, 40, 35, 0);
+    }
+}
+
+/* 4. Bouton Admin Dashboard icône seule */
+#nav-dash-btn {
+    width: 38px !important;
+    height: 38px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: var(--primary-dark) !important;
+    color: white !important;
+    transition: all 0.25s ease !important;
+}
+
+#nav-dash-btn:hover {
+    background: var(--accent-red) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(200, 40, 35, 0.3) !important;
 }
 
 .main-header .search-container {

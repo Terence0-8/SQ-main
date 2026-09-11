@@ -75,23 +75,22 @@
         <a href="partis-politiques.html" class="ph-link" data-i18n="nav_parties">Partis</a>
         <a href="emissions.html" class="ph-link" data-i18n="nav_shows">Émissions</a>
         <a href="podcasts.html" class="ph-link" data-i18n="nav_podcasts">Podcasts</a>
+        <a href="data.html" class="ph-link ph-link-data">
+          <span class="ph-data-dot"></span>
+          <span data-i18n="nav_data">DATA</span>
+        </a>
       </nav>
     </div>
 
-    <div class="ph-right" style="justify-content: flex-end; gap: 20px;">
-      <div class="lang-switch-container">
-        <button class="lang-seg-btn active" data-lang="fr">FR</button>
-        <button class="lang-seg-btn" data-lang="en">EN</button>
-      </div>
+    <div class="ph-right" style="justify-content: flex-end; gap: 15px;">
       <div class="search-stack">
         <div class="search-row">
-          <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <button class="search-btn" id="searchBtn" type="button" aria-label="Ouvrir la recherche" title="Rechercher">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="11" cy="11" r="8" />
               <path d="M21 21l-4.35-4.35" />
             </svg>
           </button>
-          <span class="search-label" id="searchLabel">Rechercher</span>
         </div>
 
         <form class="search-container" id="searchContainer" action="recherche.html" method="GET">
@@ -107,15 +106,22 @@
 
         </form>
       </div>
+
+      <div class="lang-switch-container">
+        <button class="lang-toggle-btn" id="langToggleBtn" type="button" aria-label="Passer en anglais" title="Passer en anglais (EN)">
+          <svg class="lang-flag-svg" viewBox="0 0 60 30" width="26" height="18" aria-hidden="true"><clipPath id="uk-clip-hdr"><path d="M0 0v30h60V0z"/></clipPath><clipPath id="uk-t-hdr"><path d="M30 15h30v15zm0 0V0H0zm0 0H0v15zm0 0v-15h30z"/></clipPath><g clip-path="url(#uk-clip-hdr)"><path d="M0 0v30h60V0z" fill="#012169"/><path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30m0-30L0 30" clip-path="url(#uk-t-hdr)" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/></g></svg>
+        </button>
+      </div>
+
       <a href="auth.html" class="ph-btn-auth" data-i18n="nav_login">S'identifier</a>
     </div>
-  
-      <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <circle cx="11" cy="11" r="7"/>
-          <path d="M21 21l-4.35-4.35"/>
-        </svg>
-      </button>
+
+    <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="11" cy="11" r="7" />
+        <path d="M21 21l-4.35-4.35" />
+      </svg>
+    </button>
   </header>
 
   <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>

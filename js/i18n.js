@@ -11,6 +11,7 @@ var TRANSLATIONS = {
     nav_parties: 'Partis',
     nav_shows: 'Émissions',
     nav_podcasts: 'Podcasts',
+    nav_data: 'Data',
     nav_search: 'Recherche',
     nav_profile: 'Mon Compte',
     nav_logout: 'Déconnexion',
@@ -378,6 +379,7 @@ var TRANSLATIONS = {
     nav_parties: 'Parties',
     nav_shows: 'Shows',
     nav_podcasts: 'Podcasts',
+    nav_data: 'Data',
     nav_search: 'Search',
     nav_profile: 'My Account',
     nav_logout: 'Logout',
@@ -1149,60 +1151,87 @@ window.setLanguage = setLanguage;
 window.updateInterfaceText = updateInterfaceText;
 window.loadArticles = loadArticles;
 
+const UK_FLAG_SVG = `<svg class="lang-flag-svg" viewBox="0 0 60 30" width="26" height="18" aria-hidden="true"><clipPath id="uk-clip-i18n"><path d="M0 0v30h60V0z"/></clipPath><clipPath id="uk-t-i18n"><path d="M30 15h30v15zm0 0V0H0zm0 0H0v15zm0 0v-15h30z"/></clipPath><g clip-path="url(#uk-clip-i18n)"><path d="M0 0v30h60V0z" fill="#012169"/><path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30m0-30L0 30" clip-path="url(#uk-t-i18n)" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/></g></svg>`;
+
+const FR_FLAG_SVG = `<svg class="lang-flag-svg" viewBox="0 0 3 2" width="26" height="18" aria-hidden="true"><rect width="1" height="2" fill="#002654"/><rect x="1" width="1" height="2" fill="#FFFFFF"/><rect x="2" width="1" height="2" fill="#CE1126"/></svg>`;
+
+function updateLanguageToggleUI(currentLang) {
+  const toggleButtons = document.querySelectorAll('.lang-toggle-btn');
+  toggleButtons.forEach(btn => {
+    if (currentLang === 'fr') {
+      btn.innerHTML = UK_FLAG_SVG;
+      btn.setAttribute('aria-label', 'Passer en anglais');
+      btn.setAttribute('title', 'Passer en anglais (EN)');
+      btn.dataset.targetLang = 'en';
+    } else {
+      btn.innerHTML = FR_FLAG_SVG;
+      btn.setAttribute('aria-label', 'Switch to French');
+      btn.setAttribute('title', 'Passer en français (FR)');
+      btn.dataset.targetLang = 'fr';
+    }
+  });
+
+  document.querySelectorAll('.lang-seg-btn').forEach(b => {
+    if (b.getAttribute('data-lang') === currentLang) {
+      b.classList.add('active');
+    } else {
+      b.classList.remove('active');
+    }
+  });
+}
+
 /**
  * FONCTION PRINCIPALE D'INITIALISATION DU SWITCHER FR/EN
  * @param {Object} options - Options de configuration
  * @param {boolean} options.reloadArticles - Si true, re-exécute loadArticles (ex: index.html)
  */
 async function initLanguageSwitcher(options = {}) {
-  const { reloadArticles = false } = options;
-
   try {
     const currentLang = await loadLanguagePreference();
     updateInterfaceText(currentLang);
+    updateLanguageToggleUI(currentLang);
 
-    const langButtons = document.querySelectorAll('.lang-seg-btn');
+    // Événement au clic pour le bouton unique drapeau (.lang-toggle-btn)
+    document.querySelectorAll('.lang-toggle-btn').forEach(btn => {
+      if (btn.dataset.bound === 'true') return;
+      btn.dataset.bound = 'true';
 
-    // Activer le bouton correspondant à la langue actuelle
-    langButtons.forEach(btn => {
-      const btnLang = btn.getAttribute('data-lang');
-      if (btnLang === currentLang) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
-      }
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const targetLang = btn.dataset.targetLang || (getLanguage() === 'fr' ? 'en' : 'fr');
+        if (targetLang === getLanguage()) return;
+
+        await setLanguage(targetLang);
+        updateInterfaceText(targetLang);
+        updateLanguageToggleUI(targetLang);
+
+        if (typeof loadArticles === 'function') {
+          await loadArticles(targetLang);
+        }
+
+        document.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang: targetLang } }));
+      });
     });
 
-    // Attacher l'événement au clic
+    // Événement au clic pour les boutons .lang-seg-btn (compatibilité)
+    const langButtons = document.querySelectorAll('.lang-seg-btn');
     langButtons.forEach(btn => {
+      if (btn.dataset.bound === 'true') return;
+      btn.dataset.bound = 'true';
+
       btn.addEventListener('click', async (e) => {
         e.preventDefault();
         const selectedLang = btn.getAttribute('data-lang');
-
         if (selectedLang === getLanguage()) return;
 
-        // Mise à jour de l'état actif sur TOUS les switchers de la page (header + mobile nav)
-        document.querySelectorAll('.lang-seg-btn').forEach(b => {
-          if (b.getAttribute('data-lang') === selectedLang) {
-            b.classList.add('active');
-          } else {
-            b.classList.remove('active');
-          }
-        });
-
-        // Enregistrer la langue
         await setLanguage(selectedLang);
-
-        // Mettre à jour immédiatement tout le texte structurel
         updateInterfaceText(selectedLang);
+        updateLanguageToggleUI(selectedLang);
 
-        // Si la page possède loadArticles (ex: index.html), recharger les articles
         if (typeof loadArticles === 'function') {
           await loadArticles(selectedLang);
-          console.log(`🌍 Articles rechargés en ${selectedLang.toUpperCase()}`);
         }
 
-        // Émettre un événement personnalisé pour les scripts spécifiques à chaque page
         document.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang: selectedLang } }));
       });
     });

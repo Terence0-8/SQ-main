@@ -21,8 +21,8 @@ if (!headerMatch) {
 // Le header complet qu'on va réinjecter
 const newHeader = `<header class="premium-header">${headerMatch[1]}</header>`;
 
-// 2. Parcourir tous les fichiers HTML
-const files = fs.readdirSync('.').filter(f => f.endsWith('.html') && f !== 'index.html');
+// 2. Parcourir tous les fichiers HTML (exclure index.html et admin.html qui a son propre header d'administration)
+const files = fs.readdirSync('.').filter(f => f.endsWith('.html') && f !== 'index.html' && f !== 'admin.html');
 let updatedCount = 0;
 
 for (const file of files) {
