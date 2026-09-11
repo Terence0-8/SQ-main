@@ -527,8 +527,23 @@
         if (dlTabBtn) dlTabBtn.click();
       }
 
-      const user = await SolitiquoAPI.getProfile();
+      let user = await SolitiquoAPI.getProfile();
       if (!user) {
+        const cached = localStorage.getItem('solitiquo_cached_user');
+        if (cached) {
+          try { user = JSON.parse(cached); } catch (_e) {}
+        }
+        if (!user && !navigator.onLine) {
+          user = {
+            username: 'Utilisateur Hors-ligne',
+            email: 'Mode hors-connexion',
+            is_subscriber: true,
+            role: 'user'
+          };
+        }
+      }
+
+      if (!user && navigator.onLine) {
         window.location.href = 'auth.html';
         return;
       }
