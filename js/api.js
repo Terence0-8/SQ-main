@@ -10,22 +10,15 @@ const SolitiquoAPI = {
       const response = await fetch(`${API_URL}/articles${query}`);
       if (!response.ok) throw new Error('Erreur réseau');
       const json = await response.json();
-      const articles = json.data || [];
-      if (articles.length > 0) {
-        try { localStorage.setItem('solitiquo_cached_articles', JSON.stringify(articles)); } catch (_e) {}
-      }
-      return articles;
+      return json.data || [];
     } catch (error) {
-      console.warn("⚠️ Client Hors-ligne — Récupération des articles en cache/IndexedDB");
+      console.warn("⚠️ Client Hors-ligne — Consultation des seuls articles explicitement téléchargés");
       if (typeof showOfflineBanner === 'function') showOfflineBanner();
       try {
         if (window.SolitiquoOffline) {
           const downloads = await window.SolitiquoOffline.getAllDownloads();
-          const offlineArticles = downloads.filter(d => d.type === 'article');
-          if (offlineArticles.length > 0) return offlineArticles;
+          return downloads.filter(d => d.type === 'article');
         }
-        const cached = localStorage.getItem('solitiquo_cached_articles');
-        if (cached) return JSON.parse(cached);
       } catch (_e) {}
       return [];
     }
@@ -47,13 +40,11 @@ const SolitiquoAPI = {
     } catch (error) {
       if (typeof showOfflineBanner === 'function') showOfflineBanner();
       try {
+        // RUPTURE STRICTE: Recherche UNIQUE dans le stockage In-App des téléchargements explicites
         if (window.SolitiquoOffline) {
           const item = await window.SolitiquoOffline.getContent(id, 'article');
           if (item) return item;
         }
-        const cachedArticles = JSON.parse(localStorage.getItem('solitiquo_cached_articles') || '[]');
-        const found = cachedArticles.find(a => String(a.id) === String(id) || a.slug === id);
-        if (found) return found;
       } catch (_e) {}
       return null;
     }
@@ -74,21 +65,14 @@ const SolitiquoAPI = {
       const response = await fetch(`${API_URL}/podcasts?lang=${lang}`);
       if (!response.ok) throw new Error('Erreur réseau');
       const json = await response.json();
-      const podcasts = json.data || [];
-      if (podcasts.length > 0) {
-        try { localStorage.setItem('solitiquo_cached_podcasts', JSON.stringify(podcasts)); } catch (_e) {}
-      }
-      return podcasts;
+      return json.data || [];
     } catch (error) {
       if (typeof showOfflineBanner === 'function') showOfflineBanner();
       try {
         if (window.SolitiquoOffline) {
           const downloads = await window.SolitiquoOffline.getAllDownloads();
-          const offlinePodcasts = downloads.filter(d => d.type === 'podcast');
-          if (offlinePodcasts.length > 0) return offlinePodcasts;
+          return downloads.filter(d => d.type === 'podcast');
         }
-        const cached = localStorage.getItem('solitiquo_cached_podcasts');
-        if (cached) return JSON.parse(cached);
       } catch (_e) {}
       return [];
     }

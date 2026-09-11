@@ -480,12 +480,45 @@
             actionsBar.appendChild(dlBtn);
           }
         } else {
-          document.getElementById('loading-container').innerHTML = "<p>Épisode introuvable.</p>";
+          const loadingContainer = document.getElementById('loading-container');
+          if (loadingContainer) {
+            const isOffline = !navigator.onLine;
+            loadingContainer.innerHTML = isOffline ? `
+              <div style="text-align:center; padding: 4rem 1.5rem; max-width:620px; margin: 0 auto; background:#fff; border:1px solid #e5e7eb; border-radius:16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+                <div style="width:68px; height:68px; background:#FEE2E2; color:#DC2626; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin: 0 auto 1.5rem auto;">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <h2 style="font-family:'Playfair Display',serif; font-size:1.8rem; color:#37463D; margin-bottom:1rem; font-weight:700;">Podcast non disponible hors-ligne</h2>
+                <p style="color:#4B5563; font-size:1.05rem; line-height:1.6; margin-bottom:2rem;">
+                  Ce podcast n'a pas été préalablement téléchargé. Seuls les épisodes expressément téléchargés par les abonnés Solitiquo sont accessibles sans connexion internet.
+                </p>
+                <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+                  <a href="profil.html?tab=downloads" style="background:#37463D; color:#fff; padding:12px 26px; border-radius:30px; text-decoration:none; font-weight:700; font-size:0.95rem;">Consulter mes téléchargements</a>
+                  <a href="podcasts.html" style="background:#F3F4F6; color:#374151; padding:12px 24px; border-radius:30px; text-decoration:none; font-weight:600; font-size:0.95rem;">Tous les podcasts</a>
+                </div>
+              </div>` : `<p style="text-align:center; padding: 3rem 1rem;">Épisode introuvable.</p>`;
+          }
         }
       } catch (e) {
         console.error(e);
-        document.getElementById('loading-container').innerHTML = "<p>Erreur de chargement. Vérifiez votre connexion.</p>";
-      }
+        const loadingContainer = document.getElementById('loading-container');
+        if (loadingContainer) {
+          const isOffline = !navigator.onLine;
+          loadingContainer.innerHTML = isOffline ? `
+            <div style="text-align:center; padding: 4rem 1.5rem; max-width:620px; margin: 0 auto; background:#fff; border:1px solid #e5e7eb; border-radius:16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+              <div style="width:68px; height:68px; background:#FEE2E2; color:#DC2626; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin: 0 auto 1.5rem auto;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </div>
+              <h2 style="font-family:'Playfair Display',serif; font-size:1.8rem; color:#37463D; margin-bottom:1rem; font-weight:700;">Podcast non disponible hors-ligne</h2>
+              <p style="color:#4B5563; font-size:1.05rem; line-height:1.6; margin-bottom:2rem;">
+                Ce podcast n'a pas été préalablement téléchargé. Seuls les épisodes expressément téléchargés par les abonnés Solitiquo sont accessibles sans connexion internet.
+              </p>
+              <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+                <a href="profil.html?tab=downloads" style="background:#37463D; color:#fff; padding:12px 26px; border-radius:30px; text-decoration:none; font-weight:700; font-size:0.95rem;">Consulter mes téléchargements</a>
+                <a href="podcasts.html" style="background:#F3F4F6; color:#374151; padding:12px 24px; border-radius:30px; text-decoration:none; font-weight:600; font-size:0.95rem;">Tous les podcasts</a>
+              </div>
+            </div>` : `<p style="text-align:center; padding: 3rem 1rem;">Erreur de chargement. Vérifiez votre connexion.</p>`;
+        }
     });
   </script>
 

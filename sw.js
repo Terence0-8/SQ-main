@@ -40,7 +40,7 @@ self.addEventListener('install', (event) => {
 
 // ── ACTIVATE : nettoyage des anciens caches ──
 self.addEventListener('activate', (event) => {
-    const PRESERVED_CACHES = [CACHE_NAME, 'solitiquo-offline-media', 'solitiquo-api-cache'];
+    const PRESERVED_CACHES = [CACHE_NAME, 'solitiquo-offline-media'];
     event.waitUntil(
         caches.keys().then((keys) =>
             Promise.all(
@@ -60,20 +60,15 @@ self.addEventListener('fetch', (event) => {
     // Ignorer les requêtes non-GET
     if (request.method !== 'GET') return;
 
-    // ── API GET : Network-First avec fallback Cache si offline ──
+    // ── API GET : Network-Only (Interdiction absolue de cacher automatiquement l'API pour éviter l'accès hors-ligne non autorisé aux contenus non-téléchargés) ──
     if (url.pathname.startsWith('/api/')) {
         event.respondWith(
-            fetch(request)
-                .then((response) => {
-                    if (response && response.status === 200) {
-                        const clone = response.clone();
-                        caches.open('solitiquo-api-cache').then((cache) => cache.put(request, clone));
-                    }
-                    return response;
-                })
-                .catch(() => {
-                    return caches.match(request);
-                })
+            fetch(request).catch(() => {
+                return new Response(
+                    JSON.stringify({ success: false, error: 'NetworkUnavailable', offline: true }),
+                    { status: 503, headers: { 'Content-Type': 'application/json' } }
+                );
+            })
         );
         return;
     }

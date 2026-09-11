@@ -45,10 +45,35 @@ const SolitiquoOffline = (function() {
 
   return {
     /**
-     * Enregistrer un contenu hors-ligne (Article, Podcast, Émission)
+     * Enregistrer un contenu hors-ligne (Article, Podcast, Émission) — RESERVÉ AUX ABONNÉS
      */
     async saveContent(item) {
       if (!item || !item.id) return false;
+
+      // 🔒 VERIFICATION STRICTE DU STATUT D'ABONNEMENT
+      let user = null;
+      try {
+        if (window.SolitiquoAPI && typeof window.SolitiquoAPI.getProfile === 'function') {
+          user = await window.SolitiquoAPI.getProfile().catch(() => null);
+        }
+      } catch (_e) {}
+      if (!user && window._currentUser) {
+        user = window._currentUser;
+      }
+
+      const isSubscriber = Boolean(user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer'));
+      if (!isSubscriber) {
+        const msg = "🔒 Réservé aux abonnés Solitiquo : Vous devez posséder un abonnement Premium actif pour télécharger des contenus hors-ligne.";
+        if (typeof showSolitiquoToast === 'function') {
+          showSolitiquoToast(msg, true);
+        } else if (typeof showToast === 'function') {
+          showToast(msg, "error");
+        } else {
+          alert(msg);
+        }
+        return false;
+      }
+
       const db = await openDB();
       if (!db) return false;
 
