@@ -15,18 +15,17 @@ const SolitiquoAPI = {
       console.warn("⚠️ Client Hors-ligne — Consultation des seuls articles explicitement téléchargés");
       if (typeof showOfflineBanner === 'function') showOfflineBanner();
       try {
-        if (window.SolitiquoOffline) {
-          const downloads = await window.SolitiquoOffline.getAllDownloads();
-          return downloads.filter(d => d.type === 'article');
-        }
-      } catch (_e) {}
+      const json = await response.json();
+      return json.articles || json.data || [];
+    } catch (error) {
+      console.error('Erreur API articles:', error);
       return [];
     }
   },
 
   getArticleById: async (id) => {
-    // 1. Si l'utilisateur est hors-ligne, chercher DIRECTEMENT dans les téléchargements IndexedDB
-    if (!navigator.onLine && window.SolitiquoOffline) {
+    // 1. Chercher d'abord dans les téléchargements IndexedDB (chargement instantané sans appel réseau inutile)
+    if (window.SolitiquoOffline) {
       try {
         const offlineItem = await window.SolitiquoOffline.getContent(id, 'article');
         if (offlineItem) {
@@ -45,20 +44,10 @@ const SolitiquoAPI = {
       if (!response || !response.ok) {
         response = await fetch(`${API_URL}/articles/by-slug/${encodeURIComponent(id)}?lang=${lang}`).catch(() => null);
       }
-      if (!response || !response.ok) throw new Error('Introuvable');
+      if (!response || !response.ok) return null;
       const json = await response.json();
       return json.article || json.data;
     } catch (error) {
-      if (typeof showOfflineBanner === 'function') showOfflineBanner();
-      try {
-        if (window.SolitiquoOffline) {
-          const item = await window.SolitiquoOffline.getContent(id, 'article');
-          if (item) {
-            item._fromOffline = true;
-            return item;
-          }
-        }
-      } catch (_e) {}
       return null;
     }
   },
@@ -66,34 +55,30 @@ const SolitiquoAPI = {
   formatDate: (dateString, customLang) => {
     if (!dateString) return '';
     const lang = customLang || (typeof getLanguage === 'function' ? getLanguage() : (localStorage.getItem('siteLanguage') || 'fr'));
-    const locale = lang === 'en' ? 'en-US' : 'fr-FR';
-    const options = { day: 'numeric', month: 'long', year: 'numeric' };
-    return new Date(dateString).toLocaleDateString(locale, options);
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString;
+      return new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'fr-FR', {
+        day: 'numeric', month: 'long', year: 'numeric'
+      }).format(date);
+    } catch (_e) { return dateString; }
   },
 
   // --- PODCASTS ---
-  getPodcasts: async () => {
+  getPodcasts: async (query = '') => {
     try {
-      const lang = localStorage.getItem('siteLanguage') || 'fr';
-      const response = await fetch(`${API_URL}/podcasts?lang=${lang}`);
-      if (!response.ok) throw new Error('Erreur réseau');
+      const response = await fetch(`${API_URL}/podcasts${query}`);
       const json = await response.json();
-      return json.data || [];
+      return json.podcasts || json.data || [];
     } catch (error) {
-      if (typeof showOfflineBanner === 'function') showOfflineBanner();
-      try {
-        if (window.SolitiquoOffline) {
-          const downloads = await window.SolitiquoOffline.getAllDownloads();
-          return downloads.filter(d => d.type === 'podcast');
-        }
-      } catch (_e) {}
+      console.error('Erreur API podcasts:', error);
       return [];
     }
   },
 
   getPodcastById: async (id) => {
-    // 1. Si l'utilisateur est hors-ligne, chercher DIRECTEMENT dans les téléchargements IndexedDB
-    if (!navigator.onLine && window.SolitiquoOffline) {
+    // 1. Chercher d'abord dans les téléchargements IndexedDB (chargement instantané sans appel réseau inutile)
+    if (window.SolitiquoOffline) {
       try {
         const offlineItem = await window.SolitiquoOffline.getContent(id, 'podcast');
         if (offlineItem) {
@@ -106,20 +91,10 @@ const SolitiquoAPI = {
     try {
       const lang = localStorage.getItem('siteLanguage') || 'fr';
       const response = await fetch(`${API_URL}/podcasts/${id}?lang=${lang}`).catch(() => null);
-      if (!response || !response.ok) throw new Error('Introuvable');
+      if (!response || !response.ok) return null;
       const json = await response.json();
       return json.podcast;
     } catch (error) {
-      if (typeof showOfflineBanner === 'function') showOfflineBanner();
-      try {
-        if (window.SolitiquoOffline) {
-          const item = await window.SolitiquoOffline.getContent(id, 'podcast');
-          if (item) {
-            item._fromOffline = true;
-            return item;
-          }
-        }
-      } catch (_e) {}
       return null;
     }
   },
