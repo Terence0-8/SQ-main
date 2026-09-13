@@ -213,10 +213,17 @@ const SolitiquoOffline = (function() {
           reqAll.onsuccess = () => {
             const all = reqAll.result || [];
             const targetType = type || 'article';
-            const found = all.find(item => 
+            // 1. Chercher avec le type exact
+            let found = all.find(item => 
               (!item.type || item.type === targetType) &&
               (String(item.id) === String(id) || item.slug === id || item.storage_key === storage_key)
             );
+            // 2. Si non trouvé, chercher sans contrainte de type (ex: podcast sauvé sous id brut)
+            if (!found) {
+              found = all.find(item => 
+                String(item.id) === String(id) || item.slug === id || (item.storage_key && item.storage_key.endsWith(`_${id}`))
+              );
+            }
             resolve(found || null);
           };
           reqAll.onerror = () => resolve(null);

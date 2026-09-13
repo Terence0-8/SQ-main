@@ -92,10 +92,21 @@ const SolitiquoAPI = {
   },
 
   getPodcastById: async (id) => {
+    // 1. Si l'utilisateur est hors-ligne, chercher DIRECTEMENT dans les téléchargements IndexedDB
+    if (!navigator.onLine && window.SolitiquoOffline) {
+      try {
+        const offlineItem = await window.SolitiquoOffline.getContent(id, 'podcast');
+        if (offlineItem) {
+          offlineItem._fromOffline = true;
+          return offlineItem;
+        }
+      } catch (_e) {}
+    }
+
     try {
       const lang = localStorage.getItem('siteLanguage') || 'fr';
-      const response = await fetch(`${API_URL}/podcasts/${id}?lang=${lang}`);
-      if (!response.ok) throw new Error('Introuvable');
+      const response = await fetch(`${API_URL}/podcasts/${id}?lang=${lang}`).catch(() => null);
+      if (!response || !response.ok) throw new Error('Introuvable');
       const json = await response.json();
       return json.podcast;
     } catch (error) {
@@ -103,7 +114,10 @@ const SolitiquoAPI = {
       try {
         if (window.SolitiquoOffline) {
           const item = await window.SolitiquoOffline.getContent(id, 'podcast');
-          if (item) return item;
+          if (item) {
+            item._fromOffline = true;
+            return item;
+          }
         }
       } catch (_e) {}
       return null;

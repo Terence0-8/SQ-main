@@ -1408,6 +1408,7 @@
     </div>
   </footer>
 
+  <script src="/js/offline-manager.js"></script>
   <script src="js/i18n.js"></script>
   <script src="/js/solitiquo.js?v=38"></script>
   <script src="js/config.js"></script>
@@ -2195,7 +2196,7 @@
       const mainArticle = document.getElementById('main-article');
 
       if (window.SolitiquoAPI) SolitiquoAPI.initUserInterface();
-      if (typeof initLanguageSwitcher === 'function') await initLanguageSwitcher();
+      if (typeof initLanguageSwitcher === 'function') initLanguageSwitcher().catch(() => {});
 
       document.addEventListener('languageChanged', () => {
         if (typeof updateInterfaceText === 'function') updateInterfaceText(getLanguage());
@@ -2561,7 +2562,6 @@
   </div>
 
   <script src="/js/lazyload.js"></script>
-  <script src="/js/offline-manager.js"></script>
   <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js'); }</script>
 </body>
 

@@ -245,6 +245,7 @@
 
   <div id="transcript-data" style="display:none;"></div>
 
+  <script src="/js/offline-manager.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/config.js"></script>
   <script src="/js/api.js?v=38"></script>
@@ -297,7 +298,8 @@
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
-      await initLanguageSwitcher();
+      // Initialisation i18n en arrière-plan sans bloquer le rendu
+      if (typeof initLanguageSwitcher === 'function') initLanguageSwitcher().catch(() => {});
 
       // 1. Récupérer l'ID dans l'URL
       const params = new URLSearchParams(window.location.search);
@@ -308,17 +310,19 @@
         return;
       }
 
-      // 3. Récupération des infos du podcast (en ligne ou hors-ligne via IndexedDB)
+      // 3. Récupération des infos du podcast (Chercher d'abord dans IndexedDB pour un chargement instantané hors-ligne)
       try {
         let pod = null;
-        try {
-          if (navigator.onLine && typeof SolitiquoAPI !== 'undefined' && SolitiquoAPI.getPodcastById) {
-            pod = await SolitiquoAPI.getPodcastById(id);
-          }
-        } catch (_netErr) {}
+        if (window.SolitiquoOffline) {
+          try {
+            pod = await window.SolitiquoOffline.getContent(id, 'podcast');
+          } catch (_e) {}
+        }
 
-        if (!pod && window.SolitiquoOffline) {
-          pod = await window.SolitiquoOffline.getContent(id, 'podcast');
+        if (!pod && typeof SolitiquoAPI !== 'undefined' && SolitiquoAPI.getPodcastById) {
+          try {
+            pod = await SolitiquoAPI.getPodcastById(id);
+          } catch (_netErr) {}
         }
 
         if (pod) {
@@ -482,7 +486,14 @@
         } else {
           const loadingContainer = document.getElementById('loading-container');
           if (loadingContainer) {
-            const isOffline = !navigator.onLine;
+            let hasDownloads = false;
+            if (window.SolitiquoOffline) {
+              try {
+                const dls = await SolitiquoOffline.getAllDownloads();
+                if (dls && dls.length > 0) hasDownloads = true;
+              } catch (_e) {}
+            }
+            const isOffline = !navigator.onLine || hasDownloads;
             loadingContainer.innerHTML = isOffline ? `
               <div style="text-align:center; padding: 4rem 1.5rem; max-width:620px; margin: 0 auto; background:#fff; border:1px solid #e5e7eb; border-radius:16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
                 <div style="width:68px; height:68px; background:#FEE2E2; color:#DC2626; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin: 0 auto 1.5rem auto;">
@@ -503,8 +514,7 @@
         console.error(e);
         const loadingContainer = document.getElementById('loading-container');
         if (loadingContainer) {
-          const isOffline = !navigator.onLine;
-          loadingContainer.innerHTML = isOffline ? `
+          loadingContainer.innerHTML = `
             <div style="text-align:center; padding: 4rem 1.5rem; max-width:620px; margin: 0 auto; background:#fff; border:1px solid #e5e7eb; border-radius:16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
               <div style="width:68px; height:68px; background:#FEE2E2; color:#DC2626; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin: 0 auto 1.5rem auto;">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -517,16 +527,12 @@
                 <a href="profil.html?tab=downloads" style="background:#37463D; color:#fff; padding:12px 26px; border-radius:30px; text-decoration:none; font-weight:700; font-size:0.95rem;">Consulter mes téléchargements</a>
                 <a href="podcasts.html" style="background:#F3F4F6; color:#374151; padding:12px 24px; border-radius:30px; text-decoration:none; font-weight:600; font-size:0.95rem;">Tous les podcasts</a>
               </div>
-            </div>` : `<p style="text-align:center; padding: 3rem 1rem;">Erreur de chargement. Vérifiez votre connexion.</p>`;
+            </div>`;
         }
+      }
     });
   </script>
 
-  <script src="/js/i18n.js"></script>
-  <script src="/js/config.js"></script>
-  <script src="/js/api.js?v=38"></script>
-  <script src="/js/offline-manager.js"></script>
-  <script src="/js/podcast-player.js"></script>
   <script src="/js/lazyload.js"></script>
   <script>
     // Mobile menu
