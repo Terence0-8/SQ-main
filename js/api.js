@@ -141,6 +141,7 @@ const SolitiquoAPI = {
   getProfile: async () => {
     try {
       const res = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       if (json.success && json.isLoggedIn && json.user) {
         try { localStorage.setItem('solitiquo_cached_user', JSON.stringify(json.user)); } catch (_e) {}
@@ -288,12 +289,13 @@ const SolitiquoAPI = {
   initCsrf: async () => {
     try {
       const res = await fetch(`${API_URL}/csrf-token`, { credentials: 'include' });
+      if (!res.ok) return;
       const json = await res.json();
       if (json.csrfToken) {
         SolitiquoAPI.csrfToken = json.csrfToken;
         console.log('🔒 CSRF Token récupéré');
       }
-    } catch (e) { console.warn('Erreur récupération CSRF:', e); }
+    } catch (e) { /* Mode hors-ligne ou backend non disponible */ }
   }
 };
 

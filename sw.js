@@ -8,7 +8,7 @@
 // CACHE_NAME inclut la date du déploiement (format YYYYMMDD)
 // → à chaque nouveau déploiement, le nom change et l'ancien cache est purgé automatiquement
 // → plus besoin de bumper manuellement un numéro de version
-const CACHE_NAME = 'solitiquo-20260226';
+const CACHE_NAME = 'solitiquo-v20260913-fix';
 
 // Assets à pré-cacher au moment de l'installation
 const PRECACHE_URLS = [
