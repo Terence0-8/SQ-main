@@ -10,15 +10,16 @@ const SolitiquoAPI = {
       const response = await fetch(`${API_URL}/articles${query}`);
       if (!response.ok) throw new Error('Erreur réseau');
       const json = await response.json();
-      return json.data || [];
+      return json.articles || json.data || [];
     } catch (error) {
       console.warn("⚠️ Client Hors-ligne — Consultation des seuls articles explicitement téléchargés");
       if (typeof showOfflineBanner === 'function') showOfflineBanner();
       try {
-      const json = await response.json();
-      return json.articles || json.data || [];
-    } catch (error) {
-      console.error('Erreur API articles:', error);
+        if (window.SolitiquoOffline) {
+          const downloads = await window.SolitiquoOffline.getAllDownloads();
+          return downloads.filter(d => d.type === 'article');
+        }
+      } catch (_e) {}
       return [];
     }
   },
