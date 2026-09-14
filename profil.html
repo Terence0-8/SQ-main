@@ -543,11 +543,10 @@
     function isOfflineProfileMode() {
       if (typeof navigator !== 'undefined' && !navigator.onLine) return true;
       if (document.body.classList.contains('is-offline')) return true;
+      if (window._isOfflineProfile === true) return true;
+      if (sessionStorage.getItem('solitiquo_offline') === 'true') return true;
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('offline') === 'true' || urlParams.get('offline') === '1') return true;
-      if (urlParams.get('tab') === 'downloads' || window.location.hash === '#downloads' || window.location.hash === '#tab-downloads') return true;
-      if (sessionStorage.getItem('solitiquo_offline') === 'true') return true;
-      if (window._isOfflineProfile === true) return true;
       return false;
     }
 
@@ -619,6 +618,13 @@
         }
       } else {
         document.body.classList.remove('is-offline');
+        window._isOfflineProfile = false;
+        try { sessionStorage.removeItem('solitiquo_offline'); } catch (_e) {}
+        if (window.location.search.includes('offline=')) {
+          const cleanSearch = window.location.search.replace(/([?&])offline=[^&]*(&|$)/, '$1').replace(/[?&]$/, '');
+          const cleanUrl = window.location.pathname + (cleanSearch ? (cleanSearch.startsWith('?') ? cleanSearch : '?' + cleanSearch) : '');
+          window.history.replaceState({}, '', cleanUrl);
+        }
         allTabs.forEach(btn => {
           btn.classList.remove('is-disabled-offline');
           btn.removeAttribute('disabled');
@@ -640,6 +646,8 @@
         });
       }
     }
+
+    window.updateOfflineTabsState = updateOfflineTabsState;
 
     // Interception stricte en phase CAPTURE sur la barre d'onglets (bloque tout clic non autorisé)
     if (tabsNav) {

@@ -6,7 +6,7 @@
 // ============================================================
 
 // CACHE_NAME inclut la version/date du déploiement
-const CACHE_NAME = 'solitiquo-v20260914-profil-tabs-v3';
+const CACHE_NAME = 'solitiquo-v20260914-offline-all-pages-v1';
 
 // Assets à pré-cacher au moment de l'installation (TOUTES les pages et TOUS les fichiers CSS)
 const PRECACHE_URLS = [
@@ -145,40 +145,32 @@ self.addEventListener('fetch', (event) => {
                     return response;
                 })
                 .catch(async () => {
-                    // 1. Tenter la correspondance exacte dans le cache
-                    let cached = await caches.match(request);
-                    if (cached) return cached;
-
-                    // 2. Tenter sans query string (ex: article.html?id=51 -> article.html, profil.html?tab=downloads -> profil.html)
-                    cached = await caches.match(request, { ignoreSearch: true });
-                    if (cached) return cached;
-
-                    // 3. Fallbacks ciblés selon l'URL demandée
                     const path = url.pathname;
-                    if (path === '/' || path === '/index.html') {
-                        const indexCached = (await caches.match('/index.html')) || (await caches.match('/'));
-                        if (indexCached) return indexCached;
-                    }
+
+                    // 1. Profil : Toujours servir profil.html (accès aux téléchargements)
                     if (path.includes('profil.html')) {
-                        const profilCached = await caches.match('/profil.html');
+                        const profilCached = (await caches.match(request)) || 
+                                             (await caches.match('/profil.html', { ignoreSearch: true })) || 
+                                             (await caches.match('/profil.html'));
                         if (profilCached) return profilCached;
                     }
-                    if (path.includes('article.html')) {
-                        const articleCached = await caches.match('/article.html');
-                        if (articleCached) return articleCached;
-                    }
-                    if (path.includes('podcast.html')) {
-                        const podcastCached = await caches.match('/podcast.html');
-                        if (podcastCached) return podcastCached;
+
+                    // 2. Lecteur hors-ligne d'un article ou podcast téléchargé (ex: article.html?id=123)
+                    if ((path.includes('article.html') || path.includes('podcast.html') || path.includes('emissions.html')) && url.searchParams.has('id')) {
+                        const readerCached = (await caches.match(request, { ignoreSearch: true })) || 
+                                             (await caches.match(path)) || 
+                                             (await caches.match(request));
+                        if (readerCached) return readerCached;
                     }
 
-                    // 4. Servir la page hors-ligne officielle de Solitiquo
-                    const offlinePage = await caches.match('/offline.html');
+                    // 3. RÈGLE CLIENT : Pour TOUTES les autres pages hors-connexion, servir offline.html !
+                    const offlinePage = (await caches.match('/offline.html')) || 
+                                        (await caches.match('/offline.html', { ignoreSearch: true }));
                     if (offlinePage) return offlinePage;
 
-                    // 5. Ultime secours : HTML de secours valide (évite le crash natif du navigateur)
+                    // 4. Ultime secours : HTML de secours valide
                     return new Response(
-                        `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><title>Solitiquo — Hors connexion</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:'Inter',system-ui,sans-serif;background:#fbfcfb;color:#37463D;text-align:center;padding:40px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;}h1{font-size:1.8rem;margin-bottom:12px;font-family:serif;}p{color:#64748B;margin-bottom:24px;max-width:480px;line-height:1.6;}a{display:inline-block;padding:12px 26px;background:#37463D;color:#fff;text-decoration:none;border-radius:30px;font-weight:700;box-shadow:0 4px 16px rgba(55,70,61,0.2);}</style></head><body><h1>Vous êtes hors-connexion</h1><p>Cette page n'est pas encore enregistrée dans votre appareil. Vos contenus téléchargés restent accessibles.</p><a href="/profil.html?tab=downloads">Consulter mes téléchargements →</a></body></html>`,
+                        `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><title>Solitiquo — Hors connexion</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:'Inter',system-ui,sans-serif;background:#fbfcfb;color:#37463D;text-align:center;padding:40px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;}h1{font-size:1.8rem;margin-bottom:12px;font-family:serif;}p{color:#64748B;margin-bottom:24px;max-width:480px;line-height:1.6;}a{display:inline-block;padding:12px 26px;background:#37463D;color:#fff;text-decoration:none;border-radius:30px;font-weight:700;box-shadow:0 4px 16px rgba(55,70,61,0.2);}</style></head><body><h1>Vous êtes hors-connexion</h1><p>Cette page nécessite une connexion réseau. Vos contenus téléchargés restent accessibles.</p><a href="/profil.html?tab=downloads">Consulter mes téléchargements →</a></body></html>`,
                         { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
                     );
                 })

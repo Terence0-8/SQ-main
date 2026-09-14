@@ -330,7 +330,11 @@ window.triggerOfflineModalWithDelay = function(delay = 2000) {
   try { sessionStorage.setItem('solitiquo_offline', 'true'); } catch (_e) {}
 
   offlineModalTimer = setTimeout(() => {
-    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    const isOffline = (typeof navigator !== 'undefined' && !navigator.onLine) ||
+                      sessionStorage.getItem('solitiquo_offline') === 'true' ||
+                      currentPath.includes('offline.html') ||
+                      document.body.classList.contains('is-offline');
+    if (isOffline) {
       window.showOfflineModal();
     }
   }, delay);
@@ -522,67 +526,210 @@ window.showOfflineToast = function() {
   }, 6000);
 };
 
-// 2. BULLE DISCRÈTE LORSQUE LA CONNEXION EST RÉTABLIE
+// 2. BANNIÈRE PROÉMINENTE DE RETOUR À LA CONNEXION (Spectaculaire & Impossible à rater)
 window.showOnlineToast = function() {
   try { sessionStorage.removeItem('solitiquo_offline'); } catch (_e) {}
   if (offlineModalTimer) clearTimeout(offlineModalTimer);
   document.getElementById('offline-modal-overlay')?.remove();
   document.getElementById('solitiquo-offline-toast')?.remove();
-  if (document.getElementById('online-bubble-toast')) return;
+  document.getElementById('online-bubble-toast')?.remove();
 
-  const bubble = document.createElement('div');
-  bubble.id = 'online-bubble-toast';
-  bubble.style.cssText = `
+  const toast = document.createElement('div');
+  toast.id = 'online-bubble-toast';
+  toast.style.cssText = `
     position: fixed;
-    bottom: 24px;
-    right: 24px;
-    z-index: 999999;
-    max-width: 320px;
-    width: calc(100% - 48px);
-    background: rgba(55, 70, 61, 0.95);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    color: #F8FBF1;
-    padding: 14px 18px;
-    border-radius: 16px;
-    border: 1px solid rgba(134, 239, 172, 0.4);
-    box-shadow: 0 12px 30px rgba(55, 70, 61, 0.25);
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-24px);
+    z-index: 99999999;
+    background: #37463D;
+    color: #FFFFFF;
+    padding: 16px 28px;
+    border-radius: 40px;
+    border: 2px solid #10B981;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 30px rgba(16, 185, 129, 0.35);
     font-family: Inter, system-ui, -apple-system, sans-serif;
     display: flex;
     align-items: center;
-    gap: 12px;
-    animation: offlineFadeIn 0.3s ease;
+    gap: 16px;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    max-width: calc(100vw - 32px);
+    pointer-events: auto;
   `;
 
-  bubble.innerHTML = `
-    <div style="width:32px; height:32px; border-radius:50%; background:rgba(134, 239, 172, 0.2); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#86EFAC" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  toast.innerHTML = `
+    <div style="width:38px; height:38px; border-radius:50%; background:rgba(16, 185, 129, 0.2); border:1.5px solid #10B981; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="20 6 9 17 4 12"/>
       </svg>
     </div>
-    <div style="flex:1;">
-      <div style="font-weight:700; font-size:0.88rem; color:#FFF;">Connexion rétablie</div>
-      <div style="font-size:0.78rem; color:#D1FAE5; margin-top:2px;">Vous êtes à nouveau connecté.</div>
+    <div style="display:flex; flex-direction:column; gap:2px;">
+      <div style="font-weight:700; font-size:1rem; color:#FFFFFF; letter-spacing:-0.2px;">
+        Connexion rétablie
+      </div>
+      <div style="font-size:0.84rem; color:#A7F3D0; line-height:1.3;">
+        Vous êtes à nouveau connecté à Solitiquo. Contenus et services réactivés.
+      </div>
     </div>
-    <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:#A7F3D0; font-size:1.1rem; cursor:pointer; padding:0; line-height:1;">&times;</button>
+    <button type="button" aria-label="Fermer" style="background:none; border:none; color:#A7F3D0; font-size:1.4rem; cursor:pointer; padding:0 0 0 10px; line-height:1; display:flex; align-items:center;">&times;</button>
   `;
 
-  document.body.appendChild(bubble);
+  const closeBtn = toast.querySelector('button');
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(-50%) translateY(-24px)';
+      setTimeout(() => toast.remove(), 400);
+    };
+  }
+
+  document.body.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+  });
 
   setTimeout(() => {
-    bubble.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-    bubble.style.opacity = '0';
-    bubble.style.transform = 'translateY(10px)';
-    setTimeout(() => bubble.remove(), 400);
-  }, 4000);
+    if (toast.parentElement) {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(-50%) translateY(-24px)';
+      setTimeout(() => toast.remove(), 400);
+    }
+  }, 4500);
 };
 
-// Listeners
+// ============================================================
+// SOLITIQUO DUAL-CHECK CONNECTION MONITOR
+// Détection instantanée et 100% fiable du statut réseau et du retour de connexion
+// ============================================================
+window.SolitiquoConnection = (function() {
+  let isCurrentlyOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+  let pollTimer = null;
+
+  async function pingServer() {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const res = await fetch('/api/csrf-token?_t=' + Date.now(), {
+        method: 'GET',
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      return res.ok;
+    } catch (_e) {
+      return false;
+    }
+  }
+
+  async function checkAndApplyStatus() {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      handleOffline();
+      return false;
+    }
+
+    const live = await pingServer();
+    if (live) {
+      handleOnline();
+      return true;
+    } else {
+      handleOffline();
+      return false;
+    }
+  }
+
+  function handleOffline() {
+    if (isCurrentlyOnline) {
+      isCurrentlyOnline = false;
+      document.body.classList.add('is-offline');
+      try { sessionStorage.setItem('solitiquo_offline', 'true'); } catch (_e) {}
+
+      window.triggerOfflineModalWithDelay(2000);
+
+      if (typeof updateOfflineTabsState === 'function') {
+        updateOfflineTabsState(true);
+      }
+
+      startPolling(1500);
+    }
+  }
+
+  function handleOnline() {
+    const wasOffline = !isCurrentlyOnline || document.body.classList.contains('is-offline') || sessionStorage.getItem('solitiquo_offline') === 'true';
+
+    isCurrentlyOnline = true;
+    document.body.classList.remove('is-offline');
+    try { sessionStorage.removeItem('solitiquo_offline'); } catch (_e) {}
+
+    if (offlineModalTimer) clearTimeout(offlineModalTimer);
+    document.getElementById('offline-modal-overlay')?.remove();
+    document.getElementById('solitiquo-offline-toast')?.remove();
+
+    if (wasOffline) {
+      // 1. Afficher la bannière bien visible
+      window.showOnlineToast();
+
+      // 2. Restaurer l'état normal selon la page
+      if (typeof updateOfflineTabsState === 'function') {
+        updateOfflineTabsState(false);
+      }
+
+      // Si on est sur offline.html : mettre à jour visuellement puis recharger la page
+      if (window.location.pathname.includes('offline.html') || document.querySelector('.offline-container')) {
+        const statusText = document.querySelector('.status-bar span:last-child');
+        const statusDot = document.querySelector('.status-dot');
+        const retryBtn = document.getElementById('retryBtn');
+        if (statusText) statusText.textContent = "✓ Connexion rétablie ! Rechargement en cours...";
+        if (statusDot) {
+          statusDot.style.background = "#10B981";
+          statusDot.style.boxShadow = "0 0 10px #10B981";
+        }
+        if (retryBtn) {
+          retryBtn.innerHTML = "✓ Connecté !";
+          retryBtn.style.color = "#10B981";
+          retryBtn.style.borderColor = "#10B981";
+        }
+        setTimeout(() => {
+          window.location.reload();
+        }, 700);
+      }
+    }
+
+    startPolling(15000);
+  }
+
+  function startPolling(delay) {
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(checkAndApplyStatus, delay);
+  }
+
+  window.addEventListener('online', () => {
+    checkAndApplyStatus();
+  });
+
+  window.addEventListener('offline', () => {
+    handleOffline();
+  });
+
+  // Lancement initial
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    handleOffline();
+  } else {
+    checkAndApplyStatus();
+  }
+
+  return {
+    isOnline: () => isCurrentlyOnline,
+    checkNow: checkAndApplyStatus,
+    setOnline: handleOnline,
+    setOffline: handleOffline
+  };
+})();
+
 window.showOfflineBanner = window.showOfflineModal;
-window.addEventListener('offline', () => {
-  window.triggerOfflineModalWithDelay(2000);
-});
-window.addEventListener('online', window.showOnlineToast);
 
 // ── BULLE NOTIFICATION DE CONFIRMATION SOLITIQUO (TOAST ÉLÉGANT) ──
 window.showSolitiquoToast = function(message, isWarning = false) {

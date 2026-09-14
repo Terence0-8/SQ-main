@@ -184,6 +184,12 @@ const { csrfProtection, verifyCsrf } = require('./backend/middleware/csrf');
 app.use(csrfProtection);
 
 app.get('/api/csrf-token', (req, res) => res.json({ csrfToken: req.session?.csrfToken }));
+app.get('/api/ping', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.json({ ok: true, timestamp: Date.now() });
+});
 
 const csrfExemptPaths = [
   '/api/auth/login',
