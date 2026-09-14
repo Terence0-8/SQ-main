@@ -324,6 +324,9 @@ let offlineModalTimer = null;
 window.triggerOfflineModalWithDelay = function(delay = 2000) {
   if (offlineModalTimer) clearTimeout(offlineModalTimer);
 
+  const currentPath = window.location.pathname;
+  if (currentPath.includes('profil.html')) return;
+
   offlineModalTimer = setTimeout(() => {
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
       window.showOfflineModal();
@@ -333,6 +336,8 @@ window.triggerOfflineModalWithDelay = function(delay = 2000) {
 
 window.showOfflineModal = async function() {
   if (document.getElementById('offline-modal-overlay')) return;
+  const currentPath = window.location.pathname;
+  if (currentPath.includes('profil.html')) return;
 
   let user = window._currentUser;
   if (!user) {

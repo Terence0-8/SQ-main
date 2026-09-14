@@ -501,12 +501,50 @@
     if (keepBtn) keepBtn.addEventListener('click', window.closeCancelModal);
     if (confirmBtn) confirmBtn.addEventListener('click', window.confirmCancelAction);
 
-    // --- NAVIGATION PAR ONGLETS ---
+    // --- NAVIGATION PAR ONGLETS & GESTION HORS-CONNEXION ---
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
+    function updateOfflineTabsState() {
+      const isOffline = !navigator.onLine;
+      const allTabs = document.querySelectorAll('.tab-btn');
+
+      if (isOffline) {
+        document.body.classList.add('is-offline');
+        allTabs.forEach(btn => {
+          if (btn.getAttribute('data-tab') !== 'tab-downloads') {
+            btn.classList.add('is-disabled-offline');
+            btn.setAttribute('title', 'Disponible uniquement avec une connexion internet');
+          } else {
+            btn.classList.remove('is-disabled-offline');
+            btn.removeAttribute('title');
+          }
+        });
+
+        // Activer automatiquement l'onglet Téléchargements en mode hors-connexion
+        const currentActive = document.querySelector('.tab-btn.active');
+        if (!currentActive || currentActive.getAttribute('data-tab') !== 'tab-downloads') {
+          const dlBtn = document.querySelector('.tab-btn[data-tab="tab-downloads"]');
+          if (dlBtn) dlBtn.click();
+        }
+      } else {
+        document.body.classList.remove('is-offline');
+        allTabs.forEach(btn => {
+          btn.classList.remove('is-disabled-offline');
+          btn.removeAttribute('title');
+        });
+      }
+    }
+
+    window.addEventListener('offline', updateOfflineTabsState);
+    window.addEventListener('online', updateOfflineTabsState);
+
     tabBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        if (!navigator.onLine && btn.getAttribute('data-tab') !== 'tab-downloads') {
+          e.preventDefault();
+          return;
+        }
         const targetTab = btn.getAttribute('data-tab');
         tabBtns.forEach(b => b.classList.remove('active'));
         tabContents.forEach(c => c.classList.remove('active'));
@@ -519,9 +557,13 @@
       });
     });
 
+    // Exécuter immédiatement la vérification de l'état des onglets
+    updateOfflineTabsState();
+
     // --- CHARGEMENT DES DONNÉES DU PROFIL ---
     async function initProfilePage() {
       try {
+        updateOfflineTabsState();
         if (typeof initLanguageSwitcher === 'function') await initLanguageSwitcher();
 
         // Support URL ?tab=downloads ou #downloads pour ouvrir automatiquement l'onglet Téléchargements

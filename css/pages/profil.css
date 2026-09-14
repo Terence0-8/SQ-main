@@ -114,6 +114,28 @@ body:not(.is-subscriber)#page-profil,
   color: var(--user-icon-color);
 }
 
+/* ── MODE HORS-CONNEXION : ONGLETS GRISÉS (HORS TÉLÉCHARGEMENTS) ── */
+body.is-offline .tab-btn:not([data-tab="tab-downloads"]),
+.tab-btn.is-disabled-offline {
+  opacity: 0.38 !important;
+  color: #94A3B8 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  filter: grayscale(100%) !important;
+}
+
+body.is-offline .tab-btn:not([data-tab="tab-downloads"]) svg,
+.tab-btn.is-disabled-offline svg {
+  stroke: #94A3B8 !important;
+  color: #94A3B8 !important;
+}
+
+body.is-offline .tab-btn:not([data-tab="tab-downloads"]):hover,
+.tab-btn.is-disabled-offline:hover {
+  background: transparent !important;
+  border-bottom-color: transparent !important;
+}
+
 .tab-content {
   display: none;
   animation: fadeInTab 0.3s ease;

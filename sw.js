@@ -6,7 +6,7 @@
 // ============================================================
 
 // CACHE_NAME inclut la version/date du déploiement
-const CACHE_NAME = 'solitiquo-v20260914-css-full';
+const CACHE_NAME = 'solitiquo-v20260914-profil-tabs';
 
 // Assets à pré-cacher au moment de l'installation (TOUTES les pages et TOUS les fichiers CSS)
 const PRECACHE_URLS = [
