@@ -318,171 +318,148 @@ document.addEventListener('languageChanged', (e) => {
 
 // ── GESTION HORS-CONNEXION SOLITIQUO (CHARTE MARQUE) ──
 
-// 1. MODALE CENTRÉE D'INFORMATION HORS-CONNEXION (Non-bloquante, avec bouton fermer)
-window.showOfflineModal = function() {
+// 1. MODALE CENTRÉE D'INFORMATION HORS-CONNEXION (Redirection vers Téléchargements)
+let offlineModalTimer = null;
+
+window.triggerOfflineModalWithDelay = function(delay = 2000) {
+  if (offlineModalTimer) clearTimeout(offlineModalTimer);
+
+  const currentPath = window.location.pathname;
+  if (currentPath.includes('profil.html') || currentPath.includes('offline.html')) return;
+  if (window._currentContentIsDownloaded) return;
+
+  offlineModalTimer = setTimeout(() => {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      window.showOfflineModal();
+    }
+  }, delay);
+};
+
+window.showOfflineModal = async function() {
   if (document.getElementById('offline-modal-overlay')) return;
   const currentPath = window.location.pathname;
-  if (currentPath.includes('profil.html') || currentPath.includes('offline.html') || currentPath.includes('article.html') || currentPath.includes('podcast.html')) {
-    window.showOfflineToast?.();
-    return;
+  if (currentPath.includes('profil.html') || currentPath.includes('offline.html')) return;
+  if (window._currentContentIsDownloaded) return;
+
+  let user = window._currentUser;
+  if (!user) {
+    try {
+      const cached = localStorage.getItem('solitiquo_cached_user') || localStorage.getItem('user');
+      if (cached) user = JSON.parse(cached);
+    } catch (_e) {}
+  }
+  if (!user) {
+    try {
+      user = await SolitiquoAPI.getProfile();
+    } catch (_e) {}
   }
 
-  setTimeout(async () => {
-    if (navigator.onLine) return; // Si la connexion est revenue entre-temps
-    if (document.getElementById('offline-modal-overlay')) return;
+  let hasOfflineDownloads = false;
+  if (window.SolitiquoOffline) {
+    try {
+      const dls = await SolitiquoOffline.getAllDownloads();
+      if (dls && dls.length > 0) hasOfflineDownloads = true;
+    } catch (_e) {}
+  }
 
-    let user = window._currentUser;
-    if (!user) {
-      try {
-        const cached = localStorage.getItem('solitiquo_cached_user') || localStorage.getItem('user');
-        if (cached) user = JSON.parse(cached);
-      } catch (_e) {}
-    }
-    if (!user) {
-      try {
-        user = await SolitiquoAPI.getProfile();
-      } catch (_e) {}
-    }
+  const isPremiumUser = hasOfflineDownloads || Boolean(user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer'));
 
-    let hasOfflineDownloads = false;
-    if (window.SolitiquoOffline) {
-      try {
-        const dls = await SolitiquoOffline.getAllDownloads();
-        if (dls && dls.length > 0) hasOfflineDownloads = true;
-      } catch (_e) {}
-    }
+  const overlay = document.createElement('div');
+  overlay.id = 'offline-modal-overlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(55, 70, 61, 0.65);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    animation: offlineFadeIn 0.3s ease;
+    padding: 20px;
+  `;
 
-    const isPremiumUser = hasOfflineDownloads || Boolean(user && (user.is_subscriber || user.role === 'admin' || user.role === 'writer'));
+  const box = document.createElement('div');
+  box.style.cssText = `
+    max-width: 440px;
+    width: 100%;
+    background: #FFFFFF;
+    border-radius: 24px;
+    padding: 36px 30px;
+    text-align: center;
+    border: 1px solid rgba(55, 70, 61, 0.12);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    position: relative;
+  `;
 
-    const overlay = document.createElement('div');
-    overlay.id = 'offline-modal-overlay';
-    overlay.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 999999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(55, 70, 61, 0.55);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      animation: offlineFadeIn 0.3s ease;
-      padding: 20px;
-    `;
+  const accentColor = isPremiumUser ? '#C9A227' : '#C82823';
 
-    const box = document.createElement('div');
-    box.style.cssText = `
-      max-width: 440px;
-      width: 100%;
-      background: #FFFFFF;
-      border-radius: 24px;
-      padding: 36px 30px;
-      text-align: center;
-      border: 1px solid rgba(55, 70, 61, 0.12);
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
-      font-family: Inter, system-ui, -apple-system, sans-serif;
-      position: relative;
-    `;
+  box.innerHTML = `
+    <button type="button" id="btn-close-offline-modal" aria-label="Fermer" style="position:absolute; top:18px; right:18px; width:34px; height:34px; border-radius:50%; border:none; background:#F1F5F9; color:#64748B; font-size:1.3rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.2s;">&times;</button>
+    <div style="width:72px; height:72px; margin:0 auto 20px auto; background:rgba(201, 162, 39, 0.12); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="1" y1="1" x2="23" y2="23"/>
+        <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
+        <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+        <path d="M10.71 5.05A16 16 0 0 1 22.56 9"/>
+        <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+        <circle cx="12" cy="20" r="1" fill="${accentColor}" stroke="none"/>
+      </svg>
+    </div>
+    <h3 style="font-family:'Playfair Display', Georgia, serif; font-size:1.65rem; font-weight:700; color:#37463D; margin-bottom:12px; line-height:1.2;">
+      Mode Hors-connexion
+    </h3>
+    <p style="font-size:0.95rem; color:#475569; line-height:1.6; margin-bottom:24px;">
+      Vous êtes actuellement hors-connexion. Consultez vos contenus enregistrés en disponibilité hors-ligne directement dans votre espace Téléchargements.
+    </p>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <a href="profil.html?tab=downloads" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:#37463D; color:#FFFFFF; padding:15px 24px; border-radius:30px; font-weight:700; font-size:0.98rem; text-decoration:none; box-shadow:0 4px 18px rgba(55, 70, 61, 0.28); transition:all 0.2s;">
+        Consulter mes téléchargements →
+      </a>
+      <button type="button" id="btn-dismiss-offline-modal" style="background:none; border:none; color:#64748B; font-size:0.88rem; font-weight:600; cursor:pointer; padding:8px; text-decoration:underline;">
+        Continuer sur cette page
+      </button>
+    </div>
+  `;
 
-    const accentColor = isPremiumUser ? '#C9A227' : '#C82823';
-
-    if (isPremiumUser) {
-      box.innerHTML = `
-        <button type="button" id="btn-close-offline-modal" aria-label="Fermer" style="position:absolute; top:18px; right:18px; width:34px; height:34px; border-radius:50%; border:none; background:#F1F5F9; color:#64748B; font-size:1.3rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.2s;">&times;</button>
-        <div style="width:68px; height:68px; margin:0 auto 20px auto; background:rgba(201, 162, 39, 0.12); border-radius:50%; display:flex; align-items:center; justify-content:center;">
-          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="1" y1="1" x2="23" y2="23"/>
-            <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
-            <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
-            <path d="M10.71 5.05A16 16 0 0 1 22.56 9"/>
-            <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
-            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
-            <circle cx="12" cy="20" r="1" fill="${accentColor}" stroke="none"/>
-          </svg>
-        </div>
-        <h3 style="font-family:'Playfair Display', Georgia, serif; font-size:1.65rem; font-weight:700; color:#37463D; margin-bottom:12px; line-height:1.2;">
-          Mode Hors-connexion
-        </h3>
-        <p style="font-size:0.95rem; color:#475569; line-height:1.6; margin-bottom:24px;">
-          Vous êtes actuellement hors-connexion. Vos contenus téléchargés restent disponibles à tout moment dans votre espace dédié.
-        </p>
-        <div style="display:flex; flex-direction:column; gap:10px;">
-          <a href="profil.html?tab=downloads" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:#37463D; color:#FFFFFF; padding:14px 24px; border-radius:30px; font-weight:700; font-size:0.95rem; text-decoration:none; box-shadow:0 4px 16px rgba(55, 70, 61, 0.25); transition:all 0.2s;">
-            Consulter mes téléchargements →
-          </a>
-          <button type="button" id="btn-dismiss-offline-modal" style="background:none; border:none; color:#64748B; font-size:0.88rem; font-weight:600; cursor:pointer; padding:8px; text-decoration:underline;">
-            Continuer la lecture hors-ligne
-          </button>
-        </div>
-      `;
-    } else {
-      box.innerHTML = `
-        <button type="button" id="btn-close-offline-modal" aria-label="Fermer" style="position:absolute; top:18px; right:18px; width:34px; height:34px; border-radius:50%; border:none; background:#F1F5F9; color:#64748B; font-size:1.3rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.2s;">&times;</button>
-        <div style="width:68px; height:68px; margin:0 auto 20px auto; background:rgba(200, 40, 35, 0.08); border-radius:50%; display:flex; align-items:center; justify-content:center;">
-          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="1" y1="1" x2="23" y2="23"/>
-            <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
-            <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
-            <path d="M10.71 5.05A16 16 0 0 1 22.56 9"/>
-            <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
-            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
-            <circle cx="12" cy="20" r="1" fill="${accentColor}" stroke="none"/>
-          </svg>
-        </div>
-        <h3 style="font-family:'Playfair Display', Georgia, serif; font-size:1.65rem; font-weight:700; color:#37463D; margin-bottom:12px; line-height:1.2;">
-          Mode Hors-connexion
-        </h3>
-        <p style="font-size:0.95rem; color:#475569; line-height:1.6; margin-bottom:24px;">
-          Vous êtes actuellement hors-connexion. Vous pouvez continuer à parcourir les pages déjà chargées sur votre appareil.
-        </p>
-        <div style="display:flex; flex-direction:column; gap:10px;">
-          <a href="profil.html?tab=downloads" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:#37463D; color:#FFFFFF; padding:14px 24px; border-radius:30px; font-weight:700; font-size:0.95rem; text-decoration:none; box-shadow:0 4px 16px rgba(55, 70, 61, 0.25); transition:all 0.2s;">
-            Mes téléchargements →
-          </a>
-          <button type="button" id="btn-dismiss-offline-modal" style="background:none; border:none; color:#64748B; font-size:0.88rem; font-weight:600; cursor:pointer; padding:8px; text-decoration:underline;">
-            Continuer la lecture hors-ligne
-          </button>
-        </div>
-      `;
-    }
-
-    if (!document.getElementById('offline-modal-style')) {
-      const style = document.createElement('style');
-      style.id = 'offline-modal-style';
-      style.textContent = `
-        @keyframes offlineFadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-      `;
-      document.head.appendChild(style);
-    }
-
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
-
-    // Événements de fermeture sans blocage
-    const closeModal = () => {
-      overlay.style.transition = 'opacity 0.2s ease';
-      overlay.style.opacity = '0';
-      setTimeout(() => overlay.remove(), 200);
-    };
-    box.querySelector('#btn-close-offline-modal')?.addEventListener('click', closeModal);
-    box.querySelector('#btn-dismiss-offline-modal')?.addEventListener('click', closeModal);
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) closeModal();
-    });
-    const escHandler = (e) => {
-      if (e.key === 'Escape') {
-        closeModal();
-        window.removeEventListener('keydown', escHandler);
+  if (!document.getElementById('offline-modal-style')) {
+    const style = document.createElement('style');
+    style.id = 'offline-modal-style';
+    style.textContent = `
+      @keyframes offlineFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
       }
-    };
-    window.addEventListener('keydown', escHandler);
-  }, 1000);
+    `;
+    document.head.appendChild(style);
+  }
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  const closeModal = () => {
+    overlay.style.transition = 'opacity 0.2s ease';
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.remove(), 200);
+  };
+  box.querySelector('#btn-close-offline-modal')?.addEventListener('click', closeModal);
+  box.querySelector('#btn-dismiss-offline-modal')?.addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeModal();
+  });
+  const escHandler = (e) => {
+    if (e.key === 'Escape') {
+      closeModal();
+      window.removeEventListener('keydown', escHandler);
+    }
+  };
+  window.addEventListener('keydown', escHandler);
 };
 
 // 1bis. TOAST DISCRET DE MODE HORS-CONNEXION (Totalement non-bloquant)
@@ -555,8 +532,9 @@ window.showOfflineToast = function() {
 
 // 2. BULLE DISCRÈTE LORSQUE LA CONNEXION EST RÉTABLIE
 window.showOnlineToast = function() {
-  // Fermer la modale hors-ligne si elle est encore affichée
+  if (offlineModalTimer) clearTimeout(offlineModalTimer);
   document.getElementById('offline-modal-overlay')?.remove();
+  document.getElementById('solitiquo-offline-toast')?.remove();
   if (document.getElementById('online-bubble-toast')) return;
 
   const bubble = document.createElement('div');
@@ -598,7 +576,6 @@ window.showOnlineToast = function() {
 
   document.body.appendChild(bubble);
 
-  // Disparaît automatiquement après 4 secondes
   setTimeout(() => {
     bubble.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
     bubble.style.opacity = '0';
@@ -608,8 +585,10 @@ window.showOnlineToast = function() {
 };
 
 // Listeners
-window.showOfflineBanner = window.showOfflineToast;
-window.addEventListener('offline', window.showOfflineToast);
+window.showOfflineBanner = window.showOfflineModal;
+window.addEventListener('offline', () => {
+  window.triggerOfflineModalWithDelay(2000);
+});
 window.addEventListener('online', window.showOnlineToast);
 
 // ── BULLE NOTIFICATION DE CONFIRMATION SOLITIQUO (TOAST ÉLÉGANT) ──
@@ -1022,8 +1001,10 @@ window.initAnalytics = function(articleId) {
 
 if (typeof navigator !== 'undefined' && !navigator.onLine) {
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => window.showOfflineToast?.());
+    document.addEventListener('DOMContentLoaded', () => {
+      window.triggerOfflineModalWithDelay(2000);
+    });
   } else {
-    window.showOfflineToast?.();
+    window.triggerOfflineModalWithDelay(2000);
   }
 }

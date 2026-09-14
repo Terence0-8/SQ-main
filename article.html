@@ -2276,6 +2276,9 @@
               isOfflineSaved = await SolitiquoOffline.isDownloaded(article.id, 'article');
             } catch (_e) {}
           }
+          if (isOfflineSaved) {
+            window._currentContentIsDownloaded = true;
+          }
 
           const canRead = Boolean(
             isOfflineSaved ||

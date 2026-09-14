@@ -316,6 +316,7 @@
         if (window.SolitiquoOffline) {
           try {
             pod = await window.SolitiquoOffline.getContent(id, 'podcast');
+            if (pod) window._currentContentIsDownloaded = true;
           } catch (_e) {}
         }
 
