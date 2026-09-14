@@ -116,18 +116,31 @@ body:not(.is-subscriber)#page-profil,
 
 /* ── MODE HORS-CONNEXION : ONGLETS GRISÉS (HORS TÉLÉCHARGEMENTS) ── */
 body.is-offline .tab-btn:not([data-tab="tab-downloads"]),
-.tab-btn.is-disabled-offline {
-  opacity: 0.38 !important;
+.tab-btn.is-disabled-offline,
+#page-profil .tab-btn.is-disabled-offline,
+body.is-subscriber#page-profil .tab-btn.is-disabled-offline,
+#page-profil.is-subscriber .tab-btn.is-disabled-offline,
+body.is-subscriber .tab-btn.is-disabled-offline {
+  opacity: 0.35 !important;
   color: #94A3B8 !important;
   cursor: not-allowed !important;
   pointer-events: none !important;
   filter: grayscale(100%) !important;
+  background: transparent !important;
+  border-bottom-color: transparent !important;
 }
 
-body.is-offline .tab-btn:not([data-tab="tab-downloads"]) svg,
-.tab-btn.is-disabled-offline svg {
+body.is-offline .tab-btn:not([data-tab="tab-downloads"]) *,
+.tab-btn.is-disabled-offline *,
+#page-profil .tab-btn.is-disabled-offline *,
+body.is-subscriber#page-profil .tab-btn.is-disabled-offline *,
+#page-profil.is-subscriber .tab-btn.is-disabled-offline *,
+body.is-subscriber .tab-btn.is-disabled-offline * {
   stroke: #94A3B8 !important;
   color: #94A3B8 !important;
+  fill: none !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
 }
 
 body.is-offline .tab-btn:not([data-tab="tab-downloads"]):hover,

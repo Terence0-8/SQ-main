@@ -327,6 +327,8 @@ window.triggerOfflineModalWithDelay = function(delay = 2000) {
   const currentPath = window.location.pathname;
   if (currentPath.includes('profil.html')) return;
 
+  try { sessionStorage.setItem('solitiquo_offline', 'true'); } catch (_e) {}
+
   offlineModalTimer = setTimeout(() => {
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
       window.showOfflineModal();
@@ -417,7 +419,7 @@ window.showOfflineModal = async function() {
       Vous êtes actuellement hors-connexion. Consultez vos contenus enregistrés en disponibilité hors-ligne directement dans votre espace Téléchargements.
     </p>
     <div style="display:flex; flex-direction:column; gap:10px;">
-      <a href="profil.html?tab=downloads" id="btn-goto-downloads" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:#37463D; color:#FFFFFF; padding:15px 24px; border-radius:30px; font-weight:700; font-size:1rem; text-decoration:none; box-shadow:0 4px 18px rgba(55, 70, 61, 0.28); transition:all 0.2s;">
+      <a href="profil.html?tab=downloads&offline=true" id="btn-goto-downloads" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:#37463D; color:#FFFFFF; padding:15px 24px; border-radius:30px; font-weight:700; font-size:1rem; text-decoration:none; box-shadow:0 4px 18px rgba(55, 70, 61, 0.28); transition:all 0.2s;">
         Consulter mes téléchargements →
       </a>
     </div>
@@ -522,6 +524,7 @@ window.showOfflineToast = function() {
 
 // 2. BULLE DISCRÈTE LORSQUE LA CONNEXION EST RÉTABLIE
 window.showOnlineToast = function() {
+  try { sessionStorage.removeItem('solitiquo_offline'); } catch (_e) {}
   if (offlineModalTimer) clearTimeout(offlineModalTimer);
   document.getElementById('offline-modal-overlay')?.remove();
   document.getElementById('solitiquo-offline-toast')?.remove();

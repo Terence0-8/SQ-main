@@ -22,8 +22,42 @@
   <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
   <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
   <title>Mon Espace — Solitiquo</title>
-  <link rel="stylesheet" href="css/shared.css?v=40" />
-  <link rel="stylesheet" href="css/pages/profil.css?v=40" />
+  <link rel="stylesheet" href="css/shared.css?v=45" />
+  <link rel="stylesheet" href="css/pages/profil.css?v=45" />
+  <style id="offline-tabs-style">
+    /* Règle absolue de désactivation et de grisement des onglets hors-connexion */
+    body.is-offline .tab-btn:not([data-tab="tab-downloads"]),
+    .tab-btn.is-disabled-offline,
+    #page-profil .tab-btn.is-disabled-offline,
+    body.is-subscriber#page-profil .tab-btn.is-disabled-offline,
+    #page-profil.is-subscriber .tab-btn.is-disabled-offline,
+    body.is-subscriber .tab-btn.is-disabled-offline {
+      opacity: 0.35 !important;
+      color: #94A3B8 !important;
+      cursor: not-allowed !important;
+      pointer-events: none !important;
+      filter: grayscale(100%) !important;
+      background: transparent !important;
+      border-bottom-color: transparent !important;
+    }
+    body.is-offline .tab-btn:not([data-tab="tab-downloads"]) *,
+    .tab-btn.is-disabled-offline *,
+    #page-profil .tab-btn.is-disabled-offline *,
+    body.is-subscriber#page-profil .tab-btn.is-disabled-offline *,
+    #page-profil.is-subscriber .tab-btn.is-disabled-offline *,
+    body.is-subscriber .tab-btn.is-disabled-offline * {
+      stroke: #94A3B8 !important;
+      color: #94A3B8 !important;
+      fill: none !important;
+      cursor: not-allowed !important;
+      pointer-events: none !important;
+    }
+    body.is-offline .tab-btn:not([data-tab="tab-downloads"]):hover,
+    .tab-btn.is-disabled-offline:hover {
+      background: transparent !important;
+      border-bottom-color: transparent !important;
+    }
+  </style>
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair Display:ital,wght@0,700;0,800;0,900;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
     rel="stylesheet" />
@@ -504,57 +538,169 @@
     // --- NAVIGATION PAR ONGLETS & GESTION HORS-CONNEXION ---
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
+    const tabsNav = document.querySelector('.profile-tabs-nav');
 
-    function updateOfflineTabsState() {
-      const isOffline = !navigator.onLine;
+    function isOfflineProfileMode() {
+      if (typeof navigator !== 'undefined' && !navigator.onLine) return true;
+      if (document.body.classList.contains('is-offline')) return true;
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('offline') === 'true' || urlParams.get('offline') === '1') return true;
+      if (urlParams.get('tab') === 'downloads' || window.location.hash === '#downloads' || window.location.hash === '#tab-downloads') return true;
+      if (sessionStorage.getItem('solitiquo_offline') === 'true') return true;
+      if (window._isOfflineProfile === true) return true;
+      return false;
+    }
+
+    function updateOfflineTabsState(forcedState) {
+      const isOffline = typeof forcedState === 'boolean' ? forcedState : isOfflineProfileMode();
       const allTabs = document.querySelectorAll('.tab-btn');
+      const dlBtn = document.querySelector('.tab-btn[data-tab="tab-downloads"]');
+      const dlContent = document.getElementById('tab-downloads');
 
       if (isOffline) {
         document.body.classList.add('is-offline');
         allTabs.forEach(btn => {
-          if (btn.getAttribute('data-tab') !== 'tab-downloads') {
+          const isDl = btn.getAttribute('data-tab') === 'tab-downloads';
+          if (!isDl) {
             btn.classList.add('is-disabled-offline');
+            btn.classList.remove('active');
+            btn.setAttribute('disabled', 'disabled');
+            btn.setAttribute('aria-disabled', 'true');
+            btn.setAttribute('tabindex', '-1');
             btn.setAttribute('title', 'Disponible uniquement avec une connexion internet');
+
+            btn.style.setProperty('opacity', '0.35', 'important');
+            btn.style.setProperty('cursor', 'not-allowed', 'important');
+            btn.style.setProperty('pointer-events', 'none', 'important');
+            btn.style.setProperty('filter', 'grayscale(100%)', 'important');
+            btn.style.setProperty('color', '#94A3B8', 'important');
+            btn.style.setProperty('background', 'transparent', 'important');
+            btn.style.setProperty('border-bottom-color', 'transparent', 'important');
+
+            btn.querySelectorAll('*').forEach(el => {
+              el.style.setProperty('color', '#94A3B8', 'important');
+              if (el.tagName && el.tagName.toLowerCase() !== 'span') {
+                el.style.setProperty('stroke', '#94A3B8', 'important');
+                el.style.setProperty('fill', 'none', 'important');
+              }
+            });
           } else {
             btn.classList.remove('is-disabled-offline');
+            btn.removeAttribute('disabled');
+            btn.removeAttribute('aria-disabled');
+            btn.removeAttribute('tabindex');
             btn.removeAttribute('title');
+            btn.style.removeProperty('opacity');
+            btn.style.removeProperty('cursor');
+            btn.style.removeProperty('pointer-events');
+            btn.style.removeProperty('filter');
+            btn.style.removeProperty('color');
+            btn.style.removeProperty('background');
+            btn.style.removeProperty('border-bottom-color');
+            btn.querySelectorAll('*').forEach(el => {
+              el.style.removeProperty('color');
+              el.style.removeProperty('stroke');
+              el.style.removeProperty('fill');
+            });
           }
         });
 
-        // Activer automatiquement l'onglet Téléchargements en mode hors-connexion
-        const currentActive = document.querySelector('.tab-btn.active');
-        if (!currentActive || currentActive.getAttribute('data-tab') !== 'tab-downloads') {
-          const dlBtn = document.querySelector('.tab-btn[data-tab="tab-downloads"]');
-          if (dlBtn) dlBtn.click();
+        // Activer obligatoirement l'onglet Téléchargements en mode hors-connexion
+        allTabs.forEach(b => {
+          if (b.getAttribute('data-tab') !== 'tab-downloads') b.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-content').forEach(c => {
+          if (c.id !== 'tab-downloads') c.classList.remove('active');
+        });
+        if (dlBtn) dlBtn.classList.add('active');
+        if (dlContent) dlContent.classList.add('active');
+        if (typeof loadOfflineDownloads === 'function') {
+          try { loadOfflineDownloads(); } catch (_e) {}
         }
       } else {
         document.body.classList.remove('is-offline');
         allTabs.forEach(btn => {
           btn.classList.remove('is-disabled-offline');
+          btn.removeAttribute('disabled');
+          btn.removeAttribute('aria-disabled');
+          btn.removeAttribute('tabindex');
           btn.removeAttribute('title');
+          btn.style.removeProperty('opacity');
+          btn.style.removeProperty('cursor');
+          btn.style.removeProperty('pointer-events');
+          btn.style.removeProperty('filter');
+          btn.style.removeProperty('color');
+          btn.style.removeProperty('background');
+          btn.style.removeProperty('border-bottom-color');
+          btn.querySelectorAll('*').forEach(el => {
+            el.style.removeProperty('color');
+            el.style.removeProperty('stroke');
+            el.style.removeProperty('fill');
+          });
         });
       }
     }
 
-    window.addEventListener('offline', updateOfflineTabsState);
-    window.addEventListener('online', updateOfflineTabsState);
+    // Interception stricte en phase CAPTURE sur la barre d'onglets (bloque tout clic non autorisé)
+    if (tabsNav) {
+      tabsNav.addEventListener('click', (e) => {
+        const btn = e.target.closest('.tab-btn');
+        if (!btn) return;
+        const isDl = btn.getAttribute('data-tab') === 'tab-downloads';
+        if (!isDl && isOfflineProfileMode()) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          return false;
+        }
+      }, true);
+
+      tabsNav.addEventListener('keydown', (e) => {
+        const btn = e.target.closest('.tab-btn');
+        if (btn && btn.getAttribute('data-tab') !== 'tab-downloads' && isOfflineProfileMode()) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
+        }
+      }, true);
+    }
 
     tabBtns.forEach(btn => {
       btn.addEventListener('click', (e) => {
-        if (!navigator.onLine && btn.getAttribute('data-tab') !== 'tab-downloads') {
-          e.preventDefault();
-          return;
-        }
         const targetTab = btn.getAttribute('data-tab');
+        const isDl = targetTab === 'tab-downloads';
+        if (!isDl && isOfflineProfileMode()) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          return false;
+        }
         tabBtns.forEach(b => b.classList.remove('active'));
         tabContents.forEach(c => c.classList.remove('active'));
         btn.classList.add('active');
         const activeContent = document.getElementById(targetTab);
         if (activeContent) activeContent.classList.add('active');
-        if (targetTab === 'tab-downloads' && typeof loadOfflineDownloads === 'function') {
+        if (isDl && typeof loadOfflineDownloads === 'function') {
           loadOfflineDownloads();
         }
       });
+    });
+
+    window.addEventListener('offline', () => {
+      sessionStorage.setItem('solitiquo_offline', 'true');
+      window._isOfflineProfile = true;
+      updateOfflineTabsState(true);
+    });
+
+    window.addEventListener('online', () => {
+      sessionStorage.removeItem('solitiquo_offline');
+      window._isOfflineProfile = false;
+      const urlParams = new URLSearchParams(window.location.search);
+      if (!urlParams.get('tab') && !urlParams.get('offline')) {
+        updateOfflineTabsState(false);
+      }
     });
 
     // Exécuter immédiatement la vérification de l'état des onglets
@@ -569,12 +715,17 @@
         // Support URL ?tab=downloads ou #downloads pour ouvrir automatiquement l'onglet Téléchargements
         const urlParams = new URLSearchParams(window.location.search);
         const isDownloadsTabRequested = urlParams.get('tab') === 'downloads' || window.location.hash === '#downloads' || window.location.hash === '#tab-downloads';
-        if (isDownloadsTabRequested) {
+        if (isDownloadsTabRequested || isOfflineProfileMode()) {
           const dlTabBtn = document.querySelector('.tab-btn[data-tab="tab-downloads"]');
           if (dlTabBtn) dlTabBtn.click();
         }
 
-        let user = await SolitiquoAPI.getProfile();
+        let user = null;
+        try {
+          user = await SolitiquoAPI.getProfile();
+        } catch (_err) {
+          window._isOfflineProfile = true;
+        }
         if (!user) {
           const cached = localStorage.getItem('solitiquo_cached_user') || localStorage.getItem('user');
           if (cached) {
@@ -592,7 +743,11 @@
 
         // RÈGLE IMPÉRATIVE HORS-CONNEXION : Ne JAMAIS rediriger vers auth.html si l'user est hors-ligne,
         // si l'onglet téléchargements est demandé, s'il possède des téléchargements, ou si l'API est indisponible
-        const isOffline = !navigator.onLine || isDownloadsTabRequested || offlineDownloadsCount > 0 || (user && user.offline);
+        const isOffline = !navigator.onLine || isDownloadsTabRequested || offlineDownloadsCount > 0 || (user && user.offline) || isOfflineProfileMode();
+        window._isOfflineProfile = isOffline;
+        if (isOffline) {
+          sessionStorage.setItem('solitiquo_offline', 'true');
+        }
 
         if (!user && !isOffline) {
           window.location.href = 'auth.html';
@@ -616,6 +771,9 @@
           document.body.classList.remove('is-subscriber');
           document.getElementById('page-profil')?.classList.remove('is-subscriber');
         }
+
+        // Réappliquer l'état hors-connexion pour écraser toute couleur d'icône abonné
+        updateOfflineTabsState(isOffline);
 
         // Carte identité utilisateur
         const nameEl = document.getElementById('user-name');
