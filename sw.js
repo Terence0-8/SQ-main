@@ -6,10 +6,11 @@
 // ============================================================
 
 // CACHE_NAME inclut la version/date du déploiement
-const CACHE_NAME = 'solitiquo-v20260914-fixed';
+const CACHE_NAME = 'solitiquo-v20260914-css-full';
 
-// Assets à pré-cacher au moment de l'installation
+// Assets à pré-cacher au moment de l'installation (TOUTES les pages et TOUS les fichiers CSS)
 const PRECACHE_URLS = [
+    // Pages HTML
     '/',
     '/index.html',
     '/profil.html',
@@ -22,20 +23,54 @@ const PRECACHE_URLS = [
     '/partis-politiques.html',
     '/recherche.html',
     '/auth.html',
+    '/abonnement.html',
+    '/paiement.html',
+    '/dossier.html',
+    '/cookies.html',
+    '/contact.html',
+    '/conditions-utilisation.html',
+    '/mentions-legales.html',
+    '/politique-confidentialite.html',
     '/offline.html',
+
+    // TOUS les styles CSS (partagés et par page) pour un affichage 100% parfait hors-connexion
     '/css/shared.css',
-    '/css/pages/profil.css',
+    '/css/cameroon-map.css',
+    '/css/pages/abonnement.css',
+    '/css/pages/admin.css',
     '/css/pages/article.css',
+    '/css/pages/auth.css',
+    '/css/pages/conditions-utilisation.css',
+    '/css/pages/contact.css',
+    '/css/pages/cookies.css',
+    '/css/pages/dossier.css',
+    '/css/pages/editeur-article.css',
+    '/css/pages/editeur-emission.css',
+    '/css/pages/editeur-parti.css',
+    '/css/pages/editeur-podcast.css',
+    '/css/pages/emissions.css',
+    '/css/pages/index.css',
+    '/css/pages/mentions-legales.css',
+    '/css/pages/page-404.css',
+    '/css/pages/paiement.css',
+    '/css/pages/partis-politiques.css',
     '/css/pages/podcast.css',
+    '/css/pages/podcasts.css',
+    '/css/pages/politique-confidentialite.css',
     '/css/pages/politique.css',
-    '/css/pages/social.css',
+    '/css/pages/profil.css',
     '/css/pages/recherche.css',
+    '/css/pages/social.css',
+
+    // Scripts JS essentiels
     '/js/solitiquo.js',
     '/js/api.js',
     '/js/config.js',
     '/js/i18n.js',
     '/js/lazyload.js',
     '/js/offline-manager.js',
+
+    // Assets généraux
     '/logo.svg',
     '/logo.png',
     '/manifest.json'
@@ -168,9 +203,9 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // ── Assets locaux (CSS, JS, images) : Stale-While-Revalidate ──
+    // ── Assets locaux (CSS, JS, images) : Stale-While-Revalidate avec ignoreSearch ──
     event.respondWith(
-        caches.match(request).then((cached) => {
+        caches.match(request, { ignoreSearch: true }).then((cached) => {
             const fetchPromise = fetch(request)
                 .then((response) => {
                     if (response && response.status === 200 && response.type !== 'opaque') {
@@ -179,7 +214,9 @@ self.addEventListener('fetch', (event) => {
                     }
                     return response;
                 })
-                .catch(() => cached);
+                .catch(async () => {
+                    return cached || (await caches.match(request, { ignoreSearch: true }));
+                });
 
             return cached || fetchPromise;
         })

@@ -324,10 +324,6 @@ let offlineModalTimer = null;
 window.triggerOfflineModalWithDelay = function(delay = 2000) {
   if (offlineModalTimer) clearTimeout(offlineModalTimer);
 
-  const currentPath = window.location.pathname;
-  if (currentPath.includes('profil.html') || currentPath.includes('offline.html')) return;
-  if (window._currentContentIsDownloaded) return;
-
   offlineModalTimer = setTimeout(() => {
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
       window.showOfflineModal();
@@ -337,9 +333,6 @@ window.triggerOfflineModalWithDelay = function(delay = 2000) {
 
 window.showOfflineModal = async function() {
   if (document.getElementById('offline-modal-overlay')) return;
-  const currentPath = window.location.pathname;
-  if (currentPath.includes('profil.html') || currentPath.includes('offline.html')) return;
-  if (window._currentContentIsDownloaded) return;
 
   let user = window._currentUser;
   if (!user) {
@@ -372,15 +365,16 @@ window.showOfflineModal = async function() {
     left: 0;
     width: 100vw;
     height: 100vh;
-    z-index: 999999;
+    z-index: 9999999;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(55, 70, 61, 0.65);
+    background: rgba(55, 70, 61, 0.72);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     animation: offlineFadeIn 0.3s ease;
     padding: 20px;
+    user-select: none;
   `;
 
   const box = document.createElement('div');
@@ -389,7 +383,7 @@ window.showOfflineModal = async function() {
     width: 100%;
     background: #FFFFFF;
     border-radius: 24px;
-    padding: 36px 30px;
+    padding: 38px 30px;
     text-align: center;
     border: 1px solid rgba(55, 70, 61, 0.12);
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
@@ -400,7 +394,6 @@ window.showOfflineModal = async function() {
   const accentColor = isPremiumUser ? '#C9A227' : '#C82823';
 
   box.innerHTML = `
-    <button type="button" id="btn-close-offline-modal" aria-label="Fermer" style="position:absolute; top:18px; right:18px; width:34px; height:34px; border-radius:50%; border:none; background:#F1F5F9; color:#64748B; font-size:1.3rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.2s;">&times;</button>
     <div style="width:72px; height:72px; margin:0 auto 20px auto; background:rgba(201, 162, 39, 0.12); border-radius:50%; display:flex; align-items:center; justify-content:center;">
       <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="1" y1="1" x2="23" y2="23"/>
@@ -415,16 +408,13 @@ window.showOfflineModal = async function() {
     <h3 style="font-family:'Playfair Display', Georgia, serif; font-size:1.65rem; font-weight:700; color:#37463D; margin-bottom:12px; line-height:1.2;">
       Mode Hors-connexion
     </h3>
-    <p style="font-size:0.95rem; color:#475569; line-height:1.6; margin-bottom:24px;">
+    <p style="font-size:0.95rem; color:#475569; line-height:1.6; margin-bottom:26px;">
       Vous êtes actuellement hors-connexion. Consultez vos contenus enregistrés en disponibilité hors-ligne directement dans votre espace Téléchargements.
     </p>
     <div style="display:flex; flex-direction:column; gap:10px;">
-      <a href="profil.html?tab=downloads" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:#37463D; color:#FFFFFF; padding:15px 24px; border-radius:30px; font-weight:700; font-size:0.98rem; text-decoration:none; box-shadow:0 4px 18px rgba(55, 70, 61, 0.28); transition:all 0.2s;">
+      <a href="profil.html?tab=downloads" id="btn-goto-downloads" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:#37463D; color:#FFFFFF; padding:15px 24px; border-radius:30px; font-weight:700; font-size:1rem; text-decoration:none; box-shadow:0 4px 18px rgba(55, 70, 61, 0.28); transition:all 0.2s;">
         Consulter mes téléchargements →
       </a>
-      <button type="button" id="btn-dismiss-offline-modal" style="background:none; border:none; color:#64748B; font-size:0.88rem; font-weight:600; cursor:pointer; padding:8px; text-decoration:underline;">
-        Continuer sur cette page
-      </button>
     </div>
   `;
 
@@ -433,8 +423,8 @@ window.showOfflineModal = async function() {
     style.id = 'offline-modal-style';
     style.textContent = `
       @keyframes offlineFadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from { opacity: 0; transform: scale(0.98); }
+        to { opacity: 1; transform: scale(1); }
       }
     `;
     document.head.appendChild(style);
@@ -443,23 +433,18 @@ window.showOfflineModal = async function() {
   overlay.appendChild(box);
   document.body.appendChild(overlay);
 
-  const closeModal = () => {
-    overlay.style.transition = 'opacity 0.2s ease';
-    overlay.style.opacity = '0';
-    setTimeout(() => overlay.remove(), 200);
-  };
-  box.querySelector('#btn-close-offline-modal')?.addEventListener('click', closeModal);
-  box.querySelector('#btn-dismiss-offline-modal')?.addEventListener('click', closeModal);
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) closeModal();
-  });
-  const escHandler = (e) => {
-    if (e.key === 'Escape') {
-      closeModal();
-      window.removeEventListener('keydown', escHandler);
-    }
-  };
-  window.addEventListener('keydown', escHandler);
+  // Redirection sans blocage si déjà sur la page profil.html
+  const gotoBtn = box.querySelector('#btn-goto-downloads');
+  if (gotoBtn) {
+    gotoBtn.addEventListener('click', (e) => {
+      if (window.location.pathname.includes('profil.html')) {
+        e.preventDefault();
+        const dlTabBtn = document.querySelector('.tab-btn[data-tab="tab-downloads"]');
+        if (dlTabBtn) dlTabBtn.click();
+        overlay.remove();
+      }
+    });
+  }
 };
 
 // 1bis. TOAST DISCRET DE MODE HORS-CONNEXION (Totalement non-bloquant)
