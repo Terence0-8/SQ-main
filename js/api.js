@@ -372,19 +372,40 @@ window.isCurrentPageDownloadedContent = async function() {
 /**
  * Détermine si la page actuelle doit être exemptée de la bulle de redirection :
  * - profil.html (espace de gestion des téléchargements)
- * - offline.html (écran hors-ligne dédié contenant déjà ses actions)
+ * - offline.html / écran hors-connexion (contient déjà son interface dédiée et ses boutons)
  * - Tout article, podcast ou émission téléchargé (l'utilisateur est en train de le lire/écouter hors-ligne)
  */
 window.shouldExcludeFromOfflineModal = async function() {
+  // 1. Détection prioritaire par flag JS global
+  if (window._isOfflinePage === true || window._currentContentIsDownloaded === true) return true;
+
+  // 2. Détection par attribut ou classe du DOM
+  if (document.body) {
+    if (document.body.classList.contains('page-offline') || document.body.dataset.page === 'offline' || document.body.dataset.isDownloadedContent === 'true') {
+      return true;
+    }
+  }
+
+  // 3. Détection par éléments spécifiques à l'écran hors-connexion
+  if (document.querySelector('.offline-container') || document.getElementById('retryBtn')) {
+    window._isOfflinePage = true;
+    return true;
+  }
+
+  // 4. Détection par le titre de la page
+  if (document.title && document.title.toLowerCase().includes('hors connexion')) {
+    return true;
+  }
+
   const currentPath = window.location.pathname;
 
-  // 1. Page de profil
-  if (currentPath.includes('profil.html')) return true;
+  // 5. Page de profil
+  if (currentPath.includes('profil.html') || currentPath.endsWith('/profil')) return true;
 
-  // 2. Page d'erreur hors-ligne
-  if (currentPath.includes('offline.html')) return true;
+  // 6. Page offline par URL
+  if (currentPath.includes('offline.html') || currentPath.includes('/offline')) return true;
 
-  // 3. Contenu téléchargé au cas par cas
+  // 7. Contenu téléchargé au cas par cas
   if (await window.isCurrentPageDownloadedContent()) return true;
 
   return false;
@@ -394,12 +415,22 @@ window.triggerOfflineModalWithDelay = async function(delay = 2000) {
   if (offlineModalTimer) clearTimeout(offlineModalTimer);
   if (window.offlineModalTimer) clearTimeout(window.offlineModalTimer);
 
+  // Vérification synchrone immédiate
+  if (window._isOfflinePage === true || 
+      (document.body && (document.body.classList.contains('page-offline') || document.body.dataset.page === 'offline')) ||
+      document.querySelector('.offline-container') ||
+      document.getElementById('retryBtn') ||
+      window.location.pathname.includes('offline.html') ||
+      window.location.pathname.includes('profil.html')) {
+    return;
+  }
+
   if (await window.shouldExcludeFromOfflineModal()) return;
 
   try { sessionStorage.setItem('solitiquo_offline', 'true'); } catch (_e) {}
 
   const timer = setTimeout(async () => {
-    // Re-vérifier au moment où le délai expire (le contenu téléchargé a pu terminer son chargement)
+    // Re-vérifier au moment où le délai expire
     if (await window.shouldExcludeFromOfflineModal()) return;
 
     const isOffline = (typeof navigator !== 'undefined' && !navigator.onLine) ||
@@ -415,6 +446,17 @@ window.triggerOfflineModalWithDelay = async function(delay = 2000) {
 };
 
 window.showOfflineModal = async function() {
+  // Garde-fou absolu : JAMAIS de bulle/modal sur la page offline ou profil
+  if (window._isOfflinePage === true ||
+      (document.body && (document.body.classList.contains('page-offline') || document.body.dataset.page === 'offline')) ||
+      document.querySelector('.offline-container') ||
+      document.getElementById('retryBtn') ||
+      window.location.pathname.includes('offline.html') ||
+      window.location.pathname.includes('profil.html')) {
+    document.getElementById('offline-modal-overlay')?.remove();
+    return;
+  }
+
   if (document.getElementById('offline-modal-overlay')) return;
   if (await window.shouldExcludeFromOfflineModal()) return;
 

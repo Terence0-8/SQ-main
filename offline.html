@@ -365,8 +365,13 @@
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="logo.svg">
+  <script>
+    window._isOfflinePage = true;
+    window.triggerOfflineModalWithDelay = function() {};
+    window.showOfflineModal = function() {};
+  </script>
 </head>
-<body>
+<body class="page-offline" data-page="offline">
 
   <header class="premium-header">
     <div class="ph-left">
@@ -486,6 +491,13 @@
 
   <script src="/js/solitiquo.js"></script>
   <script src="/js/api.js"></script>
+  <script>
+    window._isOfflinePage = true;
+    if (window.offlineModalTimer) clearTimeout(window.offlineModalTimer);
+    document.getElementById('offline-modal-overlay')?.remove();
+    window.triggerOfflineModalWithDelay = function() {};
+    window.showOfflineModal = function() {};
+  </script>
   <script src="/js/offline-manager.js"></script>
   <script>
     // 1. Gestion du bouton "Réessayer la connexion" avec vérification active
