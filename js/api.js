@@ -318,11 +318,14 @@ document.addEventListener('languageChanged', (e) => {
 
 // ── GESTION HORS-CONNEXION SOLITIQUO (CHARTE MARQUE) ──
 
-// 1. MODALE CENTRÉE DE PANNE SANS RÉSEAU (Mandatoire, sans bouton fermer, redirection directe)
+// 1. MODALE CENTRÉE D'INFORMATION HORS-CONNEXION (Non-bloquante, avec bouton fermer)
 window.showOfflineModal = function() {
   if (document.getElementById('offline-modal-overlay')) return;
   const currentPath = window.location.pathname;
-  if (currentPath.includes('profil.html') || currentPath.includes('offline.html')) return;
+  if (currentPath.includes('profil.html') || currentPath.includes('offline.html') || currentPath.includes('article.html') || currentPath.includes('podcast.html')) {
+    window.showOfflineToast?.();
+    return;
+  }
 
   setTimeout(async () => {
     if (navigator.onLine) return; // Si la connexion est revenue entre-temps
@@ -363,9 +366,9 @@ window.showOfflineModal = function() {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(55, 70, 61, 0.65);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      background: rgba(55, 70, 61, 0.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       animation: offlineFadeIn 0.3s ease;
       padding: 20px;
     `;
@@ -388,6 +391,7 @@ window.showOfflineModal = function() {
 
     if (isPremiumUser) {
       box.innerHTML = `
+        <button type="button" id="btn-close-offline-modal" aria-label="Fermer" style="position:absolute; top:18px; right:18px; width:34px; height:34px; border-radius:50%; border:none; background:#F1F5F9; color:#64748B; font-size:1.3rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.2s;">&times;</button>
         <div style="width:68px; height:68px; margin:0 auto 20px auto; background:rgba(201, 162, 39, 0.12); border-radius:50%; display:flex; align-items:center; justify-content:center;">
           <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="1" y1="1" x2="23" y2="23"/>
@@ -402,15 +406,21 @@ window.showOfflineModal = function() {
         <h3 style="font-family:'Playfair Display', Georgia, serif; font-size:1.65rem; font-weight:700; color:#37463D; margin-bottom:12px; line-height:1.2;">
           Mode Hors-connexion
         </h3>
-        <p style="font-size:0.95rem; color:#475569; line-height:1.6; margin-bottom:28px;">
-          Vous êtes actuellement hors-connexion. Consultez vos contenus enregistrés en disponibilité hors-ligne directement dans votre espace Téléchargements.
+        <p style="font-size:0.95rem; color:#475569; line-height:1.6; margin-bottom:24px;">
+          Vous êtes actuellement hors-connexion. Vos contenus téléchargés restent disponibles à tout moment dans votre espace dédié.
         </p>
-        <a href="profil.html?tab=downloads" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:#37463D; color:#FFFFFF; padding:14px 24px; border-radius:30px; font-weight:700; font-size:0.95rem; text-decoration:none; box-shadow:0 4px 16px rgba(55, 70, 61, 0.25); transition:all 0.2s;">
-          Consulter mes téléchargements →
-        </a>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <a href="profil.html?tab=downloads" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:#37463D; color:#FFFFFF; padding:14px 24px; border-radius:30px; font-weight:700; font-size:0.95rem; text-decoration:none; box-shadow:0 4px 16px rgba(55, 70, 61, 0.25); transition:all 0.2s;">
+            Consulter mes téléchargements →
+          </a>
+          <button type="button" id="btn-dismiss-offline-modal" style="background:none; border:none; color:#64748B; font-size:0.88rem; font-weight:600; cursor:pointer; padding:8px; text-decoration:underline;">
+            Continuer la lecture hors-ligne
+          </button>
+        </div>
       `;
     } else {
       box.innerHTML = `
+        <button type="button" id="btn-close-offline-modal" aria-label="Fermer" style="position:absolute; top:18px; right:18px; width:34px; height:34px; border-radius:50%; border:none; background:#F1F5F9; color:#64748B; font-size:1.3rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.2s;">&times;</button>
         <div style="width:68px; height:68px; margin:0 auto 20px auto; background:rgba(200, 40, 35, 0.08); border-radius:50%; display:flex; align-items:center; justify-content:center;">
           <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="${accentColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="1" y1="1" x2="23" y2="23"/>
@@ -425,12 +435,17 @@ window.showOfflineModal = function() {
         <h3 style="font-family:'Playfair Display', Georgia, serif; font-size:1.65rem; font-weight:700; color:#37463D; margin-bottom:12px; line-height:1.2;">
           Mode Hors-connexion
         </h3>
-        <p style="font-size:0.95rem; color:#475569; line-height:1.6; margin-bottom:28px;">
-          Vous êtes actuellement hors-connexion. La disponibilité des contenus hors-ligne est une fonctionnalité réservée aux abonnés Premium.
+        <p style="font-size:0.95rem; color:#475569; line-height:1.6; margin-bottom:24px;">
+          Vous êtes actuellement hors-connexion. Vous pouvez continuer à parcourir les pages déjà chargées sur votre appareil.
         </p>
-        <a href="abonnement.html" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:#C82823; color:#FFFFFF; padding:14px 24px; border-radius:30px; font-weight:700; font-size:0.95rem; text-decoration:none; box-shadow:0 4px 16px rgba(200, 40, 35, 0.25); transition:all 0.2s;">
-          S'abonner au Premium →
-        </a>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <a href="profil.html?tab=downloads" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:#37463D; color:#FFFFFF; padding:14px 24px; border-radius:30px; font-weight:700; font-size:0.95rem; text-decoration:none; box-shadow:0 4px 16px rgba(55, 70, 61, 0.25); transition:all 0.2s;">
+            Mes téléchargements →
+          </a>
+          <button type="button" id="btn-dismiss-offline-modal" style="background:none; border:none; color:#64748B; font-size:0.88rem; font-weight:600; cursor:pointer; padding:8px; text-decoration:underline;">
+            Continuer la lecture hors-ligne
+          </button>
+        </div>
       `;
     }
 
@@ -448,7 +463,94 @@ window.showOfflineModal = function() {
 
     overlay.appendChild(box);
     document.body.appendChild(overlay);
+
+    // Événements de fermeture sans blocage
+    const closeModal = () => {
+      overlay.style.transition = 'opacity 0.2s ease';
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.remove(), 200);
+    };
+    box.querySelector('#btn-close-offline-modal')?.addEventListener('click', closeModal);
+    box.querySelector('#btn-dismiss-offline-modal')?.addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeModal();
+    });
+    const escHandler = (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+        window.removeEventListener('keydown', escHandler);
+      }
+    };
+    window.addEventListener('keydown', escHandler);
   }, 1000);
+};
+
+// 1bis. TOAST DISCRET DE MODE HORS-CONNEXION (Totalement non-bloquant)
+window.showOfflineToast = function() {
+  const currentPath = window.location.pathname;
+  if (currentPath.includes('profil.html') || currentPath.includes('offline.html')) return;
+  if (document.getElementById('solitiquo-offline-toast')) return;
+
+  const toast = document.createElement('div');
+  toast.id = 'solitiquo-offline-toast';
+  toast.style.cssText = `
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    z-index: 99999;
+    background: rgba(30, 41, 35, 0.95);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    color: #F8FBF1;
+    padding: 11px 20px;
+    border-radius: 30px;
+    border: 1px solid rgba(201, 162, 39, 0.35);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    opacity: 0;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    max-width: calc(100vw - 32px);
+  `;
+
+  toast.innerHTML = `
+    <div style="display:flex; align-items:center; gap:8px;">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#C9A227" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="1" y1="1" x2="23" y2="23"/>
+        <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
+        <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+        <path d="M10.71 5.05A16 16 0 0 1 22.56 9"/>
+        <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+        <circle cx="12" cy="20" r="1" fill="#C9A227" stroke="none"/>
+      </svg>
+      <span>Mode hors-connexion</span>
+    </div>
+    <a href="profil.html?tab=downloads" style="color:#C9A227; font-weight:700; text-decoration:none; white-space:nowrap; border-bottom:1px solid rgba(201,162,39,0.5);">
+      Téléchargements →
+    </a>
+    <button type="button" onclick="this.closest('#solitiquo-offline-toast').remove()" aria-label="Fermer" style="background:none; border:none; color:#94A3B8; font-size:1.2rem; cursor:pointer; padding:0; line-height:1;">&times;</button>
+  `;
+
+  document.body.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+  });
+
+  setTimeout(() => {
+    if (toast.parentElement) {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(-50%) translateY(10px)';
+      setTimeout(() => toast.remove(), 400);
+    }
+  }, 6000);
 };
 
 // 2. BULLE DISCRÈTE LORSQUE LA CONNEXION EST RÉTABLIE
@@ -506,8 +608,8 @@ window.showOnlineToast = function() {
 };
 
 // Listeners
-window.showOfflineBanner = window.showOfflineModal;
-window.addEventListener('offline', window.showOfflineModal);
+window.showOfflineBanner = window.showOfflineToast;
+window.addEventListener('offline', window.showOfflineToast);
 window.addEventListener('online', window.showOnlineToast);
 
 // ── BULLE NOTIFICATION DE CONFIRMATION SOLITIQUO (TOAST ÉLÉGANT) ──
@@ -920,8 +1022,8 @@ window.initAnalytics = function(articleId) {
 
 if (typeof navigator !== 'undefined' && !navigator.onLine) {
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', window.showOfflineModal);
+    document.addEventListener('DOMContentLoaded', () => window.showOfflineToast?.());
   } else {
-    window.showOfflineModal();
+    window.showOfflineToast?.();
   }
 }
