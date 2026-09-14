@@ -2214,6 +2214,18 @@
         .then(r => r.json())
         .catch(() => ({ currency: 'USD', amount: 7.99, success: true }));
 
+      if (window.SolitiquoOffline && id) {
+        try {
+          const isSaved = await window.SolitiquoOffline.getContent(id, 'article');
+          if (isSaved) {
+            window._currentContentIsDownloaded = true;
+            document.body.dataset.isDownloadedContent = 'true';
+            if (window.offlineModalTimer) clearTimeout(window.offlineModalTimer);
+            document.getElementById('offline-modal-overlay')?.remove();
+          }
+        } catch (_e) {}
+      }
+
       try {
         const article = await SolitiquoAPI.getArticleById(id);
         let user = null;
@@ -2225,6 +2237,12 @@
 
         if (article) {
           window._currentArticle = article;
+          if (article._fromOffline) {
+            window._currentContentIsDownloaded = true;
+            document.body.dataset.isDownloadedContent = 'true';
+            if (window.offlineModalTimer) clearTimeout(window.offlineModalTimer);
+            document.getElementById('offline-modal-overlay')?.remove();
+          }
           document.title = `${article.title} — Solitiquo`;
 
           // Support des images/audio stockés sous forme de Blob IndexedDB pour le 100% hors-ligne

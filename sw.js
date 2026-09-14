@@ -6,7 +6,7 @@
 // ============================================================
 
 // CACHE_NAME inclut la version/date du déploiement
-const CACHE_NAME = 'solitiquo-v20260914-offline-all-pages-v1';
+const CACHE_NAME = 'solitiquo-v20260914-offline-custom-v2';
 
 // Assets à pré-cacher au moment de l'installation (TOUTES les pages et TOUS les fichiers CSS)
 const PRECACHE_URLS = [
@@ -155,8 +155,8 @@ self.addEventListener('fetch', (event) => {
                         if (profilCached) return profilCached;
                     }
 
-                    // 2. Lecteur hors-ligne d'un article ou podcast téléchargé (ex: article.html?id=123)
-                    if ((path.includes('article.html') || path.includes('podcast.html') || path.includes('emissions.html')) && url.searchParams.has('id')) {
+                    // 2. Lecteur hors-ligne d'un article ou podcast téléchargé (ex: article.html?id=123 ou ?slug=...)
+                    if ((path.includes('article.html') || path.includes('podcast.html') || path.includes('emissions.html')) && (url.searchParams.has('id') || url.searchParams.has('slug'))) {
                         const readerCached = (await caches.match(request, { ignoreSearch: true })) || 
                                              (await caches.match(path)) || 
                                              (await caches.match(request));

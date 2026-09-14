@@ -320,30 +320,103 @@ document.addEventListener('languageChanged', (e) => {
 
 // 1. MODALE CENTRÉE D'INFORMATION HORS-CONNEXION (Redirection vers Téléchargements)
 let offlineModalTimer = null;
+window.offlineModalTimer = null;
 
-window.triggerOfflineModalWithDelay = function(delay = 2000) {
-  if (offlineModalTimer) clearTimeout(offlineModalTimer);
+/**
+ * Vérifie au cas par cas si la page actuelle affiche un contenu (article, podcast, émission)
+ * présent dans les téléchargements hors-ligne de l'utilisateur.
+ */
+window.isCurrentPageDownloadedContent = async function() {
+  if (window._currentContentIsDownloaded === true) return true;
+  if (window._isOfflineDownloadedContent === true) return true;
+  if (document.body && document.body.dataset.isDownloadedContent === 'true') return true;
+  if (window._currentArticle && (window._currentArticle._fromOffline || window._currentArticle._isDownloaded)) return true;
+  if (window._currentPodcast && (window._currentPodcast._fromOffline || window._currentPodcast._isDownloaded)) return true;
+  if (window._currentEmission && (window._currentEmission._fromOffline || window._currentEmission._isDownloaded)) return true;
+
+  if (!window.SolitiquoOffline) return false;
 
   const currentPath = window.location.pathname;
-  if (currentPath.includes('profil.html')) return;
+  const urlParams = new URLSearchParams(window.location.search);
+  const targetId = urlParams.get('id') || urlParams.get('slug');
+
+  if (!targetId) return false;
+
+  try {
+    if (currentPath.includes('article.html') || currentPath.endsWith('/article')) {
+      const art = await window.SolitiquoOffline.getContent(targetId, 'article');
+      if (art) {
+        window._currentContentIsDownloaded = true;
+        return true;
+      }
+    } else if (currentPath.includes('podcast.html') || currentPath.endsWith('/podcast')) {
+      const pod = await window.SolitiquoOffline.getContent(targetId, 'podcast');
+      if (pod) {
+        window._currentContentIsDownloaded = true;
+        return true;
+      }
+    } else if (currentPath.includes('emissions.html') || currentPath.includes('emission.html') || currentPath.endsWith('/emission')) {
+      const emi = await window.SolitiquoOffline.getContent(targetId, 'emission');
+      if (emi) {
+        window._currentContentIsDownloaded = true;
+        return true;
+      }
+    }
+  } catch (_err) {
+    return false;
+  }
+
+  return false;
+};
+
+/**
+ * Détermine si la page actuelle doit être exemptée de la bulle de redirection :
+ * - profil.html (espace de gestion des téléchargements)
+ * - offline.html (écran hors-ligne dédié contenant déjà ses actions)
+ * - Tout article, podcast ou émission téléchargé (l'utilisateur est en train de le lire/écouter hors-ligne)
+ */
+window.shouldExcludeFromOfflineModal = async function() {
+  const currentPath = window.location.pathname;
+
+  // 1. Page de profil
+  if (currentPath.includes('profil.html')) return true;
+
+  // 2. Page d'erreur hors-ligne
+  if (currentPath.includes('offline.html')) return true;
+
+  // 3. Contenu téléchargé au cas par cas
+  if (await window.isCurrentPageDownloadedContent()) return true;
+
+  return false;
+};
+
+window.triggerOfflineModalWithDelay = async function(delay = 2000) {
+  if (offlineModalTimer) clearTimeout(offlineModalTimer);
+  if (window.offlineModalTimer) clearTimeout(window.offlineModalTimer);
+
+  if (await window.shouldExcludeFromOfflineModal()) return;
 
   try { sessionStorage.setItem('solitiquo_offline', 'true'); } catch (_e) {}
 
-  offlineModalTimer = setTimeout(() => {
+  const timer = setTimeout(async () => {
+    // Re-vérifier au moment où le délai expire (le contenu téléchargé a pu terminer son chargement)
+    if (await window.shouldExcludeFromOfflineModal()) return;
+
     const isOffline = (typeof navigator !== 'undefined' && !navigator.onLine) ||
                       sessionStorage.getItem('solitiquo_offline') === 'true' ||
-                      currentPath.includes('offline.html') ||
                       document.body.classList.contains('is-offline');
     if (isOffline) {
       window.showOfflineModal();
     }
   }, delay);
+
+  offlineModalTimer = timer;
+  window.offlineModalTimer = timer;
 };
 
 window.showOfflineModal = async function() {
   if (document.getElementById('offline-modal-overlay')) return;
-  const currentPath = window.location.pathname;
-  if (currentPath.includes('profil.html')) return;
+  if (await window.shouldExcludeFromOfflineModal()) return;
 
   let user = window._currentUser;
   if (!user) {

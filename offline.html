@@ -292,12 +292,7 @@
   <script src="/js/api.js"></script>
   <script src="/js/offline-manager.js"></script>
   <script>
-    // 1. Déclencher impérativement la bulle de redirection après 2 secondes
-    if (typeof window.triggerOfflineModalWithDelay === 'function') {
-      window.triggerOfflineModalWithDelay(2000);
-    }
-
-    // 2. Gestion du bouton "Réessayer la connexion" avec vérification active
+    // 1. Gestion du bouton "Réessayer la connexion" avec vérification active
     const retryBtn = document.getElementById('retryBtn');
     if (retryBtn) {
       retryBtn.addEventListener('click', async function () {

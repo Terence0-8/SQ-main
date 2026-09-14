@@ -339,8 +339,32 @@
       }
     }
 
+    // Support des émissions téléchargées hors-ligne
+    async function checkOfflineEmission() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const emissionId = urlParams.get('id');
+      if (emissionId && window.SolitiquoOffline) {
+        try {
+          const emi = await window.SolitiquoOffline.getContent(emissionId, 'emission');
+          if (emi) {
+            window._currentEmission = emi;
+            window._currentContentIsDownloaded = true;
+            document.body.dataset.isDownloadedContent = 'true';
+            if (window.offlineModalTimer) clearTimeout(window.offlineModalTimer);
+            document.getElementById('offline-modal-overlay')?.remove();
+
+            const ytid = getYoutubeId(emi.video_url || '');
+            if (ytid) {
+              switchVideo(ytid, emi.title, emi.description || emi.content, tCategory(emi.category), SolitiquoAPI.formatDate(emi.published_at));
+            }
+          }
+        } catch (_e) {}
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       await initLanguageSwitcher();
+      await checkOfflineEmission();
       await loadEmissionsData();
     });
 
@@ -349,23 +373,11 @@
     });
   </script>
 
-  <script>
-    // 🛡️ Désactiver tous les Service Workers actifs
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(registrations => {
-        registrations.forEach(registration => {
-          registration.unregister().then(() => {
-            console.log('Service Worker désactivé:', registration.scope);
-          });
-        });
-      });
-    }
-  </script>
-
   <script src="/js/i18n.js"></script>
   <script src="/js/config.js"></script>
-  <script src="/js/api.js?v=38"></script>
-  <script src="/js/solitiquo.js?v=38"></script>
+  <script src="/js/offline-manager.js"></script>
+  <script src="/js/api.js?v=46"></script>
+  <script src="/js/solitiquo.js?v=46"></script>
   <script src="/js/lazyload.js"></script>
 </body>
 

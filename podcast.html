@@ -316,7 +316,12 @@
         if (window.SolitiquoOffline) {
           try {
             pod = await window.SolitiquoOffline.getContent(id, 'podcast');
-            if (pod) window._currentContentIsDownloaded = true;
+            if (pod) {
+              window._currentContentIsDownloaded = true;
+              document.body.dataset.isDownloadedContent = 'true';
+              if (window.offlineModalTimer) clearTimeout(window.offlineModalTimer);
+              document.getElementById('offline-modal-overlay')?.remove();
+            }
           } catch (_e) {}
         }
 
@@ -327,6 +332,13 @@
         }
 
         if (pod) {
+          window._currentPodcast = pod;
+          if (pod._fromOffline || window._currentContentIsDownloaded) {
+            window._currentContentIsDownloaded = true;
+            document.body.dataset.isDownloadedContent = 'true';
+            if (window.offlineModalTimer) clearTimeout(window.offlineModalTimer);
+            document.getElementById('offline-modal-overlay')?.remove();
+          }
           // Si disponible hors-ligne avec un Blob audio/image local
           if (pod.audio_blob) {
             try { pod.audio_url = URL.createObjectURL(pod.audio_blob); } catch(_e) {}
