@@ -126,11 +126,19 @@ const adminLimiter = rateLimit({
   message: { success: false, error: 'Trop de requêtes admin, réessayez dans 15 minutes' }
 });
 
+const translationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { success: false, error: 'Trop de demandes de traduction, réessayez dans 15 minutes' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
 app.use('/api/auth/login', loginLimiter);
 app.post('/api/comments', commentsLimiter);
 app.use('/api/admin', adminLimiter);
+app.use('/api/translate', translationLimiter);
 app.use(globalLimiter);
-
 // Session
 const sessionSecret = process.env.SESSION_SECRET || (isTest ? 'test-secret-only' : null);
 if (!sessionSecret) throw new Error('❌ SESSION_SECRET manquant dans .env - Le serveur refuse de démarrer.');
@@ -199,7 +207,6 @@ const csrfExemptPaths = [
   '/api/subscriptions/init-',
   '/api/language/preference',
   '/api/analytics/track',
-  '/api/translate',
   '/api/comments/',
   '/api/admin/comments',
 ];

@@ -12,7 +12,7 @@ Solitiquo est une application web Node.js complète, conçue pour servir de méd
 - **Base de données** : PostgreSQL
 - **Frontend** : HTML5, CSS3, JavaScript Vanilla
 - **Stockage externe** : Cloudinary
-- **Paiements** : Stripe, CinetPay
+- **Paiements** : Stripe, Flutterwave
 - **Authentification** : Passport (Local, Google, Facebook)
 
 ## Prérequis

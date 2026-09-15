@@ -118,6 +118,8 @@ CREATE TABLE IF NOT EXISTS comments (
   content TEXT NOT NULL,
   parent_id INT REFERENCES comments(id) ON DELETE CASCADE,
   is_approved BOOLEAN DEFAULT FALSE,
+  is_edited BOOLEAN NOT NULL DEFAULT FALSE,
+  upvotes INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -233,12 +235,24 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'expired', 'cancelled')),
   starts_at TIMESTAMP NOT NULL,
   ends_at TIMESTAMP NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_subscriptions_user ON subscriptions(user_id);
 CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status);
 
+-- ============================================
+-- 10. TABLE USER_BOOKMARKS (Favoris utilisateurs)
+-- ============================================
+CREATE TABLE IF NOT EXISTS user_bookmarks (
+  user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  article_id INT NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  PRIMARY KEY (user_id, article_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_bookmarks_article ON user_bookmarks(article_id);
 -- ============================================
 -- 10. TABLE ARTICLE_ANALYTICS (Statistiques articles)
 -- ============================================

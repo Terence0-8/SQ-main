@@ -14,13 +14,4 @@ const pool = new Pool({
   connectionTimeoutMillis: 5000,
 });
 
-// Test simple
-pool.query('SELECT NOW()', (err, res) => {
-  if (err) {
-    console.error('❌ Erreur PostgreSQL:', err.message);
-  } else {
-    console.log('✅ PostgreSQL OK');
-  }
-});
-
 module.exports = pool;

@@ -720,17 +720,6 @@ router.post('/:id/bookmark', isAuthenticated, async (req, res) => {
       return res.status(400).json({ success: false, error: 'ID invalide' });
     }
 
-    try {
-      await pool.query(`
-        CREATE TABLE IF NOT EXISTS user_bookmarks (
-          user_id INT NOT NULL,
-          article_id INT NOT NULL,
-          created_at TIMESTAMP DEFAULT NOW(),
-          PRIMARY KEY (user_id, article_id)
-        );
-      `);
-    } catch (_e) {}
-
     const check = await pool.query(
       'SELECT 1 FROM user_bookmarks WHERE user_id = $1 AND article_id = $2',
       [userId, articleId]
@@ -761,16 +750,6 @@ router.post('/:id/bookmark', isAuthenticated, async (req, res) => {
 router.get('/bookmarks/my-bookmarks', isAuthenticated, async (req, res) => {
   try {
     const userId = req.session.user.id;
-    try {
-      await pool.query(`
-        CREATE TABLE IF NOT EXISTS user_bookmarks (
-          user_id INT NOT NULL,
-          article_id INT NOT NULL,
-          created_at TIMESTAMP DEFAULT NOW(),
-          PRIMARY KEY (user_id, article_id)
-        );
-      `);
-    } catch (_e) {}
 
     const query = `
       SELECT 
@@ -806,17 +785,6 @@ router.get('/:id/bookmark-status', async (req, res) => {
     if (!userId || isNaN(articleId)) {
       return res.json({ success: true, bookmarked: false });
     }
-
-    try {
-      await pool.query(`
-        CREATE TABLE IF NOT EXISTS user_bookmarks (
-          user_id INT NOT NULL,
-          article_id INT NOT NULL,
-          created_at TIMESTAMP DEFAULT NOW(),
-          PRIMARY KEY (user_id, article_id)
-        );
-      `);
-    } catch (_e) {}
 
     const check = await pool.query(
       'SELECT 1 FROM user_bookmarks WHERE user_id = $1 AND article_id = $2',

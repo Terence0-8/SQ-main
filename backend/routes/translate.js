@@ -4,26 +4,14 @@ const router = express.Router();
 const pool = require('../config/database');
 const translationService = require('../services/translationService');
 const { createUniqueSlug } = require('../utils/slugify');
-const { isWriter } = require('../middleware/auth'); // Optional: restrict if needed, but "first user translates" implies public access? 
-// Waiting: logic "First user translates" implies any user can trigger it? 
-// Implementation plan says: "User 1 clicks Translate -> Backend calls DeepL".
-// So it seems public users can trigger it. I will NOT use isWriter for the trigger, BUT I might need to protect against abuse.
-// Plan didn't specify authentication for translation trigger. I'll make it open but rate-limited by IP (already in server.js maybe?)
-// or maybe check if user is logged in?
-// "User 1 clicks Translate" -> implies user is logged in?
-// The prompt says "User 1 clique Translate... User 2 clique Translate". It doesn't explicitly say "Subscriber".
-// But `article.html` has `initTranslationButton`.
-// I will assume it's publicly accessible or simpler: authenticated users.
-// Let's stick to the prompt's simplicity: "User 1 triggers". I'll allow it for now without strict auth middleware on the route itself 
-// because `server.js` has rate limiting.
-// ACTUALLY, checking `article.html`... the button is shown.
-// I will NOT add `isWriter` middleware to the route.
+const { isAuthenticated } = require('../middleware/auth');
+const { verifyCsrf } = require('../middleware/csrf');
 
 // ==========================================
 // POST /api/translate/article/:id
 // Trigger translation of an article
 // ==========================================
-router.post('/article/:id', async (req, res) => {
+router.post('/article/:id', isAuthenticated, verifyCsrf, async (req, res) => {
     try {
         const { id } = req.params;
         const { targetLang } = req.body; // 'fr' or 'en'

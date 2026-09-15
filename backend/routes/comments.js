@@ -130,14 +130,6 @@ router.get(['/:articleId', '/article/:articleId'], async (req, res) => {
       }
     }
 
-    try {
-      await pool.query('ALTER TABLE comments ADD COLUMN IF NOT EXISTS upvotes INT DEFAULT 0;');
-      await pool.query('ALTER TABLE comments ADD COLUMN IF NOT EXISTS is_edited BOOLEAN DEFAULT FALSE;');
-      await pool.query('CREATE TABLE IF NOT EXISTS comment_upvotes (user_id INT NOT NULL, comment_id INT NOT NULL, created_at TIMESTAMP DEFAULT NOW(), PRIMARY KEY (user_id, comment_id));');
-    } catch (_err) {
-      /* ignore */
-    }
-
     let rows;
     try {
       const query = `
@@ -446,10 +438,6 @@ router.put('/:id', isAuthenticated, verifyCsrf, async (req, res) => {
 
     // ✅ SANITISATION XSS — strip tout HTML du commentaire modifié
     const safeContent = sanitizeText(content);
-
-    try {
-      await pool.query('ALTER TABLE comments ADD COLUMN IF NOT EXISTS is_edited BOOLEAN DEFAULT FALSE;');
-    } catch (_e) {}
 
     await pool.query(
       'UPDATE comments SET content = $1, is_approved = $2, is_edited = TRUE, updated_at = NOW() WHERE id = $3',
