@@ -209,89 +209,85 @@
       </section>
     </div>
 
-    <!-- ── TAB BAR NAVIGATION ── -->
     <nav class="profile-tabs-nav" aria-label="Navigation profil">
       <button class="tab-btn active" data-tab="tab-bookmarks">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-        <span>Favoris</span>
+        <span data-i18n="tab_bookmarks">Favoris</span>
       </button>
       <button class="tab-btn" data-tab="tab-history">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        <span>Historique de lecture</span>
+        <span data-i18n="tab_history">Historique de lecture</span>
       </button>
       <button class="tab-btn" data-tab="tab-comments">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        <span>Mes commentaires</span>
+        <span data-i18n="tab_comments">Mes commentaires</span>
       </button>
       <button class="tab-btn" data-tab="tab-newsletter">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        <span>Newsletters</span>
+        <span data-i18n="tab_newsletter">Newsletters</span>
       </button>
       <button class="tab-btn" data-tab="tab-downloads">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        <span>Téléchargements</span>
+        <span data-i18n="tab_downloads">Téléchargements</span>
       </button>
     </nav>
 
-    <!-- ── TAB 1: FAVORIS (À LIRE PLUS TARD) ── -->
+    <!-- ── TAB 1: FAVORIS ── -->
     <div class="tab-content active" id="tab-bookmarks">
       <div class="section-panel-card">
         <div class="panel-header-row">
           <div>
-            <h2 class="panel-title">Mes Favoris</h2>
-            <div class="panel-subtitle">Vos articles et contenus sauvegardés pour une lecture ultérieure.</div>
+            <h2 class="panel-title" data-i18n="panel_bookmarks_title">Mes Favoris</h2>
+            <div class="panel-subtitle" data-i18n="panel_bookmarks_sub">Vos articles et contenus sauvegardés pour une lecture ultérieure.</div>
           </div>
         </div>
-
         <div id="bookmarks-container" class="cards-list-grid">
           <div class="empty-state">
             <div class="empty-state-icon">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C82823" stroke-width="1.8"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
             </div>
-            <div class="empty-state-text">Chargement de vos favoris...</div>
+            <div class="empty-state-text" data-i18n="empty_bookmarks_loading">Chargement de vos favoris...</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ── TAB 3: HISTORIQUE DE LECTURE (20 DERNIERS ARTICLES) ── -->
+    <!-- ── TAB 3: HISTORIQUE DE LECTURE ── -->
     <div class="tab-content" id="tab-history">
       <div class="section-panel-card">
         <div class="panel-header-row">
           <div>
-            <h2 class="panel-title">Historique de lecture</h2>
-            <div class="panel-subtitle">Les 20 derniers articles consultés lors de votre navigation.</div>
+            <h2 class="panel-title" data-i18n="panel_history_title">Historique de lecture</h2>
+            <div class="panel-subtitle" data-i18n="panel_history_sub">Les 20 derniers articles consultés lors de votre navigation.</div>
           </div>
-          <button class="btn-clear-history" id="btnClearHistory">Effacer l'historique</button>
+          <button class="btn-clear-history" id="btnClearHistory" data-i18n="btn_clear_history">Effacer l'historique</button>
         </div>
-
         <div id="history-container" class="history-list">
           <div class="empty-state">
             <div class="empty-state-icon">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C82823" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </div>
-            <div class="empty-state-text">Chargement de votre historique...</div>
+            <div class="empty-state-text" data-i18n="empty_history_loading">Chargement de votre historique...</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ── TAB 4: MES COMMENTAIRES (30 DERNIERS) ── -->
+    <!-- ── TAB 4: MES COMMENTAIRES ── -->
     <div class="tab-content" id="tab-comments">
       <div class="section-panel-card">
         <div class="panel-header-row">
           <div>
-            <h2 class="panel-title">Mes Commentaires</h2>
-            <div class="panel-subtitle">Retrouvez l'ensemble de vos contributions et interventions récentes (30 derniers).</div>
+            <h2 class="panel-title" data-i18n="panel_comments_title">Mes Commentaires</h2>
+            <div class="panel-subtitle" data-i18n="panel_comments_sub">Retrouvez l'ensemble de vos contributions et interventions récentes (30 derniers).</div>
           </div>
         </div>
-
         <div id="comments-container" class="comments-list">
           <div class="empty-state">
             <div class="empty-state-icon">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C82823" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </div>
-            <div class="empty-state-text">Chargement de vos commentaires...</div>
+            <div class="empty-state-text" data-i18n="empty_comments_loading">Chargement de vos commentaires...</div>
           </div>
         </div>
       </div>
@@ -362,10 +358,10 @@
 
         <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:1.5rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:15px;">
           <div>
-            <strong style="color:var(--primary-dark); font-size:1rem; display:block; margin-bottom:2px;">Email de réception :</strong>
+            <strong style="color:var(--primary-dark); font-size:1rem; display:block; margin-bottom:2px;" data-i18n="nl_email_label">Email de réception :</strong>
             <span id="nl-user-email" style="color:#64748B; font-size:0.9rem;">...</span>
           </div>
-          <button type="button" class="btn-action btn-upgrade" id="btnSaveNewsletter" style="padding:10px 22px; font-size:0.9rem;">
+          <button type="button" class="btn-action btn-upgrade" id="btnSaveNewsletter" style="padding:10px 22px; font-size:0.9rem;" data-i18n="btn_save_preferences">
             Enregistrer mes préférences
           </button>
         </div>
@@ -377,28 +373,28 @@
       <div class="section-panel-card">
         <div class="panel-header-row">
           <div>
-            <h2 class="panel-title">Espace Hors-ligne & Téléchargements</h2>
-            <div class="panel-subtitle" id="downloads-storage-summary">Vos contenus sauvegardés directement dans votre application pour une consultation sans connexion.</div>
+            <h2 class="panel-title" data-i18n="panel_downloads_title">Espace Hors-ligne &amp; Téléchargements</h2>
+            <div class="panel-subtitle" id="downloads-storage-summary" data-i18n="panel_downloads_sub">Vos contenus sauvegardés directement dans votre application pour une consultation sans connexion.</div>
           </div>
-          <button class="btn-clear-history" id="btnClearDownloads">Vider les téléchargements</button>
+          <button class="btn-clear-history" id="btnClearDownloads" data-i18n="btn_clear_downloads">Vider les téléchargements</button>
         </div>
 
         <div class="downloads-category-bar">
           <button class="dl-cat-btn active" data-dltype="all">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px; margin-right:4px;"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            Tous (<span id="dl-count-all">0</span>)
+            <span data-i18n="dl_filter_all">Tous</span> (<span id="dl-count-all">0</span>)
           </button>
           <button class="dl-cat-btn" data-dltype="article">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px; margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            Articles (<span id="dl-count-article">0</span>)
+            <span data-i18n="dl_filter_articles">Articles</span> (<span id="dl-count-article">0</span>)
           </button>
           <button class="dl-cat-btn" data-dltype="podcast">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px; margin-right:4px;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-            Podcasts (<span id="dl-count-podcast">0</span>)
+            <span data-i18n="dl_filter_podcasts">Podcasts</span> (<span id="dl-count-podcast">0</span>)
           </button>
           <button class="dl-cat-btn" data-dltype="emission">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px; margin-right:4px;"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
-            Émissions (<span id="dl-count-emission">0</span>)
+            <span data-i18n="dl_filter_emissions">Émissions</span> (<span id="dl-count-emission">0</span>)
           </button>
         </div>
 
@@ -407,7 +403,7 @@
             <div class="empty-state-icon">
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             </div>
-            <div class="empty-state-text">Vous n'avez encore aucun contenu téléchargé hors-ligne.</div>
+            <div class="empty-state-text" data-i18n="empty_downloads">Vous n'avez encore aucun contenu téléchargé hors-ligne.</div>
           </div>
         </div>
       </div>
@@ -436,34 +432,32 @@
           <div class="brand-sep"></div>
           <span class="brand-text">Solitiquo</span>
         </a>
-        <p class="footer-summary">
-          Le média de référence pour l'analyse politique, économique et sociale au Cameroun.
-        </p>
+        <p class="footer-summary" data-i18n="footer_summary">Le média de référence pour l'analyse politique, économique et sociale au Cameroun.</p>
       </div>
 
       <div class="footer-divider"></div>
 
       <div class="footer-links-row">
         <div class="footer-link-group">
-          <span class="footer-group-title">Rubriques :</span>
+          <span class="footer-group-title" data-i18n="footer_rubriques">Rubriques :</span>
           <a href="index.html" class="footer-link" data-i18n="nav_home">Accueil</a>
           <a href="politique.html" class="footer-link" data-i18n="nav_pol">Politique</a>
           <a href="social.html" class="footer-link" data-i18n="nav_soc">Social &amp; Société</a>
           <a href="partis-politiques.html" class="footer-link" data-i18n="nav_parties">Partis Politiques</a>
           <a href="podcasts.html" class="footer-link" data-i18n="nav_podcasts">Podcasts</a>
-          <a href="emissions.html" class="footer-link" data-i18n="nav_emissions">Émissions</a>
+          <a href="emissions.html" class="footer-link" data-i18n="nav_shows">Émissions</a>
           <a href="recherche.html" class="footer-link" data-i18n="nav_search">Recherche</a>
         </div>
 
         <div class="footer-link-group">
-          <span class="footer-group-title">Espace :</span>
+          <span class="footer-group-title" data-i18n="footer_account">Espace :</span>
           <a href="abonnement.html" class="footer-link" data-i18n="nav_sub">S'abonner</a>
           <a href="auth.html" class="footer-link" data-i18n="nav_login">Connexion / Inscription</a>
           <a href="profil.html" class="footer-link" data-i18n="nav_profile">Mon Compte</a>
         </div>
 
         <div class="footer-link-group">
-          <span class="footer-group-title">Légal &amp; Contact :</span>
+          <span class="footer-group-title" data-i18n="footer_legal_contact">Légal &amp; Contact :</span>
           <a href="contact.html" class="footer-link" data-i18n="footer_contact">Nous écrire / Contact</a>
           <a href="mentions-legales.html" class="footer-link" data-i18n="footer_legal">Mentions légales</a>
           <a href="conditions-utilisation.html" class="footer-link" data-i18n="footer_terms">Conditions d'utilisation (CGU)</a>
@@ -472,7 +466,7 @@
         </div>
       </div>
 
-      <div class="footer-bottom">&copy; 2026 Solitiquo. Le média d'analyse et d'information. Tous droits réservés.</div>
+      <div class="footer-bottom" data-i18n="footer_copyright">&copy; 2026 Solitiquo. Le média d'analyse et d'information. Tous droits réservés.</div>
     </div>
   </footer>
 
@@ -504,7 +498,7 @@
     window.confirmCancelAction = async function () {
       const btn = document.getElementById('btn-confirm-cancel');
       const originalText = btn.textContent;
-      btn.textContent = "Traitement en cours...";
+      btn.textContent = t('processing', 'Traitement en cours...');
       btn.disabled = true;
 
       try {
@@ -519,12 +513,12 @@
           window.closeCancelModal();
           window.location.reload();
         } else {
-          alert("❌ Erreur : " + json.error);
+          alert('❌ ' + t('err_cancel_sub') + ': ' + json.error);
           btn.textContent = originalText;
           btn.disabled = false;
         }
       } catch (e) {
-        alert("❌ Erreur serveur");
+        alert('❌ ' + t('err_server', 'Erreur serveur'));
         btn.textContent = originalText;
         btn.disabled = false;
       }
@@ -566,7 +560,8 @@
             btn.setAttribute('disabled', 'disabled');
             btn.setAttribute('aria-disabled', 'true');
             btn.setAttribute('tabindex', '-1');
-            btn.setAttribute('title', 'Disponible uniquement avec une connexion internet');
+        // offline tab tooltip
+        btn.setAttribute('title', t('offline_tab_tooltip', 'Disponible uniquement avec une connexion internet'));
 
             btn.style.setProperty('opacity', '0.35', 'important');
             btn.style.setProperty('cursor', 'not-allowed', 'important');
@@ -789,7 +784,7 @@
         const initialEl = document.getElementById('user-initial');
         const nlEmailEl = document.getElementById('nl-user-email');
 
-        if (nameEl) nameEl.textContent = user.username || 'Abonné Solitiquo';
+        if (nameEl) nameEl.textContent = user.username || t('offline_user', 'Abonné Solitiquo');
         if (emailEl) emailEl.textContent = user.email || 'abonne@solitiquo.com';
         if (initialEl) initialEl.textContent = (user.username || 'S').charAt(0).toUpperCase();
         if (nlEmailEl) nlEmailEl.textContent = user.email || '';
@@ -797,15 +792,15 @@
         const roleBadge = document.getElementById('user-role-badge');
         if (roleBadge) {
           if (user.role === 'admin' || user.role === 'writer') {
-            roleBadge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> <span>Équipe Éditoriale</span>`;
+            roleBadge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> <span>${t('role_admin', 'Équipe Éditoriale')}</span>`;
             roleBadge.style.background = 'rgba(55, 70, 61, 0.1)';
             roleBadge.style.color = '#37463D';
           } else if (user.is_subscriber) {
-            roleBadge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> <span>Abonné Premium</span>`;
+            roleBadge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> <span>${t('role_premium', 'Abonné Premium')}</span>`;
             roleBadge.style.background = 'rgba(55, 70, 61, 0.1)';
             roleBadge.style.color = '#37463D';
           } else {
-            roleBadge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg> <span>Membre Gratuit</span>`;
+            roleBadge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg> <span>${t('role_free', 'Membre Gratuit')}</span>`;
           }
         }
 
@@ -817,45 +812,46 @@
         if (statusBox && statusText && actionArea) {
           if (user.role === 'admin' || user.role === 'writer') {
             statusBox.className = "status-box status-active";
-            statusText.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> <span>ADMIN / ÉQUIPE ÉDITORIALE</span>`;
+            statusText.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> <span>${t('status_admin')}</span>`;
             actionArea.innerHTML = `
-              <h3>Compte Administrateur</h3>
-              <p>Vous disposez d'un accès illimité à tous les contenus, fonctionnalités d'édition et outils de gestion.</p>
-              <a href="admin.html" class="btn-action btn-upgrade">Accéder au Dashboard</a>
+              <h3>${t('admin_account_title')}</h3>
+              <p>${t('admin_account_desc')}</p>
+              <a href="admin.html" class="btn-action btn-upgrade">${t('admin_dashboard_btn')}</a>
             `;
           } else if (user.is_subscriber) {
             statusBox.className = "status-box status-active";
-            statusText.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> <span>ACTIF (PREMIUM)</span>`;
+            statusText.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> <span>${t('status_premium')}</span>`;
 
             let dateInfo = '';
             if (user.subscription_end_date) {
               const endDate = new Date(user.subscription_end_date);
-              const formattedDate = endDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' });
-              dateInfo = `<p style="font-size:0.9rem; color:#64748B; margin-top:10px;">Votre abonnement est valide jusqu'au <strong>${formattedDate}</strong>.</p>`;
+              const locale = typeof getLanguage === 'function' && getLanguage() === 'en' ? 'en-GB' : 'fr-FR';
+              const formattedDate = endDate.toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' });
+              dateInfo = `<p style="font-size:0.9rem; color:#64748B; margin-top:10px;">${t('premium_valid_until')} <strong>${formattedDate}</strong>.</p>`;
             }
 
             actionArea.innerHTML = `
-              <h3>Merci de votre soutien</h3>
-              <p>Vous avez accès à l'intégralité des articles, enquêtes exclusives et fonctionnalités audio sans publicité.</p>
+              <h3>${t('premium_thanks_title')}</h3>
+              <p>${t('premium_thanks_desc')}</p>
               ${dateInfo}
-              <button class="btn-action btn-cancel" onclick="window.openCancelModal()">Résilier mon abonnement</button>
+              <button class="btn-action btn-cancel" onclick="window.openCancelModal()"><span data-i18n="btn_cancel_sub">${t('btn_cancel_sub')}</span></button>
             `;
           } else {
             statusBox.className = "status-box status-inactive";
-            statusText.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> <span>GRATUIT (ACCÈS LIMITÉ)</span>`;
+            statusText.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> <span>${t('status_free')}</span>`;
             actionArea.innerHTML = `
-              <h3>Passez au Premium pour tout débloquer</h3>
-              <p>Profitez d'un accès illimité à l'ensemble de nos enquêtes exclusives et décryptages indépendants.</p>
+              <h3>${t('free_upgrade_title')}</h3>
+              <p>${t('free_upgrade_desc')}</p>
               
               <div class="upgrade-banner-box">
-                <div class="upgrade-banner-title">Avantages réservés aux abonnés :</div>
+                <div class="upgrade-banner-title">${t('upgrade_banner_title')}</div>
                 <ul class="upgrade-perks-list">
-                  <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Accès illimité aux enquêtes</li>
-                  <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Écoute audio & PDF imprimables</li>
-                  <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Navigation sans publicité</li>
-                  <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Soutien au journalisme libre</li>
+                  <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ${t('upgrade_perk_enquetes')}</li>
+                  <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ${t('upgrade_perk_audio')}</li>
+                  <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ${t('upgrade_perk_noad')}</li>
+                  <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ${t('upgrade_perk_journalism')}</li>
                 </ul>
-                <a href="abonnement.html" class="btn-action btn-upgrade">S'abonner maintenant →</a>
+                <a href="abonnement.html" class="btn-action btn-upgrade">${t('upgrade_subscribe_btn')}</a>
               </div>
             `;
           }
@@ -917,8 +913,8 @@
             <div class="empty-state-icon">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C82823" stroke-width="1.8"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
             </div>
-            <div class="empty-state-text">Vous n'avez aucun article enregistré en favoris.</div>
-            <a href="index.html" class="btn-action btn-upgrade" style="font-size:0.85rem; padding:8px 20px;">Découvrir les articles</a>
+            <div class="empty-state-text">${t('empty_bookmarks')}</div>
+            <a href="index.html" class="btn-action btn-upgrade" style="font-size:0.85rem; padding:8px 20px;">${t('discover_articles_btn')}</a>
           </div>
         `;
         return;
@@ -973,8 +969,8 @@
             <div class="empty-state-icon">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C82823" stroke-width="1.8"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
             </div>
-            <div class="empty-state-text">Vous n'avez aucun article enregistré en favoris.</div>
-            <a href="index.html" class="btn-action btn-upgrade" style="font-size:0.85rem; padding:8px 20px;">Découvrir les articles</a>
+            <div class="empty-state-text">${t('empty_bookmarks')}</div>
+            <a href="index.html" class="btn-action btn-upgrade" style="font-size:0.85rem; padding:8px 20px;">${t('discover_articles_btn')}</a>
           </div>
         `;
       }
@@ -996,7 +992,7 @@
             <div class="empty-state-icon">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C82823" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </div>
-            <div class="empty-state-text">Votre historique de lecture est vide pour le moment.</div>
+            <div class="empty-state-text">${t('empty_history')}</div>
           </div>
         `;
         return;
@@ -1011,7 +1007,7 @@
               <a href="article.html?id=${art.id}" class="history-title">${art.title}</a>
               <div class="history-date">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <span>Lu le ${readDateStr} · ${art.category || 'Actualité'}</span>
+                <span>${t('read_on')} ${readDateStr} · ${art.category || t('type_article', 'Actualité')}</span>
               </div>
             </div>
           </div>
@@ -1050,18 +1046,18 @@
                   </a>
                   <span class="${c.is_approved ? 'comment-badge-approved' : 'comment-badge-pending'}">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                    <span>${c.is_approved ? 'Approuvé' : 'En modération'}</span>
+                    <span>${c.is_approved ? t('comment_approved') : t('comment_in_moderation')}</span>
                   </span>
                 </div>
                 <div class="comment-item-body">"${c.content}"</div>
                 <div class="comment-item-footer">
                   <span class="comment-date-info">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    <span>Publié le ${dateStr} ${isEdited}</span>
+                  <span>${t('comment_published_on')} ${dateStr} ${isEdited}</span>
                   </span>
                   <button type="button" onclick="deleteCommentFromProfile(${c.id})" class="btn-delete-comment">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                    <span>Supprimer</span>
+                    <span>${t('comment_delete_btn')}</span>
                   </button>
                 </div>
               </div>
@@ -1073,7 +1069,7 @@
               <div class="empty-state-icon">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#37463D" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               </div>
-              <div class="empty-state-text">Vous n'avez pas encore publié de commentaire.</div>
+              <div class="empty-state-text">${t('empty_comments')}</div>
             </div>
           `;
         }
@@ -1083,14 +1079,14 @@
             <div class="empty-state-icon">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#37463D" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </div>
-            <div class="empty-state-text">Aucun commentaire trouvé.</div>
+            <div class="empty-state-text">${t('empty_comments_error')}</div>
           </div>
         `;
       }
     }
 
     async function deleteCommentFromProfile(commentId) {
-      if (!confirm("Voulez-vous vraiment supprimer ce commentaire ?")) return;
+      if (!confirm(t('confirm_delete_comment', 'Voulez-vous vraiment supprimer ce commentaire ?'))) return;
 
       const baseUrl = window.API_URL || '/api';
       try {
@@ -1111,10 +1107,10 @@
           const item = document.getElementById(`comment-item-${commentId}`);
           if (item) item.remove();
         } else {
-          alert("❌ " + (json.error || "Erreur lors de la suppression"));
+          alert('❌ ' + (json.error || t('err_delete_comment', 'Erreur lors de la suppression')));
         }
       } catch (err) {
-        alert("❌ Erreur serveur lors de la suppression.");
+        alert('❌ ' + t('err_server', 'Erreur serveur lors de la suppression.'));
       }
     }
 
@@ -1138,7 +1134,7 @@
         localStorage.setItem('solitiquo_newsletter_prefs', JSON.stringify({ daily, weekly, special }));
 
         const origText = btnSave.textContent;
-        btnSave.textContent = '✓ Préférences enregistrées !';
+        btnSave.textContent = t('nl_saved', '✓ Préférences enregistrées !');
         btnSave.style.backgroundColor = '#37463D';
         setTimeout(() => {
           btnSave.textContent = origText;
@@ -1192,7 +1188,8 @@
       if (cEmi) cEmi.textContent = counts.emission;
 
       if (summary) {
-        summary.textContent = `${estimate.count} contenu(s) disponible(s) hors-ligne · Espace occupé : ${estimate.sizeMB} Mo`;
+        const count = estimate.count || downloads.length;
+        summary.textContent = `${count} ${t('storage_summary')} ${estimate.sizeMB} Mo`;
       }
 
       const filtered = currentOfflineFilter === 'all' 
@@ -1205,17 +1202,19 @@
             <div class="empty-state-icon">
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             </div>
-            <div class="empty-state-text">Aucun contenu téléchargé hors-ligne dans cette catégorie.</div>
-            <a href="index.html" class="btn-action btn-upgrade" style="font-size:0.85rem; padding:8px 20px;">Explorer les articles & podcasts</a>
+            <div class="empty-state-text">${t('empty_downloads_filtered')}</div>
+            <a href="index.html" class="btn-action btn-upgrade" style="font-size:0.85rem; padding:8px 20px;">${t('explore_content_btn')}</a>
           </div>
         `;
         return;
       }
 
       container.innerHTML = filtered.map(item => {
-        const typeLabel = item.type === 'podcast' ? 'Podcast' : item.type === 'emission' ? 'Émission' : 'Article';
-        const dateStr = item.downloaded_at ? new Date(item.downloaded_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : '';
-        const metaInfo = item.type === 'podcast' ? `${item.duration || 'Audio'}` : `${item.read_time || 3} min de lecture`;
+        const typeLabel = item.type === 'podcast' ? t('dl_type_podcast') : item.type === 'emission' ? t('dl_type_emission') : t('dl_type_article');
+        const locale = typeof getLanguage === 'function' && getLanguage() === 'en' ? 'en-GB' : 'fr-FR';
+        const dateStr = item.downloaded_at ? new Date(item.downloaded_at).toLocaleDateString(locale, { day: 'numeric', month: 'short' }) : '';
+        const metaInfo = item.type === 'podcast' ? `${item.duration || 'Audio'}` : `${item.read_time || 3} min`;
+        const readLabel = item.type === 'podcast' ? t('btn_listen', 'Écouter') : t('dl_read_offline', 'Lire hors-ligne');
 
         return `
           <div class="download-card" id="dl-card-${item.type}-${item.id}">
@@ -1226,16 +1225,16 @@
                   <span class="download-type-tag">${typeLabel}</span>
                   <span class="download-badge-status">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                    <span>Disponible hors-ligne</span>
+                    <span>${t('dl_available_offline')}</span>
                   </span>
                 </div>
                 <h3 class="download-card-title">${item.title}</h3>
-                <div class="download-card-meta">${item.category || 'Solitiquo'} · ${metaInfo} · Téléchargé le ${dateStr}</div>
+                <div class="download-card-meta">${item.category || 'Solitiquo'} · ${metaInfo} · ${t('dl_downloaded_on')} ${dateStr}</div>
               </div>
               <div class="download-card-actions">
                 <button type="button" class="btn-read-offline" onclick="openOfflineReader('${item.id}', '${item.type}')">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                  <span>${item.type === 'podcast' ? 'Écouter' : 'Lire hors-ligne'}</span>
+                  <span>${readLabel}</span>
                 </button>
                 <button type="button" class="btn-delete-offline" onclick="deleteOfflineItem('${item.id}', '${item.type}')" title="Supprimer le téléchargement">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>

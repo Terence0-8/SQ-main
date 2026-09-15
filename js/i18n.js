@@ -10,6 +10,7 @@ var TRANSLATIONS = {
     nav_soc: 'Social',
     nav_parties: 'Partis',
     nav_shows: 'Émissions',
+    nav_emissions: 'Émissions',
     nav_podcasts: 'Podcasts',
     nav_data: 'Data',
     nav_search: 'Recherche',
@@ -369,7 +370,138 @@ var TRANSLATIONS = {
 
     // ==================== LEGAL ====================
     legal_mentions_title: 'Mentions Légales',
-    legal_mentions_subtitle: 'Informations réglementaires et identité légale de l\'Éditeur'
+    legal_mentions_subtitle: 'Informations réglementaires et identité légale de l\'Éditeur',
+    // ==================== LÉGAL (pages dédiées) ====================
+    legal_cgu_title: 'Conditions Générales d\'Utilisation',
+    legal_cgu_subtitle: 'Règles d\'utilisation de la plateforme Solitiquo',
+    legal_cookies_title: 'Gestion des Cookies',
+    legal_cookies_subtitle: 'Paramétrez vos préférences en matière de cookies',
+    legal_conf_title: 'Politique de Confidentialité',
+    legal_conf_subtitle: 'Comment nous protégeons vos données personnelles',
+
+    // ==================== PROFIL (boutons supplémentaires) ====================
+    btn_clear_history: 'Effacer l\'historique',
+    btn_clear_downloads: 'Vider les téléchargements',
+    btn_cancel_sub: 'Résilier mon abonnement',
+
+    // ==================== ARTICLE (commentaires) ====================
+    btn_cancel_edit: 'Annuler',
+    btn_save_edit: 'Enregistrer',
+    btn_confirm_delete: 'Confirmer la suppression',
+    btn_cancel_delete: 'Annuler',
+    bookmark_btn: 'Sauvegarder',
+
+    // ==================== RECHERCHE (filtres catégories) ====================
+    cat_economie: 'Économie',
+    cat_culture: 'Culture',
+    cat_international: 'International',
+    cat_societe: 'Société',
+    cat_general: 'Général',
+    btn_show_all_content: 'Afficher tout le contenu',
+
+    // ==================== ÉMISSIONS ====================
+    btn_share_emission: 'Partager',
+
+    // ==================== PROFIL (onglets) ====================
+    tab_bookmarks: 'Favoris',
+    tab_history: 'Historique de lecture',
+    tab_comments: 'Mes commentaires',
+    tab_newsletter: 'Newsletters',
+    tab_downloads: 'Téléchargements',
+
+    // ==================== PROFIL (titres de sections) ====================
+    panel_bookmarks_title: 'Mes Favoris',
+    panel_bookmarks_sub: 'Vos articles et contenus sauvegardés pour une lecture ultérieure.',
+    panel_history_title: 'Historique de lecture',
+    panel_history_sub: 'Les 20 derniers articles consultés lors de votre navigation.',
+    panel_comments_title: 'Mes Commentaires',
+    panel_comments_sub: 'Retrouvez l\'ensemble de vos contributions et interventions récentes (30 derniers).',
+    panel_newsletter_title: 'Espace Newsletter',
+    panel_newsletter_sub: 'Gérez vos abonnements aux synthèses par email pour rester informé des enjeux majeurs.',
+    panel_downloads_title: 'Espace Hors-ligne & Téléchargements',
+    panel_downloads_sub: 'Vos contenus sauvegardés directement dans votre application pour une consultation sans connexion.',
+
+    // ==================== PROFIL (badges de rôle) ====================
+    role_admin: 'Équipe Éditoriale',
+    role_premium: 'Abonné Premium',
+    role_free: 'Membre Gratuit',
+    role_offline: 'Abonné Hors-ligne',
+
+    // ==================== PROFIL (statuts abonnement) ====================
+    status_admin: 'ADMIN / ÉQUIPE ÉDITORIALE',
+    status_premium: 'ACTIF (PREMIUM)',
+    status_free: 'GRATUIT (ACCÈS LIMITÉ)',
+    admin_account_title: 'Compte Administrateur',
+    admin_account_desc: 'Vous disposez d\'un accès illimité à tous les contenus, fonctionnalités d\'édition et outils de gestion.',
+    admin_dashboard_btn: 'Accéder au Dashboard',
+    premium_thanks_title: 'Merci de votre soutien',
+    premium_thanks_desc: 'Vous avez accès à l\'intégralité des articles, enquêtes exclusives et fonctionnalités audio sans publicité.',
+    premium_valid_until: 'Votre abonnement est valide jusqu\'au',
+    free_upgrade_title: 'Passez au Premium pour tout débloquer',
+    free_upgrade_desc: 'Profitez d\'un accès illimité à l\'ensemble de nos enquêtes exclusives et décryptages indépendants.',
+    upgrade_banner_title: 'Avantages réservés aux abonnés :',
+    upgrade_perk_enquetes: 'Accès illimité aux enquêtes',
+    upgrade_perk_audio: 'Écoute audio & PDF imprimables',
+    upgrade_perk_noad: 'Navigation sans publicité',
+    upgrade_perk_journalism: 'Soutien au journalisme libre',
+    upgrade_subscribe_btn: 'S\'abonner maintenant →',
+
+    // ==================== PROFIL (états vides) ====================
+    empty_bookmarks: 'Vous n\'avez aucun article enregistré en favoris.',
+    empty_bookmarks_loading: 'Chargement de vos favoris...',
+    empty_history: 'Votre historique de lecture est vide pour le moment.',
+    empty_history_loading: 'Chargement de votre historique...',
+    empty_comments: 'Vous n\'avez pas encore publié de commentaire.',
+    empty_comments_loading: 'Chargement de vos commentaires...',
+    empty_comments_error: 'Aucun commentaire trouvé.',
+    empty_downloads: 'Vous n\'avez encore aucun contenu téléchargé hors-ligne.',
+    empty_downloads_filtered: 'Aucun contenu téléchargé hors-ligne dans cette catégorie.',
+    discover_articles_btn: 'Découvrir les articles',
+    explore_content_btn: 'Explorer les articles & podcasts',
+
+    // ==================== PROFIL (téléchargements) ====================
+    dl_available_offline: 'Disponible hors-ligne',
+    dl_read_offline: 'Lire hors-ligne',
+    dl_downloaded_on: 'Téléchargé le',
+    dl_type_article: 'Article',
+    dl_type_podcast: 'Podcast',
+    dl_type_emission: 'Émission',
+    dl_filter_all: 'Tous',
+    dl_filter_articles: 'Articles',
+    dl_filter_podcasts: 'Podcasts',
+    dl_filter_emissions: 'Émissions',
+
+    // ==================== PROFIL (commentaires) ====================
+    comment_approved: 'Approuvé',
+    comment_in_moderation: 'En modération',
+    comment_published_on: 'Publié le',
+    comment_edited: '(modifié)',
+    comment_delete_btn: 'Supprimer',
+    confirm_delete_comment: 'Voulez-vous vraiment supprimer ce commentaire ?',
+    err_delete_comment: 'Erreur lors de la suppression',
+    err_server: 'Erreur serveur',
+    read_on: 'Lu le',
+
+    // ==================== PROFIL (newsletter) ====================
+    nl_daily_title: 'Le Briefing Quotidien',
+    nl_daily_desc: 'L\'essentiel de l\'actualité politique, économique et sociale au Cameroun envoyé chaque matin à 7h.',
+    nl_weekly_title: 'L\'Hebdo Politique',
+    nl_weekly_desc: 'Chaque samedi, une synthèse analytique des décryptages et des évolutions institutionnelles de la semaine.',
+    nl_special_title: 'Grand Format & Enquêtes',
+    nl_special_desc: 'Notification exclusive dès la parution d\'un dossier d\'investigation ou d\'une grande enquête inédite.',
+    nl_receive_email: 'Recevoir par email',
+    nl_email_label: 'Email de réception :',
+    nl_save_btn: 'Enregistrer mes préférences',
+    btn_save_preferences: 'Enregistrer mes préférences',
+    nl_saved: '✓ Préférences enregistrées !',
+
+    // ==================== PROFIL (offline mode) ====================
+    offline_user: 'Abonné Hors-ligne',
+    offline_email: 'Mode hors-connexion',
+    offline_tab_tooltip: 'Disponible uniquement avec une connexion internet',
+    processing: 'Traitement en cours...',
+    err_cancel_sub: 'Erreur lors de la résiliation',
+    storage_summary: 'contenu(s) disponible(s) hors-ligne · Espace occupé :',
   },
 
   en: {
@@ -378,6 +510,7 @@ var TRANSLATIONS = {
     nav_soc: 'Social',
     nav_parties: 'Parties',
     nav_shows: 'Shows',
+    nav_emissions: 'Shows',
     nav_podcasts: 'Podcasts',
     nav_data: 'Data',
     nav_search: 'Search',
@@ -737,7 +870,138 @@ var TRANSLATIONS = {
 
     // ==================== LEGAL ====================
     legal_mentions_title: 'Legal Notice',
-    legal_mentions_subtitle: 'Regulatory information and legal identity of the Publisher'
+    legal_mentions_subtitle: 'Regulatory information and legal identity of the Publisher',
+    // ==================== LEGAL (dedicated pages) ====================
+    legal_cgu_title: 'Terms and Conditions',
+    legal_cgu_subtitle: 'Rules for using the Solitiquo platform',
+    legal_cookies_title: 'Cookie Management',
+    legal_cookies_subtitle: 'Configure your cookie preferences',
+    legal_conf_title: 'Privacy Policy',
+    legal_conf_subtitle: 'How we protect your personal data',
+
+    // ==================== PROFILE (extra buttons) ====================
+    btn_clear_history: 'Clear history',
+    btn_clear_downloads: 'Clear downloads',
+    btn_cancel_sub: 'Cancel my subscription',
+
+    // ==================== ARTICLE (comments) ====================
+    btn_cancel_edit: 'Cancel',
+    btn_save_edit: 'Save',
+    btn_confirm_delete: 'Confirm deletion',
+    btn_cancel_delete: 'Cancel',
+    bookmark_btn: 'Bookmark',
+
+    // ==================== SEARCH (category filters) ====================
+    cat_economie: 'Economy',
+    cat_culture: 'Culture',
+    cat_international: 'International',
+    cat_societe: 'Society',
+    cat_general: 'General',
+    btn_show_all_content: 'Show all content',
+
+    // ==================== SHOWS ====================
+    btn_share_emission: 'Share',
+
+    // ==================== PROFILE (tabs) ====================
+    tab_bookmarks: 'Bookmarks',
+    tab_history: 'Reading history',
+    tab_comments: 'My comments',
+    tab_newsletter: 'Newsletters',
+    tab_downloads: 'Downloads',
+
+    // ==================== PROFILE (section titles) ====================
+    panel_bookmarks_title: 'My Bookmarks',
+    panel_bookmarks_sub: 'Your saved articles and content for later reading.',
+    panel_history_title: 'Reading history',
+    panel_history_sub: 'The 20 last articles consulted during your browsing.',
+    panel_comments_title: 'My Comments',
+    panel_comments_sub: 'Find all your recent contributions and comments (last 30).',
+    panel_newsletter_title: 'Newsletter Hub',
+    panel_newsletter_sub: 'Manage your email digest subscriptions to stay informed on key issues.',
+    panel_downloads_title: 'Offline & Downloads',
+    panel_downloads_sub: 'Your content saved directly in your app for offline access.',
+
+    // ==================== PROFILE (role badges) ====================
+    role_admin: 'Editorial Team',
+    role_premium: 'Premium Subscriber',
+    role_free: 'Free Member',
+    role_offline: 'Offline Subscriber',
+
+    // ==================== PROFILE (subscription status) ====================
+    status_admin: 'ADMIN / EDITORIAL TEAM',
+    status_premium: 'ACTIVE (PREMIUM)',
+    status_free: 'FREE (LIMITED ACCESS)',
+    admin_account_title: 'Administrator Account',
+    admin_account_desc: 'You have unlimited access to all content, editing features and management tools.',
+    admin_dashboard_btn: 'Go to Dashboard',
+    premium_thanks_title: 'Thank you for your support',
+    premium_thanks_desc: 'You have access to all articles, exclusive investigations and ad-free audio features.',
+    premium_valid_until: 'Your subscription is valid until',
+    free_upgrade_title: 'Go Premium to unlock everything',
+    free_upgrade_desc: 'Enjoy unlimited access to all our exclusive investigations and independent analyses.',
+    upgrade_banner_title: 'Subscriber-only benefits:',
+    upgrade_perk_enquetes: 'Unlimited access to investigations',
+    upgrade_perk_audio: 'Audio listening & printable PDFs',
+    upgrade_perk_noad: 'Ad-free browsing',
+    upgrade_perk_journalism: 'Support for independent journalism',
+    upgrade_subscribe_btn: 'Subscribe now →',
+
+    // ==================== PROFILE (empty states) ====================
+    empty_bookmarks: 'You have no saved bookmarks yet.',
+    empty_bookmarks_loading: 'Loading your bookmarks...',
+    empty_history: 'Your reading history is empty for now.',
+    empty_history_loading: 'Loading your history...',
+    empty_comments: 'You haven\'t posted any comment yet.',
+    empty_comments_loading: 'Loading your comments...',
+    empty_comments_error: 'No comments found.',
+    empty_downloads: 'You have no offline content downloaded yet.',
+    empty_downloads_filtered: 'No offline content in this category.',
+    discover_articles_btn: 'Discover articles',
+    explore_content_btn: 'Explore articles & podcasts',
+
+    // ==================== PROFILE (downloads) ====================
+    dl_available_offline: 'Available offline',
+    dl_read_offline: 'Read offline',
+    dl_downloaded_on: 'Downloaded on',
+    dl_type_article: 'Article',
+    dl_type_podcast: 'Podcast',
+    dl_type_emission: 'Show',
+    dl_filter_all: 'All',
+    dl_filter_articles: 'Articles',
+    dl_filter_podcasts: 'Podcasts',
+    dl_filter_emissions: 'Shows',
+
+    // ==================== PROFILE (comments) ====================
+    comment_approved: 'Approved',
+    comment_in_moderation: 'Under review',
+    comment_published_on: 'Published on',
+    comment_edited: '(edited)',
+    comment_delete_btn: 'Delete',
+    confirm_delete_comment: 'Are you sure you want to delete this comment?',
+    err_delete_comment: 'Error while deleting',
+    err_server: 'Server error',
+    read_on: 'Read on',
+
+    // ==================== PROFILE (newsletter) ====================
+    nl_daily_title: 'The Daily Briefing',
+    nl_daily_desc: 'The essential political, economic and social news from Cameroon delivered every morning at 7am.',
+    nl_weekly_title: 'The Political Weekly',
+    nl_weekly_desc: 'Every Saturday, an analytical synthesis of the week\'s key institutional developments.',
+    nl_special_title: 'Grand Format & Investigations',
+    nl_special_desc: 'Exclusive notification when a new investigation or major report is published.',
+    nl_receive_email: 'Receive by email',
+    nl_email_label: 'Email address:',
+    nl_save_btn: 'Save my preferences',
+    btn_save_preferences: 'Save my preferences',
+    nl_saved: '✓ Preferences saved!',
+
+    // ==================== PROFILE (offline mode) ====================
+    offline_user: 'Offline Subscriber',
+    offline_email: 'Offline mode',
+    offline_tab_tooltip: 'Available with an internet connection only',
+    processing: 'Processing...',
+    err_cancel_sub: 'Error while cancelling',
+    storage_summary: 'item(s) available offline · Storage used:'
   }
 };
 
@@ -897,25 +1161,57 @@ function tCategory(cat, customLang) {
 }
 
 /**
- * Met à jour TOUS les éléments structurels de la page courante
+ * Met à jour un sous-arbre d'éléments du DOM selon les attributs data-i18n*
+ * @param {Element|Document} root - Racine du DOM à traduire
  * @param {string} lang - Langue cible ('fr' ou 'en')
  */
-function updateInterfaceText(lang = getLanguage()) {
+function translateSubtree(root = document, lang = getLanguage()) {
   const translations = TRANSLATIONS[lang] || TRANSLATIONS['fr'];
+  if (!root || !translations) return;
+
+  // Si le noeud racine lui-même porte des attributs i18n
+  if (root.nodeType === 1) {
+    const key = root.getAttribute('data-i18n');
+    if (key && translations[key] !== undefined) {
+      if (root.tagName === 'INPUT' || root.tagName === 'TEXTAREA') {
+        root.placeholder = translations[key];
+      } else if (key === 'footer_copyright') {
+        root.innerHTML = translations[key];
+      } else {
+        root.textContent = translations[key];
+      }
+    }
+    const phKey = root.getAttribute('data-i18n-placeholder');
+    if (phKey && translations[phKey] !== undefined) root.placeholder = translations[phKey];
+    const titleKey = root.getAttribute('data-i18n-title');
+    if (titleKey && translations[titleKey] !== undefined) root.title = translations[titleKey];
+    const altKey = root.getAttribute('data-i18n-alt');
+    if (altKey && translations[altKey] !== undefined) root.alt = translations[altKey];
+    const valKey = root.getAttribute('data-i18n-value');
+    if (valKey && translations[valKey] !== undefined) root.value = translations[valKey];
+    const ariaKey = root.getAttribute('data-i18n-aria-label');
+    if (ariaKey && translations[ariaKey] !== undefined) root.setAttribute('aria-label', translations[ariaKey]);
+    const htmlKey = root.getAttribute('data-i18n-html');
+    if (htmlKey && translations[htmlKey] !== undefined) root.innerHTML = translations[htmlKey];
+  }
+
+  if (!root.querySelectorAll) return;
 
   // 1. Textes standards data-i18n
-  document.querySelectorAll('[data-i18n]').forEach(element => {
+  root.querySelectorAll('[data-i18n]').forEach(element => {
     const key = element.getAttribute('data-i18n');
     // Ne pas écraser le bouton de profil si l'utilisateur est connecté !
     if (key === 'nav_login') {
       const href = element.getAttribute('href') || '';
-      if (element.id === 'nav-profile-btn' || element.dataset.loggedIn === 'true' || href.includes('profil.html') || document.body.dataset.userLogged === 'true') {
+      if (element.id === 'nav-profile-btn' || element.dataset.loggedIn === 'true' || href.includes('profil.html') || (document.body && document.body.dataset.userLogged === 'true')) {
         return;
       }
     }
     if (key && translations[key] !== undefined) {
       if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
         element.placeholder = translations[key];
+      } else if (key === 'footer_copyright') {
+        element.innerHTML = translations[key];
       } else {
         element.textContent = translations[key];
       }
@@ -923,55 +1219,72 @@ function updateInterfaceText(lang = getLanguage()) {
   });
 
   // 2. Placeholders spécifiques
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+  root.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
     const key = element.getAttribute('data-i18n-placeholder');
     if (key && translations[key] !== undefined) {
       element.placeholder = translations[key];
     }
   });
 
-  // 3. Attributs HTML spécifiques (title, alt, value, aria-label)
-  document.querySelectorAll('[data-i18n-title]').forEach(element => {
+  // 3. Attributs HTML spécifiques (title, alt, value, aria-label, html)
+  root.querySelectorAll('[data-i18n-title]').forEach(element => {
     const key = element.getAttribute('data-i18n-title');
     if (key && translations[key] !== undefined) element.title = translations[key];
   });
 
-  document.querySelectorAll('[data-i18n-alt]').forEach(element => {
+  root.querySelectorAll('[data-i18n-alt]').forEach(element => {
     const key = element.getAttribute('data-i18n-alt');
     if (key && translations[key] !== undefined) element.alt = translations[key];
   });
 
-  document.querySelectorAll('[data-i18n-value]').forEach(element => {
+  root.querySelectorAll('[data-i18n-value]').forEach(element => {
     const key = element.getAttribute('data-i18n-value');
     if (key && translations[key] !== undefined) element.value = translations[key];
   });
 
-  document.querySelectorAll('[data-i18n-aria-label]').forEach(element => {
+  root.querySelectorAll('[data-i18n-aria-label]').forEach(element => {
     const key = element.getAttribute('data-i18n-aria-label');
     if (key && translations[key] !== undefined) element.setAttribute('aria-label', translations[key]);
   });
 
-  document.querySelectorAll('[data-i18n-html]').forEach(element => {
+  root.querySelectorAll('[data-i18n-html]').forEach(element => {
     const key = element.getAttribute('data-i18n-html');
     if (key && translations[key] !== undefined) element.innerHTML = translations[key];
   });
+}
 
-  // 4. Placeholders & labels spécifiques de recherche globale
-  const searchInput = document.getElementById('searchInput');
-  if (searchInput && translations.search_placeholder) {
-    searchInput.placeholder = translations.search_placeholder;
-  }
-  const searchLabel = document.getElementById('searchLabel');
-  if (searchLabel && translations.search_label) {
-    searchLabel.textContent = translations.search_label;
-  }
+/**
+ * Met à jour TOUS les éléments structurels de la page courante
+ * @param {string} lang - Langue cible ('fr' ou 'en')
+ */
+function updateInterfaceText(lang = getLanguage()) {
+  if (window._isTranslating) return;
+  window._isTranslating = true;
 
-  // 5. Re-render du footer global unifié
-  if (typeof renderGlobalFooter === 'function') {
-    renderGlobalFooter();
-  }
+  try {
+    const translations = TRANSLATIONS[lang] || TRANSLATIONS['fr'];
 
-  console.log(`✅ Interface mise à jour en ${lang.toUpperCase()}`);
+    translateSubtree(document, lang);
+
+    // Placeholders & labels spécifiques de recherche globale
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput && translations.search_placeholder) {
+      searchInput.placeholder = translations.search_placeholder;
+    }
+    const searchLabel = document.getElementById('searchLabel');
+    if (searchLabel && translations.search_label) {
+      searchLabel.textContent = translations.search_label;
+    }
+
+    // Re-render du footer global unifié
+    if (typeof renderGlobalFooter === 'function') {
+      renderGlobalFooter();
+    }
+
+    console.log(`✅ Interface mise à jour en ${lang.toUpperCase()}`);
+  } finally {
+    window._isTranslating = false;
+  }
 }
 
 /**
@@ -1236,6 +1549,9 @@ async function initLanguageSwitcher(options = {}) {
       });
     });
 
+    // Activer l'observation dynamique du DOM pour traduire automatiquement tout nouvel élément injecté
+    setupDynamicTranslationObserver();
+
     console.log(`✅ Switcher de langue initialisé (${currentLang})`);
 
   } catch (error) {
@@ -1243,4 +1559,63 @@ async function initLanguageSwitcher(options = {}) {
   }
 }
 
+/**
+ * MutationObserver pour traduire automatiquement tout élément inséré dynamiquement
+ * dans le DOM (modales, listes, cartes générées en JavaScript à l'avenir).
+ */
+function setupDynamicTranslationObserver() {
+  if (typeof MutationObserver === 'undefined' || window._i18nObserverActive) return;
+  window._i18nObserverActive = true;
+
+  const observer = new MutationObserver(mutations => {
+    if (window._isTranslating) return;
+
+    for (const mutation of mutations) {
+      if (mutation.type === 'childList') {
+        for (const node of mutation.addedNodes) {
+          if (node.nodeType === 1) { // Node element
+            // Ignorer les modifications à l'intérieur du footer (déjà bilingue)
+            if (node.classList && node.classList.contains('premium-footer')) continue;
+            if (node.closest && node.closest('footer.premium-footer')) continue;
+
+            const hasI18n = (
+              node.hasAttribute('data-i18n') ||
+              node.hasAttribute('data-i18n-placeholder') ||
+              node.hasAttribute('data-i18n-title') ||
+              node.hasAttribute('data-i18n-alt') ||
+              node.hasAttribute('data-i18n-value') ||
+              node.hasAttribute('data-i18n-aria-label') ||
+              node.hasAttribute('data-i18n-html') ||
+              (node.querySelector && node.querySelector('[data-i18n], [data-i18n-placeholder], [data-i18n-title], [data-i18n-alt], [data-i18n-value], [data-i18n-aria-label], [data-i18n-html]'))
+            );
+
+            if (hasI18n) {
+              window._isTranslating = true;
+              try {
+                translateSubtree(node, getLanguage());
+              } finally {
+                window._isTranslating = false;
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  const startObserving = () => {
+    if (document.body) {
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startObserving);
+  } else {
+    startObserving();
+  }
+}
+
 window.initLanguageSwitcher = initLanguageSwitcher;
+window.setupDynamicTranslationObserver = setupDynamicTranslationObserver;
+

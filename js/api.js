@@ -148,8 +148,13 @@ const SolitiquoAPI = {
         window._currentUser = json.user;
         return json.user;
       }
+      // L'utilisateur est explicitement déconnecté : on vide le cache pour ne pas
+      // afficher un profil périmé sur les pages publiques.
+      try { localStorage.removeItem('solitiquo_cached_user'); localStorage.removeItem('user'); } catch (_e) {}
+      window._currentUser = null;
       return null;
     } catch (e) {
+      // Erreur réseau uniquement : on utilise le cache (mode offline)
       try {
         const cached = localStorage.getItem('solitiquo_cached_user');
         if (cached) {
@@ -167,13 +172,9 @@ const SolitiquoAPI = {
     if (document.body.dataset.uiInited === 'true') return;
     let user = await SolitiquoAPI.getProfile();
 
-    if (!user) {
-      const cached = localStorage.getItem('solitiquo_cached_user') || localStorage.getItem('user');
-      if (cached) {
-        try { user = JSON.parse(cached); } catch (_e) {}
-      }
-    }
-
+    // Si getProfile() retourne null alors qu'on est en ligne, l'utilisateur est
+    // bien déconnecté : on n'utilise PAS le cache pour ne pas afficher un profil
+    // périmé. On autorise le cache uniquement en mode hors-ligne (réseau coupé).
     let hasOfflineDownloads = false;
     if (window.SolitiquoOffline) {
       try {

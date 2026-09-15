@@ -310,8 +310,37 @@ app.use((err, req, res, next) => {
 });
 
 if (require.main === module) {
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, async () => {
     logger.info({ url: BASE_URL, env: isProduction ? 'production' : 'development' }, '🚀 Serveur Solitiquo démarré');
+
+    let dbStatus = '⏳ En attente...';
+    try {
+      await pool.query('SELECT 1');
+      dbStatus = '✅ Connectée (PostgreSQL)';
+    } catch (err) {
+      dbStatus = `⚠️ Non joignable (${err.message})`;
+    }
+
+    const divider = '━'.repeat(54);
+    console.log('\n' + divider);
+    console.log('  🌟 SOLITIQUO — SERVEUR PRÊT ET OPÉRATIONNEL');
+    console.log(divider);
+    console.log(`  🌐 Adresse locale   : http://localhost:${PORT}`);
+    console.log(`  🔗 URL de base      : ${BASE_URL}`);
+    console.log(`  📦 Environnement    : ${isProduction ? 'Production' : 'Développement'}`);
+    console.log(`  🗄️  Base de données  : ${dbStatus}`);
+    console.log(`  🌍 Système bilingue : ✅ Actif (FR / EN)`);
+    console.log(divider);
+    console.log('  ✅ Tout fonctionne sans pépin. Prêt à recevoir des requêtes !\n');
+  });
+
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`\n❌ ERREUR : Le port ${PORT} est déjà utilisé par une autre instance ou application.`);
+      console.error('👉 Veuillez fermer le processus existant ou choisir un autre PORT dans le fichier .env.\n');
+    } else {
+      console.error('\n❌ ERREUR au démarrage du serveur :', err.message, '\n');
+    }
   });
 }
 

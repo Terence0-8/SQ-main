@@ -1366,34 +1366,32 @@
           <div class="brand-sep"></div>
           <span class="brand-text">Solitiquo</span>
         </a>
-        <p class="footer-summary">
-          Le média de référence pour l'analyse politique, économique et sociale au Cameroun.
-        </p>
+        <p class="footer-summary" data-i18n="footer_summary">Le média de référence pour l'analyse politique, économique et sociale au Cameroun.</p>
       </div>
 
       <div class="footer-divider"></div>
 
       <div class="footer-links-row">
         <div class="footer-link-group">
-          <span class="footer-group-title">Rubriques :</span>
+          <span class="footer-group-title" data-i18n="footer_rubriques">Rubriques :</span>
           <a href="index.html" class="footer-link" data-i18n="nav_home">Accueil</a>
           <a href="politique.html" class="footer-link" data-i18n="nav_pol">Politique</a>
           <a href="social.html" class="footer-link" data-i18n="nav_soc">Social &amp; Société</a>
           <a href="partis-politiques.html" class="footer-link" data-i18n="nav_parties">Partis Politiques</a>
           <a href="podcasts.html" class="footer-link" data-i18n="nav_podcasts">Podcasts</a>
-          <a href="emissions.html" class="footer-link" data-i18n="nav_emissions">Émissions</a>
+          <a href="emissions.html" class="footer-link" data-i18n="nav_shows">Émissions</a>
           <a href="recherche.html" class="footer-link" data-i18n="nav_search">Recherche</a>
         </div>
 
         <div class="footer-link-group">
-          <span class="footer-group-title">Espace :</span>
+          <span class="footer-group-title" data-i18n="footer_account">Espace :</span>
           <a href="abonnement.html" class="footer-link" data-i18n="nav_sub">S'abonner</a>
           <a href="auth.html" class="footer-link" data-i18n="nav_login">Connexion / Inscription</a>
           <a href="profil.html" class="footer-link" data-i18n="nav_profile">Mon Compte</a>
         </div>
 
         <div class="footer-link-group">
-          <span class="footer-group-title">Légal &amp; Contact :</span>
+          <span class="footer-group-title" data-i18n="footer_legal_contact">Légal &amp; Contact :</span>
           <a href="contact.html" class="footer-link" data-i18n="footer_contact">Nous écrire / Contact</a>
           <a href="mentions-legales.html" class="footer-link" data-i18n="footer_legal">Mentions légales</a>
           <a href="conditions-utilisation.html" class="footer-link" data-i18n="footer_terms">Conditions d'utilisation
@@ -1404,7 +1402,7 @@
         </div>
       </div>
 
-      <div class="footer-bottom">&copy; 2026 Solitiquo. Le média d'analyse et d'information. Tous droits réservés.</div>
+      <div class="footer-bottom" data-i18n="footer_copyright">&copy; 2026 Solitiquo. Le média d'analyse et d'information. Tous droits réservés.</div>
     </div>
   </footer>
 
@@ -1730,8 +1728,8 @@
       editBox.innerHTML = `
         <textarea class="comment-input-textarea comment-edit-textarea" rows="3" style="width:100%;margin-bottom:0.6rem;font-size:0.95rem;box-sizing:border-box;">${currentContent.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
         <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center;">
-          <button type="button" class="btn-comment-cancel" style="background:#edf2f7;color:#4a5568;border:none;padding:6px 14px;border-radius:20px;font-size:0.85rem;font-weight:600;cursor:pointer;">Annuler</button>
-          <button type="button" class="btn-comment-save" style="background:#37463D;color:#ffffff;border:none;padding:6px 14px;border-radius:20px;font-size:0.85rem;font-weight:600;cursor:pointer;">Enregistrer</button>
+          <button type="button" class="btn-comment-cancel" style="background:#edf2f7;color:#4a5568;border:none;padding:6px 14px;border-radius:20px;font-size:0.85rem;font-weight:600;cursor:pointer;"><span data-i18n="btn_cancel">Annuler</span></button>
+          <button type="button" class="btn-comment-save" style="background:#37463D;color:#ffffff;border:none;padding:6px 14px;border-radius:20px;font-size:0.85rem;font-weight:600;cursor:pointer;"><span data-i18n="btn_save">Enregistrer</span></button>
         </div>
         <div class="edit-msg" style="margin-top:0.4rem;font-size:0.85rem;"></div>
       `;
@@ -2586,9 +2584,9 @@
       <p class="confirm-modal-text">Êtes-vous sûr de vouloir supprimer définitivement ce commentaire ? Cette action est
         irréversible.</p>
       <div class="confirm-modal-actions">
-        <button type="button" class="btn-modal-cancel" onclick="closeDeleteCommentModal()">Annuler</button>
+        <button type="button" class="btn-modal-cancel" onclick="closeDeleteCommentModal()"><span data-i18n="btn_cancel">Annuler</span></button>
         <button type="button" class="btn-modal-confirm" id="btn-confirm-delete-action"
-          onclick="executeDeleteComment()">Supprimer</button>
+          onclick="executeDeleteComment()"><span data-i18n="btn_delete">Supprimer</span></button>
       </div>
     </div>
   </div>

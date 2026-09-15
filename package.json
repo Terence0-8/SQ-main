@@ -16,7 +16,9 @@
     "migrate:validate": "node scripts/migrate-validate.js",
     "lint": "eslint backend/ server.js",
     "lint:fix": "eslint backend/ server.js --fix",
-    "format": "prettier --write \"backend/**/*.js\" server.js"
+    "format": "prettier --write \"backend/**/*.js\" server.js",
+    "i18n:check": "node scripts/i18n-check.js",
+    "i18n:fix": "node scripts/i18n-check.js --fix"
   },
   "keywords": [
     "politique",
