@@ -535,12 +535,9 @@
     const tabsNav = document.querySelector('.profile-tabs-nav');
 
     function isOfflineProfileMode() {
-      if (typeof navigator !== 'undefined' && !navigator.onLine) return true;
-      if (document.body.classList.contains('is-offline')) return true;
-      if (window._isOfflineProfile === true) return true;
-      if (sessionStorage.getItem('solitiquo_offline') === 'true') return true;
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('offline') === 'true' || urlParams.get('offline') === '1') return true;
+      if (typeof navigator !== 'undefined' && !navigator.onLine) return true;
       return false;
     }
 
@@ -706,6 +703,13 @@
       }
     });
 
+    // Nettoyer les résidus hors-ligne si le navigateur est connecté à Internet
+    if (typeof navigator !== 'undefined' && navigator.onLine) {
+      sessionStorage.removeItem('solitiquo_offline');
+      window._isOfflineProfile = false;
+      document.body.classList.remove('is-offline');
+    }
+
     // Exécuter immédiatement la vérification de l'état des onglets
     updateOfflineTabsState();
 
@@ -715,19 +719,13 @@
         updateOfflineTabsState();
         if (typeof initLanguageSwitcher === 'function') await initLanguageSwitcher();
 
-        // Support URL ?tab=downloads ou #downloads pour ouvrir automatiquement l'onglet Téléchargements
-        const urlParams = new URLSearchParams(window.location.search);
-        const isDownloadsTabRequested = urlParams.get('tab') === 'downloads' || window.location.hash === '#downloads' || window.location.hash === '#tab-downloads';
-        if (isDownloadsTabRequested || isOfflineProfileMode()) {
-          const dlTabBtn = document.querySelector('.tab-btn[data-tab="tab-downloads"]');
-          if (dlTabBtn) dlTabBtn.click();
-        }
-
         let user = null;
         try {
           user = await SolitiquoAPI.getProfile();
         } catch (_err) {
-          window._isOfflineProfile = true;
+          if (typeof navigator !== 'undefined' && !navigator.onLine) {
+            window._isOfflineProfile = true;
+          }
         }
         if (!user) {
           const cached = localStorage.getItem('solitiquo_cached_user') || localStorage.getItem('user');
@@ -744,23 +742,35 @@
           } catch (_e) {}
         }
 
-        // RÈGLE IMPÉRATIVE HORS-CONNEXION : Ne JAMAIS rediriger vers auth.html si l'user est hors-ligne,
-        // si l'onglet téléchargements est demandé, s'il possède des téléchargements, ou si l'API est indisponible
-        const isOffline = !navigator.onLine || isDownloadsTabRequested || offlineDownloadsCount > 0 || (user && user.offline) || isOfflineProfileMode();
+        // Le mode hors-ligne ne s'active QUE si la connexion réseau est réellement coupée ou ?offline=true
+        const isOffline = isOfflineProfileMode();
         window._isOfflineProfile = isOffline;
         if (isOffline) {
           sessionStorage.setItem('solitiquo_offline', 'true');
+        } else {
+          sessionStorage.removeItem('solitiquo_offline');
         }
 
-        if (!user && !isOffline) {
+        // Support URL ?tab=downloads ou #downloads pour ouvrir automatiquement l'onglet Téléchargements
+        const urlParams = new URLSearchParams(window.location.search);
+        const isDownloadsTabRequested = urlParams.get('tab') === 'downloads' || window.location.hash === '#downloads' || window.location.hash === '#tab-downloads';
+        if (isDownloadsTabRequested || isOffline) {
+          const dlTabBtn = document.querySelector('.tab-btn[data-tab="tab-downloads"]');
+          if (dlTabBtn) dlTabBtn.click();
+        }
+
+        // RÈGLE DE REDIRECTION : Ne pas rediriger vers auth.html si l'user est hors-ligne
+        // ou s'il consulte ses téléchargements locaux sans être connecté
+        const allowAccessWithoutLogin = isOffline || (offlineDownloadsCount > 0 && isDownloadsTabRequested);
+        if (!user && !allowAccessWithoutLogin) {
           window.location.href = 'auth.html';
           return;
         }
 
         if (!user) {
           user = {
-            username: 'Abonné Hors-ligne',
-            email: 'Mode hors-connexion',
+            username: isOffline ? t('offline_user', 'Abonné Hors-ligne') : t('nav_profile', 'Mon Profil'),
+            email: isOffline ? t('offline_email', 'Mode hors-connexion') : 'Consultation locale',
             is_subscriber: true,
             role: 'user'
           };

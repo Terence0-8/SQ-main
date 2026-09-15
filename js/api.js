@@ -183,7 +183,7 @@ const SolitiquoAPI = {
       } catch (_e) {}
     }
 
-    if (!user && (!navigator.onLine || hasOfflineDownloads)) {
+    if (!user && !navigator.onLine && hasOfflineDownloads) {
       user = {
         username: 'Abonné Hors-ligne',
         email: 'Mode hors-connexion',
