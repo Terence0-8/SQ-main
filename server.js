@@ -40,6 +40,7 @@ if (!isTest) {
 }
 
 // Stripe webhook needs the raw body BEFORE express.json() parses it
+app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
 app.use('/api/subscriptions/stripe-webhook', express.raw({ type: 'application/json' }));
 
 // =============================================================================
@@ -169,6 +170,20 @@ app.use(async (req, res, next) => {
   if (isTest || !req.session?.user?.id) return next();
   if (req.session?.user?.id) {
     try {
+      // Déchoir automatiquement les abonnés Stripe past_due dont la période de grâce (5 jours) a expiré
+      await pool.query(`
+        UPDATE users u
+        SET is_subscriber = false, updated_at = NOW()
+        FROM subscriptions s
+        WHERE s.user_id = u.id
+          AND s.stripe_subscription_id IS NOT NULL
+          AND s.stripe_status = 'past_due'
+          AND s.payment_grace_ends_at IS NOT NULL
+          AND s.payment_grace_ends_at <= NOW()
+          AND u.is_subscriber = true
+          AND u.id = $1
+      `, [req.session.user.id]);
+
       const result = await pool.query('SELECT is_active, is_subscriber, role FROM users WHERE id = $1', [req.session.user.id]);
       if (result.rows.length === 0 || !result.rows[0].is_active) {
         return req.session.destroy(() => {
@@ -204,6 +219,7 @@ const csrfExemptPaths = [
   '/api/auth/register',
   '/api/subscriptions/webhook',
   '/api/subscriptions/stripe-webhook',
+  '/api/stripe/webhook',
   '/api/subscriptions/init-',
   '/api/language/preference',
   '/api/analytics/track',
@@ -238,6 +254,9 @@ app.use('/api', (req, res, next) => {
   console.log(`📡 API Request: ${req.method} ${req.originalUrl}`);
   next();
 });
+
+// Route Stripe canonique
+app.use('/api/stripe', require('./backend/routes/stripe'));
 
 const apiRoutes = [
   'articles', 'language', 'polls', 'comments', 'auth', 'podcasts',

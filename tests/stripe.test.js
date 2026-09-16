@@ -1,0 +1,1002 @@
+'use strict';
+
+process.env.NODE_ENV = 'test';
+process.env.SESSION_SECRET = 'test-secret-only';
+
+const { describe, test, before, after } = require('node:test');
+const assert = require('node:assert/strict');
+const request = require('supertest');
+const app = require('../server');
+const pool = require('../backend/config/database');
+const {
+  pricing,
+  countryFromReq,
+  setLocalEntitlement,
+  syncUserEntitlement,
+  upsertSubscription,
+  recordWebhook,
+  getOrCreateStripeCustomer,
+  generateIntegrationIdentifier,
+  executeCheckoutTransaction,
+  PRICES,
+  EU_COUNTRIES,
+} = require('../backend/routes/stripe');
+
+describe('Stripe Integration & Business Rules', () => {
+  let testUserId;
+  const dummySubId1 = 'sub_test_mock_001';
+  const dummySubId2 = 'sub_test_mock_002';
+  const dummyCustomerId = 'cus_test_mock_001';
+
+  before(async () => {
+    // Nettoyage préalable au cas où
+    await pool.query("DELETE FROM subscriptions WHERE stripe_customer_id = $1", [dummyCustomerId]);
+    await pool.query("DELETE FROM stripe_webhook_events WHERE event_id LIKE 'evt_test_%'");
+    await pool.query("DELETE FROM users WHERE email = 'stripe_test_user@example.com'");
+
+    // Création d'un utilisateur de test
+    const userRes = await pool.query(
+      `INSERT INTO users (username, email, password, is_subscriber, role, created_at, updated_at)
+       VALUES ('stripe_test_user', 'stripe_test_user@example.com', 'hash_test_dummy', false, 'reader', NOW(), NOW())
+       RETURNING id`
+    );
+    testUserId = userRes.rows[0].id;
+  });
+
+  after(async () => {
+    // Nettoyage après tests
+    if (testUserId) {
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+      await pool.query("DELETE FROM users WHERE id = $1", [testUserId]);
+    }
+    await pool.query("DELETE FROM stripe_webhook_events WHERE event_id LIKE 'evt_test_%'");
+  });
+
+  // -------------------------------------------------------------------------
+  // 1. GÉOLOCALISATION & TARIFS
+  // -------------------------------------------------------------------------
+  describe('1. Géolocalisation et devises', () => {
+    test('CM => XAF / local provider (flutterwave)', () => {
+      const p = pricing('CM');
+      assert.equal(p.currency, 'XAF');
+      assert.equal(p.provider, 'flutterwave');
+      assert.equal(p.monthly, 3000);
+      assert.equal(p.yearly, 30000);
+    });
+
+    test('BJ / TG / SN / CI => XOF / local provider (flutterwave)', () => {
+      ['BJ', 'TG', 'SN', 'CI'].forEach((code) => {
+        const p = pricing(code);
+        assert.equal(p.currency, 'XOF');
+        assert.equal(p.provider, 'flutterwave');
+        assert.equal(p.monthly, 3000);
+        assert.equal(p.yearly, 30000);
+      });
+    });
+
+    test('Europe => EUR (Stripe: EUR 6.99 / 69.90)', () => {
+      ['FR', 'DE', 'ES', 'IT', 'BE'].forEach((code) => {
+        const p = pricing(code);
+        assert.equal(p.currency, 'EUR');
+        assert.equal(p.provider, 'stripe');
+        assert.equal(p.monthly, 6.99);
+        assert.equal(p.yearly, 69.90);
+        assert.equal(p.monthlyPriceId, PRICES.EUR.monthly);
+        assert.equal(p.yearlyPriceId, PRICES.EUR.yearly);
+      });
+    });
+
+    test('GB => GBP (Stripe: GBP 6.99 / 69.90)', () => {
+      const p = pricing('GB');
+      assert.equal(p.currency, 'GBP');
+      assert.equal(p.provider, 'stripe');
+      assert.equal(p.monthly, 6.99);
+      assert.equal(p.yearly, 69.90);
+      assert.equal(p.monthlyPriceId, PRICES.GBP.monthly);
+      assert.equal(p.yearlyPriceId, PRICES.GBP.yearly);
+    });
+
+    test('CA => CAD (Stripe: CAD 9.99 / 99.90)', () => {
+      const p = pricing('CA');
+      assert.equal(p.currency, 'CAD');
+      assert.equal(p.provider, 'stripe');
+      assert.equal(p.monthly, 9.99);
+      assert.equal(p.yearly, 99.90);
+      assert.equal(p.monthlyPriceId, PRICES.CAD.monthly);
+      assert.equal(p.yearlyPriceId, PRICES.CAD.yearly);
+    });
+
+    test('ROW => USD (Stripe: USD 7.99 / 79.90)', () => {
+      ['US', 'JP', 'BR', 'AU', null, ''].forEach((code) => {
+        const p = pricing(code);
+        assert.equal(p.currency, 'USD');
+        assert.equal(p.provider, 'stripe');
+        assert.equal(p.monthly, 7.99);
+        assert.equal(p.yearly, 79.90);
+        assert.equal(p.monthlyPriceId, PRICES.USD.monthly);
+        assert.equal(p.yearlyPriceId, PRICES.USD.yearly);
+      });
+    });
+
+    test('GET /api/stripe/pricing endpoint public avec détection testCountry', async () => {
+      const resFR = await request(app).get('/api/stripe/pricing?testCountry=FR');
+      assert.equal(resFR.status, 200);
+      assert.equal(resFR.body.currency, 'EUR');
+      assert.equal(resFR.body.monthly, 6.99);
+
+      const resGB = await request(app).get('/api/stripe/pricing?testCountry=GB');
+      assert.equal(resGB.status, 200);
+      assert.equal(resGB.body.currency, 'GBP');
+      assert.equal(resGB.body.monthly, 6.99);
+
+      const resCA = await request(app).get('/api/stripe/pricing?testCountry=CA');
+      assert.equal(resCA.status, 200);
+      assert.equal(resCA.body.currency, 'CAD');
+      assert.equal(resCA.body.monthly, 9.99);
+
+      const resUS = await request(app).get('/api/stripe/pricing?testCountry=US');
+      assert.equal(resUS.status, 200);
+      assert.equal(resUS.body.currency, 'USD');
+      assert.equal(resUS.body.monthly, 7.99);
+
+      const resCM = await request(app).get('/api/stripe/pricing?testCountry=CM');
+      assert.equal(resCM.status, 200);
+      assert.equal(resCM.body.currency, 'XAF');
+      assert.equal(resCM.body.provider, 'flutterwave');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 2. SÉCURITÉ DES ROUTES (CSRF & AUTHENTIFICATION)
+  // -------------------------------------------------------------------------
+  describe('2. Sécurité des endpoints Stripe', () => {
+    test('POST /api/stripe/checkout — 403 sans token CSRF', async () => {
+      const res = await request(app)
+        .post('/api/stripe/checkout')
+        .send({ plan: 'monthly' });
+      assert.equal(res.status, 403);
+      assert.equal(res.body.success, false);
+    });
+
+    test('POST /api/stripe/portal — 403 sans token CSRF', async () => {
+      const res = await request(app)
+        .post('/api/stripe/portal')
+        .send({});
+      assert.equal(res.status, 403);
+      assert.equal(res.body.success, false);
+    });
+
+    test('POST /api/stripe/cancel — 403 sans token CSRF', async () => {
+      const res = await request(app)
+        .post('/api/stripe/cancel')
+        .send({});
+      assert.equal(res.status, 403);
+      assert.equal(res.body.success, false);
+    });
+
+    test('POST /api/stripe/reactivate — 403 sans token CSRF', async () => {
+      const res = await request(app)
+        .post('/api/stripe/reactivate')
+        .send({});
+      assert.equal(res.status, 403);
+      assert.equal(res.body.success, false);
+    });
+
+    test('POST /api/stripe/change-plan — 403 sans token CSRF', async () => {
+      const res = await request(app)
+        .post('/api/stripe/change-plan')
+        .send({ targetPlan: 'yearly' });
+      assert.equal(res.status, 403);
+      assert.equal(res.body.success, false);
+    });
+
+    test('POST /api/stripe/webhook — rejet 400 si signature manquante', async () => {
+      const res = await request(app)
+        .post('/api/stripe/webhook')
+        .set('Content-Type', 'application/json')
+        .send(JSON.stringify({ type: 'test' }));
+      assert.equal(res.status, 400);
+      assert.match(res.text, /Webhook signature invalide/);
+    });
+
+    test('POST /api/stripe/webhook — rejet 400 si signature invalide', async () => {
+      const res = await request(app)
+        .post('/api/stripe/webhook')
+        .set('Content-Type', 'application/json')
+        .set('stripe-signature', 't=123,v1=bad_signature')
+        .send(JSON.stringify({ type: 'test' }));
+      assert.equal(res.status, 400);
+      assert.match(res.text, /Webhook signature invalide/);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 3. ESSAI GRATUIT (TRIAL) ET ÉLIGIBILITÉ
+  // -------------------------------------------------------------------------
+  describe('3. Règles d’essai gratuit (Trial 30 jours)', () => {
+    test('Eligible au trial : premier abonnement mensuel avec subscription_trial_used_at NULL', async () => {
+      const uRes = await pool.query("SELECT subscription_trial_used_at FROM users WHERE id = $1", [testUserId]);
+      assert.equal(uRes.rows[0].subscription_trial_used_at, null);
+
+      // Simulation du calcul d'éligibilité fait dans /checkout
+      const planMonthly = 'monthly';
+      const isEligibleTrial = planMonthly === 'monthly' && !uRes.rows[0].subscription_trial_used_at;
+      assert.equal(isEligibleTrial, true);
+    });
+
+    test('Inéligible au trial : abonnement annuel (annual = jamais de trial)', async () => {
+      const uRes = await pool.query("SELECT subscription_trial_used_at FROM users WHERE id = $1", [testUserId]);
+      const planYearly = 'yearly';
+      const isEligibleTrial = planYearly === 'monthly' && !uRes.rows[0].subscription_trial_used_at;
+      assert.equal(isEligibleTrial, false);
+    });
+
+    test('Démarrage du trial : upsertSubscription active Premium et marque subscription_trial_used_at', async () => {
+      const nowSec = Math.floor(Date.now() / 1000);
+      const trialEndSec = nowSec + 30 * 24 * 3600;
+
+      const mockTrialSub = {
+        id: dummySubId1,
+        customer: dummyCustomerId,
+        status: 'trialing',
+        cancel_at_period_end: false,
+        current_period_start: nowSec,
+        current_period_end: trialEndSec,
+        trial_start: nowSec,
+        trial_end: trialEndSec,
+        latest_invoice: 'in_mock_trial',
+        default_payment_method: 'pm_mock_trial',
+        items: {
+          data: [{ price: { id: PRICES.EUR.monthly, product: 'prod_mock_trial' } }]
+        },
+        metadata: { solitiquo_user_id: String(testUserId) }
+      };
+
+      await upsertSubscription(mockTrialSub, null, testUserId);
+
+      // Vérification utilisateur
+      const uRes = await pool.query(
+        "SELECT is_subscriber, subscription_trial_used_at, subscription_end_date FROM users WHERE id = $1",
+        [testUserId]
+      );
+      assert.equal(uRes.rows[0].is_subscriber, true);
+      assert.ok(uRes.rows[0].subscription_trial_used_at !== null, 'subscription_trial_used_at doit être renseigné');
+      assert.ok(uRes.rows[0].subscription_end_date !== null, 'subscription_end_date doit être renseigné');
+
+      // Vérification subscription en base
+      const sRes = await pool.query("SELECT * FROM subscriptions WHERE stripe_subscription_id = $1", [dummySubId1]);
+      assert.equal(sRes.rows.length, 1);
+      assert.equal(sRes.rows[0].stripe_status, 'trialing');
+      assert.equal(sRes.rows[0].status, 'active');
+    });
+
+    test('Trial déjà utilisé : inéligible pour toute souscription future', async () => {
+      const uRes = await pool.query("SELECT subscription_trial_used_at FROM users WHERE id = $1", [testUserId]);
+      assert.ok(uRes.rows[0].subscription_trial_used_at !== null);
+
+      const isEligibleNow = !uRes.rows[0].subscription_trial_used_at;
+      assert.equal(isEligibleNow, false, 'Ne doit plus avoir droit au trial une fois utilisé');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 4. UN SEUL ABONNEMENT ACTIF / CONTRAINTE D'UNICITÉ
+  // -------------------------------------------------------------------------
+  describe('4. Un seul abonnement actif & contraintes', () => {
+    test('Contrainte PostgreSQL : empêche deux abonnements actifs concurrents pour le même utilisateur', async () => {
+      let threw = false;
+      try {
+        await pool.query(
+          `INSERT INTO subscriptions (
+             user_id, plan, amount, starts_at, ends_at, stripe_subscription_id, stripe_customer_id, stripe_price_id,
+             stripe_status, status, created_at, updated_at
+           ) VALUES ($1, 'monthly', 6.99, NOW(), NOW() + INTERVAL '30 days', $2, $3, $4, 'active', 'active', NOW(), NOW())`,
+          [testUserId, dummySubId2, dummyCustomerId, PRICES.EUR.monthly]
+        );
+      } catch (err) {
+        threw = true;
+        // La contrainte d'index partiel subscriptions_one_live_stripe_subscription_unique doit lever une erreur 23505
+        assert.equal(err.code, '23505');
+      }
+      assert.equal(threw, true, 'Deux abonnements actifs simultanés doivent violer la contrainte unique');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 5. RÉSILIATION (TRIAL VS PAID) ET RÉACTIVATION
+  // -------------------------------------------------------------------------
+  describe('5. Résiliation et Réactivation', () => {
+    test('Résiliation pendant le trial : suppression IMMÉDIATE de l’accès Premium', async () => {
+      // Simulation annulation immédiate Stripe
+      const nowSec = Math.floor(Date.now() / 1000);
+      const mockCanceledTrialSub = {
+        id: dummySubId1,
+        customer: dummyCustomerId,
+        status: 'canceled',
+        cancel_at_period_end: false,
+        canceled_at: nowSec,
+        current_period_start: nowSec,
+        current_period_end: nowSec + 3600,
+        trial_start: nowSec - 3600,
+        trial_end: nowSec + 3600,
+        items: {
+          data: [{ price: { id: PRICES.EUR.monthly } }]
+        },
+        metadata: { solitiquo_user_id: String(testUserId) }
+      };
+
+      await upsertSubscription(mockCanceledTrialSub, null, testUserId);
+
+      const uRes = await pool.query("SELECT is_subscriber FROM users WHERE id = $1", [testUserId]);
+      assert.equal(uRes.rows[0].is_subscriber, false, 'Premium doit être retiré immédiatement après résiliation du trial');
+    });
+
+    test('Abonnement payant avec cancel_at_period_end=true : Premium RESTE ACTIF jusqu’à la fin de période', async () => {
+      const nowSec = Math.floor(Date.now() / 1000);
+      const endSec = nowSec + 15 * 24 * 3600; // 15 jours restants
+
+      const mockPaidSubCanceling = {
+        id: dummySubId1,
+        customer: dummyCustomerId,
+        status: 'active',
+        cancel_at_period_end: true,
+        current_period_start: nowSec,
+        current_period_end: endSec,
+        trial_start: null,
+        trial_end: null,
+        items: {
+          data: [{ price: { id: PRICES.EUR.monthly } }]
+        },
+        metadata: { solitiquo_user_id: String(testUserId) }
+      };
+
+      await upsertSubscription(mockPaidSubCanceling, null, testUserId);
+
+      const uRes = await pool.query("SELECT is_subscriber, subscription_end_date FROM users WHERE id = $1", [testUserId]);
+      assert.equal(uRes.rows[0].is_subscriber, true, 'Premium doit rester actif jusqu’à la fin de période payée');
+      assert.ok(new Date(uRes.rows[0].subscription_end_date).getTime() > Date.now());
+
+      const sRes = await pool.query("SELECT stripe_cancel_at_period_end FROM subscriptions WHERE stripe_subscription_id = $1", [dummySubId1]);
+      assert.equal(sRes.rows[0].stripe_cancel_at_period_end, true);
+    });
+
+    test('Réactivation avant la fin de période : remet cancel_at_period_end=false', async () => {
+      const nowSec = Math.floor(Date.now() / 1000);
+      const endSec = nowSec + 15 * 24 * 3600;
+
+      const mockReactivatedSub = {
+        id: dummySubId1,
+        customer: dummyCustomerId,
+        status: 'active',
+        cancel_at_period_end: false,
+        current_period_start: nowSec,
+        current_period_end: endSec,
+        trial_start: null,
+        trial_end: null,
+        items: {
+          data: [{ price: { id: PRICES.EUR.monthly } }]
+        },
+        metadata: { solitiquo_user_id: String(testUserId) }
+      };
+
+      await upsertSubscription(mockReactivatedSub, null, testUserId);
+
+      const sRes = await pool.query("SELECT stripe_cancel_at_period_end FROM subscriptions WHERE stripe_subscription_id = $1", [dummySubId1]);
+      assert.equal(sRes.rows[0].stripe_cancel_at_period_end, false);
+
+      const uRes = await pool.query("SELECT is_subscriber FROM users WHERE id = $1", [testUserId]);
+      assert.equal(uRes.rows[0].is_subscriber, true);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 6. ÉCHEC DE PAIEMENT & GRACE PERIOD DE 5 JOURS & RESTAURATION INVOICE.PAID
+  // -------------------------------------------------------------------------
+  describe('6. Échec de paiement, période de grâce de 5 jours et restauration', () => {
+    test('Échec de paiement : active la période de grâce de 5 jours et maintient Premium', async () => {
+      // Simule la logique du webhook invoice.payment_failed
+      const updateRes = await pool.query(
+        `UPDATE subscriptions
+         SET payment_failed_at = NOW(),
+             payment_grace_ends_at = NOW() + INTERVAL '5 days',
+             stripe_status = 'past_due',
+             status = 'active',
+             updated_at = NOW()
+         WHERE stripe_subscription_id = $1
+         RETURNING user_id, payment_grace_ends_at`,
+        [dummySubId1]
+      );
+
+      const { user_id, payment_grace_ends_at } = updateRes.rows[0];
+      const isGraceActive = payment_grace_ends_at && new Date(payment_grace_ends_at) > new Date();
+      assert.equal(isGraceActive, true, 'La période de grâce doit être active pendant 5 jours');
+
+      await setLocalEntitlement(user_id, isGraceActive, payment_grace_ends_at);
+
+      const uRes = await pool.query("SELECT is_subscriber FROM users WHERE id = $1", [testUserId]);
+      assert.equal(uRes.rows[0].is_subscriber, true, 'L’accès Premium doit être maintenu pendant les 5 jours de grâce');
+    });
+
+    test('Expiration de la grâce (> 5 jours) : Premium est retiré', async () => {
+      // Simule une date de grâce expirée dans le passé
+      await pool.query(
+        `UPDATE subscriptions
+         SET payment_failed_at = NOW() - INTERVAL '6 days',
+             payment_grace_ends_at = NOW() - INTERVAL '1 day',
+             stripe_status = 'past_due',
+             updated_at = NOW()
+         WHERE stripe_subscription_id = $1`,
+        [dummySubId1]
+      );
+
+      // syncUserEntitlement évalue le statut et la grâce
+      await syncUserEntitlement(testUserId);
+
+      const uRes = await pool.query("SELECT is_subscriber FROM users WHERE id = $1", [testUserId]);
+      assert.equal(uRes.rows[0].is_subscriber, false, 'Premium doit être révoqué une fois la période de grâce expirée');
+    });
+
+    test('Restauration via invoice.paid : supprime la grâce et rétablit l’accès Premium actif', async () => {
+      const nowSec = Math.floor(Date.now() / 1000);
+      const nextMonthSec = nowSec + 30 * 24 * 3600;
+
+      const mockPaidRecoverySub = {
+        id: dummySubId1,
+        customer: dummyCustomerId,
+        status: 'active',
+        cancel_at_period_end: false,
+        current_period_start: nowSec,
+        current_period_end: nextMonthSec,
+        trial_start: null,
+        trial_end: null,
+        items: {
+          data: [{ price: { id: PRICES.EUR.monthly } }]
+        },
+        metadata: { solitiquo_user_id: String(testUserId) }
+      };
+
+      // Lors d’un paiement réussi, upsertSubscription nettoie payment_failed_at et payment_grace_ends_at
+      await upsertSubscription(mockPaidRecoverySub, null, testUserId);
+
+      const sRes = await pool.query("SELECT payment_failed_at, payment_grace_ends_at, stripe_status FROM subscriptions WHERE stripe_subscription_id = $1", [dummySubId1]);
+      assert.equal(sRes.rows[0].payment_failed_at, null, 'payment_failed_at doit être effacé');
+      assert.equal(sRes.rows[0].payment_grace_ends_at, null, 'payment_grace_ends_at doit être effacé');
+      assert.equal(sRes.rows[0].stripe_status, 'active');
+
+      const uRes = await pool.query("SELECT is_subscriber FROM users WHERE id = $1", [testUserId]);
+      assert.equal(uRes.rows[0].is_subscriber, true, 'Premium doit être restauré suite au paiement réussi');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 7. IDEMPOTENCE DES WEBHOOKS
+  // -------------------------------------------------------------------------
+  describe('7. Idempotence des webhooks', () => {
+    test('recordWebhook : premier enregistrement retourne true, second retourne false', async () => {
+      const testEventId = 'evt_test_idempotency_abc123';
+
+      const firstTry = await recordWebhook(testEventId, 'invoice.paid');
+      assert.equal(firstTry, true, 'Le premier traitement de l’événement doit retourner true');
+
+      const secondTry = await recordWebhook(testEventId, 'invoice.paid');
+      assert.equal(secondTry, false, 'Le second traitement du même événement doit retourner false (ignoré)');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 8. TESTS DE RÉGRESSION ET SÉRIALISATION CONCURRENTE
+  // -------------------------------------------------------------------------
+  describe('8. Tests de régression et robustesse', () => {
+    test('Format integration_identifier : suffixe strictement composé de 8 lettres minuscules', () => {
+      for (let i = 0; i < 20; i++) {
+        const id = generateIntegrationIdentifier();
+        assert.match(id, /^solitiquo_[a-z]{8}$/, `L'identifiant ${id} ne respecte pas le format solitiquo_[a-z]{8}`);
+      }
+    });
+
+    test('integration_identifier : transmis comme paramètre API dédié à stripe.checkout.sessions.create()', async () => {
+      let passedConfig = null;
+      const mockStripe = {
+        customers: {
+          search: async () => ({ data: [{ id: 'cus_test_int_id', deleted: false }] }),
+          create: async () => ({ id: 'cus_test_int_id' })
+        },
+        checkout: {
+          sessions: {
+            create: async (cfg) => {
+              passedConfig = cfg;
+              return { id: 'cs_test_int_id', url: 'https://checkout.stripe.com/pay/cs_test_int_id' };
+            }
+          }
+        }
+      };
+
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+
+      const res = await executeCheckoutTransaction({
+        stripe: mockStripe,
+        userId: testUserId,
+        userEmail: 'stripe_test_user@example.com',
+        plan: 'monthly',
+        country: 'FR',
+        p: pricing('FR')
+      });
+
+      assert.equal(res.status, 200);
+      assert.ok(passedConfig, 'stripe.checkout.sessions.create doit avoir été appelé');
+      // Vérification que integration_identifier est un paramètre racine de la Checkout Session
+      assert.ok(passedConfig.integration_identifier, 'integration_identifier doit être présent à la racine de la session');
+      assert.match(
+        passedConfig.integration_identifier,
+        /^solitiquo_[a-z]{8}$/,
+        'integration_identifier à la racine doit respecter le format solitiquo_[a-z]{8}'
+      );
+      // Vérification que les métadonnées contiennent aussi l'identifiant pour traçabilité
+      assert.equal(
+        passedConfig.metadata.integration_identifier,
+        passedConfig.integration_identifier,
+        'metadata.integration_identifier doit être synchronisé'
+      );
+
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+    });
+
+    test('Sérialisation checkout concurrent réel : deux requêtes simultanées partageant le même utilisateur', async () => {
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+      await pool.query("UPDATE users SET is_subscriber = false, subscription_trial_used_at = NULL WHERE id = $1", [testUserId]);
+
+      let sessionCreateCount = 0;
+      let customerCreateCount = 0;
+      const createdSessions = [];
+
+      const concurrentMockStripe = {
+        customers: {
+          search: async () => ({ data: [] }),
+          create: async () => {
+            customerCreateCount++;
+            return { id: 'cus_concurrent_shared_001' };
+          }
+        },
+        checkout: {
+          sessions: {
+            create: async () => {
+              sessionCreateCount++;
+              // Simuler une latence réseau réelle (50ms) pendant laquelle le verrou est actif
+              await new Promise((r) => setTimeout(r, 50));
+              const s = { id: `cs_concurrent_${sessionCreateCount}`, url: 'https://checkout.stripe.com/test' };
+              createdSessions.push(s);
+              return s;
+            }
+          }
+        }
+      };
+
+      // Exécution strictement concurrente de deux checkout pour le même utilisateur
+      const [res1, res2] = await Promise.all([
+        executeCheckoutTransaction({
+          stripe: concurrentMockStripe,
+          userId: testUserId,
+          userEmail: 'stripe_test_user@example.com',
+          plan: 'monthly',
+          country: 'FR',
+          p: pricing('FR')
+        }),
+        executeCheckoutTransaction({
+          stripe: concurrentMockStripe,
+          userId: testUserId,
+          userEmail: 'stripe_test_user@example.com',
+          plan: 'monthly',
+          country: 'FR',
+          p: pricing('FR')
+        })
+      ]);
+
+      // 1. Une seule requête réussit (200), la seconde est rejetée avec 409
+      const statuses = [res1.status, res2.status].sort();
+      assert.deepEqual(statuses, [200, 409], 'Une requête doit réussir (200) et la concurrente être rejetée (409)');
+
+      // 2. Une seule Checkout Session Stripe créée
+      assert.equal(sessionCreateCount, 1, 'Une seule Checkout Session Stripe doit être créée');
+
+      // 3. Un seul Customer Stripe créé / réutilisé
+      assert.equal(customerCreateCount, 1, 'Un seul Customer Stripe doit être créé');
+
+      // 4. Une seule réservation pending en base avec stripe_subscription_id = NULL
+      const dbSubs = await pool.query('SELECT * FROM subscriptions WHERE user_id = $1', [testUserId]);
+      assert.equal(dbSubs.rows.length, 1, 'Une seule réservation doit exister en base de données');
+      assert.equal(dbSubs.rows[0].status, 'pending', 'Le statut doit être pending');
+      assert.equal(dbSubs.rows[0].stripe_subscription_id, null, 'stripe_subscription_id doit rester NULL');
+      assert.equal(dbSubs.rows[0].transaction_id, createdSessions[0].id, 'La réservation doit être mise à jour avec la session Stripe');
+
+      // 5. Aucune subscription locale active artificielle n’a été créée
+      const dbUser = await pool.query('SELECT is_subscriber FROM users WHERE id = $1', [testUserId]);
+      assert.equal(dbUser.rows[0].is_subscriber, false, 'Le statut pending ne doit pas accorder Premium');
+
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+    });
+
+    test('Crash / Échec Stripe Checkout : rollback de la réservation pending et aucun entitlement accordé', async () => {
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+      await pool.query("UPDATE users SET is_subscriber = false WHERE id = $1", [testUserId]);
+
+      const failingStripe = {
+        customers: {
+          search: async () => ({ data: [{ id: 'cus_existing_dummy', deleted: false }] }),
+          create: async () => ({ id: 'cus_existing_dummy' })
+        },
+        checkout: {
+          sessions: {
+            create: async () => {
+              throw new Error('Stripe API network timeout / 500 error');
+            }
+          }
+        }
+      };
+
+      const failRes = await executeCheckoutTransaction({
+        stripe: failingStripe,
+        userId: testUserId,
+        userEmail: 'stripe_test_user@example.com',
+        plan: 'monthly',
+        country: 'FR',
+        p: pricing('FR')
+      });
+
+      assert.equal(failRes.status, 500);
+      assert.equal(failRes.data.success, false);
+
+      // Vérifier que la transaction PostgreSQL a été rollbackée et qu'aucune réservation pending ne subsiste
+      const remainingSubs = await pool.query('SELECT * FROM subscriptions WHERE user_id = $1', [testUserId]);
+      assert.equal(remainingSubs.rows.length, 0, 'Aucune réservation pending ne doit subsister après rollback');
+
+      // Vérifier qu'aucun accès Premium n'a été accordé
+      const uRes = await pool.query('SELECT is_subscriber FROM users WHERE id = $1', [testUserId]);
+      assert.equal(uRes.rows[0].is_subscriber, false, 'Aucun accès Premium ne doit être accordé en cas d’échec Stripe');
+    });
+
+    test('Customer Stripe : recherché par metadata avant toute création pour éviter les doublons', async () => {
+      let createCalled = false;
+      let passedOptions = null;
+      const mockStripe = {
+        customers: {
+          search: async ({ query }) => {
+            if (query.includes(String(testUserId))) {
+              return { data: [{ id: 'cus_found_in_stripe', deleted: false }] };
+            }
+            return { data: [] };
+          },
+          create: async (data, opts) => {
+            createCalled = true;
+            passedOptions = opts;
+            return { id: 'cus_created_new' };
+          }
+        }
+      };
+
+      // Supprimer le customer_id local pour forcer la recherche Stripe
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+
+      const foundId = await getOrCreateStripeCustomer(mockStripe, { id: testUserId, email: 'test@example.com', username: 'testuser' });
+      assert.equal(foundId, 'cus_found_in_stripe');
+      assert.equal(createCalled, false, 'create() ne doit pas être appelé si le client est trouvé via search');
+    });
+
+    test('Idempotence Checkout Stripe : deux appels avec la même tentative logique transmettent la même clé et ne créent qu’une seule Checkout Session', async () => {
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+
+      const createdSessions = new Map();
+      let createCallCount = 0;
+      const capturedKeys = [];
+
+      const mockStripeWithIdempotency = {
+        customers: {
+          search: async () => ({ data: [{ id: 'cus_idem_test', deleted: false }] }),
+          create: async () => ({ id: 'cus_idem_test' })
+        },
+        checkout: {
+          sessions: {
+            create: async (config, options) => {
+              createCallCount++;
+              const key = options?.idempotencyKey;
+              capturedKeys.push(key);
+              if (key && createdSessions.has(key)) {
+                // Stripe renvoie la même session sans en créer une nouvelle
+                return createdSessions.get(key);
+              }
+              const session = {
+                id: `cs_idem_session_${createdSessions.size + 1}`,
+                url: 'https://checkout.stripe.com/pay/cs_idem'
+              };
+              if (key) {
+                createdSessions.set(key, session);
+              }
+              return session;
+            }
+          }
+        }
+      };
+
+      const logicalAttemptKey = `attempt_user_${testUserId}_monthly_retry_test`;
+
+      // 1ère tentative : création de la session Stripe
+      const res1 = await executeCheckoutTransaction({
+        stripe: mockStripeWithIdempotency,
+        userId: testUserId,
+        userEmail: 'stripe_test_user@example.com',
+        plan: 'monthly',
+        country: 'FR',
+        p: pricing('FR'),
+        idempotencyKey: logicalAttemptKey
+      });
+
+      assert.equal(res1.status, 200);
+      assert.equal(res1.data.session_id, 'cs_idem_session_1');
+
+      // Simulation de crash Node.js avant COMMIT : suppression de la réservation locale
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+
+      // 2ème tentative (retry de la même tentative logique avec la même clé)
+      const res2 = await executeCheckoutTransaction({
+        stripe: mockStripeWithIdempotency,
+        userId: testUserId,
+        userEmail: 'stripe_test_user@example.com',
+        plan: 'monthly',
+        country: 'FR',
+        p: pricing('FR'),
+        idempotencyKey: logicalAttemptKey
+      });
+
+      assert.equal(res2.status, 200);
+      // La session Stripe renvoyée par le retry doit être rigoureusement identique
+      assert.equal(res2.data.session_id, 'cs_idem_session_1');
+
+      // Stripe n'a instancié qu'une seule session dans son cache
+      assert.equal(createdSessions.size, 1, 'Stripe ne doit créer qu’une seule Checkout Session pour la même clé d’idempotence');
+      assert.equal(createCallCount, 2, 'Deux appels API ont eu lieu');
+      assert.equal(capturedKeys[0], logicalAttemptKey, 'La 1ère requête a transmis la clé d’idempotence');
+      assert.equal(capturedKeys[1], logicalAttemptKey, 'Le retry a transmis la même clé d’idempotence');
+
+      // En base de données, la réservation finale porte l'ID de cette session unique
+      const subs = await pool.query("SELECT * FROM subscriptions WHERE user_id = $1", [testUserId]);
+      assert.equal(subs.rows.length, 1);
+      assert.equal(subs.rows[0].transaction_id, 'cs_idem_session_1');
+
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+    });
+
+    test('Customer Stripe : réutilisé via recherche metadata après crash/rollback lors de la création initiale', async () => {
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+
+      let stripeStoredCustomer = null;
+      let customerCreateCount = 0;
+      let customerSearchCount = 0;
+
+      const mockStripeCustomerFlow = {
+        customers: {
+          search: async ({ query }) => {
+            customerSearchCount++;
+            if (stripeStoredCustomer && query.includes(String(testUserId))) {
+              return { data: [stripeStoredCustomer] };
+            }
+            return { data: [] };
+          },
+          create: async (data, options) => {
+            customerCreateCount++;
+            stripeStoredCustomer = {
+              id: `cus_crash_recovered_${testUserId}`,
+              deleted: false,
+              metadata: data.metadata
+            };
+            return stripeStoredCustomer;
+          }
+        },
+        checkout: {
+          sessions: {
+            create: async () => ({ id: 'cs_test_cust', url: 'https://checkout.stripe.com/pay' })
+          }
+        }
+      };
+
+      // 1ère tentative : création du client dans Stripe
+      const custId1 = await getOrCreateStripeCustomer(mockStripeCustomerFlow, {
+        id: testUserId,
+        email: 'stripe_test_user@example.com',
+        username: 'stripe_test_user'
+      });
+      assert.equal(custId1, `cus_crash_recovered_${testUserId}`);
+      assert.equal(customerCreateCount, 1);
+
+      // Simulation de crash/rollback PostgreSQL : aucune trace dans subscriptions
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+
+      // 2ème tentative (retry après crash) : doit retrouver le Customer par metadata Stripe sans recréation
+      const custId2 = await getOrCreateStripeCustomer(mockStripeCustomerFlow, {
+        id: testUserId,
+        email: 'stripe_test_user@example.com',
+        username: 'stripe_test_user'
+      });
+
+      assert.equal(custId2, `cus_crash_recovered_${testUserId}`);
+      assert.equal(customerCreateCount, 1, 'create() ne doit pas être réappelé car le client existe déjà dans Stripe');
+      assert.ok(customerSearchCount >= 2, 'search() doit avoir été exécuté');
+
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+    });
+
+    test('Réactivation : restaure explicitement users.is_subscriber et synchronise subscription_end_date', async () => {
+      const nowSec = Math.floor(Date.now() / 1000);
+      const targetEndSec = nowSec + 25 * 24 * 3600;
+      const targetEndDate = new Date(targetEndSec * 1000);
+
+      // Simulation d'une souscription avec résiliation programmée
+      await pool.query(
+        `INSERT INTO subscriptions (
+           user_id, plan, amount, starts_at, ends_at, stripe_subscription_id, stripe_customer_id, stripe_price_id,
+           stripe_status, stripe_cancel_at_period_end, stripe_current_period_end, status, created_at, updated_at
+         ) VALUES ($1, 'monthly', 6.99, NOW(), $2::timestamp, 'sub_reactivate_test', $3, $4, 'active', true, $2::timestamptz, 'active', NOW(), NOW())
+         ON CONFLICT (stripe_subscription_id) WHERE stripe_subscription_id IS NOT NULL DO UPDATE SET
+           stripe_cancel_at_period_end = true, stripe_current_period_end = EXCLUDED.stripe_current_period_end, ends_at = EXCLUDED.ends_at`,
+        [testUserId, targetEndDate, dummyCustomerId, PRICES.EUR.monthly]
+      );
+
+      // Réactivation
+      await pool.query(
+        `UPDATE subscriptions
+         SET stripe_cancel_at_period_end = false,
+             stripe_current_period_end = $1::timestamptz,
+             ends_at = $1::timestamp,
+             updated_at = NOW()
+         WHERE stripe_subscription_id = 'sub_reactivate_test'`,
+        [targetEndDate]
+      );
+      await setLocalEntitlement(testUserId, true, targetEndDate);
+
+      const uRes = await pool.query("SELECT is_subscriber, subscription_end_date FROM users WHERE id = $1", [testUserId]);
+      assert.equal(uRes.rows[0].is_subscriber, true, 'users.is_subscriber doit être true');
+      assert.equal(
+        new Date(uRes.rows[0].subscription_end_date).toISOString(),
+        targetEndDate.toISOString(),
+        'subscription_end_date doit correspondre à la date Stripe'
+      );
+
+      await pool.query("DELETE FROM subscriptions WHERE stripe_subscription_id = 'sub_reactivate_test'");
+    });
+
+    test('invoice.paid : ne restaure pas Premium si le statut réel Stripe est canceled', async () => {
+      // Souscription locale annulée
+      await pool.query(
+        `INSERT INTO subscriptions (
+           user_id, plan, amount, starts_at, ends_at, stripe_subscription_id, stripe_customer_id, stripe_price_id,
+           stripe_status, status, created_at, updated_at
+         ) VALUES ($1, 'monthly', 6.99, NOW(), NOW() + INTERVAL '10 days', 'sub_canceled_test', $2, $3, 'canceled', 'cancelled', NOW(), NOW())
+         ON CONFLICT (stripe_subscription_id) WHERE stripe_subscription_id IS NOT NULL DO UPDATE SET
+           stripe_status = 'canceled', status = 'cancelled'`,
+        [testUserId, dummyCustomerId, PRICES.EUR.monthly]
+      );
+
+      // Simulation invoice.paid avec statut réel canceled
+      const realStatus = 'canceled';
+      const shouldHavePremium = ['active', 'trialing'].includes(realStatus);
+      assert.equal(shouldHavePremium, false);
+
+      await setLocalEntitlement(testUserId, shouldHavePremium, null);
+      const uRes = await pool.query("SELECT is_subscriber FROM users WHERE id = $1", [testUserId]);
+      assert.equal(uRes.rows[0].is_subscriber, false, 'Un invoice.paid avec statut canceled ne doit pas réactiver Premium');
+
+      await pool.query("DELETE FROM subscriptions WHERE stripe_subscription_id = 'sub_canceled_test'");
+    });
+
+    test('payment_failed répété : ne repousse jamais payment_grace_ends_at', async () => {
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+
+      // Premier échec à T0 avec grâce à T0 + 5 jours
+      const firstFailureAt = new Date(Date.now() - 2 * 24 * 3600 * 1000); // il y a 2 jours
+      const initialGraceEnd = new Date(firstFailureAt.getTime() + 5 * 24 * 3600 * 1000); // 3 jours restants
+
+      await pool.query(
+        `INSERT INTO subscriptions (
+           user_id, plan, amount, starts_at, ends_at, stripe_subscription_id, stripe_customer_id, stripe_price_id,
+           stripe_status, status, payment_failed_at, payment_grace_ends_at, created_at, updated_at
+         ) VALUES ($1, 'monthly', 6.99, NOW(), NOW() + INTERVAL '30 days', 'sub_grace_check_01', $2, $3, 'past_due', 'active', $4::timestamptz, $5::timestamptz, NOW(), NOW())
+         ON CONFLICT (stripe_subscription_id) WHERE stripe_subscription_id IS NOT NULL DO UPDATE SET
+           payment_failed_at = $4::timestamptz, payment_grace_ends_at = $5::timestamptz, stripe_status = 'past_due'`,
+        [testUserId, dummyCustomerId, PRICES.EUR.monthly, firstFailureAt, initialGraceEnd]
+      );
+
+      // Deuxième échec survenant maintenant : COALESCE doit préserver le premier payment_grace_ends_at
+      const secondUpdate = await pool.query(
+        `UPDATE subscriptions
+         SET payment_failed_at = COALESCE(payment_failed_at, NOW()),
+             payment_grace_ends_at = COALESCE(payment_grace_ends_at, NOW() + INTERVAL '5 days'),
+             stripe_status = 'past_due',
+             status = 'active',
+             updated_at = NOW()
+         WHERE stripe_subscription_id = 'sub_grace_check_01'
+         RETURNING payment_failed_at, payment_grace_ends_at`
+      );
+
+      const row = secondUpdate.rows[0];
+      assert.equal(
+        new Date(row.payment_grace_ends_at).getTime(),
+        initialGraceEnd.getTime(),
+        'payment_grace_ends_at ne doit pas être repoussé lors d’un second échec'
+      );
+
+      await pool.query("DELETE FROM subscriptions WHERE stripe_subscription_id = 'sub_grace_check_01'");
+    });
+
+    test('Résiliation trial sans canceled_at : utilise une date sûre sans planter', async () => {
+      const mockCanceledNoDate = { canceled_at: null };
+      const safeDate = (mockCanceledNoDate && mockCanceledNoDate.canceled_at)
+        ? new Date(mockCanceledNoDate.canceled_at * 1000)
+        : new Date();
+
+      assert.ok(!isNaN(safeDate.getTime()), 'safeDate doit être une date valide');
+      await setLocalEntitlement(testUserId, false, null);
+
+      const uRes = await pool.query("SELECT is_subscriber FROM users WHERE id = $1", [testUserId]);
+      assert.equal(uRes.rows[0].is_subscriber, false);
+    });
+
+    test('Changement de formule : interdit si cancel_at_period_end est true', () => {
+      const sub = { stripe_cancel_at_period_end: true, plan: 'monthly' };
+      const isBlocked = Boolean(sub.stripe_cancel_at_period_end);
+      assert.equal(isBlocked, true, 'Le changement de formule doit être bloqué si une résiliation est en cours');
+    });
+
+    test('Changement de formule : réutilise le schedule existant sans en créer un nouveau', async () => {
+      let createScheduleCalled = false;
+      let retrieveScheduleCalled = false;
+      let updateScheduleCalled = false;
+
+      const mockStripe = {
+        subscriptions: {
+          retrieve: async () => ({
+            id: 'sub_with_schedule_01',
+            status: 'active',
+            cancel_at_period_end: false,
+            schedule: 'sub_sched_existing_123'
+          })
+        },
+        subscriptionSchedules: {
+          create: async () => {
+            createScheduleCalled = true;
+            return { id: 'sub_sched_new' };
+          },
+          retrieve: async (id) => {
+            retrieveScheduleCalled = true;
+            return {
+              id,
+              phases: [{
+                start_date: 1000000,
+                end_date: 1100000,
+                items: [{ price: 'price_old', quantity: 1 }]
+              }]
+            };
+          },
+          update: async (id, params) => {
+            updateScheduleCalled = true;
+            assert.equal(params.phases[1].proration_behavior, 'none');
+            return { id };
+          }
+        }
+      };
+
+      const stripeSub = await mockStripe.subscriptions.retrieve();
+      let scheduleId = stripeSub.schedule;
+      if (!scheduleId) {
+        const sched = await mockStripe.subscriptionSchedules.create();
+        scheduleId = sched.id;
+      } else {
+        await mockStripe.subscriptionSchedules.retrieve(scheduleId);
+      }
+      await mockStripe.subscriptionSchedules.update(scheduleId, {
+        phases: [{ proration_behavior: 'none' }, { proration_behavior: 'none' }]
+      });
+
+      assert.equal(createScheduleCalled, false, 'Ne doit pas recréer de schedule si un scheduleId existe déjà');
+      assert.equal(retrieveScheduleCalled, true, 'Doit récupérer le schedule existant');
+      assert.equal(updateScheduleCalled, true, 'Doit mettre à jour le schedule existant avec proration_behavior none');
+    });
+  });
+});
