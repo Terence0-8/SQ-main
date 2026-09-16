@@ -18,6 +18,7 @@ const {
   getOrCreateStripeCustomer,
   generateIntegrationIdentifier,
   executeCheckoutTransaction,
+  processWebhookEvent,
   PRICES,
   EU_COUNTRIES,
 } = require('../backend/routes/stripe');
@@ -997,6 +998,403 @@ describe('Stripe Integration & Business Rules', () => {
       assert.equal(createScheduleCalled, false, 'Ne doit pas recréer de schedule si un scheduleId existe déjà');
       assert.equal(retrieveScheduleCalled, true, 'Doit récupérer le schedule existant');
       assert.equal(updateScheduleCalled, true, 'Doit mettre à jour le schedule existant avec proration_behavior none');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 9. FIABILITÉ AVANCÉE DES WEBHOOKS STRIPE
+  // -------------------------------------------------------------------------
+  describe('9. Fiabilité avancée des webhooks Stripe (idempotence transactionnelle, concurrence, ordonnancement)', () => {
+    test('1. Un webhook qui échoue pendant le traitement peut être rejoué sans blocage d’idempotence', async () => {
+      const eventId = 'evt_test_failure_retry_001';
+      const subId = 'sub_test_fail_retry_001';
+
+      await pool.query("DELETE FROM stripe_webhook_events WHERE event_id = $1", [eventId]);
+      await pool.query("DELETE FROM subscriptions WHERE stripe_subscription_id = $1", [subId]);
+
+      let attempt = 0;
+      const mockStripe = {
+        subscriptions: {
+          retrieve: async () => {
+            attempt++;
+            if (attempt === 1) {
+              throw new Error('Simulation panne transitoire / réseau Stripe');
+            }
+            return {
+              id: subId,
+              status: 'active',
+              current_period_start: 1700000000,
+              current_period_end: 1700000000 + 30 * 86400,
+              items: { data: [{ price: { id: PRICES.EUR.monthly, unit_amount: 699, currency: 'eur' } }] },
+              metadata: { solitiquo_user_id: String(testUserId) }
+            };
+          }
+        }
+      };
+
+      const failingEvent = {
+        id: eventId,
+        type: 'checkout.session.completed',
+        created: 1700000000,
+        data: {
+          object: {
+            mode: 'subscription',
+            subscription: subId,
+            client_reference_id: String(testUserId),
+            metadata: { solitiquo_user_id: String(testUserId) }
+          }
+        }
+      };
+
+      // 1ère tentative : doit échouer avec status 500
+      const res1 = await processWebhookEvent(failingEvent, { stripe: mockStripe });
+      assert.equal(res1.status, 500);
+
+      // Vérification : stripe_webhook_events NE doit PAS contenir eventId (rollback complet)
+      const evtCheck = await pool.query("SELECT * FROM stripe_webhook_events WHERE event_id = $1", [eventId]);
+      assert.equal(evtCheck.rows.length, 0, 'L’événement en échec ne doit pas rester dans stripe_webhook_events');
+
+      // 2ème tentative (rejeu du webhook) : doit réussir avec status 200
+      const res2 = await processWebhookEvent(failingEvent, { stripe: mockStripe });
+      assert.equal(res2.status, 200);
+      assert.equal(res2.data.received, true);
+
+      // Vérification : l'événement est maintenant marqué comme traité
+      const evtCheckAfter = await pool.query("SELECT * FROM stripe_webhook_events WHERE event_id = $1", [eventId]);
+      assert.equal(evtCheckAfter.rows.length, 1, 'L’événement rejoué avec succès doit être enregistré');
+
+      await pool.query("DELETE FROM subscriptions WHERE stripe_subscription_id = $1", [subId]);
+      await pool.query("DELETE FROM stripe_webhook_events WHERE event_id = $1", [eventId]);
+    });
+
+    test('2. Un événement ancien après un événement récent est ignoré sans modification de l’entitlement', async () => {
+      const subId = 'sub_test_ordering_check_01';
+      const T_recent = 2000000000;
+      const T_old = 1500000000; // Antérieur à T_recent
+
+      await pool.query("DELETE FROM subscriptions WHERE stripe_subscription_id = $1", [subId]);
+      await pool.query("DELETE FROM stripe_webhook_events WHERE event_id LIKE 'evt_test_order_%'");
+
+      // Étape A: Initialiser la subscription dans un état actif récent (T_recent = 2000000000)
+      const recentEnd = new Date((T_recent + 30 * 86400) * 1000);
+      await pool.query(
+        `INSERT INTO subscriptions (
+           user_id, plan, amount, currency, payment_method, transaction_id,
+           status, starts_at, ends_at, stripe_customer_id, stripe_subscription_id,
+           stripe_price_id, stripe_status, stripe_cancel_at_period_end,
+           stripe_current_period_end, stripe_event_created_at, created_at, updated_at
+         ) VALUES (
+           $1, 'monthly', 6.99, 'EUR', 'stripe', 'tx_order_init',
+           'active', NOW(), $2::timestamp, $3, $4,
+           $5, 'active', false,
+           $2::timestamptz, $6, NOW(), NOW()
+         )`,
+        [testUserId, recentEnd, dummyCustomerId, subId, PRICES.EUR.monthly, T_recent]
+      );
+      await setLocalEntitlement(testUserId, true, recentEnd);
+
+      // Vérifier l'état initial
+      let user = (await pool.query("SELECT is_subscriber, subscription_end_date FROM users WHERE id = $1", [testUserId])).rows[0];
+      assert.equal(user.is_subscriber, true);
+
+      // --- Cas A : customer.subscription.updated ancien (status 'past_due' dans l'event ancien) ---
+      const oldUpdatedEvt = {
+        id: 'evt_test_order_sub_updated_old',
+        type: 'customer.subscription.updated',
+        created: T_old,
+        data: {
+          object: {
+            id: subId,
+            customer: dummyCustomerId,
+            status: 'past_due',
+            cancel_at_period_end: true,
+            current_period_start: T_old,
+            current_period_end: T_old + 30 * 86400,
+            metadata: { solitiquo_user_id: String(testUserId) }
+          }
+        }
+      };
+      const resUpdated = await processWebhookEvent(oldUpdatedEvt);
+      assert.equal(resUpdated.status, 200);
+      assert.equal(resUpdated.data.ignored, 'outdated_event');
+
+      user = (await pool.query("SELECT is_subscriber, subscription_end_date FROM users WHERE id = $1", [testUserId])).rows[0];
+      assert.equal(user.is_subscriber, true, 'is_subscriber ne doit pas être modifié par un customer.subscription.updated ancien');
+      let sub = (await pool.query("SELECT stripe_status, stripe_event_created_at FROM subscriptions WHERE stripe_subscription_id = $1", [subId])).rows[0];
+      assert.equal(sub.stripe_status, 'active', 'stripe_status ne doit pas être rétrogradé en past_due');
+      assert.equal(Number(sub.stripe_event_created_at), T_recent);
+
+      // --- Cas B : customer.subscription.deleted ancien ---
+      const oldDeletedEvt = {
+        id: 'evt_test_order_sub_deleted_old',
+        type: 'customer.subscription.deleted',
+        created: T_old,
+        data: {
+          object: {
+            id: subId,
+            customer: dummyCustomerId,
+            status: 'canceled',
+            metadata: { solitiquo_user_id: String(testUserId) }
+          }
+        }
+      };
+      const resDeleted = await processWebhookEvent(oldDeletedEvt);
+      assert.equal(resDeleted.status, 200);
+      assert.equal(resDeleted.data.ignored, 'outdated_event');
+
+      user = (await pool.query("SELECT is_subscriber FROM users WHERE id = $1", [testUserId])).rows[0];
+      assert.equal(user.is_subscriber, true, 'is_subscriber ne doit pas être révoqué par un customer.subscription.deleted ancien');
+
+      // --- Cas C : invoice.payment_failed ancien ---
+      const oldPaymentFailedEvt = {
+        id: 'evt_test_order_inv_failed_old',
+        type: 'invoice.payment_failed',
+        created: T_old,
+        data: {
+          object: {
+            id: 'in_test_old_failed',
+            subscription: subId,
+            customer: dummyCustomerId
+          }
+        }
+      };
+      const resFailed = await processWebhookEvent(oldPaymentFailedEvt);
+      assert.equal(resFailed.status, 200);
+      assert.equal(resFailed.data.ignored, 'outdated_event');
+
+      sub = (await pool.query("SELECT payment_grace_ends_at, stripe_status FROM subscriptions WHERE stripe_subscription_id = $1", [subId])).rows[0];
+      assert.equal(sub.payment_grace_ends_at, null, 'payment_grace_ends_at ne doit pas être modifié par un invoice.payment_failed ancien');
+      assert.equal(sub.stripe_status, 'active');
+
+      // --- Cas D : invoice.paid ancien (alors que l'abonnement a été résilié à T_recent) ---
+      await pool.query(
+        `UPDATE subscriptions
+         SET stripe_status = 'canceled', status = 'cancelled', stripe_event_created_at = $1
+         WHERE stripe_subscription_id = $2`,
+        [T_recent + 100, subId]
+      );
+      await setLocalEntitlement(testUserId, false, null);
+
+      const oldInvoicePaidEvt = {
+        id: 'evt_test_order_inv_paid_old',
+        type: 'invoice.paid',
+        created: T_old,
+        data: {
+          object: {
+            id: 'in_test_old_paid',
+            subscription: subId,
+            customer: dummyCustomerId
+          }
+        }
+      };
+      const resPaid = await processWebhookEvent(oldInvoicePaidEvt);
+      assert.equal(resPaid.status, 200);
+      assert.equal(resPaid.data.ignored, 'outdated_event');
+
+      user = (await pool.query("SELECT is_subscriber FROM users WHERE id = $1", [testUserId])).rows[0];
+      assert.equal(user.is_subscriber, false, 'users.is_subscriber ne doit pas être réactivé par un invoice.paid ancien');
+
+      await pool.query("DELETE FROM subscriptions WHERE stripe_subscription_id = $1", [subId]);
+      await pool.query("DELETE FROM stripe_webhook_events WHERE event_id LIKE 'evt_test_order_%'");
+    });
+
+    test('3. Deux événements différents concernant la même subscription arrivent simultanément', async () => {
+      const subId = 'sub_test_concurrent_diff_001';
+      const eventId1 = 'evt_test_diff_checkout_001';
+      const eventId2 = 'evt_test_diff_subcreated_002';
+      const nowSec = Math.floor(Date.now() / 1000);
+
+      await pool.query("DELETE FROM subscriptions WHERE stripe_subscription_id = $1", [subId]);
+      await pool.query("DELETE FROM stripe_webhook_events WHERE event_id IN ($1, $2)", [eventId1, eventId2]);
+
+      const mockSubscription = {
+        id: subId,
+        customer: dummyCustomerId,
+        status: 'active',
+        cancel_at_period_end: false,
+        current_period_start: nowSec,
+        current_period_end: nowSec + 30 * 86400,
+        items: {
+          data: [{ price: { id: PRICES.EUR.monthly, unit_amount: 699, currency: 'eur', product: 'prod_test_diff' } }]
+        },
+        metadata: { solitiquo_user_id: String(testUserId) }
+      };
+
+      const mockStripe = {
+        subscriptions: {
+          retrieve: async () => mockSubscription
+        }
+      };
+
+      const evtCheckoutCompleted = {
+        id: eventId1,
+        type: 'checkout.session.completed',
+        created: nowSec,
+        data: {
+          object: {
+            mode: 'subscription',
+            subscription: subId,
+            client_reference_id: String(testUserId),
+            metadata: { solitiquo_user_id: String(testUserId) }
+          }
+        }
+      };
+
+      const evtSubCreated = {
+        id: eventId2,
+        type: 'customer.subscription.created',
+        created: nowSec,
+        data: {
+          object: mockSubscription
+        }
+      };
+
+      // Exécution concurrente simultanée
+      const [res1, res2] = await Promise.all([
+        processWebhookEvent(evtCheckoutCompleted, { stripe: mockStripe }),
+        processWebhookEvent(evtSubCreated, { stripe: mockStripe })
+      ]);
+
+      assert.equal(res1.status, 200);
+      assert.equal(res2.status, 200);
+
+      // La subscription doit exister en DB et être active
+      const subs = await pool.query("SELECT * FROM subscriptions WHERE stripe_subscription_id = $1", [subId]);
+      assert.equal(subs.rows.length, 1, 'Une seule ligne subscription en base');
+      assert.equal(subs.rows[0].stripe_status, 'active');
+      assert.equal(subs.rows[0].user_id, testUserId);
+
+      // L'accès Premium doit être accordé
+      const uRes = await pool.query("SELECT is_subscriber FROM users WHERE id = $1", [testUserId]);
+      assert.equal(uRes.rows[0].is_subscriber, true);
+
+      // Les deux événements doivent être enregistrés comme traités
+      const evts = await pool.query("SELECT * FROM stripe_webhook_events WHERE event_id IN ($1, $2)", [eventId1, eventId2]);
+      assert.equal(evts.rows.length, 2, 'Les deux événements distincts sont enregistrés');
+
+      await pool.query("DELETE FROM subscriptions WHERE stripe_subscription_id = $1", [subId]);
+      await pool.query("DELETE FROM stripe_webhook_events WHERE event_id IN ($1, $2)", [eventId1, eventId2]);
+    });
+
+    test('4. Deux requêtes avec exactement le même event.id arrivent simultanément', async () => {
+      const eventId = 'evt_test_concurrent_same_001';
+      const subId = 'sub_test_same_evt_001';
+      const nowSec = Math.floor(Date.now() / 1000);
+
+      await pool.query("DELETE FROM subscriptions WHERE stripe_subscription_id = $1", [subId]);
+      await pool.query("DELETE FROM stripe_webhook_events WHERE event_id = $1", [eventId]);
+
+      let retrieveCount = 0;
+      const mockStripe = {
+        subscriptions: {
+          retrieve: async () => {
+            retrieveCount++;
+            await new Promise(r => setTimeout(r, 40));
+            return {
+              id: subId,
+              customer: dummyCustomerId,
+              status: 'active',
+              current_period_start: nowSec,
+              current_period_end: nowSec + 30 * 86400,
+              items: { data: [{ price: { id: PRICES.EUR.monthly, unit_amount: 699, currency: 'eur' } }] },
+              metadata: { solitiquo_user_id: String(testUserId) }
+            };
+          }
+        }
+      };
+
+      const sameEvt = {
+        id: eventId,
+        type: 'checkout.session.completed',
+        created: nowSec,
+        data: {
+          object: {
+            mode: 'subscription',
+            subscription: subId,
+            client_reference_id: String(testUserId),
+            metadata: { solitiquo_user_id: String(testUserId) }
+          }
+        }
+      };
+
+      // Deux requêtes lancées strictement en même temps
+      const [res1, res2] = await Promise.all([
+        processWebhookEvent(sameEvt, { stripe: mockStripe }),
+        processWebhookEvent(sameEvt, { stripe: mockStripe })
+      ]);
+
+      assert.equal(res1.status, 200);
+      assert.equal(res2.status, 200);
+
+      // L'un doit être le traitement initial (received: true), l'autre le doublon détecté (duplicate: true)
+      const duplicates = [res1.data.duplicate, res2.data.duplicate];
+      assert.ok(duplicates.includes(true), 'L’un des deux appels doit être identifié comme doublon');
+      assert.ok(duplicates.includes(undefined) || duplicates.includes(false), 'L’un des deux appels doit être le traitement principal');
+
+      // Le traitement Stripe métier n'a été exécuté qu'une seule fois
+      assert.equal(retrieveCount, 1, 'Le traitement métier ne doit être exécuté qu’une seule fois');
+
+      // Exactement un enregistrement dans stripe_webhook_events
+      const evts = await pool.query("SELECT * FROM stripe_webhook_events WHERE event_id = $1", [eventId]);
+      assert.equal(evts.rows.length, 1);
+
+      await pool.query("DELETE FROM subscriptions WHERE stripe_subscription_id = $1", [subId]);
+      await pool.query("DELETE FROM stripe_webhook_events WHERE event_id = $1", [eventId]);
+    });
+
+    test('5. Vérifie qu’un événement obsolète est bien marqué comme traité et ne sera pas retraité', async () => {
+      const subId = 'sub_test_obsolete_handled_001';
+      const eventId = 'evt_test_obsolete_mark_001';
+      const T_recent = 2000000000;
+      const T_old = 1500000000;
+
+      await pool.query("DELETE FROM subscriptions WHERE stripe_subscription_id = $1", [subId]);
+      await pool.query("DELETE FROM stripe_webhook_events WHERE event_id = $1", [eventId]);
+
+      // Subscription existante avec stripe_event_created_at = T_recent
+      await pool.query(
+        `INSERT INTO subscriptions (
+           user_id, plan, amount, currency, payment_method, transaction_id,
+           status, starts_at, ends_at, stripe_customer_id, stripe_subscription_id,
+           stripe_price_id, stripe_status, stripe_event_created_at, created_at, updated_at
+         ) VALUES (
+           $1, 'monthly', 6.99, 'EUR', 'stripe', 'tx_obs_test',
+           'active', NOW(), NOW() + INTERVAL '30 days', $2, $3,
+           $4, 'active', $5, NOW(), NOW()
+         )`,
+        [testUserId, dummyCustomerId, subId, PRICES.EUR.monthly, T_recent]
+      );
+
+      const obsoleteEvent = {
+        id: eventId,
+        type: 'customer.subscription.updated',
+        created: T_old,
+        data: {
+          object: {
+            id: subId,
+            customer: dummyCustomerId,
+            status: 'past_due',
+            metadata: { solitiquo_user_id: String(testUserId) }
+          }
+        }
+      };
+
+      // 1ère réception : identifié comme obsolète et committé dans stripe_webhook_events
+      const res1 = await processWebhookEvent(obsoleteEvent);
+      assert.equal(res1.status, 200);
+      assert.equal(res1.data.ignored, 'outdated_event');
+
+      // Vérifier qu'il est bien enregistré en base dans stripe_webhook_events
+      const dbEvt = await pool.query("SELECT * FROM stripe_webhook_events WHERE event_id = $1", [eventId]);
+      assert.equal(dbEvt.rows.length, 1, 'L’événement obsolète doit être marqué comme traité dans stripe_webhook_events');
+
+      // 2ème réception (rejeu) : doit être détecté immédiatement comme doublon (duplicate: true) sans réévaluation
+      const res2 = await processWebhookEvent(obsoleteEvent);
+      assert.equal(res2.status, 200);
+      assert.equal(res2.data.duplicate, true, 'Le rejeu d’un événement obsolète doit être court-circuité comme doublon');
+
+      await pool.query("DELETE FROM subscriptions WHERE stripe_subscription_id = $1", [subId]);
+      await pool.query("DELETE FROM stripe_webhook_events WHERE event_id = $1", [eventId]);
     });
   });
 });

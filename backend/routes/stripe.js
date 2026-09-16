@@ -83,15 +83,15 @@ function pricing(country) {
   };
 }
 
-async function setLocalEntitlement(userId, active, periodEnd) {
-  await pool.query(
+async function setLocalEntitlement(userId, active, periodEnd, client = pool) {
+  await client.query(
     `UPDATE users SET is_subscriber = $1, subscription_end_date = $2, updated_at = NOW() WHERE id = $3`,
     [Boolean(active), periodEnd || null, userId]
   );
 }
 
-async function syncUserEntitlement(userId) {
-  const subRes = await pool.query(
+async function syncUserEntitlement(userId, client = pool) {
+  const subRes = await client.query(
     `SELECT * FROM subscriptions
      WHERE user_id = $1 AND stripe_subscription_id IS NOT NULL
      ORDER BY id DESC LIMIT 1`,
@@ -99,12 +99,12 @@ async function syncUserEntitlement(userId) {
   );
   const sub = subRes.rows[0];
   if (!sub) {
-    const otherSub = await pool.query(
+    const otherSub = await client.query(
       `SELECT * FROM subscriptions WHERE user_id = $1 AND status = 'active' AND ends_at > NOW() ORDER BY id DESC LIMIT 1`,
       [userId]
     );
     if (!otherSub.rows[0]) {
-      await setLocalEntitlement(userId, false, null);
+      await setLocalEntitlement(userId, false, null, client);
       return { is_subscriber: false, subscription_end_date: null };
     }
     return { is_subscriber: true, subscription_end_date: otherSub.rows[0].ends_at };
@@ -132,7 +132,7 @@ async function syncUserEntitlement(userId) {
     entitled = false;
   }
 
-  await setLocalEntitlement(userId, entitled, endDate);
+  await setLocalEntitlement(userId, entitled, endDate, client);
   return { is_subscriber: entitled, subscription_end_date: endDate };
 }
 
@@ -182,7 +182,7 @@ async function getOrCreateStripeCustomer(stripe, user) {
   return customer.id;
 }
 
-async function upsertSubscription(subscription, session, userId) {
+async function upsertSubscription(subscription, session, userId, client = pool, eventCreated = null) {
   if (!subscription || !subscription.id) return null;
 
   const price = subscription.items?.data?.[0]?.price;
@@ -217,7 +217,7 @@ async function upsertSubscription(subscription, session, userId) {
   let paymentFailedAt = null;
   let paymentGraceEndsAt = null;
   if (status === 'past_due') {
-    const prevSub = await pool.query(
+    const prevSub = await client.query(
       `SELECT payment_failed_at, payment_grace_ends_at FROM subscriptions WHERE stripe_subscription_id = $1`,
       [subscription.id]
     );
@@ -230,20 +230,22 @@ async function upsertSubscription(subscription, session, userId) {
     }
   }
 
+  const parsedEventCreated = eventCreated ? Number(eventCreated) : null;
+
   try {
-    await pool.query(
+    await client.query(
       `INSERT INTO subscriptions (
         user_id, plan, amount, currency, payment_method, transaction_id, status, starts_at, ends_at,
         stripe_customer_id, stripe_subscription_id, stripe_price_id, stripe_product_id, stripe_status,
         stripe_cancel_at_period_end, stripe_current_period_start, stripe_current_period_end,
         stripe_trial_start, stripe_trial_end, stripe_latest_invoice_id, stripe_default_payment_method,
-        payment_failed_at, payment_grace_ends_at, updated_at
+        payment_failed_at, payment_grace_ends_at, stripe_event_created_at, updated_at
       ) VALUES (
         $1, $2, $3, $4, 'stripe', $5, $6, $7, $8,
         $9, $10, $11, $12, $13,
         $14, $15, $16,
         $17, $18, $19, $20,
-        $21, $22, NOW()
+        $21, $22, $23, NOW()
       )
       ON CONFLICT (stripe_subscription_id) WHERE stripe_subscription_id IS NOT NULL DO UPDATE SET
         plan = EXCLUDED.plan,
@@ -264,24 +266,27 @@ async function upsertSubscription(subscription, session, userId) {
         stripe_default_payment_method = EXCLUDED.stripe_default_payment_method,
         payment_failed_at = CASE WHEN EXCLUDED.stripe_status = 'past_due' THEN COALESCE(EXCLUDED.payment_failed_at, subscriptions.payment_failed_at) ELSE NULL END,
         payment_grace_ends_at = CASE WHEN EXCLUDED.stripe_status = 'past_due' THEN COALESCE(EXCLUDED.payment_grace_ends_at, subscriptions.payment_grace_ends_at) ELSE NULL END,
+        stripe_event_created_at = CASE WHEN EXCLUDED.stripe_event_created_at IS NOT NULL THEN GREATEST(COALESCE(subscriptions.stripe_event_created_at, 0), EXCLUDED.stripe_event_created_at) ELSE subscriptions.stripe_event_created_at END,
         updated_at = NOW()`,
       [
         userId, plan, amount, currency, txId, localStatus, start, end,
         customerId, subscription.id, price?.id || null, productId, status,
         cancelAtPeriodEnd, start, end,
         trialStart, trialEnd, latestInvoiceId, defaultPm,
-        paymentFailedAt, paymentGraceEndsAt,
+        paymentFailedAt, paymentGraceEndsAt, parsedEventCreated
       ]
     );
   } catch (err) {
     if (err.code === '23505') {
       console.warn(`⚠️ Conflit abonnement live pour user ${userId}:`, err.message);
-      await pool.query(
+      await client.query(
         `UPDATE subscriptions SET
           stripe_status = $1, status = $2, ends_at = $3,
-          stripe_current_period_end = $3, updated_at = NOW()
-         WHERE stripe_subscription_id = $4`,
-        [status, localStatus, end, subscription.id]
+          stripe_current_period_end = $3,
+          stripe_event_created_at = CASE WHEN $4::bigint IS NOT NULL THEN GREATEST(COALESCE(stripe_event_created_at, 0), $4::bigint) ELSE stripe_event_created_at END,
+          updated_at = NOW()
+         WHERE stripe_subscription_id = $5`,
+        [status, localStatus, end, parsedEventCreated, subscription.id]
       );
     } else {
       throw err;
@@ -289,20 +294,20 @@ async function upsertSubscription(subscription, session, userId) {
   }
 
   if (trialEnd || status === 'trialing') {
-    await pool.query(
+    await client.query(
       'UPDATE users SET subscription_trial_used_at = COALESCE(subscription_trial_used_at, NOW()) WHERE id = $1',
       [userId]
     );
   }
 
-  await syncUserEntitlement(userId);
+  await syncUserEntitlement(userId, client);
 }
 
-async function recordWebhook(eventOrId, type) {
+async function recordWebhook(eventOrId, type, client = pool) {
   const id = typeof eventOrId === 'string' ? eventOrId : eventOrId?.id;
   const eventType = typeof eventOrId === 'string' ? type : eventOrId?.type;
   if (!id) return false;
-  const result = await pool.query(
+  const result = await client.query(
     `INSERT INTO stripe_webhook_events (event_id, event_type)
      VALUES ($1, $2)
      ON CONFLICT (event_id) DO NOTHING
@@ -817,22 +822,62 @@ router.post('/change-plan', verifyCsrf, isAuthenticated, async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
-// POST /api/stripe/webhook — Raw body requis, signature obligatoire
-// ---------------------------------------------------------------------------
-router.post('/webhook', async (req, res) => {
-  const stripe = stripeClient();
-  if (!stripe) return res.status(503).send('Stripe non configuré');
-  let event;
-  try {
-    event = stripe.webhooks.constructEvent(req.body, req.headers['stripe-signature'], process.env.STRIPE_WEBHOOK_SECRET);
-  } catch (err) {
-    console.error('Stripe webhook signature invalide:', err.message);
-    return res.status(400).send('Webhook signature invalide');
-  }
+async function processWebhookEvent(event, { stripe = stripeClient(), client: externalClient = null } = {}) {
+  const isExternalClient = Boolean(externalClient);
+  const client = externalClient || await pool.connect();
 
   try {
-    if (!(await recordWebhook(event))) return res.json({ received: true, duplicate: true });
+    if (!isExternalClient) {
+      await client.query('BEGIN');
+    }
 
+    // 1. Déduplication transactionnelle
+    const isNew = await recordWebhook(event, null, client);
+    if (!isNew) {
+      if (!isExternalClient) await client.query('ROLLBACK');
+      return { status: 200, data: { received: true, duplicate: true } };
+    }
+
+    const eventCreated = event.created ? Number(event.created) : null;
+
+    // 2. Identification de la souscription concernée
+    let subId = null;
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
+      if (session.mode === 'subscription' && session.subscription) {
+        subId = typeof session.subscription === 'string' ? session.subscription : session.subscription?.id;
+      }
+    } else if (event.type && event.type.startsWith('customer.subscription.')) {
+      subId = event.data.object?.id;
+    } else if (event.type && event.type.startsWith('invoice.')) {
+      const invoice = event.data.object;
+      subId = typeof invoice?.subscription === 'string' ? invoice.subscription : invoice?.subscription?.id;
+    }
+
+    // 3. Verrouillage souscription et vérification d'obsolescence (event.created)
+    if (subId) {
+      const existingSubRes = await client.query(
+        `SELECT id, user_id, stripe_status, stripe_event_created_at
+         FROM subscriptions
+         WHERE stripe_subscription_id = $1
+         FOR UPDATE`,
+        [subId]
+      );
+      const existingSub = existingSubRes.rows[0];
+
+      if (existingSub && existingSub.stripe_event_created_at && eventCreated && eventCreated < Number(existingSub.stripe_event_created_at)) {
+        // ÉVÉNEMENT OBSOLÈTE :
+        // ne fais aucune modification métier ;
+        // ne modifie pas users.is_subscriber ;
+        // ne modifie pas subscription_end_date ;
+        // ne modifie pas payment_grace_ends_at ;
+        // mais considère bien l'événement comme traité dans la transaction afin que Stripe n'ait pas besoin de le renvoyer.
+        if (!isExternalClient) await client.query('COMMIT');
+        return { status: 200, data: { received: true, ignored: 'outdated_event' } };
+      }
+    }
+
+    // 4. Traitement métier
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
@@ -842,7 +887,7 @@ router.post('/webhook', async (req, res) => {
           expand: ['items.data.price.product', 'default_payment_method']
         });
         if (userId) {
-          await upsertSubscription(subscription, session, userId);
+          await upsertSubscription(subscription, session, userId, client, eventCreated);
         }
         break;
       }
@@ -855,7 +900,7 @@ router.post('/webhook', async (req, res) => {
         let userId = Number(subscription.metadata?.solitiquo_user_id || 0);
 
         if (!userId && customerId) {
-          const r = await pool.query(
+          const r = await client.query(
             'SELECT user_id FROM subscriptions WHERE stripe_customer_id = $1 ORDER BY id DESC LIMIT 1',
             [customerId]
           );
@@ -870,7 +915,7 @@ router.post('/webhook', async (req, res) => {
         }
 
         if (userId) {
-          await upsertSubscription(subscription, null, userId);
+          await upsertSubscription(subscription, null, userId, client, eventCreated);
         } else {
           console.warn(`⚠️ Impossible de résoudre user_id pour subscription ${subscription.id}`);
         }
@@ -879,16 +924,16 @@ router.post('/webhook', async (req, res) => {
 
       case 'invoice.paid': {
         const invoice = event.data.object;
-        const subId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
-        if (!subId) break;
+        const targetSubId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
+        if (!targetSubId) break;
 
         let subscription = null;
         try {
-          subscription = await stripe.subscriptions.retrieve(subId, {
+          subscription = await stripe.subscriptions.retrieve(targetSubId, {
             expand: ['items.data.price.product', 'default_payment_method']
           });
         } catch (e) {
-          console.warn(`⚠️ Impossible de récupérer la subscription Stripe ${subId} dans invoice.paid:`, e.message);
+          console.warn(`⚠️ Impossible de récupérer la subscription Stripe ${targetSubId} dans invoice.paid:`, e.message);
         }
 
         const realStatus = subscription?.status || 'active';
@@ -896,7 +941,7 @@ router.post('/webhook', async (req, res) => {
           ? new Date(subscription.current_period_end * 1000)
           : null;
 
-        const updateRes = await pool.query(
+        const updateRes = await client.query(
           `UPDATE subscriptions
            SET stripe_status = $1,
                status = CASE WHEN $1 IN ('active', 'trialing') THEN 'active'
@@ -907,25 +952,26 @@ router.post('/webhook', async (req, res) => {
                stripe_current_period_end = COALESCE($2, stripe_current_period_end),
                ends_at = COALESCE($2, ends_at),
                stripe_latest_invoice_id = $3,
+               stripe_event_created_at = CASE WHEN $4::bigint IS NOT NULL THEN GREATEST(COALESCE(stripe_event_created_at, 0), $4::bigint) ELSE stripe_event_created_at END,
                updated_at = NOW()
-           WHERE stripe_subscription_id = $4
+           WHERE stripe_subscription_id = $5
            RETURNING user_id, stripe_current_period_end`,
-          [realStatus, currentPeriodEnd, invoice.id, subId]
+          [realStatus, currentPeriodEnd, invoice.id, eventCreated, targetSubId]
         );
 
         if (updateRes.rows[0]) {
           const { user_id, stripe_current_period_end: subEnd } = updateRes.rows[0];
           const shouldHavePremium = ['active', 'trialing'].includes(realStatus);
-          await setLocalEntitlement(user_id, shouldHavePremium, shouldHavePremium ? subEnd : null);
+          await setLocalEntitlement(user_id, shouldHavePremium, shouldHavePremium ? subEnd : null, client);
         } else if (subscription) {
           let userId = Number(subscription.metadata?.solitiquo_user_id || 0);
           if (!userId && subscription.customer) {
             const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
-            const r = await pool.query('SELECT user_id FROM subscriptions WHERE stripe_customer_id = $1 ORDER BY id DESC LIMIT 1', [customerId]);
+            const r = await client.query('SELECT user_id FROM subscriptions WHERE stripe_customer_id = $1 ORDER BY id DESC LIMIT 1', [customerId]);
             userId = Number(r.rows[0]?.user_id || 0);
           }
           if (userId) {
-            await upsertSubscription(subscription, null, userId);
+            await upsertSubscription(subscription, null, userId, client, eventCreated);
           }
         }
         break;
@@ -934,26 +980,27 @@ router.post('/webhook', async (req, res) => {
       case 'invoice.payment_failed':
       case 'invoice.payment_action_required': {
         const invoice = event.data.object;
-        const subId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
-        if (!subId) break;
+        const targetSubId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
+        if (!targetSubId) break;
 
-        const updateRes = await pool.query(
+        const updateRes = await client.query(
           `UPDATE subscriptions
            SET payment_failed_at = COALESCE(payment_failed_at, NOW()),
                payment_grace_ends_at = COALESCE(payment_grace_ends_at, NOW() + INTERVAL '5 days'),
                stripe_status = 'past_due',
                status = 'active',
                stripe_latest_invoice_id = $1,
+               stripe_event_created_at = CASE WHEN $2::bigint IS NOT NULL THEN GREATEST(COALESCE(stripe_event_created_at, 0), $2::bigint) ELSE stripe_event_created_at END,
                updated_at = NOW()
-           WHERE stripe_subscription_id = $2
+           WHERE stripe_subscription_id = $3
            RETURNING user_id, payment_grace_ends_at`,
-          [invoice.id, subId]
+          [invoice.id, eventCreated, targetSubId]
         );
 
         if (updateRes.rows[0]) {
           const { user_id, payment_grace_ends_at } = updateRes.rows[0];
           const isGraceActive = payment_grace_ends_at && new Date(payment_grace_ends_at) > new Date();
-          await setLocalEntitlement(user_id, isGraceActive, isGraceActive ? payment_grace_ends_at : null);
+          await setLocalEntitlement(user_id, isGraceActive, isGraceActive ? payment_grace_ends_at : null, client);
         }
         break;
       }
@@ -962,10 +1009,42 @@ router.post('/webhook', async (req, res) => {
         break;
     }
 
-    return res.json({ received: true });
+    if (!isExternalClient) {
+      await client.query('COMMIT');
+    }
+    return { status: 200, data: { received: true } };
   } catch (err) {
+    if (!isExternalClient) {
+      await client.query('ROLLBACK');
+    }
     console.error('Stripe webhook processing error:', err);
-    return res.status(500).send('Webhook processing error');
+    return { status: 500, error: 'Webhook processing error', details: err.message };
+  } finally {
+    if (!isExternalClient) {
+      client.release();
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// POST /api/stripe/webhook — Raw body requis, signature obligatoire
+// ---------------------------------------------------------------------------
+router.post('/webhook', async (req, res) => {
+  const stripe = stripeClient();
+  if (!stripe) return res.status(503).send('Stripe non configuré');
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, req.headers['stripe-signature'], process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    console.error('Stripe webhook signature invalide:', err.message);
+    return res.status(400).send('Webhook signature invalide');
+  }
+
+  const result = await processWebhookEvent(event, { stripe });
+  if (result.status === 200) {
+    return res.json(result.data);
+  } else {
+    return res.status(result.status).send(result.error);
   }
 });
 
@@ -981,3 +1060,4 @@ module.exports.recordWebhook = recordWebhook;
 module.exports.getOrCreateStripeCustomer = getOrCreateStripeCustomer;
 module.exports.generateIntegrationIdentifier = generateIntegrationIdentifier;
 module.exports.executeCheckoutTransaction = executeCheckoutTransaction;
+module.exports.processWebhookEvent = processWebhookEvent;
