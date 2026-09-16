@@ -195,7 +195,9 @@ async function upsertSubscription(subscription, session, userId, client = pool, 
   const txId = `STRIPE-${subscription.id}`;
 
   const start = subscription.current_period_start ? new Date(subscription.current_period_start * 1000) : new Date();
-  const end = subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : new Date();
+  const end = (subscription.status === 'trialing' && subscription.trial_end)
+    ? new Date(subscription.trial_end * 1000)
+    : (subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : new Date());
   const trialStart = subscription.trial_start ? new Date(subscription.trial_start * 1000) : null;
   const trialEnd = subscription.trial_end ? new Date(subscription.trial_end * 1000) : null;
   const cancelAtPeriodEnd = Boolean(subscription.cancel_at_period_end);
@@ -599,75 +601,69 @@ router.post('/portal', verifyCsrf, isAuthenticated, async (req, res) => {
 // ---------------------------------------------------------------------------
 // POST /api/stripe/cancel — Authentifié + CSRF
 // ---------------------------------------------------------------------------
+async function executeCancelSubscription({ stripe = stripeClient(), userId, session = null }) {
+  if (!stripe) return { status: 503, data: { success: false, error: 'Stripe non configuré' } };
+
+  const result = await pool.query(
+    `SELECT * FROM subscriptions
+     WHERE user_id = $1 AND stripe_subscription_id IS NOT NULL
+       AND stripe_status IN ('active', 'trialing', 'past_due')
+     ORDER BY id DESC LIMIT 1`,
+    [userId]
+  );
+  const sub = result.rows[0];
+  if (!sub) return { status: 404, data: { success: false, error: 'Aucun abonnement actif.' } };
+
+  const stripeSub = await stripe.subscriptions.retrieve(sub.stripe_subscription_id);
+
+  const updated = await stripe.subscriptions.update(sub.stripe_subscription_id, {
+    cancel_at_period_end: true
+  });
+
+  const endTimestamp = (stripeSub.status === 'trialing' && (updated?.trial_end || stripeSub.trial_end))
+    ? (updated?.trial_end || stripeSub.trial_end)
+    : (updated?.current_period_end || stripeSub.current_period_end);
+
+  const end = endTimestamp
+    ? new Date(endTimestamp * 1000)
+    : (sub.stripe_current_period_end ? new Date(sub.stripe_current_period_end) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
+
+  await pool.query(
+    `UPDATE subscriptions
+     SET stripe_cancel_at_period_end = true,
+         stripe_current_period_end = $1::timestamptz,
+         ends_at = $1::timestamp,
+         updated_at = NOW()
+     WHERE id = $2`,
+    [end, sub.id]
+  );
+  await setLocalEntitlement(userId, true, end);
+  if (session?.user) {
+    session.user.is_subscriber = true;
+    session.user.subscription_end_date = end;
+  }
+
+  return {
+    status: 200,
+    data: {
+      success: true,
+      immediate: false,
+      ends_at: end.toISOString()
+    }
+  };
+}
+
 router.post('/cancel', verifyCsrf, isAuthenticated, async (req, res) => {
   try {
     const stripe = stripeClient();
     if (!stripe) return res.status(503).json({ success: false, error: 'Stripe non configuré' });
 
-    const userId = req.session.user.id;
-    const result = await pool.query(
-      `SELECT * FROM subscriptions
-       WHERE user_id = $1 AND stripe_subscription_id IS NOT NULL
-         AND stripe_status IN ('active', 'trialing', 'past_due')
-       ORDER BY id DESC LIMIT 1`,
-      [userId]
-    );
-    const sub = result.rows[0];
-    if (!sub) return res.status(404).json({ success: false, error: 'Aucun abonnement actif.' });
-
-    const stripeSub = await stripe.subscriptions.retrieve(sub.stripe_subscription_id);
-
-    if (stripeSub.status === 'trialing') {
-      const canceled = await stripe.subscriptions.cancel(sub.stripe_subscription_id);
-      const canceledAt = (canceled && canceled.canceled_at)
-        ? new Date(canceled.canceled_at * 1000)
-        : new Date();
-
-      await pool.query(
-        `UPDATE subscriptions
-         SET stripe_status = 'canceled', status = 'cancelled',
-             stripe_cancel_at_period_end = false, ends_at = $1,
-             stripe_current_period_end = $1, updated_at = NOW()
-         WHERE id = $2`,
-        [canceledAt, sub.id]
-      );
-      await setLocalEntitlement(userId, false, null);
-      if (req.session?.user) req.session.user.is_subscriber = false;
-
-      return res.json({
-        success: true,
-        immediate: true,
-        ends_at: canceledAt.toISOString()
-      });
-    }
-
-    const updated = await stripe.subscriptions.update(sub.stripe_subscription_id, {
-      cancel_at_period_end: true
+    const result = await executeCancelSubscription({
+      stripe,
+      userId: req.session.user.id,
+      session: req.session
     });
-    const end = (updated && updated.current_period_end)
-      ? new Date(updated.current_period_end * 1000)
-      : (sub.stripe_current_period_end ? new Date(sub.stripe_current_period_end) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
-
-    await pool.query(
-      `UPDATE subscriptions
-       SET stripe_cancel_at_period_end = true,
-           stripe_current_period_end = $1,
-           ends_at = $1,
-           updated_at = NOW()
-       WHERE id = $2`,
-      [end, sub.id]
-    );
-    await setLocalEntitlement(userId, true, end);
-    if (req.session?.user) {
-      req.session.user.is_subscriber = true;
-      req.session.user.subscription_end_date = end;
-    }
-
-    res.json({
-      success: true,
-      immediate: false,
-      ends_at: end.toISOString()
-    });
+    return res.status(result.status).json(result.data);
   } catch (err) {
     console.error('Stripe cancellation error:', err);
     res.status(500).json({ success: false, error: 'Impossible de résilier l’abonnement.' });
@@ -704,8 +700,8 @@ router.post('/reactivate', verifyCsrf, isAuthenticated, async (req, res) => {
     await pool.query(
       `UPDATE subscriptions
        SET stripe_cancel_at_period_end = false,
-           stripe_current_period_end = $1,
-           ends_at = $1,
+           stripe_current_period_end = $1::timestamptz,
+           ends_at = $1::timestamp,
            updated_at = NOW()
        WHERE id = $2`,
       [end, sub.id]
@@ -1060,4 +1056,5 @@ module.exports.recordWebhook = recordWebhook;
 module.exports.getOrCreateStripeCustomer = getOrCreateStripeCustomer;
 module.exports.generateIntegrationIdentifier = generateIntegrationIdentifier;
 module.exports.executeCheckoutTransaction = executeCheckoutTransaction;
+module.exports.executeCancelSubscription = executeCancelSubscription;
 module.exports.processWebhookEvent = processWebhookEvent;

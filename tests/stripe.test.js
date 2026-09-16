@@ -18,6 +18,7 @@ const {
   getOrCreateStripeCustomer,
   generateIntegrationIdentifier,
   executeCheckoutTransaction,
+  executeCancelSubscription,
   processWebhookEvent,
   PRICES,
   EU_COUNTRIES,
@@ -307,29 +308,107 @@ describe('Stripe Integration & Business Rules', () => {
   // 5. RÉSILIATION (TRIAL VS PAID) ET RÉACTIVATION
   // -------------------------------------------------------------------------
   describe('5. Résiliation et Réactivation', () => {
-    test('Résiliation pendant le trial : suppression IMMÉDIATE de l’accès Premium', async () => {
-      // Simulation annulation immédiate Stripe
+    test('Résiliation pendant le trial : Premium RESTE ACTIF jusqu’à la fin de la période d’essai (trial_end)', async () => {
       const nowSec = Math.floor(Date.now() / 1000);
-      const mockCanceledTrialSub = {
+      const trialEndSec = nowSec + 25 * 86400; // 25 jours restants de trial
+
+      // Initialiser la subscription en statut trialing actif
+      const mockTrialSub = {
+        id: dummySubId1,
+        customer: dummyCustomerId,
+        status: 'trialing',
+        cancel_at_period_end: false,
+        current_period_start: nowSec,
+        current_period_end: trialEndSec,
+        trial_start: nowSec,
+        trial_end: trialEndSec,
+        items: { data: [{ price: { id: PRICES.EUR.monthly } }] },
+        metadata: { solitiquo_user_id: String(testUserId) }
+      };
+      await upsertSubscription(mockTrialSub, null, testUserId);
+
+      let updateCalled = false;
+      let updateParams = null;
+      let cancelCalled = false;
+
+      const mockStripeCancel = {
+        subscriptions: {
+          retrieve: async () => ({
+            id: dummySubId1,
+            status: 'trialing',
+            trial_end: trialEndSec,
+            current_period_end: trialEndSec
+          }),
+          update: async (id, params) => {
+            updateCalled = true;
+            updateParams = params;
+            return {
+              id,
+              status: 'trialing',
+              cancel_at_period_end: true,
+              trial_end: trialEndSec,
+              current_period_end: trialEndSec
+            };
+          },
+          cancel: async () => {
+            cancelCalled = true;
+          }
+        }
+      };
+
+      const res = await executeCancelSubscription({
+        stripe: mockStripeCancel,
+        userId: testUserId
+      });
+
+      // 1. Stripe update utilisé avec cancel_at_period_end = true
+      assert.equal(updateCalled, true, 'subscriptions.update doit être appelé');
+      assert.equal(updateParams?.cancel_at_period_end, true, 'cancel_at_period_end doit être true');
+
+      // 2. Aucune annulation immédiate effectuée
+      assert.equal(cancelCalled, false, 'subscriptions.cancel() ne doit pas être appelé');
+
+      // 3. Réponse locale
+      assert.equal(res.status, 200);
+      assert.equal(res.data.immediate, false, 'immediate doit être false');
+      assert.equal(res.data.ends_at, new Date(trialEndSec * 1000).toISOString(), 'ends_at doit correspondre à trial_end');
+
+      // 4. Base de données et droits
+      const sRes = await pool.query("SELECT stripe_status, stripe_cancel_at_period_end, ends_at FROM subscriptions WHERE stripe_subscription_id = $1", [dummySubId1]);
+      assert.equal(sRes.rows[0].stripe_status, 'trialing');
+      assert.equal(sRes.rows[0].stripe_cancel_at_period_end, true);
+
+      const uRes = await pool.query("SELECT is_subscriber, subscription_end_date FROM users WHERE id = $1", [testUserId]);
+      assert.equal(uRes.rows[0].is_subscriber, true, 'is_subscriber doit rester true jusqu’à la fin du trial');
+      assert.equal(new Date(uRes.rows[0].subscription_end_date).toISOString(), new Date(trialEndSec * 1000).toISOString());
+    });
+
+    test('Fin de trial résilié : révocation de Premium via customer.subscription.deleted', async () => {
+      const nowSec = Math.floor(Date.now() / 1000);
+
+      // Simulation de l’événement Stripe à trial_end qui clôture définitivement l'abonnement
+      const mockDeletedTrialSub = {
         id: dummySubId1,
         customer: dummyCustomerId,
         status: 'canceled',
         cancel_at_period_end: false,
         canceled_at: nowSec,
-        current_period_start: nowSec,
-        current_period_end: nowSec + 3600,
-        trial_start: nowSec - 3600,
-        trial_end: nowSec + 3600,
-        items: {
-          data: [{ price: { id: PRICES.EUR.monthly } }]
-        },
+        current_period_start: nowSec - 30 * 86400,
+        current_period_end: nowSec,
+        trial_start: nowSec - 30 * 86400,
+        trial_end: nowSec,
+        items: { data: [{ price: { id: PRICES.EUR.monthly } }] },
         metadata: { solitiquo_user_id: String(testUserId) }
       };
 
-      await upsertSubscription(mockCanceledTrialSub, null, testUserId);
+      await upsertSubscription(mockDeletedTrialSub, null, testUserId);
 
       const uRes = await pool.query("SELECT is_subscriber FROM users WHERE id = $1", [testUserId]);
-      assert.equal(uRes.rows[0].is_subscriber, false, 'Premium doit être retiré immédiatement après résiliation du trial');
+      assert.equal(uRes.rows[0].is_subscriber, false, 'Premium doit être révoqué une fois le trial clos');
+
+      const sRes = await pool.query("SELECT stripe_status, status FROM subscriptions WHERE stripe_subscription_id = $1", [dummySubId1]);
+      assert.equal(sRes.rows[0].stripe_status, 'canceled');
+      assert.equal(sRes.rows[0].status, 'cancelled');
     });
 
     test('Abonnement payant avec cancel_at_period_end=true : Premium RESTE ACTIF jusqu’à la fin de période', async () => {
@@ -1395,6 +1474,209 @@ describe('Stripe Integration & Business Rules', () => {
 
       await pool.query("DELETE FROM subscriptions WHERE stripe_subscription_id = $1", [subId]);
       await pool.query("DELETE FROM stripe_webhook_events WHERE event_id = $1", [eventId]);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 10. TESTS DU CYCLE DE VIE COMPLET DU TRIAL
+  // -------------------------------------------------------------------------
+  describe('10. Cycle de vie complet du Trial Premium', () => {
+    const lifecycleSubId = 'sub_test_lifecycle_001';
+
+    test('A — Trial sans annulation : trialing -> active + invoice.paid maintient Premium sans interruption', async () => {
+      const nowSec = Math.floor(Date.now() / 1000);
+      const trialEndSec = nowSec + 30 * 86400;
+      const nextMonthEndSec = trialEndSec + 30 * 86400;
+
+      await pool.query("DELETE FROM subscriptions WHERE stripe_subscription_id = $1", [lifecycleSubId]);
+
+      // 1. Initialisation en période d'essai (trialing)
+      const trialSub = {
+        id: lifecycleSubId,
+        customer: dummyCustomerId,
+        status: 'trialing',
+        cancel_at_period_end: false,
+        current_period_start: nowSec,
+        current_period_end: trialEndSec,
+        trial_start: nowSec,
+        trial_end: trialEndSec,
+        items: { data: [{ price: { id: PRICES.EUR.monthly, unit_amount: 699, currency: 'eur' } }] },
+        metadata: { solitiquo_user_id: String(testUserId) }
+      };
+      await upsertSubscription(trialSub, null, testUserId);
+
+      let uRes = await pool.query("SELECT is_subscriber, subscription_end_date FROM users WHERE id = $1", [testUserId]);
+      assert.equal(uRes.rows[0].is_subscriber, true, 'is_subscriber doit être true pendant l’essai');
+
+      // 2. Fin de l’essai nominale : Stripe active la formule payante
+      const activeSub = {
+        ...trialSub,
+        status: 'active',
+        current_period_start: trialEndSec,
+        current_period_end: nextMonthEndSec,
+        trial_start: null,
+        trial_end: null
+      };
+
+      const mockStripe = {
+        subscriptions: {
+          retrieve: async () => activeSub
+        }
+      };
+
+      // Webhook customer.subscription.updated
+      const updateEvt = {
+        id: 'evt_test_lc_sub_updated_01',
+        type: 'customer.subscription.updated',
+        created: trialEndSec,
+        data: { object: activeSub }
+      };
+      const resUpdate = await processWebhookEvent(updateEvt, { stripe: mockStripe });
+      assert.equal(resUpdate.status, 200);
+
+      // Webhook invoice.paid (premier prélèvement)
+      const invoicePaidEvt = {
+        id: 'evt_test_lc_inv_paid_01',
+        type: 'invoice.paid',
+        created: trialEndSec + 1,
+        data: {
+          object: {
+            id: 'in_test_lc_first_paid',
+            subscription: lifecycleSubId,
+            customer: dummyCustomerId
+          }
+        }
+      };
+      const resInvoice = await processWebhookEvent(invoicePaidEvt, { stripe: mockStripe });
+      assert.equal(resInvoice.status, 200);
+
+      // 3. Vérification de la continuité du statut Premium
+      uRes = await pool.query("SELECT is_subscriber, subscription_end_date FROM users WHERE id = $1", [testUserId]);
+      assert.equal(uRes.rows[0].is_subscriber, true, 'is_subscriber doit rester true sans interruption');
+
+      const sRes = await pool.query("SELECT stripe_status, status FROM subscriptions WHERE stripe_subscription_id = $1", [lifecycleSubId]);
+      assert.equal(sRes.rows[0].stripe_status, 'active');
+      assert.equal(sRes.rows[0].status, 'active');
+
+      await pool.query("DELETE FROM subscriptions WHERE stripe_subscription_id = $1", [lifecycleSubId]);
+      await pool.query("DELETE FROM stripe_webhook_events WHERE event_id LIKE 'evt_test_lc_%'");
+    });
+
+    test('B — Trial arrivant à échéance avec échec de paiement : trialing -> invoice.payment_failed active les 5 jours de grâce', async () => {
+      const nowSec = Math.floor(Date.now() / 1000);
+      const trialEndSec = nowSec; // Arrivé à échéance maintenant
+
+      await pool.query("DELETE FROM subscriptions WHERE stripe_subscription_id = $1", [lifecycleSubId]);
+
+      // 1. Initialisation de la souscription arrivant à la fin du trial
+      const expiringTrialSub = {
+        id: lifecycleSubId,
+        customer: dummyCustomerId,
+        status: 'trialing',
+        cancel_at_period_end: false,
+        current_period_start: nowSec - 30 * 86400,
+        current_period_end: trialEndSec,
+        trial_start: nowSec - 30 * 86400,
+        trial_end: trialEndSec,
+        items: { data: [{ price: { id: PRICES.EUR.monthly, unit_amount: 699, currency: 'eur' } }] },
+        metadata: { solitiquo_user_id: String(testUserId) }
+      };
+      await upsertSubscription(expiringTrialSub, null, testUserId);
+
+      // 2. Échec du premier prélèvement à l'échéance : webhook invoice.payment_failed
+      const failEvt = {
+        id: 'evt_test_lc_inv_failed_01',
+        type: 'invoice.payment_failed',
+        created: trialEndSec + 2,
+        data: {
+          object: {
+            id: 'in_test_lc_failed_01',
+            subscription: lifecycleSubId,
+            customer: dummyCustomerId
+          }
+        }
+      };
+
+      const resFail = await processWebhookEvent(failEvt);
+      assert.equal(resFail.status, 200);
+
+      // 3. Vérification de la période de grâce de 5 jours
+      const sRes = await pool.query(
+        "SELECT stripe_status, status, payment_failed_at, payment_grace_ends_at FROM subscriptions WHERE stripe_subscription_id = $1",
+        [lifecycleSubId]
+      );
+      assert.equal(sRes.rows[0].stripe_status, 'past_due');
+      assert.equal(sRes.rows[0].status, 'active');
+      assert.ok(sRes.rows[0].payment_grace_ends_at !== null);
+
+      const graceEndsAt = new Date(sRes.rows[0].payment_grace_ends_at);
+      const remainingHours = (graceEndsAt.getTime() - Date.now()) / (3600 * 1000);
+      assert.ok(remainingHours > 100 && remainingHours <= 121, 'La grâce doit être configurée pour 5 jours (~120h)');
+
+      // L’utilisateur conserve temporairement son accès Premium pendant ces 5 jours
+      const uRes = await pool.query("SELECT is_subscriber FROM users WHERE id = $1", [testUserId]);
+      assert.equal(uRes.rows[0].is_subscriber, true, 'L’accès Premium doit être maintenu pendant la période de grâce');
+
+      await pool.query("DELETE FROM subscriptions WHERE stripe_subscription_id = $1", [lifecycleSubId]);
+      await pool.query("DELETE FROM stripe_webhook_events WHERE event_id LIKE 'evt_test_lc_%'");
+    });
+
+    test('C — Trial annulé puis nouveau checkout mensuel : aucune période d’essai accordée (trial_applied = false)', async () => {
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+
+      // 1. Marquer le trial comme déjà consommé dans le passé
+      await pool.query(
+        "UPDATE users SET is_subscriber = false, subscription_trial_used_at = NOW() - INTERVAL '45 days' WHERE id = $1",
+        [testUserId]
+      );
+
+      let passedSessionConfig = null;
+      const mockStripeRepeat = {
+        customers: {
+          search: async () => ({ data: [{ id: dummyCustomerId, deleted: false }] })
+        },
+        checkout: {
+          sessions: {
+            create: async (config) => {
+              passedSessionConfig = config;
+              return { id: 'cs_test_repeat_no_trial', url: 'https://checkout.stripe.com/pay' };
+            }
+          }
+        }
+      };
+
+      // 2. Nouvelle tentative de checkout mensuel
+      const res = await executeCheckoutTransaction({
+        stripe: mockStripeRepeat,
+        userId: testUserId,
+        userEmail: 'stripe_test_user@example.com',
+        plan: 'monthly',
+        country: 'FR',
+        p: pricing('FR')
+      });
+
+      // 3. Vérifications strictes
+      assert.equal(res.status, 200);
+      assert.equal(res.data.trial_applied, false, 'trial_applied doit être false');
+
+      // Aucune propriété trial_period_days dans la session Stripe
+      assert.ok(passedSessionConfig, 'La configuration de session doit être passée à Stripe');
+      assert.equal(
+        passedSessionConfig.subscription_data?.trial_period_days,
+        undefined,
+        'Aucun trial_period_days ne doit être envoyé dans la nouvelle session Stripe'
+      );
+      assert.equal(
+        passedSessionConfig.metadata?.solitiquo_trial_eligible,
+        'false',
+        'metadata.solitiquo_trial_eligible doit être false'
+      );
+
+      // subscription_trial_used_at reste renseigné
+      const uRes = await pool.query("SELECT subscription_trial_used_at FROM users WHERE id = $1", [testUserId]);
+      assert.ok(uRes.rows[0].subscription_trial_used_at !== null, 'subscription_trial_used_at doit rester non nul');
+
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
     });
   });
 });
