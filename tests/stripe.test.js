@@ -1679,4 +1679,253 @@ describe('Stripe Integration & Business Rules', () => {
       await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
     });
   });
+
+  describe('11. Précision et robustesse des dates Stripe (API 2026-01-28.clover / flexible billing)', () => {
+    const datesSubId = 'sub_test_dates_robustness';
+
+    test('TEST A — ACTIVE mensuel : current_period_end racine undefined, item.current_period_end J+30', async () => {
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+      const nowSec = Math.floor(Date.now() / 1000);
+      const targetEndSec = nowSec + 30 * 86400;
+
+      const activeMonthlySub = {
+        id: datesSubId,
+        customer: dummyCustomerId,
+        status: 'active',
+        cancel_at_period_end: false,
+        items: {
+          data: [{
+            current_period_start: nowSec,
+            current_period_end: targetEndSec,
+            price: { id: PRICES.EUR.monthly, unit_amount: 699, currency: 'eur', recurring: { interval: 'month' } }
+          }]
+        },
+        metadata: { solitiquo_user_id: String(testUserId) }
+      };
+
+      await upsertSubscription(activeMonthlySub, null, testUserId);
+
+      const sRes = await pool.query(
+        "SELECT stripe_current_period_end, ends_at FROM subscriptions WHERE stripe_subscription_id = $1",
+        [datesSubId]
+      );
+      assert.equal(new Date(sRes.rows[0].stripe_current_period_end).toISOString(), new Date(targetEndSec * 1000).toISOString());
+      assert.equal(new Date(sRes.rows[0].ends_at).toISOString(), new Date(targetEndSec * 1000).toISOString());
+
+      const uRes = await pool.query("SELECT is_subscriber, subscription_end_date FROM users WHERE id = $1", [testUserId]);
+      assert.equal(uRes.rows[0].is_subscriber, true);
+      assert.equal(new Date(uRes.rows[0].subscription_end_date).toISOString(), new Date(targetEndSec * 1000).toISOString());
+    });
+
+    test('TEST B — ACTIVE annuel : items.data[0].current_period_end = J+365', async () => {
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+      const nowSec = Math.floor(Date.now() / 1000);
+      const targetEndSec = nowSec + 365 * 86400;
+
+      const activeYearlySub = {
+        id: datesSubId,
+        customer: dummyCustomerId,
+        status: 'active',
+        cancel_at_period_end: false,
+        items: {
+          data: [{
+            current_period_start: nowSec,
+            current_period_end: targetEndSec,
+            price: { id: PRICES.EUR.yearly, unit_amount: 6990, currency: 'eur', recurring: { interval: 'year' } }
+          }]
+        },
+        metadata: { solitiquo_user_id: String(testUserId) }
+      };
+
+      await upsertSubscription(activeYearlySub, null, testUserId);
+
+      const sRes = await pool.query(
+        "SELECT stripe_current_period_end, ends_at FROM subscriptions WHERE stripe_subscription_id = $1",
+        [datesSubId]
+      );
+      assert.equal(new Date(sRes.rows[0].stripe_current_period_end).toISOString(), new Date(targetEndSec * 1000).toISOString());
+      assert.equal(new Date(sRes.rows[0].ends_at).toISOString(), new Date(targetEndSec * 1000).toISOString());
+    });
+
+    test('TEST C — Annulation annuelle : cancel_at = J+365, Premium reste actif jusqu’à J+365', async () => {
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+      const nowSec = Math.floor(Date.now() / 1000);
+      const targetEndSec = nowSec + 365 * 86400;
+
+      await pool.query(
+        `INSERT INTO subscriptions (
+           user_id, plan, amount, currency, payment_method, transaction_id, status, starts_at, ends_at,
+           stripe_customer_id, stripe_subscription_id, stripe_price_id, stripe_status, stripe_cancel_at_period_end,
+           stripe_current_period_end, created_at, updated_at
+         ) VALUES (
+           $1, 'yearly', 69.90, 'EUR', 'stripe', 'tx_dates_yearly', 'active', NOW(), $2::timestamptz,
+           $3, $4, $5, 'active', false,
+           $2::timestamptz, NOW(), NOW()
+         )`,
+        [testUserId, new Date(targetEndSec * 1000), dummyCustomerId, datesSubId, PRICES.EUR.yearly]
+      );
+      await setLocalEntitlement(testUserId, true, new Date(targetEndSec * 1000));
+
+      const mockStripeCancel = {
+        subscriptions: {
+          retrieve: async () => ({
+            id: datesSubId,
+            status: 'active',
+            cancel_at_period_end: false,
+            items: { data: [{ current_period_end: targetEndSec }] }
+          }),
+          update: async () => ({
+            id: datesSubId,
+            status: 'active',
+            cancel_at_period_end: true,
+            cancel_at: targetEndSec,
+            items: { data: [{ current_period_end: targetEndSec }] }
+          })
+        }
+      };
+
+      const cancelRes = await executeCancelSubscription({
+        stripe: mockStripeCancel,
+        userId: testUserId
+      });
+      assert.equal(cancelRes.status, 200);
+
+      const sRes = await pool.query(
+        "SELECT stripe_status, stripe_cancel_at_period_end, stripe_current_period_end, ends_at FROM subscriptions WHERE stripe_subscription_id = $1",
+        [datesSubId]
+      );
+      assert.equal(sRes.rows[0].stripe_cancel_at_period_end, true);
+      assert.equal(new Date(sRes.rows[0].stripe_current_period_end).toISOString(), new Date(targetEndSec * 1000).toISOString());
+      assert.equal(new Date(sRes.rows[0].ends_at).toISOString(), new Date(targetEndSec * 1000).toISOString());
+
+      const uRes = await pool.query("SELECT is_subscriber, subscription_end_date FROM users WHERE id = $1", [testUserId]);
+      assert.equal(uRes.rows[0].is_subscriber, true, 'Premium doit rester actif jusqu’à la fin de la période annuelle');
+      assert.equal(new Date(uRes.rows[0].subscription_end_date).toISOString(), new Date(targetEndSec * 1000).toISOString());
+    });
+
+    test('TEST D — CANCELED : ended_at = date connue, non écrasé par NOW()', async () => {
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+      const nowSec = Math.floor(Date.now() / 1000);
+      const endedAtSec = nowSec - 100;
+
+      const canceledSub = {
+        id: datesSubId,
+        customer: dummyCustomerId,
+        status: 'canceled',
+        cancel_at_period_end: true,
+        ended_at: endedAtSec,
+        items: { data: [{ price: { id: PRICES.EUR.monthly, unit_amount: 699, currency: 'eur' } }] },
+        metadata: { solitiquo_user_id: String(testUserId) }
+      };
+
+      await upsertSubscription(canceledSub, null, testUserId);
+
+      const sRes = await pool.query(
+        "SELECT stripe_status, status, stripe_current_period_end, ends_at FROM subscriptions WHERE stripe_subscription_id = $1",
+        [datesSubId]
+      );
+      assert.equal(sRes.rows[0].stripe_status, 'canceled');
+      assert.equal(sRes.rows[0].status, 'cancelled');
+      assert.equal(new Date(sRes.rows[0].stripe_current_period_end).toISOString(), new Date(endedAtSec * 1000).toISOString());
+      assert.equal(new Date(sRes.rows[0].ends_at).toISOString(), new Date(endedAtSec * 1000).toISOString());
+
+      const uRes = await pool.query("SELECT is_subscriber, subscription_end_date FROM users WHERE id = $1", [testUserId]);
+      assert.equal(uRes.rows[0].is_subscriber, false);
+      assert.equal(new Date(uRes.rows[0].subscription_end_date).toISOString(), new Date(endedAtSec * 1000).toISOString());
+    });
+
+    test('TEST E — invoice.paid : current_period_end racine undefined, items.data[0].current_period_end = nouvelle date', async () => {
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+      await pool.query("DELETE FROM stripe_webhook_events WHERE event_id LIKE 'evt_test_inv_paid_%'");
+      const nowSec = Math.floor(Date.now() / 1000);
+      const renewedEndSec = nowSec + 30 * 86400;
+
+      await pool.query(
+        `INSERT INTO subscriptions (
+           user_id, plan, amount, currency, payment_method, transaction_id, status, starts_at, ends_at,
+           stripe_customer_id, stripe_subscription_id, stripe_price_id, stripe_status, stripe_cancel_at_period_end,
+           stripe_current_period_end, created_at, updated_at
+         ) VALUES (
+           $1, 'monthly', 6.99, 'EUR', 'stripe', 'tx_dates_inv', 'active', NOW(), NOW(),
+           $2, $3, $4, 'active', false,
+           NOW(), NOW(), NOW()
+         )`,
+        [testUserId, dummyCustomerId, datesSubId, PRICES.EUR.monthly]
+      );
+
+      const mockStripeInvoice = {
+        subscriptions: {
+          retrieve: async () => ({
+            id: datesSubId,
+            status: 'active',
+            items: {
+              data: [{ current_period_end: renewedEndSec }]
+            }
+          })
+        }
+      };
+
+      const invoiceEvt = {
+        id: 'evt_test_inv_paid_new_date',
+        type: 'invoice.paid',
+        created: nowSec,
+        data: {
+          object: {
+            id: 'in_test_renewed_01',
+            subscription: datesSubId,
+            customer: dummyCustomerId
+          }
+        }
+      };
+
+      const res = await processWebhookEvent(invoiceEvt, { stripe: mockStripeInvoice });
+      assert.equal(res.status, 200);
+
+      const sRes = await pool.query(
+        "SELECT stripe_current_period_end, ends_at FROM subscriptions WHERE stripe_subscription_id = $1",
+        [datesSubId]
+      );
+      assert.equal(new Date(sRes.rows[0].stripe_current_period_end).toISOString(), new Date(renewedEndSec * 1000).toISOString());
+      assert.equal(new Date(sRes.rows[0].ends_at).toISOString(), new Date(renewedEndSec * 1000).toISOString());
+
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+      await pool.query("DELETE FROM stripe_webhook_events WHERE event_id = 'evt_test_inv_paid_new_date'");
+    });
+
+    test('TEST F — Trial annulé : trial_end conservé, Premium jusqu’à trial_end, cancel_at_period_end=true', async () => {
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+      const nowSec = Math.floor(Date.now() / 1000);
+      const trialEndSec = nowSec + 30 * 86400;
+
+      const trialCanceledSub = {
+        id: datesSubId,
+        customer: dummyCustomerId,
+        status: 'trialing',
+        cancel_at_period_end: true,
+        cancel_at: trialEndSec,
+        canceled_at: nowSec,
+        trial_start: nowSec,
+        trial_end: trialEndSec,
+        items: { data: [{ current_period_end: trialEndSec, price: { id: PRICES.EUR.monthly, unit_amount: 699, currency: 'eur' } }] },
+        metadata: { solitiquo_user_id: String(testUserId) }
+      };
+
+      await upsertSubscription(trialCanceledSub, null, testUserId);
+
+      const sRes = await pool.query(
+        "SELECT stripe_status, stripe_cancel_at_period_end, stripe_trial_end, stripe_current_period_end, ends_at FROM subscriptions WHERE stripe_subscription_id = $1",
+        [datesSubId]
+      );
+      assert.equal(sRes.rows[0].stripe_status, 'trialing');
+      assert.equal(sRes.rows[0].stripe_cancel_at_period_end, true);
+      assert.equal(new Date(sRes.rows[0].stripe_current_period_end).toISOString(), new Date(trialEndSec * 1000).toISOString());
+      assert.equal(new Date(sRes.rows[0].ends_at).toISOString(), new Date(trialEndSec * 1000).toISOString());
+
+      const uRes = await pool.query("SELECT is_subscriber, subscription_end_date FROM users WHERE id = $1", [testUserId]);
+      assert.equal(uRes.rows[0].is_subscriber, true, 'L’utilisateur doit rester Premium pendant le trial annulé');
+      assert.equal(new Date(uRes.rows[0].subscription_end_date).toISOString(), new Date(trialEndSec * 1000).toISOString());
+
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+    });
+  });
 });

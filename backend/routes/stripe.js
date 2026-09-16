@@ -194,10 +194,30 @@ async function upsertSubscription(subscription, session, userId, client = pool, 
   const currency = (price?.currency || 'usd').toUpperCase();
   const txId = `STRIPE-${subscription.id}`;
 
-  const start = subscription.current_period_start ? new Date(subscription.current_period_start * 1000) : new Date();
-  const end = (subscription.status === 'trialing' && subscription.trial_end)
-    ? new Date(subscription.trial_end * 1000)
-    : (subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : new Date());
+  const rawStartSec = subscription.items?.data?.[0]?.current_period_start ||
+                      subscription.current_period_start ||
+                      subscription.start_date ||
+                      null;
+  const start = rawStartSec ? new Date(rawStartSec * 1000) : new Date();
+
+  let rawEndSec = null;
+  if (status === 'trialing') {
+    rawEndSec = subscription.trial_end ||
+                subscription.items?.data?.[0]?.current_period_end ||
+                subscription.current_period_end ||
+                null;
+  } else if (status === 'canceled') {
+    rawEndSec = subscription.ended_at ||
+                subscription.trial_end ||
+                subscription.items?.data?.[0]?.current_period_end ||
+                subscription.current_period_end ||
+                null;
+  } else {
+    rawEndSec = subscription.items?.data?.[0]?.current_period_end ||
+                subscription.current_period_end ||
+                null;
+  }
+  const end = rawEndSec ? new Date(rawEndSec * 1000) : new Date();
   const trialStart = subscription.trial_start ? new Date(subscription.trial_start * 1000) : null;
   const trialEnd = subscription.trial_end ? new Date(subscription.trial_end * 1000) : null;
   const cancelAtPeriodEnd = Boolean(subscription.cancel_at_period_end);
@@ -620,9 +640,21 @@ async function executeCancelSubscription({ stripe = stripeClient(), userId, sess
     cancel_at_period_end: true
   });
 
-  const endTimestamp = (stripeSub.status === 'trialing' && (updated?.trial_end || stripeSub.trial_end))
-    ? (updated?.trial_end || stripeSub.trial_end)
-    : (updated?.current_period_end || stripeSub.current_period_end);
+  let endTimestamp = null;
+  if (stripeSub.status === 'trialing') {
+    endTimestamp = updated?.trial_end ||
+                   updated?.cancel_at ||
+                   updated?.items?.data?.[0]?.current_period_end ||
+                   stripeSub.trial_end ||
+                   stripeSub.cancel_at ||
+                   stripeSub.items?.data?.[0]?.current_period_end;
+  } else {
+    endTimestamp = updated?.cancel_at ||
+                   updated?.items?.data?.[0]?.current_period_end ||
+                   updated?.current_period_end ||
+                   stripeSub.items?.data?.[0]?.current_period_end ||
+                   stripeSub.current_period_end;
+  }
 
   const end = endTimestamp
     ? new Date(endTimestamp * 1000)
@@ -693,8 +725,19 @@ router.post('/reactivate', verifyCsrf, isAuthenticated, async (req, res) => {
     const updated = await stripe.subscriptions.update(sub.stripe_subscription_id, {
       cancel_at_period_end: false
     });
-    const end = (updated && updated.current_period_end)
-      ? new Date(updated.current_period_end * 1000)
+    let endTimestamp = null;
+    if (updated?.status === 'trialing') {
+      endTimestamp = updated.trial_end ||
+                     updated.items?.data?.[0]?.current_period_end ||
+                     updated.current_period_end ||
+                     null;
+    } else {
+      endTimestamp = updated?.items?.data?.[0]?.current_period_end ||
+                     updated?.current_period_end ||
+                     null;
+    }
+    const end = endTimestamp
+      ? new Date(endTimestamp * 1000)
       : (sub.stripe_current_period_end ? new Date(sub.stripe_current_period_end) : new Date(Date.now() + 30 * 86400000));
 
     await pool.query(
@@ -933,8 +976,12 @@ async function processWebhookEvent(event, { stripe = stripeClient(), client: ext
         }
 
         const realStatus = subscription?.status || 'active';
-        const currentPeriodEnd = (subscription && subscription.current_period_end)
-          ? new Date(subscription.current_period_end * 1000)
+        const rawPeriodEnd = subscription?.items?.data?.[0]?.current_period_end ||
+                             invoice.lines?.data?.[0]?.period?.end ||
+                             subscription?.current_period_end ||
+                             null;
+        const currentPeriodEnd = rawPeriodEnd
+          ? new Date(rawPeriodEnd * 1000)
           : null;
 
         const updateRes = await client.query(
