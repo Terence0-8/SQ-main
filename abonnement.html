@@ -187,10 +187,12 @@
       <button id="btn-sub-monthly" class="btn-sub primary" data-i18n="sub_btn_subscribe">Je m'abonne</button>
     </div>
 
-    <!-- Carte annuelle : visible uniquement pour les utilisateurs XAF (Cameroun) -->
+    <!-- Carte annuelle : visible pour Stripe (EUR, GBP, CAD, USD) et XAF/XOF -->
     <div class="price-card" id="card-yearly" style="display:none;">
       <div class="plan-name" data-i18n="sub_plan_soutien">Soutien</div>
-      <div class="plan-price">30.000 <span style="font-size:1.5rem;">FCFA</span></div>
+      <div class="plan-price" id="yearly-price-display">
+        <span class="price-loader" style="font-size:1.2rem;opacity:0.5;">…</span>
+      </div>
       <span class="plan-period" data-i18n="sub_per_year">Par an (2 mois offerts)</span>
       <ul class="plan-features">
         <li><span class="check-icon">✓</span> <span data-i18n="sub_feature_all_engaged">Tous les avantages "Engagé"</span></li>
@@ -289,10 +291,28 @@
         }
       }
 
-      // Afficher la carte annuelle uniquement pour les utilisateurs XAF (Cameroun)
+      // Afficher et formater la carte annuelle :
+      // - Stripe international (EUR, GBP, CAD, USD) : tarif annuel dynamique
+      // - Cameroun (XAF) : offre annuelle historique Mobile Money (30.000 FCFA)
+      // - Zone XOF : aucune offre annuelle
       const cardYearly = document.getElementById('card-yearly');
-      if (cardYearly && geoPricing?.currency === 'XAF') {
-        cardYearly.style.display = '';
+      const yearlyPriceDisplay = document.getElementById('yearly-price-display');
+      if (cardYearly && geoPricing?.success) {
+        if (geoPricing.currency === 'XAF') {
+          if (yearlyPriceDisplay) yearlyPriceDisplay.innerHTML = `30.000 <span style="font-size:1.5rem;">FCFA</span>`;
+          cardYearly.style.display = '';
+        } else if (geoPricing.provider === 'stripe') {
+          const yearlyAmount = geoPricing.yearly || geoPricing.yearly_amount;
+          if (yearlyAmount) {
+            const formattedYearly = new Intl.NumberFormat('fr-FR', {
+              style: 'currency',
+              currency: geoPricing.currency,
+              minimumFractionDigits: 2
+            }).format(yearlyAmount);
+            if (yearlyPriceDisplay) yearlyPriceDisplay.innerHTML = `${formattedYearly} <span style="font-size:1rem;opacity:0.7;display:block;margin-top:4px;">par an</span>`;
+            cardYearly.style.display = '';
+          }
+        }
       }
 
       // 3. Logique d'abonnement

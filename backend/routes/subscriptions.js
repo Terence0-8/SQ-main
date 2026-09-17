@@ -19,10 +19,10 @@ const EU_COUNTRIES = [
 const CURRENCY_PRICING = {
   'XOF': { symbol: 'FCFA', amount: 3000,  stripe_cents: null, provider: 'flutterwave' },
   'XAF': { symbol: 'FCFA', amount: 3000,  stripe_cents: null, provider: 'flutterwave' },
-  'EUR': { symbol: '€',    amount: 6.99,  stripe_cents: 699,  provider: 'stripe'      },
-  'GBP': { symbol: '£',    amount: 6.99,  stripe_cents: 699,  provider: 'stripe'      },
-  'USD': { symbol: '$',    amount: 7.99,  stripe_cents: 799,  provider: 'stripe'      },
-  'CAD': { symbol: 'CA$',  amount: 9.99,  stripe_cents: 999,  provider: 'stripe'      },
+  'EUR': { symbol: '€',    amount: 6.99,  yearly: 69.90, yearly_amount: 69.90, stripe_cents: 699,  provider: 'stripe'      },
+  'GBP': { symbol: '£',    amount: 6.99,  yearly: 69.90, yearly_amount: 69.90, stripe_cents: 699,  provider: 'stripe'      },
+  'USD': { symbol: '$',    amount: 7.99,  yearly: 79.90, yearly_amount: 79.90, stripe_cents: 799,  provider: 'stripe'      },
+  'CAD': { symbol: 'CA$',  amount: 9.99,  yearly: 99.90, yearly_amount: 99.90, stripe_cents: 999,  provider: 'stripe'      },
 };
 
 function getPricingForCountry(countryCode) {

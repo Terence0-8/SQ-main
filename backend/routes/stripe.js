@@ -366,7 +366,9 @@ async function executeCheckoutTransaction({
   plan,
   country,
   p,
-  idempotencyKey
+  idempotencyKey,
+  testCountry,
+  locale
 }) {
   const client = await pool.connect();
   try {
@@ -482,8 +484,11 @@ async function executeCheckoutTransaction({
       mode: 'subscription',
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
+      locale: (typeof locale === 'string' && locale.trim().toLowerCase() === 'en') ? 'en' : 'fr',
       success_url: `${BASE_URL}/paiement-success.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${BASE_URL}/paiement.html?plan=${plan}&cancelled=true`,
+      cancel_url: (process.env.NODE_ENV !== 'production' && testCountry)
+        ? `${BASE_URL}/paiement.html?plan=${plan}&cancelled=true&testCountry=${encodeURIComponent(testCountry)}`
+        : `${BASE_URL}/paiement.html?plan=${plan}&cancelled=true`,
       client_reference_id: String(userId),
       metadata,
       subscription_data: {
@@ -573,6 +578,16 @@ router.post('/checkout', verifyCsrf, isAuthenticated, async (req, res) => {
     }
   }
 
+  const rawTestCountry = (process.env.NODE_ENV !== 'production')
+    ? (req.query?.testCountry || req.headers?.['x-test-country'] || null)
+    : null;
+  const testCountry = (rawTestCountry && /^[A-Z]{2}$/i.test(String(rawTestCountry).trim()))
+    ? String(rawTestCountry).trim().toUpperCase()
+    : null;
+
+  const rawLocale = req.body.locale;
+  const validatedLocale = (typeof rawLocale === 'string' && rawLocale.trim().toLowerCase() === 'en') ? 'en' : 'fr';
+
   const result = await executeCheckoutTransaction({
     stripe,
     userId,
@@ -580,7 +595,9 @@ router.post('/checkout', verifyCsrf, isAuthenticated, async (req, res) => {
     plan,
     country,
     p,
-    idempotencyKey
+    idempotencyKey,
+    testCountry,
+    locale: validatedLocale
   });
 
   if (result.status === 200 && req.session?.checkout_attempt) {

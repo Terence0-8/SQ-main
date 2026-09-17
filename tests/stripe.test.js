@@ -3,7 +3,7 @@
 process.env.NODE_ENV = 'test';
 process.env.SESSION_SECRET = 'test-secret-only';
 
-const { describe, test, before, after } = require('node:test');
+const { describe, test, before, after, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const request = require('supertest');
 const app = require('../server');
@@ -1926,6 +1926,155 @@ describe('Stripe Integration & Business Rules', () => {
       assert.equal(new Date(uRes.rows[0].subscription_end_date).toISOString(), new Date(trialEndSec * 1000).toISOString());
 
       await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+    });
+  });
+
+  describe('12. Synchronisation de la locale Stripe Checkout (FR/EN) et non-ingérence tarifaire', () => {
+    let passedSessionConfigs = [];
+
+    const createMockStripe = () => ({
+      customers: {
+        search: async () => ({ data: [{ id: 'cus_test_locale', deleted: false }] }),
+        create: async () => ({ id: 'cus_test_locale' })
+      },
+      checkout: {
+        sessions: {
+          create: async (cfg) => {
+            passedSessionConfigs.push(cfg);
+            return { id: `cs_locale_${passedSessionConfigs.length}`, url: 'https://checkout.stripe.com/pay' };
+          }
+        }
+      }
+    });
+
+    beforeEach(async () => {
+      passedSessionConfigs = [];
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+    });
+
+    afterEach(async () => {
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+    });
+
+    test('A. locale fr explicite -> Checkout Session reçoit locale: "fr"', async () => {
+      const mockStripe = createMockStripe();
+      const res = await executeCheckoutTransaction({
+        stripe: mockStripe,
+        userId: testUserId,
+        userEmail: 'stripe_test_user@example.com',
+        plan: 'monthly',
+        country: 'FR',
+        p: pricing('FR'),
+        locale: 'fr'
+      });
+      assert.equal(res.status, 200);
+      assert.equal(passedSessionConfigs[0].locale, 'fr');
+    });
+
+    test('B. locale en explicite -> Checkout Session reçoit locale: "en"', async () => {
+      const mockStripe = createMockStripe();
+      const res = await executeCheckoutTransaction({
+        stripe: mockStripe,
+        userId: testUserId,
+        userEmail: 'stripe_test_user@example.com',
+        plan: 'monthly',
+        country: 'FR',
+        p: pricing('FR'),
+        locale: 'en'
+      });
+      assert.equal(res.status, 200);
+      assert.equal(passedSessionConfigs[0].locale, 'en');
+    });
+
+    test('C. locale absente -> Checkout Session reçoit le fallback "fr"', async () => {
+      const mockStripe = createMockStripe();
+      const res = await executeCheckoutTransaction({
+        stripe: mockStripe,
+        userId: testUserId,
+        userEmail: 'stripe_test_user@example.com',
+        plan: 'monthly',
+        country: 'FR',
+        p: pricing('FR')
+      });
+      assert.equal(res.status, 200);
+      assert.equal(passedSessionConfigs[0].locale, 'fr');
+    });
+
+    test('D. locale invalide ("de", "invalid", "invalid<script>") -> Checkout Session reçoit le fallback "fr"', async () => {
+      const invalidLocales = ['de', 'invalid', 'invalid<script>', '  ', 123, null];
+      for (const inv of invalidLocales) {
+        passedSessionConfigs = [];
+        await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+        const mockStripe = createMockStripe();
+        const res = await executeCheckoutTransaction({
+          stripe: mockStripe,
+          userId: testUserId,
+          userEmail: 'stripe_test_user@example.com',
+          plan: 'monthly',
+          country: 'FR',
+          p: pricing('FR'),
+          locale: inv
+        });
+        assert.equal(res.status, 200);
+        assert.equal(passedSessionConfigs[0].locale, 'fr', `La locale invalide "${inv}" doit retomber sur "fr"`);
+      }
+    });
+
+    test('E. Non-ingérence tarifaire : la locale ne change ni la devise ni le Price ID', async () => {
+      const pFR = pricing('FR');
+      const pGB = pricing('GB');
+
+      // 1. France + locale 'en'
+      let mockStripe = createMockStripe();
+      let res = await executeCheckoutTransaction({
+        stripe: mockStripe,
+        userId: testUserId,
+        userEmail: 'stripe_test_user@example.com',
+        plan: 'monthly',
+        country: 'FR',
+        p: pFR,
+        locale: 'en'
+      });
+      assert.equal(res.status, 200);
+      assert.equal(passedSessionConfigs[0].locale, 'en');
+      assert.equal(passedSessionConfigs[0].line_items[0].price, PRICES.EUR.monthly);
+      assert.equal(passedSessionConfigs[0].metadata.solitiquo_currency, 'EUR');
+
+      // 2. France + locale 'fr'
+      passedSessionConfigs = [];
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+      mockStripe = createMockStripe();
+      res = await executeCheckoutTransaction({
+        stripe: mockStripe,
+        userId: testUserId,
+        userEmail: 'stripe_test_user@example.com',
+        plan: 'monthly',
+        country: 'FR',
+        p: pFR,
+        locale: 'fr'
+      });
+      assert.equal(res.status, 200);
+      assert.equal(passedSessionConfigs[0].locale, 'fr');
+      assert.equal(passedSessionConfigs[0].line_items[0].price, PRICES.EUR.monthly);
+      assert.equal(passedSessionConfigs[0].metadata.solitiquo_currency, 'EUR');
+
+      // 3. UK + locale 'fr'
+      passedSessionConfigs = [];
+      await pool.query("DELETE FROM subscriptions WHERE user_id = $1", [testUserId]);
+      mockStripe = createMockStripe();
+      res = await executeCheckoutTransaction({
+        stripe: mockStripe,
+        userId: testUserId,
+        userEmail: 'stripe_test_user@example.com',
+        plan: 'yearly',
+        country: 'GB',
+        p: pGB,
+        locale: 'fr'
+      });
+      assert.equal(res.status, 200);
+      assert.equal(passedSessionConfigs[0].locale, 'fr');
+      assert.equal(passedSessionConfigs[0].line_items[0].price, PRICES.GBP.yearly);
+      assert.equal(passedSessionConfigs[0].metadata.solitiquo_currency, 'GBP');
     });
   });
 });

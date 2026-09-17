@@ -75,10 +75,12 @@
         const params = new URLSearchParams(window.location.search);
         const transactionId   = params.get('transaction_id'); // Flutterwave / simulateur
         const paymentIntentId = params.get('payment_intent'); // Stripe Payment Element
+        const sessionId       = params.get('session_id');     // Stripe Checkout
         const redirectStatus  = params.get('redirect_status'); // Stripe
         const provider        = params.get('provider');        // 'flutterwave' si retour FLW
         const flwStatus       = params.get('status');          // 'successful' | 'cancelled' si retour FLW
         const isMock          = params.get('mock') === 'true';
+        const testCountry     = params.get('testCountry');
 
         const transIdEl     = document.getElementById('transId');
         const syncMessageEl = document.getElementById('syncMessage');
@@ -89,13 +91,16 @@
             transIdEl.textContent = transactionId;
         } else if (paymentIntentId) {
             transIdEl.textContent = paymentIntentId.substring(0, 27) + '…';
+        } else if (sessionId) {
+            transIdEl.textContent = sessionId.substring(0, 27) + '…';
         } else {
             transIdEl.textContent = 'Inconnu';
         }
 
         // ── Paiement annulé Flutterwave ───────────────────────────────────
         if (provider === 'flutterwave' && flwStatus === 'cancelled') {
-            window.location.href = 'paiement.html?cancelled=true&plan=monthly';
+            const tcParam = testCountry ? `&testCountry=${encodeURIComponent(testCountry)}` : '';
+            window.location.href = `paiement.html?cancelled=true&plan=monthly${tcParam}`;
         }
 
         // ── Synchronisation du statut abonné ───────────────────────────────
@@ -193,7 +198,7 @@
             }
         }
 
-        if (transactionId || paymentIntentId) {
+        if (transactionId || paymentIntentId || sessionId) {
             syncAndRedirect();
         }
     </script>

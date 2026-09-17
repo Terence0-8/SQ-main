@@ -131,25 +131,14 @@
       <div id="globalErrorMsg" style="display:none; background:#fef2f2; color:#c0392b; padding:12px 16px; border-radius:8px; margin-bottom:1.2rem; font-size:0.9rem;"></div>
 
       <!-- ══════════════════════════════════════
-           SECTION STRIPE — Payment Element embarqué
-           Carte + Apple Pay + Google Pay + PayPal (si activé)
+           SECTION STRIPE — Stripe Checkout sécurisé
+           Carte + Apple Pay + Google Pay + PayPal
            ══════════════════════════════════════ -->
       <div id="stripe-section" style="display:none;">
-        <div id="payment-element-loading">
-          <svg width="20" height="20" viewBox="0 0 50 50" style="animation:spin 1s linear infinite">
-            <circle cx="25" cy="25" r="20" fill="none" stroke="#635BFF" stroke-width="5" stroke-linecap="round" stroke-dasharray="80 20"/>
-          </svg>
-          <span data-i18n="payment_loading">Chargement des options de paiement…</span>
-        </div>
-
-        <form id="stripe-payment-form" style="display:none;">
-          <div id="payment-element"></div>
-          <div id="stripe-error-msg"></div>
-          <button id="stripe-submit-btn" type="submit">
-            <span data-i18n="payment_cta">Confirmer et payer</span> <span id="stripe-btn-amount">…</span>
-          </button>
-        </form>
-
+        <div id="stripe-error-msg" style="display:none; background:#fef2f2; color:#c0392b; padding:12px 16px; border-radius:8px; margin-bottom:1.2rem; font-size:0.9rem;"></div>
+        <button id="stripe-submit-btn" type="button">
+          <span data-i18n="payment_cta">Confirmer et payer</span> <span id="stripe-btn-amount">…</span>
+        </button>
         <p style="text-align:center; font-size:0.78rem; color:#999; margin-top:12px;" data-i18n="payment_secure_note">
           Paiement sécurisé. Aucune donnée bancaire n'est stockée par Solitiquo.
         </p>
@@ -217,18 +206,6 @@
   <script src="js/config.js"></script>
   <script src="/js/api.js?v=38"></script>
   <script>
-    // ─── Chargement dynamique de Stripe.js (seulement si nécessaire) ───
-    function loadStripeJs() {
-      return new Promise((resolve, reject) => {
-        if (window.Stripe) return resolve();
-        const s = document.createElement('script');
-        s.src = 'https://js.stripe.com/v3/';
-        s.onload = resolve;
-        s.onerror = () => reject(new Error('Impossible de charger Stripe.js'));
-        document.head.appendChild(s);
-      });
-    }
-
     function formatPrice(currency, amount) {
       if (currency === 'XOF' || currency === 'XAF')
         return `${Number(amount).toLocaleString('fr-FR')} FCFA`;
@@ -292,9 +269,9 @@
       }
 
       // ─── 2. Montant selon plan ───────────────────────────────────
-      const planAmount = (plan === 'yearly' && (currency === 'XOF' || currency === 'XAF'))
-        ? 30000
-        : pricing.amount;
+      const planAmount = (plan === 'yearly')
+        ? (pricing.yearly || pricing.yearly_amount || ((currency === 'XOF' || currency === 'XAF') ? 30000 : 69.90))
+        : (pricing.monthly || pricing.amount);
       const priceFormatted = formatPrice(currency, planAmount);
 
       // ─── 3. Récapitulatif ────────────────────────────────────────
@@ -340,7 +317,8 @@
       const user = await SolitiquoAPI.getProfile().catch(() => null);
       if (!user) {
         initLoader.style.display = 'none';
-        showGlobalError(`${t('payment_not_logged_in') || 'Veuillez vous connecter.'} <a href="auth.html?redirect=paiement.html?plan=${plan}" style="color:#635BFF;font-weight:700;">${t('auth_login') || 'Se connecter'} →</a>`, true);
+        const targetUrl = `paiement.html?plan=${encodeURIComponent(plan)}${testCountry ? `&testCountry=${encodeURIComponent(testCountry)}` : ''}`;
+        showGlobalError(`${t('payment_not_logged_in') || 'Veuillez vous connecter.'} <a href="auth.html?redirect=${encodeURIComponent(targetUrl)}" style="color:#635BFF;font-weight:700;">${t('auth_login') || 'Se connecter'} →</a>`, true);
         return;
       }
 
@@ -397,104 +375,80 @@
       }
 
       // ══════════════════════════════════════════════════════════════
-      // 6B. FLOW STRIPE — Payment Element embarqué
-      // Apple Pay, Google Pay et PayPal inclus automatiquement.
+      // 6B. FLOW STRIPE — Stripe Checkout sécurisé (Hosted)
+      // Abonnement Stripe + Trial 30 jours (si éligible)
+      // Redirection hébergée Stripe Checkout (Carte, Apple Pay, Google Pay, PayPal)
       // ══════════════════════════════════════════════════════════════
-      if (!pricing.publishableKey) {
-        initLoader.style.display = 'none';
-        showGlobalError('Stripe non configuré — vérifiez STRIPE_PUBLISHABLE_KEY dans .env.');
-        return;
-      }
-
+      initLoader.style.display = 'none';
       document.getElementById('stripe-section').style.display = 'block';
+      document.getElementById('stripe-btn-amount').textContent = priceFormatted;
 
-      try {
-        let csrfToken = (window.SolitiquoAPI && SolitiquoAPI.csrfToken) || '';
-        if (!csrfToken) {
-          try {
-            const tokenRes = await fetch(`${window.API_URL}/csrf-token`, { credentials: 'include' });
-            const tokenJson = await tokenRes.json();
-            if (tokenJson && tokenJson.csrfToken) csrfToken = tokenJson.csrfToken;
-          } catch (e) {}
-        }
+      const stripeSubmitBtn = document.getElementById('stripe-submit-btn');
+      const stripeErrorEl = document.getElementById('stripe-error-msg');
 
-        const piRes = await fetch(`${window.API_URL}/subscriptions/init-stripe-payment`, {
-          method: 'POST',
-          headers: {
+      stripeSubmitBtn.addEventListener('click', async () => {
+        stripeSubmitBtn.disabled = true;
+        stripeSubmitBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 50 50" style="animation:spin 1s linear infinite;vertical-align:middle;margin-right:8px;"><circle cx="25" cy="25" r="20" fill="none" stroke="#fff" stroke-width="6" stroke-dasharray="80 20"/></svg>${t('payment_processing') || 'Traitement…'}`;
+        if (stripeErrorEl) stripeErrorEl.style.display = 'none';
+
+        try {
+          let csrfToken = (window.SolitiquoAPI && SolitiquoAPI.csrfToken) || '';
+          if (!csrfToken) {
+            try {
+              const tokenRes = await fetch(`${window.API_URL}/csrf-token`, { credentials: 'include' });
+              const tokenJson = await tokenRes.json();
+              if (tokenJson && tokenJson.csrfToken) csrfToken = tokenJson.csrfToken;
+            } catch (e) {}
+          }
+
+          const validPlan = plan === 'yearly' ? 'yearly' : 'monthly';
+
+          const checkoutUrl = testCountry
+            ? `${window.API_URL}/stripe/checkout?testCountry=${encodeURIComponent(testCountry)}`
+            : `${window.API_URL}/stripe/checkout`;
+
+          const headers = {
             'Content-Type': 'application/json',
             'X-CSRF-Token': csrfToken
-          },
-          body: JSON.stringify({ plan }),
-          credentials: 'include'
-        });
-        const piData = await piRes.json();
-        if (!piData.success) {
-          if (piRes.status === 401 || piData.error === 'Non authentifié') {
-            const redirectUrl = encodeURIComponent(window.location.href);
-            throw new Error(`Veuillez vous connecter pour poursuivre votre abonnement.<br><a href="auth.html?redirect=${redirectUrl}" style="display:inline-block;margin-top:10px;background:#37463D;color:#fff;padding:8px 18px;border-radius:20px;text-decoration:none;font-weight:700;">Se connecter / S'inscrire</a>`);
+          };
+          if (testCountry) {
+            headers['X-Test-Country'] = testCountry;
           }
-          throw new Error(piData.error || 'Erreur d\'initialisation du paiement');
-        }
 
-        await loadStripeJs();
-        const stripe = Stripe(pricing.publishableKey);
+          const currentLocale = (typeof getLanguage === 'function' && getLanguage() === 'en') ? 'en' : 'fr';
 
-        const elements = stripe.elements({
-          clientSecret: piData.clientSecret,
-          appearance: {
-            theme: 'stripe',
-            variables: {
-              colorPrimary: '#37463D',
-              colorText: '#1a1a1a',
-              borderRadius: '8px',
-              fontFamily: 'Inter, system-ui, sans-serif',
-            }
-          }
-        });
-
-        const paymentElement = elements.create('payment', {
-          layout: { type: 'tabs', defaultCollapsed: false }
-        });
-        paymentElement.on('ready', () => {
-          document.getElementById('payment-element-loading').style.display = 'none';
-          document.getElementById('stripe-payment-form').style.display = 'block';
-          initLoader.style.display = 'none';
-        });
-        paymentElement.mount('#payment-element');
-
-        document.getElementById('stripe-btn-amount').textContent = priceFormatted;
-        initLoader.style.display = 'none';
-
-        document.getElementById('stripe-payment-form').addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const submitBtn = document.getElementById('stripe-submit-btn');
-          const errorEl  = document.getElementById('stripe-error-msg');
-
-          submitBtn.disabled = true;
-          submitBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 50 50" style="animation:spin 1s linear infinite;vertical-align:middle;margin-right:8px;"><circle cx="25" cy="25" r="20" fill="none" stroke="#fff" stroke-width="6" stroke-dasharray="80 20"/></svg>${t('payment_processing') || 'Traitement…'}`;
-          errorEl.style.display = 'none';
-
-          const { error } = await stripe.confirmPayment({
-            elements,
-            confirmParams: {
-              return_url: `${window.location.origin}/paiement-success.html`,
-            },
+          const res = await fetch(checkoutUrl, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              plan: validPlan,
+              locale: currentLocale
+            }),
+            credentials: 'include'
           });
 
-          if (error) {
-            errorEl.textContent = error.message;
-            errorEl.style.display = 'block';
-            submitBtn.disabled = false;
-            submitBtn.textContent = `${t('payment_cta')} ${priceFormatted}`;
+          const data = await res.json();
+          if (!res.ok || !data.success || !data.checkout_url) {
+            if (res.status === 401 || data.error === 'Non authentifié') {
+              const redirectUrl = encodeURIComponent(window.location.href);
+              throw new Error(`Veuillez vous connecter pour poursuivre votre abonnement.<br><a href="auth.html?redirect=${redirectUrl}" style="display:inline-block;margin-top:10px;background:#37463D;color:#fff;padding:8px 18px;border-radius:20px;text-decoration:none;font-weight:700;">Se connecter / S'inscrire</a>`);
+            }
+            throw new Error(data.error || 'Impossible d\'initialiser la session de paiement.');
           }
-        });
 
-      } catch (err) {
-        console.error('Erreur Stripe Payment Element:', err);
-        initLoader.style.display = 'none';
-        document.getElementById('payment-element-loading').style.display = 'none';
-        showGlobalError(err.message || 'Impossible de charger le formulaire de paiement. Réessayez ou contactez le support.');
-      }
+          window.location.href = data.checkout_url;
+        } catch (err) {
+          console.error('Erreur Stripe Checkout:', err);
+          stripeSubmitBtn.disabled = false;
+          stripeSubmitBtn.innerHTML = `<span data-i18n="payment_cta">${t('payment_cta') || 'Confirmer et payer'}</span> <span>${priceFormatted}</span>`;
+          if (stripeErrorEl) {
+            stripeErrorEl.innerHTML = err.message || 'Une erreur est survenue lors de la redirection vers Stripe.';
+            stripeErrorEl.style.display = 'block';
+          } else {
+            showGlobalError(err.message || 'Une erreur est survenue lors de la redirection vers Stripe.');
+          }
+        }
+      });
 
     });
   </script>
