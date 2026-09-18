@@ -151,11 +151,28 @@
                     }
                 }
 
+                // ── Récupérer le token CSRF pour les requêtes POST ──
+                let csrfToken = (window.SolitiquoAPI && SolitiquoAPI.csrfToken) || '';
+                if (!csrfToken) {
+                    try {
+                        const tokenRes = await fetch(`${window.API_URL}/csrf-token`, { credentials: 'include' });
+                        const tokenJson = await tokenRes.json();
+                        if (tokenJson && tokenJson.csrfToken) csrfToken = tokenJson.csrfToken;
+                    } catch (e) {}
+                }
+
+                const postHeaders = {
+                    'Content-Type': 'application/json'
+                };
+                if (csrfToken) {
+                    postHeaders['X-CSRF-Token'] = csrfToken;
+                }
+
                 // ── Synchroniser la session utilisateur (commun aux deux providers) ──
                 const refreshRes = await fetch(`${window.API_URL}/auth/refresh-user`, {
                     method: 'POST',
                     credentials: 'include',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: postHeaders
                 });
                 const data = await refreshRes.json();
 
@@ -172,7 +189,7 @@
                             try {
                                 const retry = await fetch(`${window.API_URL}/auth/refresh-user`, {
                                     method: 'POST', credentials: 'include',
-                                    headers: { 'Content-Type': 'application/json' }
+                                    headers: postHeaders
                                 });
                                 const retryData = await retry.json();
                                 if (retryData.success && retryData.user?.is_subscriber) {
