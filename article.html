@@ -1652,7 +1652,7 @@
             const dateStr = SolitiquoAPI.formatDate(c.created_at);
             const safeContent = (c.content || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             const upvotes = c.upvotes || 0;
-            const isVoted = c.user_voted || localStorage.getItem(`upvoted_comment_${c.id}`) === 'true';
+            const isVoted = c.user_voted || localStorage.getItem(`${getAccountStorageKey('upvoted_comment')}_${c.id}`) === 'true';
             const votedClass = isVoted ? 'voted' : '';
             const isEdited = c.is_edited === true || c.is_edited === 'true' || c.is_edited === 1;
             const canEdit = user && (String(user.id) === String(c.user_id)) && !isEdited;
@@ -1868,7 +1868,7 @@
     async function upvoteComment(commentId, btn) {
       if (!commentId || !btn) return;
       const baseUrl = window.API_URL || '/api';
-      const storageKey = `upvoted_comment_${commentId}`;
+      const storageKey = `${getAccountStorageKey('upvoted_comment')}_${commentId}`;
 
       btn.disabled = true;
       try {
@@ -2106,6 +2106,12 @@
       }
     }
 
+    function getAccountStorageKey(name) {
+      const user = window._currentUser;
+      const userId = user && (user.id ?? user.user_id);
+      return userId !== undefined && userId !== null ? `${name}_u${String(userId)}` : null;
+    }
+
     // --- 🔖 GESTION DES FAVORIS / BOOKMARKS ---
     function initBookmarkButton(articleId) {
       const btn = document.getElementById('btn-bookmark-article');
@@ -2113,7 +2119,7 @@
       if (!btn) return;
 
       const getLocalBookmarks = () => {
-        try { return JSON.parse(localStorage.getItem('solitiquo_bookmarks') || '[]'); }
+        try { return JSON.parse(localStorage.getItem(getAccountStorageKey('solitiquo_bookmarks') || '__no_user_bookmarks__') || '[]'); }
         catch { return []; }
       };
 
@@ -2125,7 +2131,7 @@
         } else {
           list = list.filter(item => item !== id);
         }
-        localStorage.setItem('solitiquo_bookmarks', JSON.stringify(list));
+        localStorage.setItem(getAccountStorageKey('solitiquo_bookmarks'), JSON.stringify(list));
       };
 
       const updateUI = (isBookmarked) => {
@@ -2490,7 +2496,7 @@
 
           const realArticleId = article.id || id;
           try {
-            let history = JSON.parse(localStorage.getItem('solitiquo_reading_history') || '[]');
+            let history = JSON.parse(localStorage.getItem(getAccountStorageKey('solitiquo_reading_history')) || '[]');
             history = history.filter(item => String(item.id) !== String(realArticleId));
             history.unshift({
               id: realArticleId,
@@ -2503,7 +2509,7 @@
               read_at: Date.now()
             });
             if (history.length > 20) history = history.slice(0, 20);
-            localStorage.setItem('solitiquo_reading_history', JSON.stringify(history));
+            localStorage.setItem(getAccountStorageKey('solitiquo_reading_history'), JSON.stringify(history));
           } catch (_hErr) {}
 
           try { if (typeof initBookmarkButton === 'function') initBookmarkButton(realArticleId); } catch (_e) {}
