@@ -502,9 +502,20 @@
       btn.disabled = true;
 
       try {
-        const res = await fetch(`${window.API_URL || '/api'}/subscriptions/cancel`, {
+        let csrf = (window.SolitiquoAPI && SolitiquoAPI.csrfToken) || '';
+        if (!csrf) {
+          try {
+            const tokenRes = await fetch(`${window.API_URL || '/api'}/csrf-token`, { credentials: 'include' });
+            const tokenJson = await tokenRes.json();
+            if (tokenJson && tokenJson.csrfToken) csrf = tokenJson.csrfToken;
+          } catch (_) {}
+        }
+        const res = await fetch(`${window.API_URL || '/api'}/stripe/cancel`, {
           method: 'POST',
-          headers: { 'X-CSRF-Token': SolitiquoAPI.csrfToken },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrf
+          },
           credentials: 'include'
         });
         const json = await res.json();
@@ -521,6 +532,51 @@
         alert('❌ ' + t('err_server', 'Erreur serveur'));
         btn.textContent = originalText;
         btn.disabled = false;
+      }
+    };
+
+    window.reactivateSubscription = async function () {
+      const btn = document.getElementById('btn-reactivate-sub');
+      const originalText = btn ? btn.textContent : '';
+      if (btn) {
+        btn.textContent = t('processing', 'Traitement en cours...');
+        btn.disabled = true;
+      }
+
+      try {
+        let csrf = (window.SolitiquoAPI && SolitiquoAPI.csrfToken) || '';
+        if (!csrf) {
+          try {
+            const tokenRes = await fetch(`${window.API_URL || '/api'}/csrf-token`, { credentials: 'include' });
+            const tokenJson = await tokenRes.json();
+            if (tokenJson && tokenJson.csrfToken) csrf = tokenJson.csrfToken;
+          } catch (_) {}
+        }
+        const res = await fetch(`${window.API_URL || '/api'}/stripe/reactivate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrf
+          },
+          credentials: 'include'
+        });
+        const json = await res.json();
+
+        if (json.success) {
+          window.location.reload();
+        } else {
+          alert('❌ ' + (json.error || t('err_server', 'Erreur serveur')));
+          if (btn) {
+            btn.textContent = originalText;
+            btn.disabled = false;
+          }
+        }
+      } catch (e) {
+        alert('❌ ' + t('err_server', 'Erreur serveur'));
+        if (btn) {
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }
       }
     };
 
@@ -830,22 +886,44 @@
             `;
           } else if (user.is_subscriber) {
             statusBox.className = "status-box status-active";
-            statusText.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> <span>${t('status_premium')}</span>`;
+            const isRenewalCancelled = Boolean(user.stripe_cancel_at_period_end);
 
-            let dateInfo = '';
+            let statusHtml = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> <span>${t('status_premium')}</span>`;
+            if (isRenewalCancelled) {
+              statusHtml += ` <span style="font-size:0.8rem; font-weight:600; color:#B45309; background:#FEF3C7; border:1px solid #FDE68A; padding:2px 8px; border-radius:12px; margin-left:8px;">${t('status_renewal_cancelled', 'Renouvellement annulé')}</span>`;
+            }
+            statusText.innerHTML = statusHtml;
+
+            let formattedDate = '';
             if (user.subscription_end_date) {
               const endDate = new Date(user.subscription_end_date);
               const locale = typeof getLanguage === 'function' && getLanguage() === 'en' ? 'en-GB' : 'fr-FR';
-              const formattedDate = endDate.toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' });
-              dateInfo = `<p style="font-size:0.9rem; color:#64748B; margin-top:10px;">${t('premium_valid_until')} <strong>${formattedDate}</strong>.</p>`;
+              formattedDate = endDate.toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' });
             }
 
-            actionArea.innerHTML = `
-              <h3>${t('premium_thanks_title')}</h3>
-              <p>${t('premium_thanks_desc')}</p>
-              ${dateInfo}
-              <button class="btn-action btn-cancel" onclick="window.openCancelModal()"><span data-i18n="btn_cancel_sub">${t('btn_cancel_sub')}</span></button>
-            `;
+            if (isRenewalCancelled) {
+              const dateDesc = formattedDate
+                ? `${t('renewal_cancelled_desc', 'Votre accès Premium reste actif jusqu\'au')} <strong>${formattedDate}</strong>.`
+                : `${t('renewal_cancelled_desc', 'Votre accès Premium reste actif jusqu\'à l\'échéance')}.`;
+
+              actionArea.innerHTML = `
+                <h3>${t('status_renewal_cancelled', 'Renouvellement annulé')}</h3>
+                <p style="font-size:0.95rem; color:#475569; margin-bottom:12px;">${dateDesc}</p>
+                <button class="btn-action btn-upgrade" id="btn-reactivate-sub" onclick="window.reactivateSubscription()"><span data-i18n="btn_reactivate_sub">${t('btn_reactivate_sub', 'Réactiver mon abonnement')}</span></button>
+              `;
+            } else {
+              let dateInfo = '';
+              if (formattedDate) {
+                dateInfo = `<p style="font-size:0.9rem; color:#64748B; margin-top:10px;">${t('premium_valid_until')} <strong>${formattedDate}</strong>.</p>`;
+              }
+
+              actionArea.innerHTML = `
+                <h3>${t('premium_thanks_title')}</h3>
+                <p>${t('premium_thanks_desc')}</p>
+                ${dateInfo}
+                <button class="btn-action btn-cancel" onclick="window.openCancelModal()"><span data-i18n="btn_cancel_sub">${t('btn_cancel_sub')}</span></button>
+              `;
+            }
           } else {
             statusBox.className = "status-box status-inactive";
             statusText.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> <span>${t('status_free')}</span>`;

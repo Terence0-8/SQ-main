@@ -383,6 +383,7 @@ var TRANSLATIONS = {
     btn_clear_history: 'Effacer l\'historique',
     btn_clear_downloads: 'Vider les téléchargements',
     btn_cancel_sub: 'Résilier mon abonnement',
+    btn_reactivate_sub: 'Réactiver mon abonnement',
 
     // ==================== ARTICLE (commentaires) ====================
     btn_cancel_edit: 'Annuler',
@@ -431,6 +432,8 @@ var TRANSLATIONS = {
     status_admin: 'ADMIN / ÉQUIPE ÉDITORIALE',
     status_premium: 'ACTIF (PREMIUM)',
     status_free: 'GRATUIT (ACCÈS LIMITÉ)',
+    status_renewal_cancelled: 'Renouvellement annulé',
+    renewal_cancelled_desc: 'Votre accès Premium reste actif jusqu\'au',
     admin_account_title: 'Compte Administrateur',
     admin_account_desc: 'Vous disposez d\'un accès illimité à tous les contenus, fonctionnalités d\'édition et outils de gestion.',
     admin_dashboard_btn: 'Accéder au Dashboard',
@@ -883,6 +886,7 @@ var TRANSLATIONS = {
     btn_clear_history: 'Clear history',
     btn_clear_downloads: 'Clear downloads',
     btn_cancel_sub: 'Cancel my subscription',
+    btn_reactivate_sub: 'Reactivate my subscription',
 
     // ==================== ARTICLE (comments) ====================
     btn_cancel_edit: 'Cancel',
@@ -931,6 +935,8 @@ var TRANSLATIONS = {
     status_admin: 'ADMIN / EDITORIAL TEAM',
     status_premium: 'ACTIVE (PREMIUM)',
     status_free: 'FREE (LIMITED ACCESS)',
+    status_renewal_cancelled: 'Renewal cancelled',
+    renewal_cancelled_desc: 'Your Premium access remains active until',
     admin_account_title: 'Administrator Account',
     admin_account_desc: 'You have unlimited access to all content, editing features and management tools.',
     admin_dashboard_btn: 'Go to Dashboard',

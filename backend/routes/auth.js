@@ -223,11 +223,20 @@ router.get('/me', async (req, res) => {
   try {
     // 🔥 On va chercher les données à jour dans la BDD
     const result = await pool.query(
-      `SELECT id, username, email, role, is_subscriber, 
-              subscription_start_date, subscription_end_date, 
-              created_at, updated_at
-       FROM users 
-       WHERE id = $1`,
+      `SELECT u.id, u.username, u.email, u.role, u.is_subscriber,
+              u.subscription_start_date, u.subscription_end_date,
+              u.created_at, u.updated_at,
+              COALESCE(s.stripe_cancel_at_period_end, false) AS stripe_cancel_at_period_end
+       FROM users u
+       LEFT JOIN LATERAL (
+         SELECT stripe_cancel_at_period_end
+         FROM subscriptions
+         WHERE user_id = u.id
+           AND stripe_subscription_id IS NOT NULL
+           AND stripe_status IN ('active', 'trialing', 'past_due')
+         ORDER BY id DESC LIMIT 1
+       ) s ON true
+       WHERE u.id = $1`,
       [req.session.user.id]
     );
 
@@ -274,11 +283,20 @@ router.post('/refresh-user', async (req, res) => {
   try {
     // Récupération complète des données utilisateur
     const result = await pool.query(
-      `SELECT id, username, email, role, is_subscriber, 
-              subscription_start_date, subscription_end_date, 
-              created_at, updated_at
-       FROM users 
-       WHERE id = $1`,
+      `SELECT u.id, u.username, u.email, u.role, u.is_subscriber,
+              u.subscription_start_date, u.subscription_end_date,
+              u.created_at, u.updated_at,
+              COALESCE(s.stripe_cancel_at_period_end, false) AS stripe_cancel_at_period_end
+       FROM users u
+       LEFT JOIN LATERAL (
+         SELECT stripe_cancel_at_period_end
+         FROM subscriptions
+         WHERE user_id = u.id
+           AND stripe_subscription_id IS NOT NULL
+           AND stripe_status IN ('active', 'trialing', 'past_due')
+         ORDER BY id DESC LIMIT 1
+       ) s ON true
+       WHERE u.id = $1`,
       [req.session.user.id]
     );
 
