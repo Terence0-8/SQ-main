@@ -141,10 +141,10 @@ const SolitiquoAPI = {
         localStorage.removeItem('user');
         localStorage.removeItem('user_data');
       } catch (_e) {}
-      window._currentUser = null;
       if (window.SolitiquoOffline && typeof window.SolitiquoOffline.clearAll === 'function') {
         try { await window.SolitiquoOffline.clearAll(); } catch (_e) {}
       }
+      window._currentUser = null;
       window.location.href = 'index.html';
     }
   },
