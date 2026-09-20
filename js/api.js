@@ -136,7 +136,16 @@ const SolitiquoAPI = {
     } catch (e) {
       console.warn('⚠️ Déconnexion serveur indisponible, nettoyage local poursuivi.', e);
     } finally {
+      const currentUserId = window._currentUser && (window._currentUser.id ?? window._currentUser.user_id);
       try {
+        if (currentUserId !== undefined && currentUserId !== null) {
+          const suffix = `_u${String(currentUserId)}`;
+          Object.keys(localStorage).forEach((key) => {
+            if (key.endsWith(suffix) || key.startsWith(`upvoted_comment_u${String(currentUserId)}_`)) {
+              localStorage.removeItem(key);
+            }
+          });
+        }
         localStorage.removeItem('solitiquo_cached_user');
         localStorage.removeItem('user');
         localStorage.removeItem('user_data');
