@@ -133,9 +133,20 @@ const SolitiquoAPI = {
         headers: { 'X-CSRF-Token': SolitiquoAPI.csrfToken },
         credentials: 'include'
       });
-      localStorage.clear();
+    } catch (e) {
+      console.warn('⚠️ Déconnexion serveur indisponible, nettoyage local poursuivi.', e);
+    } finally {
+      try {
+        localStorage.removeItem('solitiquo_cached_user');
+        localStorage.removeItem('user');
+        localStorage.removeItem('user_data');
+      } catch (_e) {}
+      window._currentUser = null;
+      if (window.SolitiquoOffline && typeof window.SolitiquoOffline.clearAll === 'function') {
+        try { await window.SolitiquoOffline.clearAll(); } catch (_e) {}
+      }
       window.location.href = 'index.html';
-    } catch (e) { console.error(e); }
+    }
   },
 
   getProfile: async () => {
