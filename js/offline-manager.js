@@ -170,7 +170,7 @@ const SolitiquoOffline = (function() {
       if (!db) return false;
 
       const userId = requireCurrentUserId();
-      if (!userId) return false;
+      if (!userId) return null;
 
       const storage_key = getStorageKey(id, type, userId);
       return new Promise((resolve) => {
@@ -244,7 +244,7 @@ const SolitiquoOffline = (function() {
         req.onsuccess = () => {
           if (req.result) return resolve(req.result);
           // Recherche fallback par id (string/number) ou par slug
-          const reqAll = store.getAll();
+          const reqAll = store.index('user_id').getAll(userId);
           reqAll.onsuccess = () => {
             const all = reqAll.result || [];
             const targetType = type || 'article';
