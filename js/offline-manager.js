@@ -6,7 +6,7 @@
 
 const SolitiquoOffline = (function() {
   const DB_NAME = 'SolitiquoOfflineDB';
-  const DB_VERSION = 1;
+  const DB_VERSION = 2;
   const STORE_NAME = 'offline_contents';
 
   let dbPromise = null;
@@ -23,10 +23,17 @@ const SolitiquoOffline = (function() {
 
       request.onupgradeneeded = (e) => {
         const db = e.target.result;
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          const store = db.createObjectStore(STORE_NAME, { keyPath: 'storage_key' });
-          store.createIndex('type', 'type', { unique: false });
-          store.createIndex('downloaded_at', 'downloaded_at', { unique: false });
+        let store = db.objectStoreNames.contains(STORE_NAME)
+          ? e.target.transaction.objectStore(STORE_NAME)
+          : db.createObjectStore(STORE_NAME, { keyPath: 'storage_key' });
+
+        if (!store.indexNames.contains('type')) store.createIndex('type', 'type', { unique: false });
+        if (!store.indexNames.contains('downloaded_at')) store.createIndex('downloaded_at', 'downloaded_at', { unique: false });
+        if (!store.indexNames.contains('user_id')) store.createIndex('user_id', 'user_id', { unique: false });
+
+        if (e.oldVersion < 2) {
+          const clearRequest = store.clear();
+          clearRequest.onerror = () => console.warn('⚠️ Impossible de nettoyer les anciens téléchargements V1.');
         }
       };
 
@@ -39,8 +46,20 @@ const SolitiquoOffline = (function() {
     return dbPromise;
   }
 
-  function getStorageKey(id, type) {
-    return `${type || 'article'}_${id}`;
+  function getCurrentUserId() {
+    const user = window._currentUser;
+    const id = user && (user.id ?? user.user_id);
+    return id !== undefined && id !== null ? String(id) : null;
+  }
+
+  function requireCurrentUserId() {
+    const userId = getCurrentUserId();
+    if (!userId) console.warn('⚠️ Aucun utilisateur authentifié : accès au stockage hors-ligne refusé.');
+    return userId;
+  }
+
+  function getStorageKey(id, type, userId) {
+    return `u${String(userId)}_${type || 'article'}_${id}`;
   }
 
   return {
@@ -77,11 +96,15 @@ const SolitiquoOffline = (function() {
       const db = await openDB();
       if (!db) return false;
 
+      const userId = requireCurrentUserId();
+      if (!userId) return false;
+
       const type = item.type || 'article';
-      const storage_key = getStorageKey(item.id, type);
+      const storage_key = getStorageKey(item.id, type, userId);
 
       const record = {
         storage_key,
+        user_id: userId,
         id: item.id,
         type: type, // 'article', 'podcast', 'emission'
         title: item.title || 'Contenu Solitiquo',
@@ -146,7 +169,10 @@ const SolitiquoOffline = (function() {
       const db = await openDB();
       if (!db) return false;
 
-      const storage_key = getStorageKey(id, type);
+      const userId = requireCurrentUserId();
+      if (!userId) return false;
+
+      const storage_key = getStorageKey(id, type, userId);
       return new Promise((resolve) => {
         const tx = db.transaction(STORE_NAME, 'readwrite');
         const store = tx.objectStore(STORE_NAME);
@@ -163,7 +189,10 @@ const SolitiquoOffline = (function() {
       const db = await openDB();
       if (!db) return false;
 
-      const storage_key = getStorageKey(id, type);
+      const userId = requireCurrentUserId();
+      if (!userId) return false;
+
+      const storage_key = getStorageKey(id, type, userId);
       return new Promise((resolve) => {
         const tx = db.transaction(STORE_NAME, 'readonly');
         const store = tx.objectStore(STORE_NAME);
@@ -177,13 +206,16 @@ const SolitiquoOffline = (function() {
      * Récupérer tous les contenus enregistrés
      */
     async getAllDownloads() {
+      const userId = requireCurrentUserId();
+      if (!userId) return [];
+
       const db = await openDB();
       if (!db) return [];
 
       return new Promise((resolve) => {
         const tx = db.transaction(STORE_NAME, 'readonly');
         const store = tx.objectStore(STORE_NAME);
-        const req = store.getAll();
+        const req = store.index('user_id').getAll(userId);
         req.onsuccess = () => {
           const list = req.result || [];
           // Trier du plus récent téléchargement au plus ancien
@@ -201,7 +233,10 @@ const SolitiquoOffline = (function() {
       const db = await openDB();
       if (!db) return null;
 
-      const storage_key = getStorageKey(id, type);
+      const userId = requireCurrentUserId();
+      if (!userId) return false;
+
+      const storage_key = getStorageKey(id, type, userId);
       return new Promise((resolve) => {
         const tx = db.transaction(STORE_NAME, 'readonly');
         const store = tx.objectStore(STORE_NAME);
@@ -236,14 +271,22 @@ const SolitiquoOffline = (function() {
      * Supprimer tous les contenus hors-ligne
      */
     async clearAll() {
+      const userId = requireCurrentUserId();
+      if (!userId) return false;
+
       const db = await openDB();
       if (!db) return false;
 
       return new Promise((resolve) => {
         const tx = db.transaction(STORE_NAME, 'readwrite');
         const store = tx.objectStore(STORE_NAME);
-        const req = store.clear();
-        req.onsuccess = () => resolve(true);
+        const req = store.index('user_id').openCursor(IDBKeyRange.only(userId));
+        req.onsuccess = () => {
+          const cursor = req.result;
+          if (!cursor) { resolve(true); return; }
+          cursor.delete();
+          cursor.continue();
+        };
         req.onerror = () => resolve(false);
       });
     },
