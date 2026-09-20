@@ -1030,7 +1030,7 @@
       if (card) card.remove();
 
       try {
-        let list = JSON.parse(localStorage.getItem('solitiquo_bookmarks') || '[]');
+        let list = JSON.parse(localStorage.getItem(getProfileAccountStorageKey('solitiquo_bookmarks') || '__no_user_bookmarks__') || '[]');
         list = list.filter(id => Number(id) !== Number(articleId));
         localStorage.setItem(getProfileAccountStorageKey('solitiquo_bookmarks'), JSON.stringify(list));
       } catch (e) {}
