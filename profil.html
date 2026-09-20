@@ -985,7 +985,7 @@
 
       if (!bookmarks || bookmarks.length === 0) {
         try {
-          const localIds = JSON.parse(localStorage.getItem('solitiquo_bookmarks') || '[]');
+          const localIds = JSON.parse(localStorage.getItem(getProfileAccountStorageKey('solitiquo_bookmarks') || '__no_user_bookmarks__') || '[]');
           if (localIds.length > 0) {
             const allArticles = await SolitiquoAPI.getArticles();
             if (Array.isArray(allArticles)) {
@@ -1032,7 +1032,7 @@
       try {
         let list = JSON.parse(localStorage.getItem('solitiquo_bookmarks') || '[]');
         list = list.filter(id => Number(id) !== Number(articleId));
-        localStorage.setItem('solitiquo_bookmarks', JSON.stringify(list));
+        localStorage.setItem(getProfileAccountStorageKey('solitiquo_bookmarks'), JSON.stringify(list));
       } catch (e) {}
 
       const baseUrl = window.API_URL || '/api';
@@ -1064,6 +1064,12 @@
       }
     }
 
+    function getProfileAccountStorageKey(name) {
+      const user = window._currentUser;
+      const userId = user && (user.id ?? user.user_id);
+      return userId !== undefined && userId !== null ? `${name}_u${String(userId)}` : null;
+    }
+
     // --- CHARGEMENT HISTORIQUE LECTURE ---
     function loadReadingHistory() {
       const container = document.getElementById('history-container');
@@ -1071,7 +1077,7 @@
 
       let history = [];
       try {
-        history = JSON.parse(localStorage.getItem('solitiquo_reading_history') || '[]');
+        history = JSON.parse(localStorage.getItem(getProfileAccountStorageKey('solitiquo_reading_history') || '__no_user_history__') || '[]');
       } catch (e) {}
 
       if (!history || history.length === 0) {
@@ -1105,7 +1111,7 @@
       const btnClear = document.getElementById('btnClearHistory');
       if (btnClear) {
         btnClear.addEventListener('click', () => {
-          localStorage.removeItem('solitiquo_reading_history');
+          localStorage.removeItem(getProfileAccountStorageKey('solitiquo_reading_history'));
           loadReadingHistory();
         });
       }
@@ -1208,7 +1214,7 @@
       if (!btnSave) return;
 
       try {
-        const prefs = JSON.parse(localStorage.getItem('solitiquo_newsletter_prefs') || '{}');
+        const prefs = JSON.parse(localStorage.getItem(getProfileAccountStorageKey('solitiquo_newsletter_prefs') || '__no_user_newsletter__') || '{}');
         if (typeof prefs.daily === 'boolean') document.getElementById('nl-daily').checked = prefs.daily;
         if (typeof prefs.weekly === 'boolean') document.getElementById('nl-weekly').checked = prefs.weekly;
         if (typeof prefs.special === 'boolean') document.getElementById('nl-special').checked = prefs.special;
@@ -1219,7 +1225,7 @@
         const weekly = document.getElementById('nl-weekly').checked;
         const special = document.getElementById('nl-special').checked;
 
-        localStorage.setItem('solitiquo_newsletter_prefs', JSON.stringify({ daily, weekly, special }));
+        localStorage.setItem(getProfileAccountStorageKey('solitiquo_newsletter_prefs'), JSON.stringify({ daily, weekly, special }));
 
         const origText = btnSave.textContent;
         btnSave.textContent = t('nl_saved', '✓ Préférences enregistrées !');
@@ -1232,20 +1238,17 @@
     }
 
     // Bouton déconnexion
-    document.getElementById('btn-logout').addEventListener('click', async (e) => {
-      e.preventDefault();
-      try {
-        await fetch('/api/auth/logout', {
-          method: 'POST',
-          headers: { 'X-CSRF-Token': SolitiquoAPI.csrfToken },
-          credentials: 'include'
-        });
-        localStorage.removeItem('user_data');
-        window.location.href = 'index.html';
-      } catch (err) {
-        window.location.href = 'index.html';
-      }
-    });
+    const logoutBtn = document.getElementById('btn-logout');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (window.SolitiquoAPI && typeof SolitiquoAPI.logout === 'function') {
+          await SolitiquoAPI.logout();
+        } else {
+          window.location.href = 'index.html';
+        }
+      });
+    }
 
     // --- ESPACE TÉLÉCHARGEMENTS HORS-LIGNE (NETFLIX STYLE) ---
     let currentOfflineFilter = 'all';
