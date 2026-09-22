@@ -463,7 +463,7 @@
                     <span class="hero-badge-cat">${tCategory(une.category)} ${langBadgeUne}</span>
                     ${une.is_premium ? '<span class="premium-tag">PREMIUM</span>' : ''}
                 </div>
-                <h1 class="hero-title-main">${une.title} ${une.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">' : ''}</h1>
+                <h1 class="hero-title-main">${une.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-right:6px;" loading="lazy"> ' : ''}${une.title}</h1>
                 <p class="hero-excerpt">${une.excerpt || ''}</p>
               </div>
             </section>
@@ -475,14 +475,14 @@
             ? `<span style="background:#37463D;color:white;padding:2px 6px;border-radius:3px;font-size:0.65rem;margin-left:6px;">${art.language === 'fr' ? '🇫🇷' : '🇬🇧'} ${art.language.toUpperCase()}</span>`
             : '';
           const _pb = (art) => art.is_premium
-            ? `<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">`
+            ? `<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-right:6px;" loading="lazy"> `
             : '';
 
           document.getElementById('magazine-feed').innerHTML = `
             <article class="article-magazine">
               <img src="${featured.image_url}" class="mag-img" onerror="handleImgError(this)" loading="lazy">
               <div class="mag-content">
-                <a href="article.html?id=${featured.id}" style="text-decoration:none;"><h3>${featured.title} ${_lb(featured)} ${_pb(featured)}</h3></a>
+                <a href="article.html?id=${featured.id}" style="text-decoration:none;"><h3>${_pb(featured)}${featured.title} ${_lb(featured)}</h3></a>
                 <p class="mag-excerpt">${featured.excerpt || featured.slug}</p>
                 <small style="color:#888;font-size:0.85rem;">${SolitiquoAPI.formatDate(featured.published_at)}</small>
               </div>
@@ -496,7 +496,7 @@
                   </div>
                   <div class="grid-card-body">
                     <span class="grid-card-cat">${tCategory(art.category || 'SOCIAL')}</span>
-                    <h4 class="grid-card-title">${art.title} ${_lb(art)} ${_pb(art)}</h4>
+                    <h4 class="grid-card-title">${_pb(art)}${art.title} ${_lb(art)}</h4>
                     <p class="grid-card-excerpt">${art.read_time || 3} ${t('article_reading_time', 'min de lecture')}</p>
                     <div class="grid-card-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
                   </div>
@@ -549,7 +549,7 @@
                   : '';
 
                 const linkDisco = 'article.html?id=' + art.id;
-                const pb = art.is_premium ? ' <img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">' : '';
+                const pb = art.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-right:6px;" loading="lazy"> ' : '';
                 const catTag = art.category || 'Social';
 
                 return '<a href="' + linkDisco + '" class="' + cardClass + '">' +
@@ -558,7 +558,7 @@
                   '</div>' +
                   '<div class="disco-body">' +
                     '<span class="art-cat" style="font-size:0.65rem; margin-bottom:4px; color:#C82823; font-weight:800; text-transform:uppercase;">' + tCategory(catTag) + '</span>' +
-                    '<h4 class="disco-title">' + art.title + pb + '</h4>' +
+                    '<h4 class="disco-title">' + pb + art.title + '</h4>' +
                     excerptHtml +
                     '<div class="disco-date">' + SolitiquoAPI.formatDate(art.published_at) + '</div>' +
                   '</div>' +

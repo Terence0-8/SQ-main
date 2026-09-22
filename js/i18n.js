@@ -1345,13 +1345,15 @@ async function loadArticles(lang = getLanguage()) {
         const uneCat = une.category || '';
         const badgeLabel = t('badge_une', 'À LA UNE');
 
+        const uneBadge = une.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-right:6px;" loading="lazy">' : '';
+
         heroContainer.innerHTML = `
           <section class="grand-hero-section">
             <a href="${linkUne}" style="position:absolute; inset:0; z-index:2;" aria-label="${uneTitle}"></a>
             <img src="${uneImg}" class="hero-bg-img" style="object-position: top center;" alt="${uneTitle}">
             <div class="hero-overlay">
               <span class="hero-tag">${badgeLabel}${uneCat ? ' • ' + tCategory(uneCat) : ''}</span>
-              <h1 class="hero-title-main">${uneTitle}</h1>
+              <h1 class="hero-title-main">${uneBadge}${uneTitle}</h1>
               <p class="hero-excerpt">${uneExcerpt}</p>
             </div>
           </section>
@@ -1373,6 +1375,7 @@ async function loadArticles(lang = getLanguage()) {
             const artExcerpt = art.excerpt || art.description || '';
             const artCat = art.category || '';
             const artDate = art.published_at || art.date ? (window.SolitiquoAPI && window.SolitiquoAPI.formatDate ? window.SolitiquoAPI.formatDate(art.published_at || art.date) : '') : '';
+            const artBadge = art.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-right:6px;" loading="lazy">' : '';
 
             return `
               <article class="article-row">
@@ -1384,7 +1387,7 @@ async function loadArticles(lang = getLanguage()) {
                 <div class="art-info">
                   <span class="art-cat">${tCategory(artCat)}</span>
                   <a href="${linkArt}" style="text-decoration:none;">
-                    <h3 class="art-title">${artTitle}</h3>
+                    <h3 class="art-title">${artBadge}${artTitle}</h3>
                   </a>
                   <p class="art-desc">${artExcerpt}</p>
                   ${artDate ? `<div style="font-size:0.8rem; color:#999; margin-top:8px;">${artDate}</div>` : ''}
@@ -1419,7 +1422,7 @@ async function loadArticles(lang = getLanguage()) {
               : '';
 
             const linkDisco = 'article.html?id=' + art.id;
-            const pb = art.is_premium ? ' <img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-left:4px;" loading="lazy">' : '';
+            const pb = art.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-right:6px;" loading="lazy">' : '';
             const catTag = art.category || '';
             const artDate = art.published_at || art.date ? (window.SolitiquoAPI && window.SolitiquoAPI.formatDate ? window.SolitiquoAPI.formatDate(art.published_at || art.date) : '') : '';
 
@@ -1430,7 +1433,7 @@ async function loadArticles(lang = getLanguage()) {
                 </div>
                 <div class="disco-body">
                   <span class="art-cat" style="font-size:0.65rem; margin-bottom:4px; color:#C82823; font-weight:800; text-transform:uppercase;">${tCategory(catTag)}</span>
-                  <h4 class="disco-title">${art.title}${pb}</h4>
+                  <h4 class="disco-title">${pb}${art.title}</h4>
                   ${excerptHtml}
                   ${artDate ? `<div class="disco-date">${artDate}</div>` : ''}
                 </div>
