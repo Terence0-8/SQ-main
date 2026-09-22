@@ -22,8 +22,8 @@
   <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
   <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
   <title>Mon Espace — Solitiquo</title>
-  <link rel="stylesheet" href="css/shared.css?v=45" />
-  <link rel="stylesheet" href="css/pages/profil.css?v=45" />
+  <link rel="stylesheet" href="css/shared.css?v=49" />
+  <link rel="stylesheet" href="css/pages/profil.css?v=49" />
   <style id="offline-tabs-style">
     /* Règle absolue de désactivation et de grisement des onglets hors-connexion */
     body.is-offline .tab-btn:not([data-tab="tab-downloads"]),
@@ -470,10 +470,10 @@
     </div>
   </footer>
 
-  <script src="js/i18n.js"></script>
-  <script src="/js/solitiquo.js?v=42"></script>
+  <script src="js/i18n.js?v=49"></script>
+  <script src="/js/solitiquo.js?v=49"></script>
   <script src="js/config.js"></script>
-  <script src="/js/api.js?v=42"></script>
+  <script src="/js/api.js?v=49"></script>
   <script src="/js/offline-manager.js"></script>
   <script>
     // --- DÉCONNEXION ROBUSTE ---
@@ -935,14 +935,33 @@
             }
 
             if (isRenewalCancelled) {
-              const dateDesc = formattedDate
-                ? `${t('renewal_cancelled_desc', 'Votre accès Premium reste actif jusqu\'au')} <strong>${formattedDate}</strong>.`
-                : `${t('renewal_cancelled_desc', 'Votre accès Premium reste actif jusqu\'à l\'échéance')}.`;
+              const dateNotice = formattedDate
+                ? `${t('reactivate_countdown_prefix', 'Vos avantages restent accessibles jusqu\'au')} <strong>${formattedDate}</strong>`
+                : `${t('renewal_cancelled_desc', 'Votre accès Premium reste actif jusqu\'à l\'échéance')}`;
 
               actionArea.innerHTML = `
-                <h3>${t('status_renewal_cancelled', 'Renouvellement annulé')}</h3>
-                <p style="font-size:0.95rem; color:#475569; margin-bottom:12px;">${dateDesc}</p>
-                <button class="btn-action btn-upgrade" id="btn-reactivate-sub" onclick="window.reactivateSubscription()"><span data-i18n="btn_reactivate_sub">${t('btn_reactivate_sub', 'Réactiver mon abonnement')}</span></button>
+                <div class="reactivate-hero-box">
+                  <div class="reactivate-header-row">
+                    <span class="reactivate-badge-highlight">${t('reactivate_card_badge', 'Abonnement')}</span>
+                    <span class="reactivate-date-chip">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      ${dateNotice}
+                    </span>
+                  </div>
+
+                  <h3 class="reactivate-hero-title">${t('reactivate_card_title', 'Continuer l\'expérience Premium')}</h3>
+                  <p class="reactivate-hero-desc">${t('reactivate_card_desc', 'Le renouvellement automatique de votre abonnement est actuellement suspendu. Réactivez-le pour conserver l\'ensemble de vos enquêtes, téléchargements et dossiers sans coupure.')}</p>
+
+                  <div class="reactivate-cta-row">
+                    <button class="btn-action btn-reactivate-hero" id="btn-reactivate-sub" onclick="window.reactivateSubscription()">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                      <span>${t('reactivate_cta_btn', 'Réactiver mon abonnement')}</span>
+                    </button>
+                    <span class="reactivate-guarantee-note">
+                      ${t('reactivate_guarantee_text', 'Sans surcoût • Gestion simple depuis votre compte')}
+                    </span>
+                  </div>
+                </div>
               `;
             } else {
               let dateInfo = '';

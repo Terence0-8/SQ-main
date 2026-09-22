@@ -1263,3 +1263,121 @@ input:checked + .slider:before {
     grid-template-columns: 1fr;
   }
 }
+
+/* ── CARTE DE RÉACTIVATION PREMIUM (SOBRE AVEC ROUGE SOLITIQUO SUR LA DATE) ── */
+.reactivate-hero-box {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 1.8rem 2rem;
+  margin-top: 0.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
+.reactivate-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.reactivate-badge-highlight {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  background: #F1F5F9;
+  color: #475569;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Rouge Solitiquo sur la phrase / date de fin d'abonnement */
+.reactivate-date-chip {
+  font-size: 0.86rem;
+  color: #C82823;
+  background: rgba(200, 40, 35, 0.06);
+  border: 1px solid rgba(200, 40, 35, 0.2);
+  padding: 5px 14px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 500;
+}
+
+.reactivate-date-chip strong {
+  color: #C82823;
+  font-weight: 700;
+}
+
+.reactivate-date-chip svg {
+  color: #C82823;
+}
+
+.reactivate-hero-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 0.5rem;
+  line-height: 1.35;
+}
+
+.reactivate-hero-desc {
+  font-size: 0.94rem;
+  color: #64748B;
+  line-height: 1.6;
+  margin-bottom: 1.6rem;
+  max-width: 680px;
+}
+
+.reactivate-cta-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-top: 0.2rem;
+}
+
+/* Bouton sobre vert institutionnel Solitiquo */
+.btn-reactivate-hero {
+  background: var(--primary-dark) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--primary-dark) !important;
+  padding: 12px 26px !important;
+  font-size: 0.92rem !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 6px rgba(55, 70, 61, 0.12) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-reactivate-hero:hover {
+  background: #28342D !important;
+  border-color: #28342D !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(55, 70, 61, 0.2) !important;
+}
+
+.btn-reactivate-hero svg {
+  stroke: #ffffff;
+}
+
+.reactivate-guarantee-note {
+  font-size: 0.8rem;
+  color: #94A3B8;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
