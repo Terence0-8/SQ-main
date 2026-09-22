@@ -6,7 +6,7 @@
 // ============================================================
 
 // CACHE_NAME inclut la version/date du déploiement
-const CACHE_NAME = 'solitiquo-v20260922-reactivate-reddate-v5';
+const CACHE_NAME = 'solitiquo-v20260922-offline-fix-v1';
 
 // Assets à pré-cacher au moment de l'installation (TOUTES les pages et TOUS les fichiers CSS)
 const PRECACHE_URLS = [
@@ -78,10 +78,12 @@ const PRECACHE_URLS = [
     // Scripts JS essentiels
     '/js/solitiquo.js',
     '/js/api.js',
+    '/js/api.js?v=offline-fix1',
     '/js/config.js',
     '/js/i18n.js',
     '/js/lazyload.js',
     '/js/offline-manager.js',
+    '/js/offline-manager.js?v=offline-fix1',
 
     // Assets généraux
     '/logo.svg',

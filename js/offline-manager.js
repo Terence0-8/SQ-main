@@ -47,9 +47,27 @@ const SolitiquoOffline = (function() {
   }
 
   function getCurrentUserId() {
+    // Priorité 1 : utilisateur en mémoire (déjà initialisé)
     const user = window._currentUser;
     const id = user && (user.id ?? user.user_id);
-    return id !== undefined && id !== null ? String(id) : null;
+    if (id !== undefined && id !== null) return String(id);
+
+    // Priorité 2 : cache localStorage (utile lors du chargement initial hors-ligne
+    // avant que SolitiquoAPI.getProfile() n'ait eu le temps d'alimenter _currentUser)
+    try {
+      const cached = localStorage.getItem('solitiquo_cached_user');
+      if (cached) {
+        const cachedUser = JSON.parse(cached);
+        const cachedId = cachedUser && (cachedUser.id ?? cachedUser.user_id);
+        if (cachedId !== undefined && cachedId !== null) {
+          // Remonter la valeur en mémoire pour les appels suivants
+          if (!window._currentUser) window._currentUser = cachedUser;
+          return String(cachedId);
+        }
+      }
+    } catch (_e) {}
+
+    return null;
   }
 
   function requireCurrentUserId() {

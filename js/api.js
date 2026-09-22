@@ -25,7 +25,16 @@ const SolitiquoAPI = {
   },
 
   getArticleById: async (id) => {
-    // 1. Chercher d'abord dans les téléchargements IndexedDB (chargement instantané sans appel réseau inutile)
+    // 0. S'assurer que _currentUser est disponible pour l'acc\u00e8s IndexedDB hors-ligne
+    //    (race condition : getProfile() n'a peut-\u00eatre pas encore r\u00e9solu lors du premier appel)
+    if (!window._currentUser) {
+      try {
+        const cached = localStorage.getItem('solitiquo_cached_user');
+        if (cached) window._currentUser = JSON.parse(cached);
+      } catch (_e) {}
+    }
+
+    // 1. Chercher d'abord dans les t\u00e9l\u00e9chargements IndexedDB (chargement instantan\u00e9 sans appel r\u00e9seau inutile)
     if (window.SolitiquoOffline) {
       try {
         const offlineItem = await window.SolitiquoOffline.getContent(id, 'article');
@@ -53,6 +62,7 @@ const SolitiquoAPI = {
     }
   },
 
+
   formatDate: (dateString, customLang) => {
     if (!dateString) return '';
     const lang = customLang || (typeof getLanguage === 'function' ? getLanguage() : (localStorage.getItem('siteLanguage') || 'fr'));
@@ -78,7 +88,15 @@ const SolitiquoAPI = {
   },
 
   getPodcastById: async (id) => {
-    // 1. Chercher d'abord dans les téléchargements IndexedDB (chargement instantané sans appel réseau inutile)
+    // 0. S'assurer que _currentUser est disponible pour l'acc\u00e8s IndexedDB hors-ligne
+    if (!window._currentUser) {
+      try {
+        const cached = localStorage.getItem('solitiquo_cached_user');
+        if (cached) window._currentUser = JSON.parse(cached);
+      } catch (_e) {}
+    }
+
+    // 1. Chercher d'abord dans les t\u00e9l\u00e9chargements IndexedDB (chargement instantan\u00e9 sans appel r\u00e9seau inutile)
     if (window.SolitiquoOffline) {
       try {
         const offlineItem = await window.SolitiquoOffline.getContent(id, 'podcast');
@@ -99,6 +117,7 @@ const SolitiquoAPI = {
       return null;
     }
   },
+
 
   // --- AUTHENTIFICATION ---
   register: async (userData) => {

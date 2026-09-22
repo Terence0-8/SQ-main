@@ -1406,11 +1406,11 @@
     </div>
   </footer>
 
-  <script src="/js/offline-manager.js"></script>
+  <script src="/js/offline-manager.js?v=offline-fix1"></script>
   <script src="js/i18n.js"></script>
   <script src="/js/solitiquo.js?v=38"></script>
   <script src="js/config.js"></script>
-  <script src="/js/api.js?v=38"></script>
+  <script src="/js/api.js?v=offline-fix1"></script>
   <script>
     // --- MENU MOBILE ---
     const burger = document.getElementById('burgerBtn');
@@ -2231,6 +2231,13 @@
 
       if (window.SolitiquoOffline && id) {
         try {
+          // S'assurer que _currentUser est chargé depuis le cache local AVANT tout accès IndexedDB
+          if (!window._currentUser) {
+            try {
+              const _cached = localStorage.getItem('solitiquo_cached_user');
+              if (_cached) window._currentUser = JSON.parse(_cached);
+            } catch (_ce) {}
+          }
           const isSaved = await window.SolitiquoOffline.getContent(id, 'article');
           if (isSaved) {
             window._currentContentIsDownloaded = true;
