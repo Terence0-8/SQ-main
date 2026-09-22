@@ -217,6 +217,7 @@ app.get('/api/ping', (req, res) => {
 const csrfExemptPaths = [
   '/api/auth/login',
   '/api/auth/register',
+  '/api/auth/logout',
   '/api/subscriptions/webhook',
   '/api/subscriptions/stripe-webhook',
   '/api/stripe/webhook',

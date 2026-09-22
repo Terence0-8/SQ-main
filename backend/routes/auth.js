@@ -158,12 +158,19 @@ router.post('/login', async (req, res) => {
 // ============================================
 // 3. DÉCONNEXION (Logout)
 // ============================================
-router.post('/logout', verifyCsrf, (req, res) => {
-  req.session.destroy((err) => {
-    if (err) return res.status(500).json({ success: false, error: "Erreur déconnexion" });
-    res.clearCookie('connect.sid');
-    res.json({ success: true, message: "Déconnecté." });
-  });
+router.all('/logout', (req, res) => {
+  if (req.session) {
+    req.session.destroy((err) => {
+      res.clearCookie('connect.sid', { path: '/' });
+      if (err) {
+        console.error('Erreur destruction session:', err);
+      }
+      return res.json({ success: true, message: "Déconnecté." });
+    });
+  } else {
+    res.clearCookie('connect.sid', { path: '/' });
+    return res.json({ success: true, message: "Déconnecté." });
+  }
 });
 
 // ============================================

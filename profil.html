@@ -193,7 +193,7 @@
         <div class="user-name" id="user-name">Chargement...</div>
         <div class="user-email" id="user-email">...</div>
         <div class="user-role-badge" id="user-role-badge">Lecteur</div>
-        <button id="btn-logout" class="btn-logout" data-i18n="auth_logout">Se déconnecter</button>
+        <button id="btn-logout" class="btn-logout" onclick="handleProfileLogout(event)" data-i18n="auth_logout">Se déconnecter</button>
       </aside>
 
       <section class="sub-card">
@@ -471,11 +471,44 @@
   </footer>
 
   <script src="js/i18n.js"></script>
-  <script src="/js/solitiquo.js?v=40"></script>
+  <script src="/js/solitiquo.js?v=42"></script>
   <script src="js/config.js"></script>
-  <script src="/js/api.js?v=40"></script>
+  <script src="/js/api.js?v=42"></script>
   <script src="/js/offline-manager.js"></script>
   <script>
+    // --- DÉCONNEXION ROBUSTE ---
+    window.handleProfileLogout = async function(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      const btn = document.getElementById('btn-logout');
+      if (btn) {
+        btn.textContent = (typeof t === 'function' ? t('logging_out', 'Déconnexion...') : 'Déconnexion...');
+        btn.disabled = true;
+        btn.style.opacity = '0.6';
+      }
+      try {
+        if (window.SolitiquoAPI && typeof SolitiquoAPI.logout === 'function') {
+          await SolitiquoAPI.logout();
+          return;
+        }
+      } catch (_err) {
+        console.warn('Erreur SolitiquoAPI.logout:', _err);
+      }
+      // Failsafe direct si API non chargée ou erreur inattendue
+      try {
+        localStorage.removeItem('solitiquo_cached_user');
+        localStorage.removeItem('user');
+        localStorage.removeItem('user_data');
+        localStorage.removeItem('user_role');
+        sessionStorage.clear();
+        document.cookie = 'connect.sid=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
+      } catch (_e) {}
+      window.location.replace('index.html');
+    };
+
     // --- NAVIGATION MOBILE ---
     const burger = document.getElementById('burgerBtn');
     const mobileNav = document.getElementById('mobileNav');
@@ -1240,13 +1273,8 @@
     // Bouton déconnexion
     const logoutBtn = document.getElementById('btn-logout');
     if (logoutBtn) {
-      logoutBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        if (window.SolitiquoAPI && typeof SolitiquoAPI.logout === 'function') {
-          await SolitiquoAPI.logout();
-        } else {
-          window.location.href = 'index.html';
-        }
+      logoutBtn.addEventListener('click', (e) => {
+        window.handleProfileLogout(e);
       });
     }
 

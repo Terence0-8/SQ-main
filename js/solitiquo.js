@@ -62,6 +62,25 @@ document.addEventListener('DOMContentLoaded', () => {
     link.addEventListener('click', () => toggleMenu(false));
   });
 
+  // Gestion globale de la déconnexion
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('#btn-logout, .btn-logout, [data-action="logout"]');
+    if (btn) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof window.handleProfileLogout === 'function') {
+        window.handleProfileLogout(e);
+      } else if (window.SolitiquoAPI && typeof window.SolitiquoAPI.logout === 'function') {
+        window.SolitiquoAPI.logout();
+      } else {
+        localStorage.clear();
+        sessionStorage.clear();
+        document.cookie = 'connect.sid=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        window.location.replace('index.html');
+      }
+    }
+  }, true);
+
 
   // ============================================================
   // 2. OVERLAY DE RECHERCHE GLASSMORPHISM (mobile-first)

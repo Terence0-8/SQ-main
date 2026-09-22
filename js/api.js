@@ -128,9 +128,26 @@ const SolitiquoAPI = {
 
   logout: async () => {
     try {
+      let csrf = SolitiquoAPI.csrfToken;
+      if (!csrf) {
+        try {
+          const tokenRes = await fetch(`${API_URL}/csrf-token`, { credentials: 'include' });
+          if (tokenRes.ok) {
+            const tokenJson = await tokenRes.json();
+            if (tokenJson && tokenJson.csrfToken) {
+              csrf = tokenJson.csrfToken;
+              SolitiquoAPI.csrfToken = csrf;
+            }
+          }
+        } catch (_tErr) {}
+      }
+
       await fetch(`${API_URL}/auth/logout`, {
         method: 'POST',
-        headers: { 'X-CSRF-Token': SolitiquoAPI.csrfToken },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrf || ''
+        },
         credentials: 'include'
       });
     } catch (e) {
@@ -149,12 +166,24 @@ const SolitiquoAPI = {
         localStorage.removeItem('solitiquo_cached_user');
         localStorage.removeItem('user');
         localStorage.removeItem('user_data');
+        localStorage.removeItem('user_role');
+        sessionStorage.removeItem('solitiquo_offline');
+        sessionStorage.clear();
+        // Expirer les cookies côté client
+        document.cookie = 'connect.sid=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
       } catch (_e) {}
+
       if (window.SolitiquoOffline && typeof window.SolitiquoOffline.clearAll === 'function') {
-        try { await window.SolitiquoOffline.clearAll(); } catch (_e) {}
+        try {
+          await Promise.race([
+            window.SolitiquoOffline.clearAll(),
+            new Promise((resolve) => setTimeout(resolve, 600))
+          ]);
+        } catch (_e) {}
       }
+
       window._currentUser = null;
-      window.location.href = 'index.html';
+      window.location.replace('index.html');
     }
   },
 
@@ -1284,3 +1313,22 @@ if (typeof navigator !== 'undefined' && !navigator.onLine) {
     window.triggerOfflineModalWithDelay(2000);
   }
 }
+
+// ============================================================
+// DÉLÉGATION GLOBALE POUR LA DÉCONNEXION
+// Garantit que tout clic sur #btn-logout ou .btn-logout déclenche SolitiquoAPI.logout()
+// ============================================================
+document.addEventListener('click', (e) => {
+  const target = e.target;
+  if (!target) return;
+  const btn = target.closest('#btn-logout, .btn-logout, [data-action="logout"]');
+  if (btn) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (btn.tagName === 'BUTTON' || btn.tagName === 'A') {
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+    }
+    SolitiquoAPI.logout();
+  }
+}, true);

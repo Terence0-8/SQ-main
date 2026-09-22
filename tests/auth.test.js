@@ -107,21 +107,25 @@ describe('POST /api/auth/login — validation', () => {
 });
 
 // ---------------------------------------------------------------------------
-// POST /api/auth/logout — protection CSRF
+// /api/auth/logout — Déconnexion
 // ---------------------------------------------------------------------------
-describe('POST /api/auth/logout — CSRF', () => {
-  test('403 sans token CSRF', async () => {
-    const res = await request(app).post('/api/auth/logout').send({});
-    assert.equal(res.status, 403);
-    assert.equal(res.body.success, false);
-  });
-
-  test('403 avec token CSRF incorrect', async () => {
+describe('/api/auth/logout — Déconnexion', () => {
+  test('200 déconnexion réussie via POST /api/auth/logout', async () => {
     const res = await request(app)
       .post('/api/auth/logout')
-      .set('x-csrf-token', 'faux-token-invalide')
       .send({});
-    assert.equal(res.status, 403);
-    assert.equal(res.body.success, false);
+    assert.equal(res.status, 200);
+    assert.equal(res.body.success, true);
+    assert.equal(res.body.message, 'Déconnecté.');
+  });
+
+  test('200 déconnexion réussie via GET /api/auth/logout', async () => {
+    const res = await request(app)
+      .get('/api/auth/logout');
+    assert.equal(res.status, 200);
+    assert.equal(res.body.success, true);
+    assert.equal(res.body.message, 'Déconnecté.');
   });
 });
+
+
