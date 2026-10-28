@@ -301,7 +301,7 @@ const SolitiquoAPI = {
     });
 
     // 2. SI ADMIN : Ajouter le bouton Dashboard (icône seule)
-    if ((user.role === 'admin' || user.role === 'writer') && nav && !document.getElementById('nav-dash-btn')) {
+    if (user.role === 'admin' && nav && !document.getElementById('nav-dash-btn')) {
       document.body.classList.add('is-admin');
       const dashBtn = document.createElement('a');
       dashBtn.id = 'nav-dash-btn';

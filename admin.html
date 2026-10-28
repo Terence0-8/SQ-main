@@ -60,6 +60,10 @@
             <div class="nav-item" data-view="emissions"><i data-lucide="tv"></i> Émissions</div>
             <div class="nav-item" data-view="parties"><i data-lucide="landmark"></i> Partis</div>
             <div class="nav-item" data-view="polls"><i data-lucide="bar-chart-2"></i> Sondages</div>
+            <div class="nav-item" data-view="data">
+                <i data-lucide="database"></i> Solitiquo DATA
+                <span class="badge" style="background:rgba(200,40,35,0.12); color:#C82823; font-weight:700; margin-left:auto; font-size:0.65rem; padding:2px 7px; border-radius:4px;">10 rég.</span>
+            </div>
             <div class="nav-item" data-view="moderation">
                 <i data-lucide="shield-alert"></i> Modération
                 <span id="badge-mod" class="badge badge-draft" style="display:none; margin-left:auto;">0</span>
@@ -358,6 +362,253 @@
                 </div>
             </div>
 
+            <!-- 📊 SECTION SOLITIQUO DATA -->
+            <div id="view-data" class="view-section">
+                <!-- Statistiques Clés DATA -->
+                <div class="analytics-grid">
+                    <div class="stat-card stat-primary">
+                        <div class="stat-icon"><i data-lucide="map"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-label">Cartographie Active</div>
+                            <div class="stat-value">10 <span style="font-size:0.9rem; font-weight:500; color:#64748b;">Régions</span></div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-success">
+                        <div class="stat-icon"><i data-lucide="check-circle-2"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-label">Outils en Ligne</div>
+                            <div class="stat-value">2 <span style="font-size:0.9rem; font-weight:500; color:#64748b;">Disponibles</span></div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-warning">
+                        <div class="stat-icon"><i data-lucide="clock"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-label">Modules en Préparation</div>
+                            <div class="stat-value">4 <span style="font-size:0.9rem; font-weight:500; color:#64748b;">Roadmap</span></div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-premium">
+                        <div class="stat-icon"><i data-lucide="shield-check"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-label">Familles de Sources</div>
+                            <div class="stat-value">5 <span style="font-size:0.9rem; font-weight:500; color:#64748b;">Certifiées</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table des modules & ressources DATA -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3><i data-lucide="layers"></i> Plateforme Solitiquo DATA — Ressources &amp; Sous-pages</h3>
+                        <div style="display:flex; gap:10px;">
+                            <a href="/data.html" target="_blank" class="action-btn" style="background:#37463D;"><i data-lucide="external-link"></i> Voir Page DATA</a>
+                            <a href="/data-cartographie.html" target="_blank" class="action-btn"><i data-lucide="map-pin"></i> Carte Interactive</a>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ressource / Module</th>
+                                <th>Périmètre &amp; Thématiques</th>
+                                <th>Type</th>
+                                <th>Statut</th>
+                                <th>Dernière Révision</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="title-row">
+                                        <div style="width:40px;height:40px;background:#0d1812;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;">
+                                            <i data-lucide="map" style="width:20px;height:20px;"></i>
+                                        </div>
+                                        <div>
+                                            <strong>Carte Interactive du Cameroun</strong>
+                                            <div style="font-size:0.75rem; color:#64748b;">URL: /data-cartographie.html</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>10 Régions du Cameroun</div>
+                                    <div style="font-size:0.75rem; color:#64748b;">Élections 2018–2025, ACLED, IDH, PIB, Démographie</div>
+                                </td>
+                                <td><span style="font-size:0.8rem; font-weight:600; color:#37463D;">Cartographie vectorielle</span></td>
+                                <td><span class="badge badge-pub">🟢 En ligne</span></td>
+                                <td>Octobre 2026</td>
+                                <td style="text-align:right;">
+                                    <a href="/data-cartographie.html" target="_blank" class="btn-icon-sm view" title="Ouvrir la carte"><i data-lucide="external-link"></i></a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="title-row">
+                                        <div style="width:40px;height:40px;background:#f5f4f0;border:1px solid #e2dfd7;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#37463D;">
+                                            <i data-lucide="book-open" style="width:20px;height:20px;"></i>
+                                        </div>
+                                        <div>
+                                            <strong>Données, Méthodologie &amp; Sources</strong>
+                                            <div style="font-size:0.75rem; color:#64748b;">URL: /data-sources.html</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>Documentation nationale</div>
+                                    <div style="font-size:0.75rem; color:#64748b;">ELECAM, INS Cameroun, ACLED, Banque Mondiale, MinSANTE</div>
+                                </td>
+                                <td><span style="font-size:0.8rem; font-weight:600; color:#37463D;">Documentation éditoriale</span></td>
+                                <td><span class="badge badge-pub">🟢 En ligne</span></td>
+                                <td>Octobre 2026</td>
+                                <td style="text-align:right;">
+                                    <a href="/data-sources.html" target="_blank" class="btn-icon-sm view" title="Consulter la documentation"><i data-lucide="external-link"></i></a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="title-row">
+                                        <div style="width:40px;height:40px;background:#1a0f0f;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#C82823;">
+                                            <i data-lucide="pie-chart" style="width:20px;height:20px;"></i>
+                                        </div>
+                                        <div>
+                                            <strong>Infographies Thématiques</strong>
+                                            <div style="font-size:0.75rem; color:#64748b;">Ancrage: /data.html#card-infographies</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>Analyses nationales &amp; sectorielles</div>
+                                    <div style="font-size:0.75rem; color:#64748b;">Timelines, chronologies, diagrammes comparatifs</div>
+                                </td>
+                                <td><span style="font-size:0.8rem; font-weight:600; color:#C82823;">Visualisation visuelle</span></td>
+                                <td><span class="badge badge-pending">🟡 En conception</span></td>
+                                <td>Roadmap Q4 2026</td>
+                                <td style="text-align:right;">
+                                    <a href="/data.html#card-infographies" target="_blank" class="btn-icon-sm edit" title="Voir l'ancrage"><i data-lucide="eye"></i></a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="title-row">
+                                        <div style="width:40px;height:40px;background:#eff6ff;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#2563eb;">
+                                            <i data-lucide="trending-up" style="width:20px;height:20px;"></i>
+                                        </div>
+                                        <div>
+                                            <strong>Tableau de Bord Économique</strong>
+                                            <div style="font-size:0.75rem; color:#64748b;">Ancrage: /data.html#card-economie</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>Macroéconomie &amp; Finances publiques</div>
+                                    <div style="font-size:0.75rem; color:#64748b;">PIB, inflation, dette, balance commerciale, filières rentes</div>
+                                </td>
+                                <td><span style="font-size:0.8rem; font-weight:600; color:#2563eb;">Dashboard interactif</span></td>
+                                <td><span class="badge badge-pending">🟡 En intégration</span></td>
+                                <td>Roadmap Q4 2026</td>
+                                <td style="text-align:right;">
+                                    <a href="/data.html#card-economie" target="_blank" class="btn-icon-sm edit" title="Voir l'ancrage"><i data-lucide="eye"></i></a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="title-row">
+                                        <div style="width:40px;height:40px;background:#fef2f2;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#dc2626;">
+                                            <i data-lucide="vote" style="width:20px;height:20px;"></i>
+                                        </div>
+                                        <div>
+                                            <strong>Résultats Électoraux (1992–2025)</strong>
+                                            <div style="font-size:0.75rem; color:#64748b;">Ancrage: /data.html#card-elections</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>Scrutins nationaux &amp; territoriaux</div>
+                                    <div style="font-size:0.75rem; color:#64748b;">Présidentielles, législatives, municipales, participation</div>
+                                </td>
+                                <td><span style="font-size:0.8rem; font-weight:600; color:#dc2626;">Base électorale</span></td>
+                                <td><span class="badge badge-pending">🟡 Compilation ELECAM</span></td>
+                                <td>Roadmap 2026/2027</td>
+                                <td style="text-align:right;">
+                                    <a href="/data.html#card-elections" target="_blank" class="btn-icon-sm edit" title="Voir l'ancrage"><i data-lucide="eye"></i></a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="title-row">
+                                        <div style="width:40px;height:40px;background:#f0fdf4;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#16a34a;">
+                                            <i data-lucide="users" style="width:20px;height:20px;"></i>
+                                        </div>
+                                        <div>
+                                            <strong>Indicateurs Sociaux &amp; IDH</strong>
+                                            <div style="font-size:0.75rem; color:#64748b;">Ancrage: /data.html#card-social-idh</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>Développement humain régional</div>
+                                    <div style="font-size:0.75rem; color:#64748b;">Santé, éducation, électrification, accès à l'eau potable</div>
+                                </td>
+                                <td><span style="font-size:0.8rem; font-weight:600; color:#16a34a;">Indicateurs composites</span></td>
+                                <td><span class="badge badge-pending">🟡 Modélisation</span></td>
+                                <td>Roadmap 2026/2027</td>
+                                <td style="text-align:right;">
+                                    <a href="/data.html#card-social-idh" target="_blank" class="btn-icon-sm edit" title="Voir l'ancrage"><i data-lucide="eye"></i></a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Protocoles & Liens Rapides -->
+                <div class="charts-row">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3><i data-lucide="shield-check"></i> Statut d'Intégrité des Données</h3>
+                            <p class="chart-subtitle">Protocoles de validation des chiffres publiés</p>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:12px; font-size:0.88rem;">
+                            <div style="display:flex; justify-content:space-between; padding:10px; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
+                                <span>Sources institutionnelles vérifiées</span>
+                                <span style="color:#16a34a; font-weight:700;">100% (5/5)</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; padding:10px; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
+                                <span>Périmètre géographique complet</span>
+                                <span style="color:#16a34a; font-weight:700;">10 Régions couvertes</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; padding:10px; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
+                                <span>Données conflictuelles ACLED</span>
+                                <span style="color:#2563eb; font-weight:700;">Agrégées par région</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; padding:10px; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
+                                <span>Avertissement méthodologique actif</span>
+                                <span style="color:#16a34a; font-weight:700;">Oui (/data-sources.html)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3><i data-lucide="external-link"></i> Accès Rapides Solitiquo DATA</h3>
+                            <p class="chart-subtitle">Consulter les interfaces publiques directement</p>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:10px;">
+                            <a href="/data.html" target="_blank" style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#0d1812; color:#fff; border-radius:8px; text-decoration:none; font-weight:600;">
+                                <span style="display:flex; align-items:center; gap:8px;"><i data-lucide="layout-grid" style="width:16px;height:16px;color:#C82823;"></i> Hub Public DATA</span>
+                                <span style="font-size:0.8rem; color:#94a3b8;">/data.html →</span>
+                            </a>
+                            <a href="/data-cartographie.html" target="_blank" style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#f8fafc; border:1px solid #e2e8f0; color:#1e293b; border-radius:8px; text-decoration:none; font-weight:600;">
+                                <span style="display:flex; align-items:center; gap:8px;"><i data-lucide="map" style="width:16px;height:16px;color:#37463D;"></i> Carte Interactive Complète</span>
+                                <span style="font-size:0.8rem; color:#64748b;">/data-cartographie.html →</span>
+                            </a>
+                            <a href="/data-sources.html" target="_blank" style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#f8fafc; border:1px solid #e2e8f0; color:#1e293b; border-radius:8px; text-decoration:none; font-weight:600;">
+                                <span style="display:flex; align-items:center; gap:8px;"><i data-lucide="file-text" style="width:16px;height:16px;color:#b45309;"></i> Sources &amp; Méthodologie</span>
+                                <span style="font-size:0.8rem; color:#64748b;">/data-sources.html →</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </main>
 
@@ -504,6 +755,13 @@
                 } else if (viewName === 'users') {
                     header.innerHTML = `<i data-lucide="users"></i> Gestion des Utilisateurs`;
                     loadUsers();
+                } else if (viewName === 'data') {
+                    header.innerHTML = `<i data-lucide="database"></i> Plateforme Solitiquo DATA`;
+                    actions.innerHTML = `
+                        <a href="/data.html" target="_blank" class="action-btn" style="background:#37463D;"><i data-lucide="external-link"></i> Voir Hub Public</a>
+                        <a href="/data-cartographie.html" target="_blank" class="action-btn"><i data-lucide="map-pin"></i> Ouvrir Carte</a>
+                        <a href="/data-sources.html" target="_blank" class="action-btn" style="background:#475569;"><i data-lucide="book-open"></i> Sources &amp; Méthodes</a>
+                    `;
                 } else {
                     header.innerHTML = `<i data-lucide="layout-dashboard"></i> Vue d'ensemble`;
                 }
