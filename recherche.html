@@ -180,6 +180,7 @@
                     <button class="filter-btn format-btn" data-group="type" data-val="article" data-i18n="search_articles">Articles</button>
                     <button class="filter-btn format-btn" data-group="type" data-val="podcast" data-i18n="search_podcasts">Podcasts</button>
                     <button class="filter-btn format-btn" data-group="type" data-val="emission" data-i18n="search_emissions">Émissions</button>
+                    <button class="filter-btn format-btn" data-group="type" data-val="data">Data</button>
                 </div>
 
                 <div class="filter-row">
@@ -297,6 +298,98 @@
             });
         });
 
+        const DATA_CATALOG = [
+            {
+                id: 'data-cartographie',
+                title: 'Carte Interactive du Cameroun — Données Régionales & Sécurité ACLED',
+                description: 'Visualisation cartographique des 10 régions du Cameroun : couches d’incidents sécuritaires (ACLED), IDH, PIB régional, démographie et repères électoraux.',
+                image_url: '/data_hero_bg_1793188684198.jpg',
+                category: 'Data',
+                date: '2026-03-01T12:00:00.000Z',
+                type: 'data',
+                href: 'data-cartographie.html',
+                keywords: 'carte cartographie interactive regions cameroun acled securite idh pib littoral centre adamaoua est extreme-nord nord nord-ouest ouest sud sud-ouest comparateur departement yaounde douala'
+            },
+            {
+                id: 'data-comparateur',
+                title: 'Comparateur Régional Solitiquo DATA',
+                description: 'Outil d’analyse comparative côte-à-côte entre deux régions camerounaises sur les axes socio-économiques, électoraux et sécuritaires.',
+                image_url: '/data_hero_bg_1793188684198.jpg',
+                category: 'Data',
+                date: '2026-03-01T10:00:00.000Z',
+                type: 'data',
+                href: 'data-cartographie.html',
+                keywords: 'comparateur regional regions comparaison indicateurs territoires douala yaounde pib idh acled'
+            },
+            {
+                id: 'data-elections',
+                title: 'Archives & Résultats Électoraux (1992–2025)',
+                description: 'Historique des scrutins présidentiels et législatifs camerounais, cartographie électorale départementale et analyse de participation.',
+                image_url: '/data_hero_bg_1793188684198.jpg',
+                category: 'Data',
+                date: '2026-02-15T09:00:00.000Z',
+                type: 'data',
+                href: 'data.html#card-elections',
+                keywords: 'elections scrutins presidentielle legislatives elecam vote suffrage politique 1992 2018 2025 participation'
+            },
+            {
+                id: 'data-economie',
+                title: 'Tableau de bord Économique Régional & PIB',
+                description: 'Indicateurs macroéconomiques, PIB par région, commerce extérieur, inflation, investissements et ressources naturelles documentées.',
+                image_url: '/data_hero_bg_1793188684198.jpg',
+                category: 'Data',
+                date: '2026-02-10T09:00:00.000Z',
+                type: 'data',
+                href: 'data.html#card-economie',
+                keywords: 'economie pib inflation commerce finance budget ressources mine petrole douala ins croissance'
+            },
+            {
+                id: 'data-social',
+                title: 'Indicateurs Sociaux, Santé & Démographie (IDH)',
+                description: 'Indice de Développement Humain (IDH), taux de scolarisation, électrification rurale, santé publique et pyramide des âges.',
+                image_url: '/data_hero_bg_1793188684198.jpg',
+                category: 'Data',
+                date: '2026-02-01T09:00:00.000Z',
+                type: 'data',
+                href: 'data.html#card-social-idh',
+                keywords: 'social idh demographie sante education scolarisation hopitaux population minsante ins developpement'
+            },
+            {
+                id: 'data-securite',
+                title: 'Observatoire des Incidents Sécuritaires & Données ACLED',
+                description: 'Cartographie des conflits, séries chronologiques des incidents et intensité des crises territoriales au Cameroun.',
+                image_url: '/data_hero_bg_1793188684198.jpg',
+                category: 'Data',
+                date: '2026-01-20T09:00:00.000Z',
+                type: 'data',
+                href: 'data-cartographie.html',
+                keywords: 'securite acled conflits crises incidents noso extreme-nord boko haram attaques armee territoire'
+            },
+            {
+                id: 'data-sources',
+                title: 'Données, Méthodologie & Sources Officielles',
+                description: 'Audit et traçabilité des 5 familles d’organismes de référence : ELECAM, INS Cameroun, ACLED, Banque Mondiale, MinSANTE.',
+                image_url: '/data_hero_bg_1793188684198.jpg',
+                category: 'Data',
+                date: '2026-01-15T09:00:00.000Z',
+                type: 'data',
+                href: 'data-sources.html',
+                keywords: 'sources methodologie audit ins elecam acled banque mondiale minsante fiabilite open data'
+            }
+        ];
+
+        function matchDataResources(query) {
+            if (!query || !query.trim()) return [];
+            const clean = str => (str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const term = clean(query.trim());
+            const tokens = term.split(/\s+/).filter(t => t.length > 1);
+            return DATA_CATALOG.filter(res => {
+                const haystack = clean(`${res.title} ${res.description} ${res.keywords} ${res.category}`);
+                if (haystack.includes(term)) return true;
+                return tokens.length > 0 && tokens.every(tk => haystack.includes(tk));
+            });
+        }
+
         // 1. CHERCHER VIA L'API (Recherche Textuelle)
         async function performSearch(query) {
             const list = document.getElementById('results-list');
@@ -307,28 +400,43 @@
                 const lang = getLanguage ? getLanguage() : 'fr';
                 const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(query)}&lang=${lang}&limit=50`);
 
-                if (!res.ok) {
-                    const errData = await res.json().catch(() => ({}));
-                    throw new Error(errData.error || `Erreur ${res.status}`);
+                let apiResults = [];
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success && Array.isArray(data.results)) {
+                        apiResults = data.results;
+                    }
                 }
 
-                const data = await res.json();
-
-                if (!data.success) throw new Error(data.error || 'Erreur API');
-
-                // Normalisation — /api/search retourne déjà type, title, description, date
-                allData = (data.results || []).map(item => ({
+                // Normalisation — /api/search retourne type, title, description, date
+                let results = apiResults.map(item => ({
                     ...item,
                     date: item.date || item.published_at || item.created_at,
                     description: item.description || item.excerpt || ''
                 }));
 
+                // Complément direct avec les ressources DATA correspondantes (garantit l'affichage immédiat)
+                const localDataMatches = matchDataResources(query);
+                localDataMatches.forEach(dataItem => {
+                    if (!results.some(r => r.id === dataItem.id || (r.type === 'data' && r.title === dataItem.title))) {
+                        results.unshift(dataItem);
+                    }
+                });
+
+                allData = results;
                 applyFilters();
 
             } catch (e) {
                 console.error('❌ Erreur recherche:', e);
-                list.innerHTML = `<p style="text-align:center;color:red;">${t('msg_error')} : ${e.message}</p>`;
-                count.textContent = `0 ${t('search_results')}`;
+                // Si l'API échoue, vérifier au moins les outils DATA en fallback
+                const fallbackMatches = matchDataResources(query);
+                if (fallbackMatches.length > 0) {
+                    allData = fallbackMatches;
+                    applyFilters();
+                } else {
+                    list.innerHTML = `<p style="text-align:center;color:red;">${t('msg_error')} : ${e.message}</p>`;
+                    count.textContent = `0 ${t('search_results')}`;
+                }
             }
         }
 
@@ -342,33 +450,45 @@
             if (btnShowAll) btnShowAll.style.display = 'none';
 
             try {
-                // On appelle les 3 endpoints
-                const lang = getLanguage();
+                const lang = getLanguage ? getLanguage() : 'fr';
                 const [resArt, resPod, resEm] = await Promise.all([
-                    fetch(`${API_URL}/articles?lang=${lang}`),
-                    fetch(`${API_URL}/podcasts?lang=${lang}`),
-                    fetch(`${API_URL}/emissions?lang=${lang}`)
+                    fetch(`${API_URL}/articles?lang=${lang}`).catch(() => ({ json: () => ({ data: [] }) })),
+                    fetch(`${API_URL}/podcasts?lang=${lang}`).catch(() => ({ json: () => ({ data: [] }) })),
+                    fetch(`${API_URL}/emissions?lang=${lang}`).catch(() => ({ json: () => ({ data: [] }) }))
                 ]);
 
-                const [jArt, jPod, jEm] = await Promise.all([resArt.json(), resPod.json(), resEm.json()]);
+                const [jArt, jPod, jEm] = await Promise.all([
+                    resArt.json ? resArt.json().catch(() => ({ data: [] })) : { data: [] },
+                    resPod.json ? resPod.json().catch(() => ({ data: [] })) : { data: [] },
+                    resEm.json ? resEm.json().catch(() => ({ data: [] })) : { data: [] }
+                ]);
 
                 // Normalisation des données pour avoir une structure commune
                 const articles = (jArt.data || []).map(i => ({ ...i, type: 'article', date: i.published_at }));
                 const podcasts = (jPod.data || []).map(i => ({ ...i, type: 'podcast', date: i.created_at }));
                 const emissions = (jEm.data || []).map(i => ({ ...i, type: 'emission', date: i.published_at }));
+                const dataItems = DATA_CATALOG.map(i => ({ ...i, type: 'data' }));
 
-                // Fusion et Tri par date décroissante
-                allData = [...articles, ...podcasts, ...emissions].sort((a, b) => new Date(b.date) - new Date(a.date));
+                // Fusion et Tri : outils DATA valorisés, puis par date décroissante
+                allData = [...dataItems, ...articles, ...podcasts, ...emissions].sort((a, b) => {
+                    if (a.type === 'data' && b.type !== 'data') return -1;
+                    if (b.type === 'data' && a.type !== 'data') return 1;
+                    return new Date(b.date) - new Date(a.date);
+                });
 
                 applyFilters();
 
-            } catch (e) { console.error(e); list.innerHTML = t('msg_error'); }
+            } catch (e) {
+                console.error(e);
+                allData = DATA_CATALOG.map(i => ({ ...i, type: 'data' }));
+                applyFilters();
+            }
         }
 
         // 3. APPLIQUER LES FILTRES (Type + Thème)
         function applyFilters() {
-            const typeFilter = document.querySelector('.filter-btn[data-group="type"].active').dataset.val;
-            const catFilter = document.querySelector('.filter-btn[data-group="cat"].active').dataset.val;
+            const typeFilter = document.querySelector('.filter-btn[data-group="type"].active')?.dataset.val || 'all';
+            const catFilter = document.querySelector('.filter-btn[data-group="cat"].active')?.dataset.val || 'all';
 
             let filtered = allData;
 
@@ -412,6 +532,7 @@
                 if (item.type === 'article') { link = `article.html?id=${item.id}`; badgeClass = 'type-article'; badgeText = t('type_article').toUpperCase(); }
                 else if (item.type === 'podcast') { link = `podcast.html?id=${item.id}`; badgeClass = 'type-podcast'; badgeText = t('type_podcast').toUpperCase(); }
                 else if (item.type === 'emission') { link = `emissions.html`; badgeClass = 'type-emission'; badgeText = t('type_emission').toUpperCase(); }
+                else if (item.type === 'data') { link = item.href || 'data.html'; badgeClass = 'type-data'; badgeText = 'DATA'; }
 
                 const img = item.image_url || 'https://via.placeholder.com/300x200';
                 const cat = item.category ? `<span class="res-cat-badge"> • ${item.category}</span>` : '';
