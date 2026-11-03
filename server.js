@@ -67,6 +67,10 @@ app.use((req, res, next) => {
   if (req.path === '/admin.html') return next();
   rootStatic(req, res, next);
 });
+// Protection stricte : interdiction absolue d'accès direct/statique aux fichiers d'importation
+app.use('/uploads/imports', (req, res) => {
+  res.status(403).json({ error: 'Accès interdit aux fichiers d\'importation bruts' });
+});
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), staticOptions));
 app.use(['/fr', '/en'], express.static(__dirname, staticOptions));
 
@@ -261,7 +265,7 @@ app.use('/api/stripe', require('./backend/routes/stripe'));
 
 const apiRoutes = [
   'articles', 'language', 'polls', 'comments', 'auth', 'podcasts',
-  'admin', 'analytics', 'emissions', 'contact', 'search', 'subscriptions', 'parties', 'translate'
+  'admin', 'analytics', 'emissions', 'contact', 'search', 'subscriptions', 'parties', 'translate', 'data'
 ];
 
 apiRoutes.forEach(route => {

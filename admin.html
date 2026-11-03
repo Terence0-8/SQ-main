@@ -20,6 +20,7 @@
     <title>Console Admin — Solitiquo</title>
     <link rel="stylesheet" href="css/shared.css?v=38" />
     <link rel="stylesheet" href="/css/pages/admin.css?v=2" />
+    <link rel="stylesheet" href="/css/pages/admin-data.css?v=2" />
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
         rel="stylesheet" />
@@ -362,249 +363,1631 @@
                 </div>
             </div>
 
-            <!-- 📊 SECTION SOLITIQUO DATA -->
+                        <!-- 📊 SECTION SOLITIQUO DATA (Lot 2C.1 : Refonte Complète UX/UI) -->
             <div id="view-data" class="view-section">
-                <!-- Statistiques Clés DATA -->
-                <div class="analytics-grid">
-                    <div class="stat-card stat-primary">
-                        <div class="stat-icon"><i data-lucide="map"></i></div>
-                        <div class="stat-content">
-                            <div class="stat-label">Cartographie Active</div>
-                            <div class="stat-value">10 <span style="font-size:0.9rem; font-weight:500; color:#64748b;">Régions</span></div>
+                <!-- Navigation interne de l'Espace DATA (8 vues distinctes) -->
+                <div class="data-subnav">
+                    <button type="button" class="data-tab-btn active" data-tab="dashboard">
+                        <i data-lucide="layout-dashboard"></i> 1. Vue d'ensemble
+                    </button>
+                    <button type="button" class="data-tab-btn" data-tab="observations">
+                        <i data-lucide="table"></i> 2. Observations
+                    </button>
+                    <button type="button" class="data-tab-btn" data-tab="editor">
+                        <i data-lucide="plus-circle"></i> 3. Nouvelle observation
+                    </button>
+                    <button type="button" class="data-tab-btn" data-tab="validation">
+                        <i data-lucide="check-square"></i> 4. Validation méthodologique
+                        <span id="badge-validation-count" class="data-tab-badge" style="display:none;">0</span>
+                    </button>
+                    <button type="button" class="data-tab-btn" data-tab="publications">
+                        <i data-lucide="globe"></i> 5. Publications
+                    </button>
+                    <button type="button" class="data-tab-btn" data-tab="sources">
+                        <i data-lucide="book-open"></i> 6. Sources documentaires
+                    </button>
+                    <button type="button" class="data-tab-btn" data-tab="referentials">
+                        <i data-lucide="layers"></i> 7. Référentiels
+                    </button>
+                    <button type="button" class="data-tab-btn" data-tab="audit">
+                        <i data-lucide="shield-check"></i> 8. Historique et audit
+                    </button>
+                    <button type="button" class="data-tab-btn" data-tab="import">
+                        <i data-lucide="upload-cloud"></i> 9. Importation
+                    </button>
+
+                    <div class="data-subnav-actions">
+                        <label class="data-toggle-label" title="Filtrer les jeux de tests automatisés pour n'afficher que les données réelles du Cameroun">
+                            <input type="checkbox" id="data-toggle-exclude-tests" checked />
+                            <span>Données réelles uniquement</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- ============================================================== -->
+                <!-- 1. VUE D'ENSEMBLE (TABLEAU DE BORD)                            -->
+                <!-- ============================================================== -->
+                <div id="data-view-dashboard" class="data-tab-content">
+                    <!-- Bandeau supérieur -->
+                    <div class="data-hero-banner">
+                        <div class="data-hero-content">
+                            <div class="data-hero-tag"><i data-lucide="shield-check"></i> Console Institutionnelle</div>
+                            <h2 class="data-hero-title">Solitiquo DATA — Administration Statistique</h2>
+                            <p class="data-hero-desc">
+                                Pilotage du recueil, de la validation méthodologique et de la publication des données nationales et régionales du Cameroun.
+                            </p>
+                        </div>
+                        <div class="data-hero-actions">
+                            <button type="button" class="data-btn data-btn-primary" onclick="SolitiquoDataAdmin.openEditor()">
+                                <i data-lucide="plus"></i> Nouvelle observation
+                            </button>
+                            <a href="/data.html" target="_blank" class="data-btn data-btn-outline">
+                                <i data-lucide="external-link"></i> Portail public
+                            </a>
+                            <a href="/data-cartographie.html" target="_blank" class="data-btn data-btn-outline">
+                                <i data-lucide="map"></i> Cartographie
+                            </a>
                         </div>
                     </div>
-                    <div class="stat-card stat-success">
-                        <div class="stat-icon"><i data-lucide="check-circle-2"></i></div>
-                        <div class="stat-content">
-                            <div class="stat-label">Outils en Ligne</div>
-                            <div class="stat-value">2 <span style="font-size:0.9rem; font-weight:500; color:#64748b;">Disponibles</span></div>
+
+                    <!-- 6 Indicateurs synthétiques proportionnés -->
+                    <div class="data-stats-grid">
+                        <div class="data-stat-card">
+                            <div class="data-stat-icon total"><i data-lucide="layers"></i></div>
+                            <div class="data-stat-info">
+                                <span class="data-stat-label">Total Observations</span>
+                                <span id="data-stat-total" class="data-stat-value">—</span>
+                            </div>
+                        </div>
+                        <div class="data-stat-card">
+                            <div class="data-stat-icon draft"><i data-lucide="file-edit"></i></div>
+                            <div class="data-stat-info">
+                                <span class="data-stat-label">Brouillons</span>
+                                <span id="data-stat-draft" class="data-stat-value">—</span>
+                            </div>
+                        </div>
+                        <div class="data-stat-card">
+                            <div class="data-stat-icon review"><i data-lucide="clock"></i></div>
+                            <div class="data-stat-info">
+                                <span class="data-stat-label">En attente de validation</span>
+                                <span id="data-stat-review" class="data-stat-value">—</span>
+                            </div>
+                        </div>
+                        <div class="data-stat-card">
+                            <div class="data-stat-icon validated"><i data-lucide="check-circle-2"></i></div>
+                            <div class="data-stat-info">
+                                <span class="data-stat-label">Validées</span>
+                                <span id="data-stat-validated" class="data-stat-value">—</span>
+                            </div>
+                        </div>
+                        <div class="data-stat-card">
+                            <div class="data-stat-icon published"><i data-lucide="globe"></i></div>
+                            <div class="data-stat-info">
+                                <span class="data-stat-label">Publiées</span>
+                                <span id="data-stat-published" class="data-stat-value">—</span>
+                            </div>
+                        </div>
+                        <div class="data-stat-card">
+                            <div class="data-stat-icon revoked"><i data-lucide="alert-octagon"></i></div>
+                            <div class="data-stat-info">
+                                <span class="data-stat-label">Révoquées</span>
+                                <span id="data-stat-revoked" class="data-stat-value">—</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="stat-card stat-warning">
-                        <div class="stat-icon"><i data-lucide="clock"></i></div>
-                        <div class="stat-content">
-                            <div class="stat-label">Modules en Préparation</div>
-                            <div class="stat-value">4 <span style="font-size:0.9rem; font-weight:500; color:#64748b;">Roadmap</span></div>
+
+                    <!-- Deux zones de travail équilibrées -->
+                    <div class="data-dashboard-workspace">
+                        <!-- Zone 1 : Tâches d'intervention & Dernières publications -->
+                        <div class="data-dashboard-col">
+                            <!-- Tâches nécessitant une intervention -->
+                            <div class="data-card">
+                                <div class="data-card-header">
+                                    <div class="data-card-title">
+                                        <i data-lucide="bell" style="color:#C82823;"></i>
+                                        <span>Tâches nécessitant une intervention</span>
+                                    </div>
+                                    <button type="button" class="data-btn data-btn-xs data-btn-secondary" onclick="SolitiquoDataAdmin.switchDataTab('validation')">
+                                        Voir la file
+                                    </button>
+                                </div>
+                                <div id="data-action-required-list" class="data-action-list">
+                                    <div class="data-empty-state"><i data-lucide="loader" class="spin"></i> Analyse des tâches en cours...</div>
+                                </div>
+                            </div>
+
+                            <!-- Tableau Dernières Publications Actives -->
+                            <div class="data-card">
+                                <div class="data-card-header">
+                                    <div class="data-card-title">
+                                        <i data-lucide="globe" style="color:#15803d;"></i>
+                                        <span>Dernières publications actives</span>
+                                    </div>
+                                    <button type="button" class="data-btn data-btn-xs data-btn-secondary" onclick="SolitiquoDataAdmin.switchDataTab('publications')">
+                                        Toutes les publications
+                                    </button>
+                                </div>
+                                <div class="data-table-wrapper">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Indicateur</th>
+                                                <th>Territoire</th>
+                                                <th>Période</th>
+                                                <th>Valeur</th>
+                                                <th>Date pub.</th>
+                                                <th style="text-align:right;">Fiche</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="data-recent-publications-list">
+                                            <tr><td colspan="6" class="data-empty-state"><i data-lucide="loader" class="spin"></i> Chargement...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="stat-card stat-premium">
-                        <div class="stat-icon"><i data-lucide="shield-check"></i></div>
-                        <div class="stat-content">
-                            <div class="stat-label">Familles de Sources</div>
-                            <div class="stat-value">5 <span style="font-size:0.9rem; font-weight:500; color:#64748b;">Certifiées</span></div>
+
+                        <!-- Zone 2 : Activité éditoriale récente -->
+                        <div class="data-dashboard-col">
+                            <div class="data-card">
+                                <div class="data-card-header">
+                                    <div class="data-card-title">
+                                        <i data-lucide="history" style="color:#37463D;"></i>
+                                        <span>Activité éditoriale récente</span>
+                                    </div>
+                                    <button type="button" class="data-btn data-btn-xs data-btn-secondary" onclick="SolitiquoDataAdmin.switchDataTab('audit')">
+                                        Tout l'audit
+                                    </button>
+                                </div>
+                                <div id="data-recent-activity-list" class="data-activity-stream">
+                                    <div class="data-empty-state"><i data-lucide="loader" class="spin"></i> Chargement de l'activité...</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Table des modules & ressources DATA -->
-                <div class="table-card">
-                    <div class="table-header">
-                        <h3><i data-lucide="layers"></i> Plateforme Solitiquo DATA — Ressources &amp; Sous-pages</h3>
-                        <div style="display:flex; gap:10px;">
-                            <a href="/data.html" target="_blank" class="action-btn" style="background:#37463D;"><i data-lucide="external-link"></i> Voir Page DATA</a>
-                            <a href="/data-cartographie.html" target="_blank" class="action-btn"><i data-lucide="map-pin"></i> Carte Interactive</a>
+                <!-- ============================================================== -->
+                <!-- 2. OBSERVATIONS STATISTIQUES                                   -->
+                <!-- ============================================================== -->
+                <div id="data-view-observations" class="data-tab-content" style="display:none;">
+                    <div class="data-filter-bar">
+                        <div class="data-filter-item">
+                            <label for="data-filter-status">Statut éditorial</label>
+                            <select id="data-filter-status" class="data-select">
+                                <option value="">Tous les statuts</option>
+                                <option value="draft">Brouillons (draft)</option>
+                                <option value="under_review">En attente de validation (under_review)</option>
+                                <option value="methodologically_validated">Validées (validated)</option>
+                                <option value="published">Publiées actives (published)</option>
+                                <option value="superseded">Remplacées par révision (superseded)</option>
+                                <option value="rejected">Rejetées (rejected)</option>
+                                <option value="revoked">Révoquées (revoked)</option>
+                                <option value="archived">Archivées (archived)</option>
+                            </select>
+                        </div>
+                        <div class="data-filter-item">
+                            <label for="data-filter-indicator">Indicateur</label>
+                            <select id="data-filter-indicator" class="data-select">
+                                <option value="">Tous les indicateurs</option>
+                            </select>
+                        </div>
+                        <div class="data-filter-item">
+                            <label for="data-filter-territory">Territoire</label>
+                            <select id="data-filter-territory" class="data-select">
+                                <option value="">Tous les territoires</option>
+                            </select>
+                        </div>
+                        <div class="data-filter-item" style="flex:1; min-width:220px;">
+                            <label for="data-filter-search">Recherche libre</label>
+                            <div class="data-input-group">
+                                <input type="text" id="data-filter-search" class="data-input" placeholder="Indicateur, code, région..." />
+                                <i data-lucide="search" class="icon-right"></i>
+                            </div>
+                        </div>
+                        <div class="data-filter-item" style="align-self:flex-end;">
+                            <button type="button" id="btn-reset-filters" class="data-btn data-btn-secondary" title="Réinitialiser les filtres">
+                                <i data-lucide="rotate-ccw"></i> Réinitialiser
+                            </button>
                         </div>
                     </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Ressource / Module</th>
-                                <th>Périmètre &amp; Thématiques</th>
-                                <th>Type</th>
-                                <th>Statut</th>
-                                <th>Dernière Révision</th>
-                                <th style="text-align:right;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <div class="title-row">
-                                        <div style="width:40px;height:40px;background:#0d1812;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;">
-                                            <i data-lucide="map" style="width:20px;height:20px;"></i>
-                                        </div>
-                                        <div>
-                                            <strong>Carte Interactive du Cameroun</strong>
-                                            <div style="font-size:0.75rem; color:#64748b;">URL: /data-cartographie.html</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div>10 Régions du Cameroun</div>
-                                    <div style="font-size:0.75rem; color:#64748b;">Élections 2018–2025, ACLED, IDH, PIB, Démographie</div>
-                                </td>
-                                <td><span style="font-size:0.8rem; font-weight:600; color:#37463D;">Cartographie vectorielle</span></td>
-                                <td><span class="badge badge-pub">🟢 En ligne</span></td>
-                                <td>Octobre 2026</td>
-                                <td style="text-align:right;">
-                                    <a href="/data-cartographie.html" target="_blank" class="btn-icon-sm view" title="Ouvrir la carte"><i data-lucide="external-link"></i></a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="title-row">
-                                        <div style="width:40px;height:40px;background:#f5f4f0;border:1px solid #e2dfd7;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#37463D;">
-                                            <i data-lucide="book-open" style="width:20px;height:20px;"></i>
-                                        </div>
-                                        <div>
-                                            <strong>Données, Méthodologie &amp; Sources</strong>
-                                            <div style="font-size:0.75rem; color:#64748b;">URL: /data-sources.html</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div>Documentation nationale</div>
-                                    <div style="font-size:0.75rem; color:#64748b;">ELECAM, INS Cameroun, ACLED, Banque Mondiale, MinSANTE</div>
-                                </td>
-                                <td><span style="font-size:0.8rem; font-weight:600; color:#37463D;">Documentation éditoriale</span></td>
-                                <td><span class="badge badge-pub">🟢 En ligne</span></td>
-                                <td>Octobre 2026</td>
-                                <td style="text-align:right;">
-                                    <a href="/data-sources.html" target="_blank" class="btn-icon-sm view" title="Consulter la documentation"><i data-lucide="external-link"></i></a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="title-row">
-                                        <div style="width:40px;height:40px;background:#1a0f0f;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#C82823;">
-                                            <i data-lucide="pie-chart" style="width:20px;height:20px;"></i>
-                                        </div>
-                                        <div>
-                                            <strong>Infographies Thématiques</strong>
-                                            <div style="font-size:0.75rem; color:#64748b;">Ancrage: /data.html#card-infographies</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div>Analyses nationales &amp; sectorielles</div>
-                                    <div style="font-size:0.75rem; color:#64748b;">Timelines, chronologies, diagrammes comparatifs</div>
-                                </td>
-                                <td><span style="font-size:0.8rem; font-weight:600; color:#C82823;">Visualisation visuelle</span></td>
-                                <td><span class="badge badge-pending">🟡 En conception</span></td>
-                                <td>Roadmap Q4 2026</td>
-                                <td style="text-align:right;">
-                                    <a href="/data.html#card-infographies" target="_blank" class="btn-icon-sm edit" title="Voir l'ancrage"><i data-lucide="eye"></i></a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="title-row">
-                                        <div style="width:40px;height:40px;background:#eff6ff;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#2563eb;">
-                                            <i data-lucide="trending-up" style="width:20px;height:20px;"></i>
-                                        </div>
-                                        <div>
-                                            <strong>Tableau de Bord Économique</strong>
-                                            <div style="font-size:0.75rem; color:#64748b;">Ancrage: /data.html#card-economie</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div>Macroéconomie &amp; Finances publiques</div>
-                                    <div style="font-size:0.75rem; color:#64748b;">PIB, inflation, dette, balance commerciale, filières rentes</div>
-                                </td>
-                                <td><span style="font-size:0.8rem; font-weight:600; color:#2563eb;">Dashboard interactif</span></td>
-                                <td><span class="badge badge-pending">🟡 En intégration</span></td>
-                                <td>Roadmap Q4 2026</td>
-                                <td style="text-align:right;">
-                                    <a href="/data.html#card-economie" target="_blank" class="btn-icon-sm edit" title="Voir l'ancrage"><i data-lucide="eye"></i></a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="title-row">
-                                        <div style="width:40px;height:40px;background:#fef2f2;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#dc2626;">
-                                            <i data-lucide="vote" style="width:20px;height:20px;"></i>
-                                        </div>
-                                        <div>
-                                            <strong>Résultats Électoraux (1992–2025)</strong>
-                                            <div style="font-size:0.75rem; color:#64748b;">Ancrage: /data.html#card-elections</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div>Scrutins nationaux &amp; territoriaux</div>
-                                    <div style="font-size:0.75rem; color:#64748b;">Présidentielles, législatives, municipales, participation</div>
-                                </td>
-                                <td><span style="font-size:0.8rem; font-weight:600; color:#dc2626;">Base électorale</span></td>
-                                <td><span class="badge badge-pending">🟡 Compilation ELECAM</span></td>
-                                <td>Roadmap 2026/2027</td>
-                                <td style="text-align:right;">
-                                    <a href="/data.html#card-elections" target="_blank" class="btn-icon-sm edit" title="Voir l'ancrage"><i data-lucide="eye"></i></a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="title-row">
-                                        <div style="width:40px;height:40px;background:#f0fdf4;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#16a34a;">
-                                            <i data-lucide="users" style="width:20px;height:20px;"></i>
-                                        </div>
-                                        <div>
-                                            <strong>Indicateurs Sociaux &amp; IDH</strong>
-                                            <div style="font-size:0.75rem; color:#64748b;">Ancrage: /data.html#card-social-idh</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div>Développement humain régional</div>
-                                    <div style="font-size:0.75rem; color:#64748b;">Santé, éducation, électrification, accès à l'eau potable</div>
-                                </td>
-                                <td><span style="font-size:0.8rem; font-weight:600; color:#16a34a;">Indicateurs composites</span></td>
-                                <td><span class="badge badge-pending">🟡 Modélisation</span></td>
-                                <td>Roadmap 2026/2027</td>
-                                <td style="text-align:right;">
-                                    <a href="/data.html#card-social-idh" target="_blank" class="btn-icon-sm edit" title="Voir l'ancrage"><i data-lucide="eye"></i></a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+
+                    <div class="data-card" style="margin-bottom:16px;">
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Indicateur &amp; R(n)</th>
+                                        <th>Territoire</th>
+                                        <th>Période &amp; Nature</th>
+                                        <th>Valeur</th>
+                                        <th>Statut</th>
+                                        <th>Sources</th>
+                                        <th>Auteur</th>
+                                        <th style="text-align:right;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="data-observations-tbody">
+                                    <tr><td colspan="8" class="data-empty-state"><i data-lucide="loader" class="spin"></i> Chargement des observations...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="data-pagination-bar">
+                        <span id="data-page-info">Page 1 sur 1</span>
+                        <div class="data-pagination-actions">
+                            <button type="button" id="data-page-prev" class="data-btn data-btn-secondary data-btn-sm" disabled>
+                                <i data-lucide="chevron-left"></i> Précédent
+                            </button>
+                            <button type="button" id="data-page-next" class="data-btn data-btn-secondary data-btn-sm" disabled>
+                                Suivant <i data-lucide="chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Protocoles & Liens Rapides -->
-                <div class="charts-row">
-                    <div class="chart-card">
-                        <div class="chart-header">
-                            <h3><i data-lucide="shield-check"></i> Statut d'Intégrité des Données</h3>
-                            <p class="chart-subtitle">Protocoles de validation des chiffres publiés</p>
+                <!-- ============================================================== -->
+                <!-- 3. FORMULAIRE DE SAISIE EN CINQ ÉTAPES (NOUVELLE OBSERVATION) -->
+                <!-- ============================================================== -->
+                <div id="data-view-editor" class="data-tab-content" style="display:none;">
+                    <div class="data-editor-container">
+                        <!-- En-tête de l'éditeur -->
+                        <div class="data-editor-header">
+                            <div>
+                                <span class="data-editor-tag" id="editor-mode-badge"><i data-lucide="plus-circle"></i> Création de brouillon</span>
+                                <h2 class="data-editor-title" id="editor-title">Saisie d'une Observation Statistique</h2>
+                                <p class="data-editor-subtitle">Renseignez les cinq sections méthodologiques pour soumettre la donnée au comité de validation.</p>
+                            </div>
+                            <div class="data-editor-top-actions">
+                                <button type="button" class="data-btn data-btn-secondary" onclick="SolitiquoDataAdmin.switchDataTab('observations')">
+                                    <i data-lucide="x"></i> Annuler
+                                </button>
+                                <button type="button" class="data-btn data-btn-outline" id="btn-editor-save-draft-top">
+                                    <i data-lucide="save"></i> Enregistrer en brouillon
+                                </button>
+                            </div>
                         </div>
-                        <div style="display:flex; flex-direction:column; gap:12px; font-size:0.88rem;">
-                            <div style="display:flex; justify-content:space-between; padding:10px; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
-                                <span>Sources institutionnelles vérifiées</span>
-                                <span style="color:#16a34a; font-weight:700;">100% (5/5)</span>
+
+                        <!-- Stepper indicateur de progression -->
+                        <div class="data-stepper">
+                            <div class="data-step active" data-step="1">
+                                <div class="data-step-circle">1</div>
+                                <div class="data-step-label">
+                                    <span class="data-step-num">Étape 1</span>
+                                    <span class="data-step-name">Identification</span>
+                                </div>
                             </div>
-                            <div style="display:flex; justify-content:space-between; padding:10px; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
-                                <span>Périmètre géographique complet</span>
-                                <span style="color:#16a34a; font-weight:700;">10 Régions couvertes</span>
+                            <div class="data-step-line"></div>
+                            <div class="data-step" data-step="2">
+                                <div class="data-step-circle">2</div>
+                                <div class="data-step-label">
+                                    <span class="data-step-num">Étape 2</span>
+                                    <span class="data-step-name">Période &amp; Méthode</span>
+                                </div>
                             </div>
-                            <div style="display:flex; justify-content:space-between; padding:10px; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
-                                <span>Données conflictuelles ACLED</span>
-                                <span style="color:#2563eb; font-weight:700;">Agrégées par région</span>
+                            <div class="data-step-line"></div>
+                            <div class="data-step" data-step="3">
+                                <div class="data-step-circle">3</div>
+                                <div class="data-step-label">
+                                    <span class="data-step-num">Étape 3</span>
+                                    <span class="data-step-name">Valeur Statistique</span>
+                                </div>
                             </div>
-                            <div style="display:flex; justify-content:space-between; padding:10px; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
-                                <span>Avertissement méthodologique actif</span>
-                                <span style="color:#16a34a; font-weight:700;">Oui (/data-sources.html)</span>
+                            <div class="data-step-line"></div>
+                            <div class="data-step" data-step="4">
+                                <div class="data-step-circle">4</div>
+                                <div class="data-step-label">
+                                    <span class="data-step-num">Étape 4</span>
+                                    <span class="data-step-name">Sources &amp; Ventilations</span>
+                                </div>
+                            </div>
+                            <div class="data-step-line"></div>
+                            <div class="data-step" data-step="5">
+                                <div class="data-step-circle">5</div>
+                                <div class="data-step-label">
+                                    <span class="data-step-num">Étape 5</span>
+                                    <span class="data-step-name">Vérification</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contenu des 5 étapes -->
+                        <div class="data-editor-body">
+                            <!-- ÉTAPE 1 : IDENTIFICATION -->
+                            <div class="data-step-content active" id="step-pane-1">
+                                <div class="data-form-section-title">
+                                    <i data-lucide="compass"></i>
+                                    <span>Étape 1 — Identification de l'Indicateur et du Territoire</span>
+                                </div>
+                                <p class="data-form-help">Sélectionnez l'indicateur officiel et la maille géographique couverte par cette observation.</p>
+
+                                <div class="data-form-grid-2">
+                                    <div class="data-form-group">
+                                        <label for="editor-indicator-id" class="data-form-label required">Indicateur Statistique</label>
+                                        <select id="editor-indicator-id" class="data-select data-select-lg">
+                                            <option value="">Sélectionnez un indicateur...</option>
+                                        </select>
+                                        <div id="editor-indicator-meta" class="data-meta-box" style="display:none;">
+                                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                                <span class="data-category-badge" id="editor-meta-category">—</span>
+                                                <span style="font-size:0.8rem; color:#64748b;">Unité : <strong id="editor-meta-unit" style="color:#0f172a;">—</strong></span>
+                                            </div>
+                                            <p id="editor-meta-desc" style="margin-top:6px; font-size:0.85rem; color:#475569;"></p>
+                                        </div>
+                                    </div>
+
+                                    <div class="data-form-group">
+                                        <label for="editor-territory-id" class="data-form-label required">Territoire Géographique</label>
+                                        <select id="editor-territory-id" class="data-select data-select-lg">
+                                            <option value="">Sélectionnez le territoire...</option>
+                                        </select>
+                                        <span class="data-input-hint">Cameroun National (CMR) ou l'une des 10 régions administratives.</span>
+                                    </div>
+                                </div>
+
+                                <div class="data-form-group" style="margin-top:20px;">
+                                    <label for="editor-public-reason" class="data-form-label">Titre éditorial court ou motif de collecte</label>
+                                    <input type="text" id="editor-public-reason" class="data-input" placeholder="Ex: Projections démographiques consolidées INS 2024" />
+                                    <span class="data-input-hint">Synthèse publique explicitant le contexte ou le motif de l'observation.</span>
+                                </div>
+                            </div>
+
+                            <!-- ÉTAPE 2 : PÉRIODE ET MÉTHODOLOGIE -->
+                            <div class="data-step-content" id="step-pane-2" style="display:none;">
+                                <div class="data-form-section-title">
+                                    <i data-lucide="calendar"></i>
+                                    <span>Étape 2 — Période Temporelle et Méthodologie</span>
+                                </div>
+                                <p class="data-form-help">Définissez la temporalité de l'observation et la méthode scientifique ayant produit la donnée.</p>
+
+                                <div class="data-form-grid-3">
+                                    <div class="data-form-group">
+                                        <label for="editor-period-type" class="data-form-label required">Type de Période</label>
+                                        <select id="editor-period-type" class="data-select">
+                                            <option value="ANNUAL">ANNUAL — Annuel</option>
+                                            <option value="MONTHLY">MONTHLY — Mensuel</option>
+                                            <option value="QUARTERLY">QUARTERLY — Trimestriel</option>
+                                            <option value="DAILY">DAILY — Journalier</option>
+                                            <option value="POINT_IN_TIME">POINT_IN_TIME — Date ponctuelle</option>
+                                            <option value="MULTI_YEAR_CYCLE">MULTI_YEAR_CYCLE — Cycle pluriannuel</option>
+                                            <option value="ELECTORAL_CYCLE">ELECTORAL_CYCLE — Cycle électoral</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="data-form-group">
+                                        <label for="editor-period-start" class="data-form-label required">Date de Début</label>
+                                        <input type="date" id="editor-period-start" class="data-input" />
+                                    </div>
+
+                                    <div class="data-form-group">
+                                        <label for="editor-period-end" class="data-form-label required">Date de Fin</label>
+                                        <input type="date" id="editor-period-end" class="data-input" />
+                                    </div>
+                                </div>
+
+                                <!-- Raccourcis temporels rapides -->
+                                <div class="data-quick-years">
+                                    <span style="font-size:0.8rem; font-weight:600; color:#64748b;">Année rapide :</span>
+                                    <button type="button" class="data-pill-btn" onclick="SolitiquoDataAdmin.setYearPreset(2026)">2026</button>
+                                    <button type="button" class="data-pill-btn" onclick="SolitiquoDataAdmin.setYearPreset(2025)">2025</button>
+                                    <button type="button" class="data-pill-btn" onclick="SolitiquoDataAdmin.setYearPreset(2024)">2024</button>
+                                    <button type="button" class="data-pill-btn" onclick="SolitiquoDataAdmin.setYearPreset(2023)">2023</button>
+                                    <button type="button" class="data-pill-btn" onclick="SolitiquoDataAdmin.setYearPreset(2022)">2022</button>
+                                </div>
+
+                                <div class="data-form-group" style="margin-top:24px;">
+                                    <label for="editor-methodology-nature" class="data-form-label required">Nature Méthodologique de la Donnée</label>
+                                    <select id="editor-methodology-nature" class="data-select data-select-lg">
+                                        <option value="administrative_record">administrative_record — Registre administratif officiel (INS, Ministères, ELECAM)</option>
+                                        <option value="census">census — Recensement exhaustif de la population / des structures</option>
+                                        <option value="sample_survey">sample_survey — Enquête représentative par sondage probabiliste</option>
+                                        <option value="nowcast_estimate">nowcast_estimate — Estimation / Nowcasting économique conjoncturel</option>
+                                        <option value="projection">projection — Projection prospective ou démographique modélisée</option>
+                                    </select>
+                                </div>
+
+                                <div class="data-form-grid-2" style="margin-top:20px;">
+                                    <div class="data-form-group">
+                                        <label for="editor-methodology-notes" class="data-form-label">Précisions méthodologiques (Publiques)</label>
+                                        <textarea id="editor-methodology-notes" class="data-textarea" rows="3" placeholder="Champ de collecte, formules de calcul, normes internationales appliquées..."></textarea>
+                                        <span class="data-input-hint">Visible sur la fiche publique pour éclairer les chercheurs et journalistes.</span>
+                                    </div>
+                                    <div class="data-form-group">
+                                        <label for="editor-internal-notes" class="data-form-label">Notes internes &amp; vérifications (Confidentiel)</label>
+                                        <textarea id="editor-internal-notes" class="data-textarea" rows="3" placeholder="Points de vigilance pour le relecteur, recoupements à opérer..."></textarea>
+                                        <span class="data-input-hint" style="color:#b45309;"><i data-lucide="lock" style="width:12px;height:12px;"></i> Strictement réservé aux rédacteurs et administrateurs.</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ÉTAPE 3 : VALEUR STATISTIQUE -->
+                            <div class="data-step-content" id="step-pane-3" style="display:none;">
+                                <div class="data-form-section-title">
+                                    <i data-lucide="bar-chart-2"></i>
+                                    <span>Étape 3 — Valeur Statistique et Format</span>
+                                </div>
+                                <p class="data-form-help">Renseignez exactement un type de valeur. Le chiffre zéro (0) est parfaitement valide et reconnu.</p>
+
+                                <div class="data-value-format-tabs">
+                                    <button type="button" class="data-val-type-btn active" data-vtype="numeric" onclick="SolitiquoDataAdmin.setValueType('numeric')">
+                                        <i data-lucide="hash"></i> Valeur Numérique
+                                    </button>
+                                    <button type="button" class="data-val-type-btn" data-vtype="text" onclick="SolitiquoDataAdmin.setValueType('text')">
+                                        <i data-lucide="type"></i> Valeur Textuelle / Qualitative
+                                    </button>
+                                    <button type="button" class="data-val-type-btn" data-vtype="missing" onclick="SolitiquoDataAdmin.setValueType('missing')">
+                                        <i data-lucide="help-circle"></i> Donnée Manquante / Non disponible
+                                    </button>
+                                </div>
+
+                                <!-- Panneau Valeur Numérique -->
+                                <div id="panel-val-numeric" class="data-val-panel">
+                                    <div class="data-numeric-input-card">
+                                        <label for="editor-val-numeric" class="data-form-label required">Montant ou Effectif Numérique</label>
+                                        <div class="data-numeric-row">
+                                            <input type="number" step="any" id="editor-val-numeric" class="data-big-input" placeholder="0" />
+                                            <span class="data-unit-chip" id="editor-unit-chip">Unité</span>
+                                        </div>
+                                        <span class="data-input-hint">Supporte les entiers, les décimales et le zéro.</span>
+                                    </div>
+                                </div>
+
+                                <!-- Panneau Valeur Textuelle -->
+                                <div id="panel-val-text" class="data-val-panel" style="display:none;">
+                                    <div class="data-form-group">
+                                        <label for="editor-val-text" class="data-form-label required">Observation qualitative ou textuelle</label>
+                                        <input type="text" id="editor-val-text" class="data-input" placeholder="Ex: Situation d'alerte modérée" />
+                                    </div>
+                                </div>
+
+                                <!-- Panneau Donnée Manquante -->
+                                <div id="panel-val-missing" class="data-val-panel" style="display:none;">
+                                    <div class="data-form-group">
+                                        <label for="editor-missing-reason" class="data-form-label required">Motif officiel d'indisponibilité</label>
+                                        <select id="editor-missing-reason" class="data-select">
+                                            <option value="">Sélectionnez un motif...</option>
+                                            <option value="not_available">not_available — Donnée non disponible / non publiée</option>
+                                            <option value="confidential">confidential — Secret statistique ou confidentialité légale</option>
+                                            <option value="not_applicable">not_applicable — Non applicable sur ce territoire ou cette période</option>
+                                            <option value="temporarily_withheld">temporarily_withheld — Rétention temporaire / en cours de collecte</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Contrôle de cohérence visuel -->
+                                <div class="data-consistency-card" id="editor-consistency-box">
+                                    <div class="data-consistency-icon"><i data-lucide="check-circle" style="color:#15803d;"></i></div>
+                                    <div>
+                                        <h4 style="font-size:0.95rem; font-weight:700; color:#0f172a;">Contrôle de Cohérence</h4>
+                                        <p id="editor-consistency-text" style="font-size:0.85rem; color:#475569;">Veuillez renseigner une valeur numérique pour vérifier sa validité.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ÉTAPE 4 : SOURCES DOCUMENTAIRES & VENTILATIONS -->
+                            <div class="data-step-content" id="step-pane-4" style="display:none;">
+                                <div class="data-form-section-title">
+                                    <i data-lucide="git-merge"></i>
+                                    <span>Étape 4 — Sources Documentaires &amp; Ventilations Statistiques</span>
+                                </div>
+                                <p class="data-form-help">Deux espaces de travail distincts pour garantir la traçabilité institutionnelle et le détail dimensionnel.</p>
+
+                                <div class="data-workspaces-split">
+                                    <!-- ESPACE A : SOURCES DOCUMENTAIRES -->
+                                    <div class="data-workspace-panel">
+                                        <div class="data-panel-badge-title">
+                                            <i data-lucide="book-open"></i>
+                                            <span>Espace A — Sources Documentaires</span>
+                                            <span class="data-pill-mandatory">1 source principale requise</span>
+                                        </div>
+
+                                        <!-- Formulaire d'ajout rapide de source -->
+                                        <div class="data-subform-box">
+                                            <div class="data-form-grid-2">
+                                                <div class="data-form-group">
+                                                    <label for="subform-source-id" class="data-form-label required">Institution émettrice</label>
+                                                    <select id="subform-source-id" class="data-select data-select-sm">
+                                                        <option value="">Sélectionnez l'institution...</option>
+                                                    </select>
+                                                </div>
+                                                <div class="data-form-group">
+                                                    <label for="subform-source-role" class="data-form-label required">Rôle documentaire</label>
+                                                    <select id="subform-source-role" class="data-select data-select-sm">
+                                                        <option value="primary">primary — Source principale officielle</option>
+                                                        <option value="corroboration">corroboration — Source de recoupement / corroboration</option>
+                                                        <option value="methodology">methodology — Note ou manuel méthodologique</option>
+                                                        <option value="conflicting">conflicting — Source contradictoire / alternative</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="data-form-grid-2" style="margin-top:10px;">
+                                                <div class="data-form-group">
+                                                    <label for="subform-doc-tier" class="data-form-label required">Niveau documentaire (Tier)</label>
+                                                    <select id="subform-doc-tier" class="data-select data-select-sm">
+                                                        <option value="TIER_1_OFFICIAL">TIER 1 — Publication officielle d'État (INS, MINFI, ELECAM)</option>
+                                                        <option value="TIER_2_STATISTICAL">TIER 2 — Organisme statistique multilatéral (BEAC, BM, FMI)</option>
+                                                        <option value="TIER_3_ACADEMIC_PEER">TIER 3 — Publication universitaire / Revue à comité</option>
+                                                        <option value="TIER_4_REPUTABLE_NGO">TIER 4 — ONG / Observatoire spécialisé (ACLED, etc.)</option>
+                                                        <option value="TIER_5_SECONDARY_PRESS">TIER 5 — Presse économique ou dépêche d'agence</option>
+                                                    </select>
+                                                </div>
+                                                <div class="data-form-group">
+                                                    <label for="subform-robustness" class="data-form-label required">Robustesse méthodologique</label>
+                                                    <select id="subform-robustness" class="data-select data-select-sm">
+                                                        <option value="high">high — Élevée (Méthodologie transparente et documentée)</option>
+                                                        <option value="medium">medium — Moyenne (Partiellement documentée)</option>
+                                                        <option value="conditional">conditional — Conditionnelle (Sous réserve d'hypothèses)</option>
+                                                        <option value="contentious">contentious — Contestée / Données sujettes à controverse</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="data-form-group" style="margin-top:10px;">
+                                                <label for="subform-citation" class="data-form-label required">Référence bibliographique / Rapport</label>
+                                                <input type="text" id="subform-citation" class="data-input data-input-sm" placeholder="Ex: Rapport économique et financier annexé au PLF 2025, Tableau 1.1" />
+                                            </div>
+
+                                            <div class="data-form-group" style="margin-top:10px;">
+                                                <label for="subform-url" class="data-form-label">URL directe du document (Optionnel)</label>
+                                                <input type="url" id="subform-url" class="data-input data-input-sm" placeholder="https://..." />
+                                            </div>
+
+                                            <button type="button" class="data-btn data-btn-primary data-btn-sm" id="btn-add-source" style="margin-top:12px; width:100%;">
+                                                <i data-lucide="plus"></i> Ajouter cette source documentaire
+                                            </button>
+                                        </div>
+
+                                        <!-- Tableau des sources déjà associées -->
+                                        <div class="data-subtable-title">Sources rattachées à cette observation :</div>
+                                        <div class="data-table-wrapper" style="border:1px solid #e2e8f0; border-radius:8px; max-height:240px; overflow-y:auto;">
+                                            <table class="data-table data-table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Institution</th>
+                                                        <th>Rôle &amp; Tier</th>
+                                                        <th>Référence</th>
+                                                        <th style="text-align:right;">Retirer</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="editor-sources-tbody">
+                                                    <tr><td colspan="4" class="data-empty-state">Aucune source rattachée.</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- ESPACE B : VENTILATIONS STATISTIQUES -->
+                                    <div class="data-workspace-panel">
+                                        <div class="data-panel-badge-title">
+                                            <i data-lucide="pie-chart"></i>
+                                            <span>Espace B — Ventilations Statistiques</span>
+                                            <span class="data-pill-optional">Optionnel</span>
+                                        </div>
+
+                                        <!-- Formulaire d'ajout rapide de ventilation -->
+                                        <div class="data-subform-box">
+                                            <div class="data-form-grid-2">
+                                                <div class="data-form-group">
+                                                    <label for="subform-dim-id" class="data-form-label">Dimension</label>
+                                                    <select id="subform-dim-id" class="data-select data-select-sm">
+                                                        <option value="">Sélectionnez la dimension...</option>
+                                                    </select>
+                                                </div>
+                                                <div class="data-form-group">
+                                                    <label for="subform-item-id" class="data-form-label">Catégorie / Item</label>
+                                                    <select id="subform-item-id" class="data-select data-select-sm" disabled>
+                                                        <option value="">Sélectionnez d'abord une dimension...</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="data-form-grid-3" style="margin-top:10px;">
+                                                <div class="data-form-group">
+                                                    <label for="subform-breakdown-val" class="data-form-label">Valeur</label>
+                                                    <input type="number" step="any" id="subform-breakdown-val" class="data-input data-input-sm" placeholder="Valeur" />
+                                                </div>
+                                                <div class="data-form-group">
+                                                    <label for="subform-breakdown-pct" class="data-form-label">Pourcentage (%)</label>
+                                                    <input type="number" step="0.01" id="subform-breakdown-pct" class="data-input data-input-sm" placeholder="Ex: 48.5" />
+                                                </div>
+                                                <div class="data-form-group">
+                                                    <label for="subform-breakdown-rank" class="data-form-label">Rang</label>
+                                                    <input type="number" id="subform-breakdown-rank" class="data-input data-input-sm" placeholder="1, 2..." />
+                                                </div>
+                                            </div>
+
+                                            <button type="button" class="data-btn data-btn-secondary data-btn-sm" id="btn-add-breakdown" style="margin-top:12px; width:100%;">
+                                                <i data-lucide="plus"></i> Ajouter cette ventilation
+                                            </button>
+                                        </div>
+
+                                        <!-- Tableau des ventilations déjà associées -->
+                                        <div class="data-subtable-title">Ventilations associées :</div>
+                                        <div class="data-table-wrapper" style="border:1px solid #e2e8f0; border-radius:8px; max-height:240px; overflow-y:auto;">
+                                            <table class="data-table data-table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Dimension</th>
+                                                        <th>Catégorie</th>
+                                                        <th>Valeur</th>
+                                                        <th>%</th>
+                                                        <th style="text-align:right;">Retirer</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="editor-breakdowns-tbody">
+                                                    <tr><td colspan="5" class="data-empty-state">Aucune ventilation associée.</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ÉTAPE 5 : VÉRIFICATION ET ENREGISTREMENT -->
+                            <div class="data-step-content" id="step-pane-5" style="display:none;">
+                                <div class="data-form-section-title">
+                                    <i data-lucide="clipboard-check"></i>
+                                    <span>Étape 5 — Récapitulatif et Contrôle de Conformité</span>
+                                </div>
+                                <p class="data-form-help">Vérifiez l'exhaustivité des informations avant d'enregistrer le brouillon ou de soumettre la donnée à validation.</p>
+
+                                <div class="data-recap-grid">
+                                    <!-- Fiche Récapitulative -->
+                                    <div class="data-recap-card">
+                                        <h3 class="data-recap-title">Synthèse de l'Observation</h3>
+                                        <div class="data-recap-row">
+                                            <span class="data-recap-label">Indicateur :</span>
+                                            <strong class="data-recap-val" id="recap-indicator">—</strong>
+                                        </div>
+                                        <div class="data-recap-row">
+                                            <span class="data-recap-label">Territoire :</span>
+                                            <strong class="data-recap-val" id="recap-territory">—</strong>
+                                        </div>
+                                        <div class="data-recap-row">
+                                            <span class="data-recap-label">Période :</span>
+                                            <span class="data-recap-val" id="recap-period">—</span>
+                                        </div>
+                                        <div class="data-recap-row">
+                                            <span class="data-recap-label">Nature méthodologique :</span>
+                                            <span class="data-recap-val" id="recap-methodology">—</span>
+                                        </div>
+                                        <div class="data-recap-row">
+                                            <span class="data-recap-label">Valeur statistique :</span>
+                                            <span class="data-recap-val-highlight" id="recap-value">—</span>
+                                        </div>
+                                        <div class="data-recap-row">
+                                            <span class="data-recap-label">Sources rattachées :</span>
+                                            <span class="data-recap-val" id="recap-sources-count">0 source</span>
+                                        </div>
+                                        <div class="data-recap-row">
+                                            <span class="data-recap-label">Ventilations :</span>
+                                            <span class="data-recap-val" id="recap-breakdowns-count">0 ventilation</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Checklist de Conformité Directe -->
+                                    <div class="data-checklist-card">
+                                        <h3 class="data-recap-title">Contrôle Qualité Avant Soumission</h3>
+                                        <ul class="data-checklist">
+                                            <li id="check-item-ind"><i data-lucide="circle"></i> Indicateur et Territoire sélectionnés</li>
+                                            <li id="check-item-period"><i data-lucide="circle"></i> Dates de période valides et cohérentes</li>
+                                            <li id="check-item-method"><i data-lucide="circle"></i> Nature méthodologique spécifiée</li>
+                                            <li id="check-item-val"><i data-lucide="circle"></i> Valeur statistique correctement renseignée</li>
+                                            <li id="check-item-source"><i data-lucide="circle"></i> Au moins 1 source documentaire principale</li>
+                                        </ul>
+                                        <div id="checklist-warning" class="data-checklist-alert" style="display:none;">
+                                            <i data-lucide="alert-triangle"></i>
+                                            <span id="checklist-warning-text">Complétez les éléments requis avant soumission.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Barre de navigation inférieure du stepper -->
+                        <div class="data-editor-footer">
+                            <button type="button" class="data-btn data-btn-secondary" id="btn-editor-prev" style="display:none;" onclick="SolitiquoDataAdmin.prevStep()">
+                                <i data-lucide="arrow-left"></i> Étape précédente
+                            </button>
+
+                            <div style="margin-left:auto; display:flex; gap:12px; align-items:center;">
+                                <button type="button" class="data-btn data-btn-outline" id="btn-editor-save-draft" onclick="SolitiquoDataAdmin.saveDraftAction(false)">
+                                    <i data-lucide="save"></i> Enregistrer en brouillon
+                                </button>
+                                <button type="button" class="data-btn data-btn-primary" id="btn-editor-next" onclick="SolitiquoDataAdmin.nextStep()">
+                                    Étape suivante <i data-lucide="arrow-right"></i>
+                                </button>
+                                <button type="button" class="data-btn data-btn-success" id="btn-editor-submit" style="display:none;" onclick="SolitiquoDataAdmin.saveDraftAction(true)">
+                                    <i data-lucide="send"></i> Soumettre à validation méthodologique
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================================== -->
+                <!-- 4. ESPACE DE VALIDATION MÉTHODOLOGIQUE                         -->
+                <!-- ============================================================== -->
+                <div id="data-view-validation" class="data-tab-content" style="display:none;">
+                    <div class="data-validation-workspace">
+                        <!-- Colonne gauche : File d'attente des observations -->
+                        <div class="data-validation-queue-col">
+                            <div class="data-card" style="height:100%; display:flex; flex-direction:column;">
+                                <div class="data-card-header" style="flex-direction:column; align-items:stretch; gap:10px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <div class="data-card-title">
+                                            <i data-lucide="shield-check" style="color:#15803d;"></i>
+                                            <span>Validation Méthodologique</span>
+                                        </div>
+                                        <span class="data-counter-pill" id="val-queue-count">0</span>
+                                    </div>
+                                    <!-- Filtres rapides -->
+                                    <div class="data-val-filter-chips" id="val-filter-chips">
+                                        <button type="button" class="data-val-chip active" data-filter="pilot" onclick="SolitiquoDataAdmin.setValidationFilter('pilot')">⭐ Pilote 3C (24)</button>
+                                        <button type="button" class="data-val-chip" data-filter="all" onclick="SolitiquoDataAdmin.setValidationFilter('all')">Toutes</button>
+                                        <button type="button" class="data-val-chip" data-filter="draft" onclick="SolitiquoDataAdmin.setValidationFilter('draft')">Brouillons</button>
+                                        <button type="button" class="data-val-chip" data-filter="under_review" onclick="SolitiquoDataAdmin.setValidationFilter('under_review')">En revue</button>
+                                        <button type="button" class="data-val-chip" data-filter="methodologically_validated" onclick="SolitiquoDataAdmin.setValidationFilter('methodologically_validated')">Validées</button>
+                                    </div>
+                                    <!-- Champ de recherche -->
+                                    <div style="position:relative;">
+                                        <input type="text" id="val-search-input" class="data-input" style="padding-left:32px; font-size:0.82rem; height:34px;" placeholder="Rechercher indicateur, code..." oninput="SolitiquoDataAdmin.filterValidationQueue(this.value)">
+                                        <i data-lucide="search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); width:14px; height:14px; color:#94a3b8;"></i>
+                                    </div>
+                                </div>
+                                <div id="data-validation-queue-list" class="data-validation-list">
+                                    <div class="data-empty-state"><i data-lucide="loader" class="spin"></i> Chargement...</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Colonne droite : Dossier d'inspection approfondie -->
+                        <div class="data-validation-detail-col">
+                            <div id="data-validation-empty" class="data-card" style="padding:60px 20px; text-align:center;">
+                                <i data-lucide="file-check-2" style="width:48px;height:48px;color:#94a3b8;margin-bottom:12px;"></i>
+                                <h3 style="font-family:'Playfair Display'; color:#0f172a;">Aucune observation sélectionnée</h3>
+                                <p style="color:#64748b; font-size:0.9rem;">Sélectionnez une observation dans la file d'attente de gauche pour inspecter sa méthodologie et ses sources.</p>
+                            </div>
+
+                            <div id="data-validation-dossier" class="data-card" style="display:none;">
+                                <!-- Rempli dynamiquement par SolitiquoDataAdmin.selectValidationObservation(id) -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================================== -->
+                <!-- 5. PUBLICATIONS                                                -->
+                <!-- ============================================================== -->
+                <div id="data-view-publications" class="data-tab-content" style="display:none;">
+                    <div class="data-banner-info">
+                        <i data-lucide="info" style="color:#15803d; width:20px;height:20px;"></i>
+                        <div>
+                            <strong>Registre des Observations Publiées Actives ($R_n$)</strong>
+                            <p style="margin:2px 0 0; font-size:0.85rem; color:#475569;">
+                                Ces données sont exposées publiquement sur le portail et l'API ouverte. Pour modifier une donnée publiée, préparez une révision formelle $R(n+1)$ afin de préserver l'historique d'intégrité.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="data-card" style="margin-bottom:16px;">
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Indicateur &amp; Révision</th>
+                                        <th>Territoire</th>
+                                        <th>Période</th>
+                                        <th>Valeur Publiée</th>
+                                        <th>Date &amp; Publicateur</th>
+                                        <th style="text-align:right;">Actions de Gouvernance</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="data-publications-tbody">
+                                    <tr><td colspan="6" class="data-empty-state"><i data-lucide="loader" class="spin"></i> Chargement des publications...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================================== -->
+                <!-- 6. SOURCES DOCUMENTAIRES                                       -->
+                <!-- ============================================================== -->
+                <div id="data-view-sources" class="data-tab-content" style="display:none;">
+                    <div class="data-header-with-action" style="margin-bottom: 20px;">
+                        <div>
+                            <h3 class="data-section-title">Corpus Documentaire &amp; Sources Statistiques du Cameroun</h3>
+                            <p class="data-section-desc">Référentiel des publications officielles, enquêtes nationales, recensements et annuaires documentant les indicateurs statistiques de Solitiquo DATA.</p>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button type="button" class="data-btn data-btn-outline" onclick="SolitiquoDataAdmin.switchDocumentarySubTab('uncovered')">
+                                <i data-lucide="alert-triangle"></i> Indicateurs sans documentation
+                            </button>
+                            <button type="button" class="data-btn data-btn-primary" onclick="SolitiquoDataAdmin.openPublicationModal()">
+                                <i data-lucide="plus"></i> Nouvelle publication
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Sous-navigation de l'espace documentaire -->
+                    <div class="data-referentials-tabs" style="margin-bottom: 20px;">
+                        <button type="button" class="data-ref-tab-btn active" id="subtab-btn-publications" onclick="SolitiquoDataAdmin.switchDocumentarySubTab('publications')">
+                            <i data-lucide="book-open"></i> 1. Corpus des Publications (<span id="doc-tab-count-pub">0</span>)
+                        </button>
+                        <button type="button" class="data-ref-tab-btn" id="subtab-btn-uncovered" onclick="SolitiquoDataAdmin.switchDocumentarySubTab('uncovered')">
+                            <i data-lucide="alert-circle"></i> 2. Indicateurs sans doc. vérifiée (<span id="doc-tab-count-uncovered">0</span>)
+                        </button>
+                        <button type="button" class="data-ref-tab-btn" id="subtab-btn-institutions" onclick="SolitiquoDataAdmin.switchDocumentarySubTab('institutions')">
+                            <i data-lucide="building"></i> 3. Institutions &amp; Producteurs (<span id="doc-tab-count-inst">0</span>)
+                        </button>
+                    </div>
+
+                    <!-- PANNEAU 1 : CORPUS DES PUBLICATIONS -->
+                    <div id="doc-panel-publications" class="doc-subpanel">
+                        <!-- 4 Cartes de statistiques documentaires -->
+                        <div class="data-stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 20px;">
+                            <div class="data-stat-card">
+                                <div class="data-stat-header">
+                                    <span class="data-stat-title">Publications Répertoriées</span>
+                                    <i data-lucide="files" style="color:#0284c7; width:20px; height:20px;"></i>
+                                </div>
+                                <div class="data-stat-value" id="doc-stat-total">0</div>
+                                <div class="data-stat-desc">Toutes catégories documentaires confondues</div>
+                            </div>
+                            <div class="data-stat-card">
+                                <div class="data-stat-header">
+                                    <span class="data-stat-title">Consultées &amp; Vérifiées</span>
+                                    <i data-lucide="check-circle-2" style="color:#16a34a; width:20px; height:20px;"></i>
+                                </div>
+                                <div class="data-stat-value" id="doc-stat-verified" style="color:#16a34a;">0</div>
+                                <div class="data-stat-desc">Contenu analysé et traçabilité confirmée</div>
+                            </div>
+                            <div class="data-stat-card">
+                                <div class="data-stat-header">
+                                    <span class="data-stat-title">Indicateurs Couverts</span>
+                                    <i data-lucide="activity" style="color:#059669; width:20px; height:20px;"></i>
+                                </div>
+                                <div class="data-stat-value" id="doc-stat-covered">0</div>
+                                <div class="data-stat-desc"><span id="doc-stat-rate" style="font-weight:600; color:#059669;">0%</span> du catalogue national</div>
+                            </div>
+                            <div class="data-stat-card">
+                                <div class="data-stat-header">
+                                    <span class="data-stat-title">Indicateurs Sans Doc.</span>
+                                    <i data-lucide="alert-octagon" style="color:#dc2626; width:20px; height:20px;"></i>
+                                </div>
+                                <div class="data-stat-value" id="doc-stat-uncovered" style="color:#dc2626;">0</div>
+                                <div class="data-stat-desc">À documenter par une publication vérifiée</div>
+                            </div>
+                        </div>
+
+                        <!-- Barre de filtres -->
+                        <div class="data-card" style="padding:15px; margin-bottom: 20px;">
+                            <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+                                <div style="flex: 2; min-width: 220px;">
+                                    <input type="text" id="doc-filter-search" class="data-input" placeholder="Rechercher par titre, mot-clé ou référence..." style="width:100%;" />
+                                </div>
+                                <div style="flex: 1.5; min-width: 180px;">
+                                    <select id="doc-filter-institution" class="data-select" style="width:100%;">
+                                        <option value="">Toutes les institutions</option>
+                                    </select>
+                                </div>
+                                <div style="flex: 1.5; min-width: 160px;">
+                                    <select id="doc-filter-category" class="data-select" style="width:100%;">
+                                        <option value="">Toutes les catégories</option>
+                                        <option value="census">Recensement général (RGPH)</option>
+                                        <option value="survey">Enquête nationale (ECAM, EESI, EDS...)</option>
+                                        <option value="national_accounts">Comptes nationaux &amp; PIB</option>
+                                        <option value="budget_law">Loi de finances &amp; Budget</option>
+                                        <option value="statistical_yearbook">Annuaire statistique</option>
+                                        <option value="administrative_report">Rapport administratif &amp; Revue</option>
+                                        <option value="periodic_bulletin">Bulletin périodique (Note de conjoncture)</option>
+                                        <option value="demographic_projection">Projections démographiques</option>
+                                        <option value="electoral_decision">Décision / Rapport électoral</option>
+                                        <option value="academic_study">Étude scientifique / universitaire</option>
+                                        <option value="international_database">Base de données internationale</option>
+                                    </select>
+                                </div>
+                                <div style="flex: 1.5; min-width: 170px;">
+                                    <select id="doc-filter-status" class="data-select" style="width:100%;">
+                                        <option value="">Tous les statuts de vérification</option>
+                                        <option value="verified_consulted">✅ Consulté et vérifié</option>
+                                        <option value="identified_unconsulted">🔍 Identifié mais non consulté</option>
+                                        <option value="potential_to_search">🔎 Référence potentielle à rechercher</option>
+                                        <option value="unavailable_or_broken">⚠️ Document indisponible / lien rompu</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <button type="button" class="data-btn data-btn-outline" id="btn-doc-reset" onclick="SolitiquoDataAdmin.resetDocFilters()">
+                                        <i data-lucide="rotate-ccw"></i> Réinitialiser
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tableau des publications documentaires -->
+                        <div class="data-card">
+                            <div class="data-table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Publication &amp; Catégorie</th>
+                                            <th>Institution &amp; Diffuseur</th>
+                                            <th>Année / Période</th>
+                                            <th>Statut de vérification</th>
+                                            <th>Indicateurs associés</th>
+                                            <th>Référence / URL</th>
+                                            <th style="text-align:right;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="doc-publications-tbody">
+                                        <tr>
+                                            <td colspan="7" class="data-empty-state"><i data-lucide="loader" class="spin"></i> Chargement du corpus documentaire...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
 
-                    <div class="chart-card">
-                        <div class="chart-header">
-                            <h3><i data-lucide="external-link"></i> Accès Rapides Solitiquo DATA</h3>
-                            <p class="chart-subtitle">Consulter les interfaces publiques directement</p>
+                    <!-- PANNEAU 2 : INDICATEURS SANS DOCUMENTATION VÉRIFIÉE -->
+                    <div id="doc-panel-uncovered" class="doc-subpanel" style="display:none;">
+                        <div class="data-card" style="padding:18px; margin-bottom:20px; background:#fffbeb; border:1px solid #fef08a;">
+                            <div style="display:flex; align-items:flex-start; gap:12px;">
+                                <i data-lucide="info" style="color:#b45309; width:22px; height:22px; flex-shrink:0; margin-top:2px;"></i>
+                                <div>
+                                    <h4 style="margin:0 0 4px; color:#92400e; font-size:0.95rem;">Traçabilité et rigueur méthodologique Solitiquo DATA</h4>
+                                    <p style="margin:0; font-size:0.85rem; color:#78350f; line-height:1.4;">
+                                        Cette vue recense en toute transparence les indicateurs officiels qui ne sont pas encore adossés à une publication statistique formellement <strong>consultée et vérifiée</strong>.
+                                        Aucune donnée chiffrée ne pourra être validée pour ces indicateurs sans association préalable à une source documentaire qualifiée.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                        <div style="display:flex; flex-direction:column; gap:10px;">
-                            <a href="/data.html" target="_blank" style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#0d1812; color:#fff; border-radius:8px; text-decoration:none; font-weight:600;">
-                                <span style="display:flex; align-items:center; gap:8px;"><i data-lucide="layout-grid" style="width:16px;height:16px;color:#C82823;"></i> Hub Public DATA</span>
-                                <span style="font-size:0.8rem; color:#94a3b8;">/data.html →</span>
-                            </a>
-                            <a href="/data-cartographie.html" target="_blank" style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#f8fafc; border:1px solid #e2e8f0; color:#1e293b; border-radius:8px; text-decoration:none; font-weight:600;">
-                                <span style="display:flex; align-items:center; gap:8px;"><i data-lucide="map" style="width:16px;height:16px;color:#37463D;"></i> Carte Interactive Complète</span>
-                                <span style="font-size:0.8rem; color:#64748b;">/data-cartographie.html →</span>
-                            </a>
-                            <a href="/data-sources.html" target="_blank" style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#f8fafc; border:1px solid #e2e8f0; color:#1e293b; border-radius:8px; text-decoration:none; font-weight:600;">
-                                <span style="display:flex; align-items:center; gap:8px;"><i data-lucide="file-text" style="width:16px;height:16px;color:#b45309;"></i> Sources &amp; Méthodologie</span>
-                                <span style="font-size:0.8rem; color:#64748b;">/data-sources.html →</span>
-                            </a>
+
+                        <div class="data-card">
+                            <div class="data-table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Code &amp; Nom de l'indicateur</th>
+                                            <th>Domaine / Catégorie</th>
+                                            <th>Sous-domaine</th>
+                                            <th>Unité</th>
+                                            <th>Institution productrice attendue</th>
+                                            <th>Publications partielles existantes</th>
+                                            <th style="text-align:right;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="doc-uncovered-tbody">
+                                        <tr>
+                                            <td colspan="7" class="data-empty-state"><i data-lucide="loader" class="spin"></i> Analyse de couverture en cours...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
+                    </div>
+
+                    <!-- PANNEAU 3 : RÉPERTOIRE DES INSTITUTIONS PRODUCTRICES -->
+                    <div id="doc-panel-institutions" class="doc-subpanel" style="display:none;">
+                        <div id="data-sources-grid" class="data-sources-grid">
+                            <div class="data-empty-state"><i data-lucide="loader" class="spin"></i> Chargement des institutions...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================================== -->
+                <!-- 7. RÉFÉRENTIELS                                                -->
+                <!-- ============================================================== -->
+                <div id="data-view-referentials" class="data-tab-content" style="display:none;">
+                    <div class="data-referentials-tabs">
+                        <button type="button" class="data-ref-tab-btn active" data-reftab="indicators" onclick="SolitiquoDataAdmin.switchRefTab('indicators')">
+                            <i data-lucide="activity"></i> Indicateurs Statistiques
+                        </button>
+                        <button type="button" class="data-ref-tab-btn" data-reftab="territories" onclick="SolitiquoDataAdmin.switchRefTab('territories')">
+                            <i data-lucide="map-pin"></i> Territoires (CMR &amp; 10 Régions)
+                        </button>
+                        <button type="button" class="data-ref-tab-btn" data-reftab="breakdowns" onclick="SolitiquoDataAdmin.switchRefTab('breakdowns')">
+                            <i data-lucide="pie-chart"></i> Dimensions de Ventilation
+                        </button>
+                    </div>
+
+                    <!-- Panel Indicateurs -->
+                    <div id="ref-panel-indicators" class="data-ref-panel active">
+                        <div class="data-card">
+                            <div class="data-table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Nom de l'Indicateur</th>
+                                            <th>Catégorie</th>
+                                            <th>Unité</th>
+                                            <th>Description Méthodologique</th>
+                                            <th>Statut</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ref-indicators-tbody">
+                                        <tr><td colspan="6" class="data-empty-state"><i data-lucide="loader" class="spin"></i> Chargement...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel Territoires -->
+                    <div id="ref-panel-territories" class="data-ref-panel" style="display:none;">
+                        <div class="data-card">
+                            <div class="data-table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Code ISO</th>
+                                            <th>Nom du Territoire</th>
+                                            <th>Type de Maille</th>
+                                            <th>Chef-lieu administratif</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ref-territories-tbody">
+                                        <tr><td colspan="4" class="data-empty-state"><i data-lucide="loader" class="spin"></i> Chargement...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel Dimensions -->
+                    <div id="ref-panel-breakdowns" class="data-ref-panel" style="display:none;">
+                        <div class="data-card">
+                            <div class="data-table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Dimension</th>
+                                            <th>Type</th>
+                                            <th>Catégories &amp; Items Disponibles</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ref-breakdowns-tbody">
+                                        <tr><td colspan="3" class="data-empty-state"><i data-lucide="loader" class="spin"></i> Chargement...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================================== -->
+                <!-- 8. HISTORIQUE ET AUDIT                                         -->
+                <!-- ============================================================== -->
+                <div id="data-view-audit" class="data-tab-content" style="display:none;">
+                    <div class="data-filter-bar">
+                        <div class="data-filter-item">
+                            <label for="audit-filter-action">Type d'opération</label>
+                            <select id="audit-filter-action" class="data-select">
+                                <option value="">Toutes les opérations</option>
+                                <option value="create_draft">Création de brouillon (create_draft)</option>
+                                <option value="update_draft">Mise à jour (update_draft)</option>
+                                <option value="submit_for_review">Soumission pour revue (submit_for_review)</option>
+                                <option value="validate_methodology">Validation méthodologique (validate)</option>
+                                <option value="reject">Rejet avec justification (reject)</option>
+                                <option value="publish">Publication officielle (publish)</option>
+                                <option value="create_revision">Création de révision (create_revision)</option>
+                                <option value="revoke">Révocation publique (revoke)</option>
+                                <option value="archive">Archivage (archive)</option>
+                            </select>
+                        </div>
+                        <div class="data-filter-item">
+                            <label for="audit-filter-id">ID Observation</label>
+                            <input type="number" id="audit-filter-id" class="data-input" placeholder="Ex: 288" />
+                        </div>
+                        <div class="data-filter-item" style="align-self:flex-end;">
+                            <button type="button" id="btn-refresh-audit" class="data-btn data-btn-secondary">
+                                <i data-lucide="refresh-cw"></i> Rafraîchir l'audit
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="data-card" style="margin-bottom:16px;">
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date &amp; Heure</th>
+                                        <th>Utilisateur</th>
+                                        <th>Action</th>
+                                        <th>Transition Statut</th>
+                                        <th>Observation Ciblée</th>
+                                        <th>Motif / Justification</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="data-audit-tbody">
+                                    <tr><td colspan="6" class="data-empty-state"><i data-lucide="loader" class="spin"></i> Chargement du journal...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Pagination Audit -->
+                    <div class="data-pagination-bar">
+                        <span id="data-audit-page-info">Page 1 sur 1</span>
+                        <div class="data-pagination-actions">
+                            <button type="button" id="data-audit-prev" class="data-btn data-btn-secondary data-btn-sm" disabled>
+                                <i data-lucide="chevron-left"></i> Précédent
+                            </button>
+                            <button type="button" id="data-audit-next" class="data-btn data-btn-secondary data-btn-sm" disabled>
+                                Suivant <i data-lucide="chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================================== -->
+                <!-- 9. FICHE D'OBSERVATION DÉTAILLÉE (PLEINE PAGE)                 -->
+                <!-- ============================================================== -->
+                <div id="data-view-detail" class="data-tab-content" style="display:none;">
+                    <div id="data-observation-detail-container">
+                        <!-- Rempli dynamiquement par SolitiquoDataAdmin.openDetailView(id) -->
+                    </div>
+                </div>
+
+                <!-- ============================================================== -->
+                <!-- 10. MODULE D'IMPORTATION DES DONNÉES (LOT 2D)                  -->
+                <!-- ============================================================== -->
+                <div id="data-view-import" class="data-tab-content" style="display:none;">
+                    <div class="data-editor-container">
+                        <!-- En-tête de l'importateur -->
+                        <div class="data-editor-header">
+                            <div>
+                                <span class="data-editor-tag"><i data-lucide="file-spreadsheet"></i> Ingestion Sécurisée</span>
+                                <h2 class="data-editor-title">Importation de Données Statistiques</h2>
+                                <p class="data-editor-subtitle">Alimentez Solitiquo DATA depuis des classeurs Excel (.xlsx) ou des exports (.csv). Création exclusive au statut brouillon.</p>
+                            </div>
+                            <div class="data-editor-top-actions">
+                                <button type="button" class="data-btn data-btn-secondary" onclick="SolitiquoDataAdmin.resetImportWizard()">
+                                    <i data-lucide="rotate-ccw"></i> Réinitialiser
+                                </button>
+                                <button type="button" class="data-btn data-btn-outline" onclick="SolitiquoDataAdmin.loadImportBatchesHistory()">
+                                    <i data-lucide="history"></i> Historique des lots
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Stepper 4 étapes -->
+                        <div class="data-stepper-bar">
+                            <div class="data-step active" id="import-step-ind-1">
+                                <div class="data-step-circle">1</div>
+                                <div class="data-step-label">
+                                    <span class="data-step-num">Étape 1</span>
+                                    <span class="data-step-name">Dépôt du fichier</span>
+                                </div>
+                            </div>
+                            <div class="data-step-line"></div>
+                            <div class="data-step" id="import-step-ind-2">
+                                <div class="data-step-circle">2</div>
+                                <div class="data-step-label">
+                                    <span class="data-step-num">Étape 2</span>
+                                    <span class="data-step-name">Association colonnes</span>
+                                </div>
+                            </div>
+                            <div class="data-step-line"></div>
+                            <div class="data-step" id="import-step-ind-3">
+                                <div class="data-step-circle">3</div>
+                                <div class="data-step-label">
+                                    <span class="data-step-num">Étape 3</span>
+                                    <span class="data-step-name">Prévisualisation &amp; Contrôle</span>
+                                </div>
+                            </div>
+                            <div class="data-step-line"></div>
+                            <div class="data-step" id="import-step-ind-4">
+                                <div class="data-step-circle">4</div>
+                                <div class="data-step-label">
+                                    <span class="data-step-num">Étape 4</span>
+                                    <span class="data-step-name">Rapport final</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="data-editor-body">
+                            <!-- ÉTAPE 1 : DÉPÔT ET PARAMÈTRES PAR DÉFAUT -->
+                            <div class="data-step-content active" id="import-pane-1">
+                                <div class="data-form-section-title">
+                                    <i data-lucide="upload-cloud"></i>
+                                    <span>Étape 1 — Sélection du Fichier &amp; Paramètres de Secours</span>
+                                </div>
+                                <p class="data-form-help">Formats acceptés : CSV ou Excel (.xlsx, .xls) jusqu'à 10 Mo. Renseignez les valeurs par défaut si vos lignes ne les précisent pas.</p>
+
+                                <!-- Dropzone -->
+                                <div class="data-dropzone" id="import-dropzone">
+                                    <input type="file" id="import-file-input" accept=".csv, .xlsx, .xls" style="display:none;" />
+                                    <div class="data-dropzone-icon"><i data-lucide="file-up" style="width:48px; height:48px; color:#37463D;"></i></div>
+                                    <h4 class="data-dropzone-title">Glissez et déposez votre fichier ici</h4>
+                                    <p class="data-dropzone-hint">ou <button type="button" class="data-link-btn" onclick="document.getElementById('import-file-input').click()">parcourez vos dossiers</button> pour sélectionner un fichier (.csv, .xlsx, .xls)</p>
+                                    <div id="import-file-badge" class="data-file-selected-badge" style="display:none;">
+                                        <i data-lucide="file-check"></i>
+                                        <span id="import-file-name">—</span>
+                                        <span id="import-file-size" class="data-badge-size">—</span>
+                                    </div>
+                                </div>
+
+                                <!-- Paramètres de repli par défaut -->
+                                <div class="data-subform-box" style="margin-top:24px;">
+                                    <h4 style="font-size:0.95rem; font-weight:700; color:#0f172a; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                                        <i data-lucide="sliders" style="width:16px;height:16px;color:#37463D;"></i>
+                                        Paramètres appliqués si la colonne n'est pas présente dans le fichier :
+                                    </h4>
+                                    <div class="data-form-grid-3">
+                                        <div class="data-form-group">
+                                            <label for="import-def-indicator" class="data-form-label">Indicateur par défaut</label>
+                                            <select id="import-def-indicator" class="data-select">
+                                                <option value="">-- Aucun (doit figurer dans le fichier) --</option>
+                                            </select>
+                                        </div>
+                                        <div class="data-form-group">
+                                            <label for="import-def-territory" class="data-form-label">Territoire par défaut</label>
+                                            <select id="import-def-territory" class="data-select">
+                                                <option value="">-- Aucun (doit figurer dans le fichier) --</option>
+                                            </select>
+                                        </div>
+                                        <div class="data-form-group">
+                                            <label for="import-def-period-type" class="data-form-label">Période par défaut</label>
+                                            <select id="import-def-period-type" class="data-select">
+                                                <option value="ANNUAL">ANNUAL — Annuel</option>
+                                                <option value="MONTHLY">MONTHLY — Mensuel</option>
+                                                <option value="QUARTERLY">QUARTERLY — Trimestriel</option>
+                                                <option value="DAILY">DAILY — Journalier</option>
+                                                <option value="POINT_IN_TIME">POINT_IN_TIME — Ponctuel</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="data-form-grid-2" style="margin-top:12px;">
+                                        <div class="data-form-group">
+                                            <label for="import-def-methodology" class="data-form-label">Nature méthodologique par défaut</label>
+                                            <select id="import-def-methodology" class="data-select">
+                                                <option value="administrative_record">administrative_record — Registre administratif officiel</option>
+                                                <option value="census">census — Recensement exhaustif</option>
+                                                <option value="sample_survey">sample_survey — Enquête par sondage</option>
+                                                <option value="nowcast_estimate">nowcast_estimate — Estimation / Nowcasting</option>
+                                                <option value="projection">projection — Projection prospective</option>
+                                            </select>
+                                        </div>
+                                        <div class="data-form-group">
+                                            <label for="import-def-source" class="data-form-label">Source institutionnelle par défaut</label>
+                                            <select id="import-def-source" class="data-select">
+                                                <option value="">-- Optionnelle --</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="data-editor-nav-bar" style="margin-top:24px;">
+                                    <div></div>
+                                    <button type="button" class="data-btn data-btn-primary" id="btn-import-step1-next" disabled>
+                                        Analyser le fichier et continuer <i data-lucide="arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- ÉTAPE 2 : MAPPING DES COLONNES -->
+                            <div class="data-step-content" id="import-pane-2" style="display:none;">
+                                <div class="data-form-section-title">
+                                    <i data-lucide="git-merge"></i>
+                                    <span>Étape 2 — Correspondance des Colonnes (Mapping)</span>
+                                </div>
+                                <p class="data-form-help">Associez chaque colonne détectée dans votre fichier aux attributs Solitiquo DATA. Les champs avec valeur par défaut peuvent être laissés non mappés.</p>
+
+                                <div class="data-mapping-grid" id="import-mapping-container">
+                                    <!-- Rempli dynamiquement avec les sélecteurs de colonnes -->
+                                </div>
+
+                                <div class="data-editor-nav-bar" style="margin-top:24px;">
+                                    <button type="button" class="data-btn data-btn-secondary" onclick="SolitiquoDataAdmin.goToImportStep(1)">
+                                        <i data-lucide="arrow-left"></i> Retour
+                                    </button>
+                                    <button type="button" class="data-btn data-btn-primary" id="btn-import-step2-next">
+                                        Valider et contrôler les lignes <i data-lucide="arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- ÉTAPE 3 : PRÉVISUALISATION ET GESTION DES ANOMALIES -->
+                            <div class="data-step-content" id="import-pane-3" style="display:none;">
+                                <div class="data-form-section-title">
+                                    <i data-lucide="check-circle-2"></i>
+                                    <span>Étape 3 — Prévisualisation et Détection des Erreurs</span>
+                                </div>
+                                <p class="data-form-help">Passez en revue les lignes valides et les anomalies avant d'autoriser l'importation en base.</p>
+
+                                <!-- Synthèse des lignes -->
+                                <div class="data-import-summary-bar">
+                                    <div class="data-import-kpi valid">
+                                        <i data-lucide="check-circle"></i>
+                                        <div>
+                                            <span class="data-kpi-count" id="import-kpi-valid">0</span>
+                                            <span class="data-kpi-title">Lignes valides prêtes</span>
+                                        </div>
+                                    </div>
+                                    <div class="data-import-kpi error">
+                                        <i data-lucide="alert-triangle"></i>
+                                        <div>
+                                            <span class="data-kpi-count" id="import-kpi-error">0</span>
+                                            <span class="data-kpi-title">Lignes rejetées / anomalies</span>
+                                        </div>
+                                    </div>
+                                    <div class="data-import-kpi total">
+                                        <i data-lucide="layers"></i>
+                                        <div>
+                                            <span class="data-kpi-count" id="import-kpi-total">0</span>
+                                            <span class="data-kpi-title">Total lignes analysées</span>
+                                        </div>
+                                    </div>
+                                    <div style="margin-left:auto; display:flex; align-items:center;">
+                                        <button type="button" class="data-btn data-btn-outline data-btn-sm" id="btn-import-download-errors" style="display:none;">
+                                            <i data-lucide="download"></i> Télécharger les rejets (.CSV)
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Tableau de prévisualisation des lignes -->
+                                <div class="data-table-wrapper" style="margin-top:16px; max-height:420px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px;">
+                                    <table class="data-table data-table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Ligne</th>
+                                                <th>Statut</th>
+                                                <th>Indicateur</th>
+                                                <th>Territoire</th>
+                                                <th>Période</th>
+                                                <th>Valeur</th>
+                                                <th>Erreurs / Alertes constatées</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="import-preview-tbody">
+                                            <tr><td colspan="7" class="data-empty-state">Aucune donnée analysée.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="data-consistency-card" style="margin-top:20px; border-left-color:#37463D;">
+                                    <div class="data-consistency-icon"><i data-lucide="info" style="color:#37463D;"></i></div>
+                                    <div>
+                                        <h4 style="font-size:0.95rem; font-weight:700; color:#0f172a;">Garantie de non-publication automatique</h4>
+                                        <p style="font-size:0.85rem; color:#475569;">
+                                            Toutes les lignes valides seront intégrées au statut <strong>Brouillon (draft)</strong> et marquées inactives. Aucune observation ne sera rendue publique sans validation méthodologique préalable.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="data-editor-nav-bar" style="margin-top:24px;">
+                                    <button type="button" class="data-btn data-btn-secondary" onclick="SolitiquoDataAdmin.goToImportStep(2)">
+                                        <i data-lucide="arrow-left"></i> Modifier le mapping
+                                    </button>
+                                    <button type="button" class="data-btn data-btn-primary" id="btn-import-step3-apply">
+                                        <i data-lucide="database"></i> Confirmer et ingérer les lignes valides
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- ÉTAPE 4 : RAPPORT FINAL D'INGESTION -->
+                            <div class="data-step-content" id="import-pane-4" style="display:none;">
+                                <div class="data-import-success-card">
+                                    <div class="data-success-circle"><i data-lucide="check" style="width:36px; height:36px;"></i></div>
+                                    <h3 style="font-size:1.3rem; font-weight:800; color:#0f172a; margin-top:12px;">Ingestion terminée avec succès</h3>
+                                    <p id="import-success-summary" style="font-size:0.95rem; color:#475569; max-width:600px; margin:8px auto 24px auto;">
+                                        Les observations valides ont été créées en brouillon et sont prêtes pour le cycle de validation.
+                                    </p>
+                                    <div style="display:flex; justify-content:center; gap:12px;">
+                                        <button type="button" class="data-btn data-btn-primary" onclick="SolitiquoDataAdmin.switchDataTab('observations'); SolitiquoDataAdmin.filterByStatus('draft');">
+                                            <i data-lucide="list"></i> Voir les brouillons importés
+                                        </button>
+                                        <button type="button" class="data-btn data-btn-secondary" onclick="SolitiquoDataAdmin.resetImportWizard()">
+                                            <i data-lucide="plus"></i> Nouvel import
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Historique des lots précédents -->
+                    <div class="data-card" style="margin-top:32px;">
+                        <div class="data-card-header">
+                            <div class="data-card-title">
+                                <i data-lucide="history" style="color:#37463D;"></i>
+                                <span>Historique des Lots d'Importation</span>
+                            </div>
+                            <button type="button" class="data-btn data-btn-xs data-btn-secondary" onclick="SolitiquoDataAdmin.loadImportBatchesHistory()">
+                                <i data-lucide="refresh-cw"></i> Rafraîchir
+                            </button>
+                        </div>
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Lot ID</th>
+                                        <th>Nom du fichier</th>
+                                        <th>Taille &amp; Checksum</th>
+                                        <th>Statut</th>
+                                        <th>Lignes (Total / Valides / Erreurs)</th>
+                                        <th>Importé par</th>
+                                        <th>Date</th>
+                                        <th style="text-align:right;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="import-batches-tbody">
+                                    <tr><td colspan="8" class="data-empty-state">Chargement de l'historique...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div></div>
+
+            <!-- MODALE ÉDITION / CRÉATION D'UNE PUBLICATION (LOT 3B) -->
+            <div id="modal-publication-edit" class="data-modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.6); z-index:9999; backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:20px; overflow-y:auto;">
+                <div class="data-card" style="width:100%; max-width:850px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); background:#ffffff; border-radius:12px; overflow:hidden;">
+                    <!-- En-tête de la modale -->
+                    <div style="padding:18px 24px; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between; background:#f8fafc;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <i data-lucide="book-open" style="color:#C82823; width:22px; height:22px;"></i>
+                            <h3 id="modal-pub-title" style="margin:0; font-size:1.15rem; color:#0f172a; font-family:'Playfair Display', serif;">Nouvelle publication statistique</h3>
+                        </div>
+                        <button type="button" class="data-btn data-btn-xs data-btn-secondary" onclick="SolitiquoDataAdmin.closePublicationModal()" style="border:none; background:transparent;">
+                            <i data-lucide="x" style="width:20px; height:20px; color:#64748b;"></i>
+                        </button>
+                    </div>
+
+                    <!-- Corps du formulaire scrollable -->
+                    <div style="padding:24px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:18px;">
+                        <input type="hidden" id="pub-form-id" value="" />
+
+                        <!-- Ligne 1 : Titre exact -->
+                        <div>
+                            <label class="data-label" style="font-weight:600; margin-bottom:6px; display:block;">
+                                Titre exact de la publication <span style="color:#dc2626;">*</span>
+                            </label>
+                            <input type="text" id="pub-form-title" class="data-input" placeholder="ex: Troisième Recensement Général de la Population et de l'Habitat (RGPH-3) - Rapport de présentation" style="width:100%;" />
+                            <div style="font-size:0.75rem; color:#64748b; margin-top:4px;">Titre tel qu'édité formellement par l'institution (ne pas abréger).</div>
+                        </div>
+
+                        <!-- Ligne 2 : Institution et Diffuseur -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                            <div>
+                                <label class="data-label" style="font-weight:600; margin-bottom:6px; display:block;">
+                                    Institution productrice <span style="color:#dc2626;">*</span>
+                                </label>
+                                <select id="pub-form-institution" class="data-select" style="width:100%;">
+                                    <option value="">Sélectionnez l'institution...</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="data-label" style="font-weight:600; margin-bottom:6px; display:block;">
+                                    Organisme diffuseur (si différent)
+                                </label>
+                                <input type="text" id="pub-form-publisher" class="data-input" placeholder="ex: Banque Mondiale, Nations Unies, FMI..." style="width:100%;" />
+                            </div>
+                        </div>
+
+                        <!-- Ligne 3 : Catégorie & Statut de vérification -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                            <div>
+                                <label class="data-label" style="font-weight:600; margin-bottom:6px; display:block;">
+                                    Catégorie documentaire <span style="color:#dc2626;">*</span>
+                                </label>
+                                <select id="pub-form-category" class="data-select" style="width:100%;">
+                                    <option value="census">Recensement général (RGPH)</option>
+                                    <option value="survey">Enquête nationale (ECAM, EESI, EDS...)</option>
+                                    <option value="national_accounts">Comptes nationaux &amp; PIB</option>
+                                    <option value="budget_law">Loi de finances &amp; Budget</option>
+                                    <option value="statistical_yearbook">Annuaire statistique</option>
+                                    <option value="administrative_report">Rapport administratif &amp; Revue</option>
+                                    <option value="periodic_bulletin">Bulletin périodique (Note de conjoncture)</option>
+                                    <option value="demographic_projection">Projections démographiques</option>
+                                    <option value="electoral_decision">Décision / Rapport électoral</option>
+                                    <option value="academic_study">Étude scientifique / universitaire</option>
+                                    <option value="international_database">Base de données internationale</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="data-label" style="font-weight:600; margin-bottom:6px; display:block;">
+                                    Statut de vérification documentaire <span style="color:#dc2626;">*</span>
+                                </label>
+                                <select id="pub-form-status" class="data-select" style="width:100%;">
+                                    <option value="verified_consulted">✅ Consulté et vérifié (traçabilité confirmée)</option>
+                                    <option value="identified_unconsulted">🔍 Identifié mais non consulté</option>
+                                    <option value="potential_to_search">🔎 Référence potentielle à rechercher</option>
+                                    <option value="unavailable_or_broken">⚠️ Document indisponible / lien rompu</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Ligne 4 : Année, Période couverte et Tier -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px;">
+                            <div>
+                                <label class="data-label" style="font-weight:600; margin-bottom:6px; display:block;">Année publication</label>
+                                <input type="number" id="pub-form-year" class="data-input" placeholder="ex: 2024" min="1960" max="2035" style="width:100%;" />
+                            </div>
+                            <div>
+                                <label class="data-label" style="font-weight:600; margin-bottom:6px; display:block;">Début période</label>
+                                <input type="date" id="pub-form-period-start" class="data-input" style="width:100%;" />
+                            </div>
+                            <div>
+                                <label class="data-label" style="font-weight:600; margin-bottom:6px; display:block;">Fin période</label>
+                                <input type="date" id="pub-form-period-end" class="data-input" style="width:100%;" />
+                            </div>
+                            <div>
+                                <label class="data-label" style="font-weight:600; margin-bottom:6px; display:block;">Niveau (Tier)</label>
+                                <select id="pub-form-tier" class="data-select" style="width:100%;">
+                                    <option value="TIER_1_OFFICIAL">Tier 1 (Officiel)</option>
+                                    <option value="TIER_2_REPUTABLE">Tier 2 (Institution reconnue)</option>
+                                    <option value="TIER_3_INFORMAL">Tier 3 (Informel / estimé)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Ligne 5 : URL, Date consultation et Couverture géo -->
+                        <div style="display:grid; grid-template-columns:2fr 1fr 1fr; gap:12px;">
+                            <div>
+                                <label class="data-label" style="font-weight:600; margin-bottom:6px; display:block;">URL officielle / lien d'accès</label>
+                                <div style="display:flex; gap:6px;">
+                                    <input type="url" id="pub-form-url" class="data-input" placeholder="https://..." style="flex:1;" />
+                                    <button type="button" class="data-btn data-btn-xs data-btn-secondary" onclick="SolitiquoDataAdmin.testPublicationUrl()" title="Tester le lien dans un nouvel onglet">
+                                        <i data-lucide="external-link"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="data-label" style="font-weight:600; margin-bottom:6px; display:block;">Date consultation</label>
+                                <input type="date" id="pub-form-consult-date" class="data-input" style="width:100%;" />
+                            </div>
+                            <div>
+                                <label class="data-label" style="font-weight:600; margin-bottom:6px; display:block;">Couverture géo.</label>
+                                <input type="text" id="pub-form-geo" class="data-input" value="Cameroun (National)" style="width:100%;" />
+                            </div>
+                        </div>
+
+                        <!-- Ligne 6 : Référence bibliographique -->
+                        <div>
+                            <label class="data-label" style="font-weight:600; margin-bottom:6px; display:block;">Référence bibliographique / Cote de catalogage</label>
+                            <input type="text" id="pub-form-biblio" class="data-input" placeholder="ex: INS Cameroun, Yaoundé, Décembre 2024, 184 p., ISBN / Réf. ..." style="width:100%;" />
+                        </div>
+
+                        <!-- Ligne 7 : Indicateurs statistiques documentés (Liaison M:N) -->
+                        <div style="border:1px solid #e2e8f0; border-radius:8px; padding:14px; background:#f8fafc;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                <label class="data-label" style="font-weight:600; margin:0;">
+                                    <i data-lucide="activity" style="color:#059669; width:16px; height:16px;"></i>
+                                    Indicateurs documentés par cette publication (<span id="pub-form-indicators-count">0</span> sélectionné(s))
+                                </label>
+                                <span style="font-size:0.75rem; color:#64748b;">Sélectionnez les indicateurs alimentés</span>
+                            </div>
+                            <div id="pub-form-indicators-list" style="max-height:180px; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; gap:8px; background:#fff; border:1px solid #cbd5e1; border-radius:6px; padding:10px;">
+                                <!-- Rempli dynamiquement -->
+                            </div>
+                        </div>
+
+                        <!-- Ligne 8 : Notes & observations méthodologiques -->
+                        <div>
+                            <label class="data-label" style="font-weight:600; margin-bottom:6px; display:block;">Notes méthodologiques &amp; traçabilité</label>
+                            <textarea id="pub-form-notes" class="data-input" rows="2" placeholder="Précisions sur la notice, chapitres pertinents, méthodologie de recueil, etc." style="width:100%; font-family:inherit;"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Pied de modale -->
+                    <div style="padding:16px 24px; border-top:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
+                        <button type="button" class="data-btn data-btn-outline" onclick="SolitiquoDataAdmin.closePublicationModal()">
+                            Annuler
+                        </button>
+                        <button type="button" class="data-btn data-btn-primary" id="btn-save-publication" onclick="SolitiquoDataAdmin.savePublication()">
+                            <i data-lucide="check"></i> Enregistrer la publication
+                        </button>
                     </div>
                 </div>
             </div>
@@ -636,6 +2019,7 @@
 
             // 1. VERIFICATION AUTH & INIT
             const user = await SolitiquoAPI.getProfile();
+            window._currentUser = user;
             if (!user || (user.role !== 'admin' && user.role !== 'writer')) {
                 window.location.href = 'auth.html';
                 return;
@@ -757,6 +2141,9 @@
                     loadUsers();
                 } else if (viewName === 'data') {
                     header.innerHTML = `<i data-lucide="database"></i> Plateforme Solitiquo DATA`;
+                    if (window.SolitiquoDataAdmin) {
+                        window.SolitiquoDataAdmin.init(window._currentUser);
+                    }
                     actions.innerHTML = `
                         <a href="/data.html" target="_blank" class="action-btn" style="background:#37463D;"><i data-lucide="external-link"></i> Voir Hub Public</a>
                         <a href="/data-cartographie.html" target="_blank" class="action-btn"><i data-lucide="map-pin"></i> Ouvrir Carte</a>
@@ -1861,6 +3248,7 @@
             navigator.serviceWorker.register('/sw.js');
         }
     </script>
+  <script src="/js/admin-data.js?v=2"></script>
   <script src="/js/solitiquo.js?v=42"></script>
 </body>
 
