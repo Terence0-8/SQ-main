@@ -183,9 +183,22 @@ async function createDraft(data, userId) {
 
     const newId = res.rows[0].id;
 
-    // Ajout éventuel de sources initiales
+    // Ajout éventuel de sources initiales (Lot 3C.4 : aucune qualification automatique excessive)
     if (Array.isArray(data.sources) && data.sources.length > 0) {
+      const validTiers = ['TIER_1_OFFICIAL', 'TIER_2_STATISTICAL', 'TIER_3_ACADEMIC_PEER', 'TIER_4_REPUTABLE_NGO', 'TIER_5_SECONDARY_PRESS'];
+      const validRobustness = ['high', 'medium', 'conditional', 'contentious'];
+
       for (const src of data.sources) {
+        const rawTier = src.documentary_tier ? String(src.documentary_tier).trim().toUpperCase() : null;
+        const documentaryTier = (rawTier && validTiers.includes(rawTier)) ? rawTier : null;
+
+        const rawRob = src.methodological_robustness ? String(src.methodological_robustness).trim().toLowerCase() : null;
+        const methodologicalRobustness = (rawRob && validRobustness.includes(rawRob)) ? rawRob : null;
+
+        const citationRef = (src.citation_reference && typeof src.citation_reference === 'string' && src.citation_reference.trim().length > 0)
+          ? src.citation_reference.trim()
+          : null;
+
         await client.query(`
           INSERT INTO data_value_sources (
             data_value_id, source_id, source_role, documentary_tier,
@@ -195,10 +208,10 @@ async function createDraft(data, userId) {
           newId,
           src.source_id,
           src.source_role || 'primary',
-          src.documentary_tier || 'TIER_1_OFFICIAL',
-          src.citation_reference,
-          src.citation_url || null,
-          src.methodological_robustness || 'high',
+          documentaryTier,
+          citationRef,
+          src.citation_url ? String(src.citation_url).trim() : null,
+          methodologicalRobustness,
           src.notes || null,
           userId
         ]);
@@ -242,7 +255,21 @@ async function getAdminValueById(id) {
     SELECT 
       ${ADMIN_VALUE_FIELDS},
       ${ADMIN_SOURCES_SUBQUERY},
-      ${ADMIN_BREAKDOWNS_SUBQUERY}
+      ${ADMIN_BREAKDOWNS_SUBQUERY},
+      (
+        SELECT COALESCE(json_agg(json_build_object(
+          'id', dp.id,
+          'title', dp.title,
+          'publication_year', dp.publication_year,
+          'document_category', dp.document_category,
+          'verification_status', dp.verification_status,
+          'url', dp.url,
+          'bibliographic_reference', dp.bibliographic_reference
+        ) ORDER BY dp.publication_year DESC, dp.id ASC), '[]'::json)
+        FROM data_publication_indicators dpi
+        JOIN data_publications dp ON dp.id = dpi.publication_id
+        WHERE dpi.indicator_id = dv.indicator_id
+      ) AS indicator_publications
     FROM data_values dv
     JOIN data_indicators di ON di.id = dv.indicator_id
     JOIN territories t ON t.id = dv.territory_id
@@ -468,6 +495,20 @@ async function addSource(valueId, sourceData, user) {
       throw { status: 400, message: 'Source documentaire inexistante' };
     }
 
+    const validTiers = ['TIER_1_OFFICIAL', 'TIER_2_STATISTICAL', 'TIER_3_ACADEMIC_PEER', 'TIER_4_REPUTABLE_NGO', 'TIER_5_SECONDARY_PRESS'];
+    const validRobustness = ['high', 'medium', 'conditional', 'contentious'];
+
+    // Lot 3C.4 : Aucune attribution automatique de TIER 1 ou de robustesse high
+    const rawTier = sourceData.documentary_tier ? String(sourceData.documentary_tier).trim().toUpperCase() : null;
+    const documentaryTier = (rawTier && validTiers.includes(rawTier)) ? rawTier : null;
+
+    const rawRob = sourceData.methodological_robustness ? String(sourceData.methodological_robustness).trim().toLowerCase() : null;
+    const methodologicalRobustness = (rawRob && validRobustness.includes(rawRob)) ? rawRob : null;
+
+    const citationRef = (sourceData.citation_reference && typeof sourceData.citation_reference === 'string' && sourceData.citation_reference.trim().length > 0)
+      ? sourceData.citation_reference.trim()
+      : null;
+
     const insertSql = `
       INSERT INTO data_value_sources (
         data_value_id, source_id, source_role, documentary_tier,
@@ -480,10 +521,10 @@ async function addSource(valueId, sourceData, user) {
       valueId,
       sourceData.source_id,
       sourceData.source_role || 'primary',
-      sourceData.documentary_tier || 'TIER_1_OFFICIAL',
-      sourceData.citation_reference,
-      sourceData.citation_url || null,
-      sourceData.methodological_robustness || 'high',
+      documentaryTier,
+      citationRef,
+      sourceData.citation_url ? String(sourceData.citation_url).trim() : null,
+      methodologicalRobustness,
       sourceData.notes || null,
       user.id
     ]);
@@ -707,11 +748,23 @@ async function validateMethodology(id, validationNotes, user) {
       };
     }
 
-    // Contrôle d'intégrité de l'audit 3C.1 : interdiction formelle si l'audit est refusé ou non accepté
+    // Contrôle d'intégrité de l'audit 3C.1 & 3C.4 : interdiction formelle si l'audit est refusé, en attente de preuve ou non accepté
     if (current.audit_decision === 'rejected') {
       throw {
         status: 400,
-        message: "Validation méthodologique impossible : l'audit préalable de cette observation a été formellement refusé"
+        message: "Validation méthodologique impossible : l'audit préalable de cette observation a été formellement refusé et doit être formellement accepté avant validation"
+      };
+    }
+    if (current.audit_decision === 'pending_evidence') {
+      throw {
+        status: 400,
+        message: "Validation méthodologique impossible : l'observation est en attente de preuve documentaire et doit être formellement acceptée avant validation (audit_decision: pending_evidence)"
+      };
+    }
+    if (current.audit_decision === 'correction_requested') {
+      throw {
+        status: 400,
+        message: "Validation méthodologique impossible : une correction méthodologique ou documentaire a été demandée et l'audit doit être formellement accepté avant validation"
       };
     }
     if (current.audit_status && ['confirmed', 'confirmed_with_caveat', 'discrepancy'].includes(current.audit_status) && current.audit_decision !== 'accepted') {
@@ -721,15 +774,33 @@ async function validateMethodology(id, validationNotes, user) {
       };
     }
 
-    // Vérification de source primaire
-    const srcCount = await client.query(
-      "SELECT COUNT(*) AS count FROM data_value_sources WHERE data_value_id = $1 AND source_role = 'primary'",
+    // Contrôle d'intégrité documentaire Lot 3C.4 :
+    // 1. Présence d'au moins une source primaire
+    const primSources = await client.query(
+      "SELECT id, documentary_tier, citation_reference, methodological_robustness FROM data_value_sources WHERE data_value_id = $1 AND source_role = 'primary'",
       [id]
     );
-    if (parseInt(srcCount.rows[0].count, 10) === 0) {
+    if (primSources.rows.length === 0) {
       throw {
         status: 400,
         message: 'Validation impossible : l\'observation doit comporter au moins une source primaire'
+      };
+    }
+
+    const validTiers = ['TIER_1_OFFICIAL', 'TIER_2_STATISTICAL', 'TIER_3_ACADEMIC_PEER', 'TIER_4_REPUTABLE_NGO', 'TIER_5_SECONDARY_PRESS'];
+    const validRobustness = ['high', 'medium', 'conditional', 'contentious'];
+
+    // 2. Impossibilité de valider une observation sans source primaire correctement qualifiée
+    const hasProperlyQualifiedPrimarySource = primSources.rows.some(src => 
+      src.documentary_tier && validTiers.includes(src.documentary_tier) &&
+      (!src.methodological_robustness || validRobustness.includes(src.methodological_robustness)) &&
+      src.citation_reference && src.citation_reference.trim().length >= 5
+    );
+
+    if (!hasProperlyQualifiedPrimarySource) {
+      throw {
+        status: 400,
+        message: "Validation méthodologique impossible : l'observation ne possède aucune source primaire correctement qualifiée (niveau documentaire explicite et référence bibliographique requises)"
       };
     }
 
@@ -1020,7 +1091,7 @@ async function publishValue(id, publicReasonSummary, user) {
 
     // Condition 2 : Vérifier la présence obligatoire et la complétude de la source primaire
     const srcRes = await client.query(
-      "SELECT citation_reference FROM data_value_sources WHERE data_value_id = $1 AND source_role = 'primary'",
+      "SELECT documentary_tier, citation_reference, methodological_robustness FROM data_value_sources WHERE data_value_id = $1 AND source_role = 'primary'",
       [id]
     );
     if (srcRes.rows.length === 0) {
@@ -1029,11 +1100,18 @@ async function publishValue(id, publicReasonSummary, user) {
         message: 'Publication refusée : au moins une source principale est obligatoire'
       };
     }
-    const primCitation = srcRes.rows[0].citation_reference;
+    const primSrc = srcRes.rows[0];
+    const primCitation = primSrc.citation_reference;
     if (!primCitation || primCitation.trim().length < 10) {
       throw {
         status: 400,
-        message: 'Publication refusée : la source principale doit comporter une référence bibliographique précise'
+        message: 'Publication refusée : la source principale doit comporter une référence bibliographique précise (au moins 10 caractères)'
+      };
+    }
+    if (!primSrc.documentary_tier) {
+      throw {
+        status: 400,
+        message: 'Publication refusée : la source principale doit être explicitement qualifiée (niveau documentaire requis)'
       };
     }
 

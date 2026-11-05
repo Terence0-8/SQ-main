@@ -65,11 +65,14 @@ const staticOptions = { setHeaders: setStaticCacheHeaders, etag: true, lastModif
 const rootStatic = express.static(__dirname, staticOptions);
 app.use((req, res, next) => {
   if (req.path === '/admin.html') return next();
+  if (req.path.startsWith('/backend') || req.path.startsWith('/storage')) {
+    return res.status(403).json({ error: 'Accès interdit aux répertoires internes' });
+  }
   rootStatic(req, res, next);
 });
 // Protection stricte : interdiction absolue d'accès direct/statique aux fichiers d'importation
-app.use('/uploads/imports', (req, res) => {
-  res.status(403).json({ error: 'Accès interdit aux fichiers d\'importation bruts' });
+app.use(['/uploads/imports', '/uploads/document_archive', '/backend/storage'], (req, res) => {
+  res.status(403).json({ error: 'Accès interdit aux fichiers privés' });
 });
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), staticOptions));
 app.use(['/fr', '/en'], express.static(__dirname, staticOptions));
@@ -328,7 +331,7 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 // Error Handling
 app.use('/api', (req, res) => res.status(404).json({ success: false, error: 'Route API introuvable' }));
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   logger.error({ err, method: req.method, url: req.originalUrl }, 'Erreur serveur non gérée');
   res.status(500).json({ success: false, error: isProduction ? 'Erreur serveur' : err.message });
 });
@@ -337,7 +340,7 @@ if (require.main === module) {
   const server = app.listen(PORT, async () => {
     logger.info({ url: BASE_URL, env: isProduction ? 'production' : 'development' }, '🚀 Serveur Solitiquo démarré');
 
-    let dbStatus = '⏳ En attente...';
+    let dbStatus;
     try {
       await pool.query('SELECT 1');
       dbStatus = '✅ Connectée (PostgreSQL)';

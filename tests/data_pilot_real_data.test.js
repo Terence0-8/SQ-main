@@ -84,11 +84,15 @@ describe('SOLITIQUO DATA — LOT 3C PILOTE DE DONNÉES RÉELLES SUITE', () => {
     test('1.2 Réconciliation de l\'écart documentaire (publications enregistrées vs catalogue initial)', async () => {
       const pubCountRes = await pool.query('SELECT COUNT(*) AS total FROM data_publications');
       const totalPubs = parseInt(pubCountRes.rows[0].total, 10);
-      assert.ok(totalPubs >= 61, `Nombre total de publications en base attendu >= 61, obtenu: ${totalPubs}`);
+      const archiveRes = await pool.query('SELECT COUNT(*) AS total FROM data_publications_archive');
+      const archiveCount = parseInt(archiveRes.rows[0]?.total || 0, 10);
+      // Post-Lot 3D : 34 publications actives canoniques et 27 archivées (total >= 61)
+      assert.ok(totalPubs >= 34 && (totalPubs + archiveCount) >= 61, `Nombre total de publications (canoniques + archives) attendu >= 61, obtenu: ${totalPubs + archiveCount}`);
 
       const verifiedRes = await pool.query("SELECT COUNT(*) AS total FROM data_publications WHERE verification_status = 'verified_consulted'");
       const verifiedCount = parseInt(verifiedRes.rows[0].total, 10);
-      assert.ok(verifiedCount >= 27, `Publications vérifiées et consultées attendues >= 27, obtenu: ${verifiedCount}`);
+      // Au Lot 3E.2.1, les 7 publications pilotes sans PDF original consulté sont reclassées en institutional_reference_only / unavailable
+      assert.ok(verifiedCount >= 20, `Publications vérifiées et consultées réelles attendues >= 20, obtenu: ${verifiedCount}`);
     });
 
     test('1.3 Intégrité des références des publications verified_consulted', async () => {
@@ -98,7 +102,7 @@ describe('SOLITIQUO DATA — LOT 3C PILOTE DE DONNÉES RÉELLES SUITE', () => {
         JOIN data_sources ds ON ds.id = dp.institution_id
         WHERE dp.verification_status = 'verified_consulted'
       `);
-      assert.ok(res.rows.length >= 27);
+      assert.ok(res.rows.length >= 20);
       res.rows.forEach(pub => {
         assert.ok(pub.title && pub.title.length > 5, 'Chaque publication vérifiée doit avoir un titre complet');
         assert.ok(pub.institution_acronym, 'Chaque publication vérifiée doit être rattachée à une institution officielle');
@@ -261,12 +265,17 @@ describe('SOLITIQUO DATA — LOT 3C PILOTE DE DONNÉES RÉELLES SUITE', () => {
     });
 
     test('4.2 L\'API d\'administration permet la revue éditoriale des brouillons', async () => {
-      const res = await adminAgent
-        .get('/api/data/admin/values?editorial_status=draft&limit=200')
-        .expect(200);
+      let draftIds = [];
+      for (let p = 1; p <= 5; p++) {
+        const res = await adminAgent
+          .get(`/api/data/admin/values?editorial_status=draft&limit=200&page=${p}`)
+          .expect(200);
+        if (!res.body.data || res.body.data.length === 0) break;
+        draftIds.push(...res.body.data.map(v => parseInt(v.id, 10)));
+        if (res.body.data.length < 200 || draftIds.length >= (res.body.meta?.total || 0)) break;
+      }
 
-      assert.ok(res.body.data.length >= 24, 'L\'administration doit pouvoir lister les 24 observations en draft');
-      const draftIds = res.body.data.map(v => parseInt(v.id, 10));
+      assert.ok(draftIds.length >= 24, 'L\'administration doit pouvoir lister les 24 observations en draft');
       for (let id = 687; id <= 710; id++) {
         assert.ok(draftIds.includes(id), `L'observation brouillon #${id} doit être accessible aux modérateurs`);
       }

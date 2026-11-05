@@ -18,7 +18,7 @@ describe('SOLITIQUO DATA — LOT 3B CORPUS DOCUMENTAIRE STATISTIQUE SUITE', () =
   const rawPassword = 'Password123*';
   let adminUser;
   let adminAgent;
-  let adminCsrf;
+  let _adminCsrf;
   let writerUser;
   let writerAgent;
   let writerCsrf;
@@ -59,7 +59,7 @@ describe('SOLITIQUO DATA — LOT 3B CORPUS DOCUMENTAIRE STATISTIQUE SUITE', () =
       password: rawPassword
     }).expect(200);
     const csrfAdminRes = await adminAgent.get('/api/csrf-token').expect(200);
-    adminCsrf = csrfAdminRes.body.csrfToken;
+    _adminCsrf = csrfAdminRes.body.csrfToken;
 
     writerAgent = request.agent(app);
     await writerAgent.post('/api/auth/login').send({
@@ -105,7 +105,7 @@ describe('SOLITIQUO DATA — LOT 3B CORPUS DOCUMENTAIRE STATISTIQUE SUITE', () =
       if (adminUser) {
         await pool.query('DELETE FROM users WHERE id IN ($1, $2)', [adminUser.id, writerUser.id]);
       }
-    } catch (e) {
+    } catch {
       // Ignorer
     }
   });
@@ -290,7 +290,10 @@ describe('SOLITIQUO DATA — LOT 3B CORPUS DOCUMENTAIRE STATISTIQUE SUITE', () =
       assert.ok(stats.publications.verified_consulted >= 15);
       assert.ok(stats.indicators);
       assert.ok(stats.indicators.total_active >= 40);
-      assert.ok(stats.indicators.verified_covered >= 30);
+      assert.ok(
+        stats.indicators.verified_covered >= 25,
+        'Au moins 25 indicateurs couverts par des publications certifiées vérifiées (27 au Lot 3E.2.1)'
+      );
       assert.ok(stats.indicators.coverage_rate_percent > 50);
     });
 

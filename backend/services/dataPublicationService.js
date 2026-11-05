@@ -234,15 +234,41 @@ async function createPublication(data) {
       throw { status: 400, message: `Catégorie documentaire invalide : ${data.document_category}` };
     }
 
-    const validStatuses = ['verified_consulted', 'identified_unconsulted', 'potential_to_search', 'unavailable_or_broken'];
+    const validStatuses = [
+      'verified_consulted',
+      'identified_unconsulted',
+      'potential_to_search',
+      'unavailable_or_broken',
+      'institutional_reference_only',
+      'unavailable'
+    ];
     if (!validStatuses.includes(data.verification_status)) {
       throw { status: 400, message: `Statut de vérification invalide : ${data.verification_status}` };
+    }
+
+    // Règle Lot 3C.4 : Une URL institutionnelle ne prouve pas la consultation
+    if (data.verification_status === 'verified_consulted') {
+      if (!data.consultation_date || !data.bibliographic_reference || data.bibliographic_reference.trim().length < 5) {
+        throw {
+          status: 400,
+          message: "Une publication ne peut pas être marquée 'verified_consulted' sans référence bibliographique complète et date de consultation formelle (une URL institutionnelle ne constitue pas une preuve de consultation)"
+        };
+      }
     }
 
     // Vérifier l'institution
     const instCheck = await client.query('SELECT id FROM data_sources WHERE id = $1', [data.institution_id]);
     if (instCheck.rows.length === 0) {
       throw { status: 400, message: `Institution productrice introuvable (ID: ${data.institution_id})` };
+    }
+
+    const validTiers = ['TIER_1_OFFICIAL', 'TIER_2_STATISTICAL', 'TIER_3_ACADEMIC_PEER', 'TIER_4_REPUTABLE_NGO', 'TIER_5_SECONDARY_PRESS'];
+    let documentaryTier = data.documentary_tier ? String(data.documentary_tier).trim().toUpperCase() : null;
+    if (documentaryTier && !validTiers.includes(documentaryTier)) {
+      throw { status: 400, message: `Niveau documentaire invalide : ${data.documentary_tier}` };
+    }
+    if (!documentaryTier) {
+      documentaryTier = 'TIER_2_STATISTICAL'; // Repli prudent par défaut, jamais TIER 1 automatique
     }
 
     const insertSql = `
@@ -264,7 +290,7 @@ async function createPublication(data) {
       data.coverage_period_start?.trim() || null,
       data.coverage_period_end?.trim() || null,
       data.document_category,
-      data.documentary_tier || 'TIER_1_OFFICIAL',
+      documentaryTier,
       data.url?.trim() || null,
       data.bibliographic_reference?.trim() || null,
       data.geographical_coverage?.trim() || 'national',
@@ -335,9 +361,29 @@ async function updatePublication(id, data) {
 
     // Vérification du statut
     if (data.verification_status) {
-      const validStatuses = ['verified_consulted', 'identified_unconsulted', 'potential_to_search', 'unavailable_or_broken'];
+      const validStatuses = [
+      'verified_consulted',
+      'identified_unconsulted',
+      'potential_to_search',
+      'unavailable_or_broken',
+      'institutional_reference_only',
+      'unavailable'
+    ];
       if (!validStatuses.includes(data.verification_status)) {
         throw { status: 400, message: `Statut de vérification invalide : ${data.verification_status}` };
+      }
+    }
+
+    const targetStatus = data.verification_status || current.verification_status;
+    const targetBibRef = data.bibliographic_reference !== undefined ? data.bibliographic_reference : current.bibliographic_reference;
+    const targetConsultDate = data.consultation_date !== undefined ? data.consultation_date : current.consultation_date;
+
+    if (targetStatus === 'verified_consulted') {
+      if (!targetConsultDate || !targetBibRef || targetBibRef.trim().length < 5) {
+        throw {
+          status: 400,
+          message: "Une publication ne peut pas être marquée 'verified_consulted' sans référence bibliographique complète et date de consultation formelle (une URL institutionnelle ne constitue pas une preuve de consultation)"
+        };
       }
     }
 

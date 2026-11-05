@@ -306,6 +306,107 @@ async function getPublicationById(req, res) {
   }
 }
 
+/**
+ * GET /api/data/search (et /api/search/statistics) (Lot 3D)
+ * Recherche multi-critères dans les observations statistiques publiées et actives
+ */
+async function searchStatistics(req, res) {
+  try {
+    const {
+      q,
+      indicator,
+      indicator_code,
+      territory,
+      territory_code,
+      category,
+      domain,
+      period_type,
+      year,
+      period_start,
+      period_end,
+      page,
+      limit,
+      sort
+    } = req.query;
+
+    const result = await dataService.searchPublishedStatistics({
+      q: typeof q === 'string' ? q.trim() : null,
+      indicator: (indicator || indicator_code)?.trim(),
+      territory: (territory || territory_code)?.trim(),
+      category: (category || domain)?.trim(),
+      period_type: period_type?.trim(),
+      year: year ? parseInt(year, 10) : null,
+      period_start: period_start?.trim(),
+      period_end: period_end?.trim(),
+      page,
+      limit,
+      sort
+    });
+
+    return sendSuccess(res, result.data, result.meta);
+  } catch (err) {
+    console.error('Erreur searchStatistics:', err);
+    return sendError(res, 'Erreur lors de la recherche statistique', 500);
+  }
+}
+
+/**
+ * GET /api/data/export/csv (Lot 3D)
+ * Exportation des observations publiées au format CSV (séparateur point-virgule, UTF-8 avec BOM, anti-injection)
+ */
+async function exportCsv(req, res) {
+  try {
+    const records = await dataService.exportPublishedObservations(req.query);
+    const csvContent = dataService.generateCsv(records);
+
+    const today = new Date().toISOString().slice(0, 10);
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="solitiquo-data-export-${today}.csv"`);
+    return res.status(200).send(csvContent);
+  } catch (err) {
+    console.error('Erreur exportCsv:', err);
+    return sendError(res, 'Erreur lors de la génération de l\'export CSV', 500);
+  }
+}
+
+/**
+ * GET /api/data/export/json (Lot 3D)
+ * Exportation classique structurée des observations publiées
+ */
+async function exportJson(req, res) {
+  try {
+    const records = await dataService.exportPublishedObservations(req.query);
+    const payload = dataService.generateJson(records, req.query);
+
+    const today = new Date().toISOString().slice(0, 10);
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="solitiquo-data-export-${today}.json"`);
+    return res.status(200).json(payload);
+  } catch (err) {
+    console.error('Erreur exportJson:', err);
+    return sendError(res, 'Erreur lors de la génération de l\'export JSON', 500);
+  }
+}
+
+/**
+ * GET /api/data/export/json-ld (Lot 3D)
+ * Exportation sémantique Schema.org (DataFeed / Observation) des observations publiées
+ */
+async function exportJsonLd(req, res) {
+  try {
+    const records = await dataService.exportPublishedObservations(req.query);
+    const payload = dataService.generateJsonLd(records, req.query);
+
+    const today = new Date().toISOString().slice(0, 10);
+    res.setHeader('Content-Type', 'application/ld+json; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="solitiquo-data-export-${today}.jsonld"`);
+    return res.status(200).json(payload);
+  } catch (err) {
+    console.error('Erreur exportJsonLd:', err);
+    return sendError(res, 'Erreur lors de la génération de l\'export JSON-LD', 500);
+  }
+}
+
 module.exports = {
   getTerritories,
   getIndicators,
@@ -315,5 +416,9 @@ module.exports = {
   getPublicationById,
   getIndicatorValues,
   getTerritoryValues,
-  getValueById
+  getValueById,
+  searchStatistics,
+  exportCsv,
+  exportJson,
+  exportJsonLd
 };

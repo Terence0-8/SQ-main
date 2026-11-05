@@ -168,17 +168,27 @@ async function addSource(req, res) {
       notes
     } = req.body;
 
-    if (!source_id || !citation_reference) {
-      return sendError(res, 'Champs source_id et citation_reference obligatoires');
+    if (!source_id) {
+      return sendError(res, 'Le champ source_id est obligatoire');
+    }
+
+    const validTiers = ['TIER_1_OFFICIAL', 'TIER_2_STATISTICAL', 'TIER_3_ACADEMIC_PEER', 'TIER_4_REPUTABLE_NGO', 'TIER_5_SECONDARY_PRESS'];
+    if (documentary_tier && !validTiers.includes(String(documentary_tier).trim().toUpperCase())) {
+      return sendError(res, `Niveau documentaire invalide. Valeurs autorisées: ${validTiers.join(', ')}`);
+    }
+
+    const validRobustness = ['high', 'medium', 'conditional', 'contentious'];
+    if (methodological_robustness && !validRobustness.includes(String(methodological_robustness).trim().toLowerCase())) {
+      return sendError(res, `Robustesse méthodologique invalide. Valeurs autorisées: ${validRobustness.join(', ')}`);
     }
 
     const result = await dataAdminService.addSource(id, {
       source_id: parseInt(source_id, 10),
       source_role,
-      documentary_tier,
-      citation_reference,
-      citation_url,
-      methodological_robustness,
+      documentary_tier: documentary_tier || null,
+      citation_reference: citation_reference ? String(citation_reference).trim() : null,
+      citation_url: citation_url ? String(citation_url).trim() : null,
+      methodological_robustness: methodological_robustness || null,
       notes
     }, req.session.user);
 

@@ -88,43 +88,49 @@ async function seedPublications() {
         }
       }
 
-      const insertPubSql = `
-        INSERT INTO data_publications (
-          institution_id, title, publisher_organization, publication_year,
-          coverage_period_start, coverage_period_end, document_category,
-          documentary_tier, url, bibliographic_reference, geographical_coverage,
-          consultation_date, verification_status, notes
-        ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
-        )
-        ON CONFLICT DO NOTHING
-        RETURNING id;
-      `;
+      // Vérifier si la publication existe déjà par titre normalisé (index unique)
+      const existingCheck = await client.query(
+        'SELECT id FROM data_publications WHERE LOWER(TRIM(title)) = LOWER(TRIM($1)) LIMIT 1',
+        [pub.title]
+      );
 
       let pubId;
-      const res = await client.query(insertPubSql, [
-        instId,
-        pub.title,
-        pub.publisher_organization || null,
-        pub.publication_year || null,
-        pub.coverage_period_start || null,
-        pub.coverage_period_end || null,
-        pub.document_category,
-        pub.documentary_tier || 'TIER_1_OFFICIAL',
-        pub.url || null,
-        pub.bibliographic_reference || null,
-        pub.geographical_coverage || 'national',
-        pub.consultation_date || null,
-        pub.verification_status,
-        pub.notes || null
-      ]);
-
-      if (res.rows.length > 0) {
-        pubId = res.rows[0].id;
-        insertedCount++;
+      if (existingCheck.rows.length > 0) {
+        pubId = existingCheck.rows[0].id;
       } else {
-        const existing = await client.query('SELECT id FROM data_publications WHERE title = $1 LIMIT 1', [pub.title]);
-        pubId = existing.rows[0].id;
+        const insertPubSql = `
+          INSERT INTO data_publications (
+            institution_id, title, publisher_organization, publication_year,
+            coverage_period_start, coverage_period_end, document_category,
+            documentary_tier, url, bibliographic_reference, geographical_coverage,
+            consultation_date, verification_status, notes
+          ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+          )
+          RETURNING id;
+        `;
+
+        const res = await client.query(insertPubSql, [
+          instId,
+          pub.title,
+          pub.publisher_organization || null,
+          pub.publication_year || null,
+          pub.coverage_period_start || null,
+          pub.coverage_period_end || null,
+          pub.document_category,
+          pub.documentary_tier || 'TIER_1_OFFICIAL',
+          pub.url || null,
+          pub.bibliographic_reference || null,
+          pub.geographical_coverage || 'national',
+          pub.consultation_date || null,
+          pub.verification_status,
+          pub.notes || null
+        ]);
+
+        if (res.rows.length > 0) {
+          pubId = res.rows[0].id;
+          insertedCount++;
+        }
       }
 
       // Associer les indicateurs cibles

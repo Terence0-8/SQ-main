@@ -1225,8 +1225,8 @@
       source_name: srcRef?.name || 'Source',
       source_acronym: srcRef?.acronym || '',
       source_role: roleSelect?.value || 'primary',
-      documentary_tier: tierSelect?.value || 'TIER_1_OFFICIAL',
-      methodological_robustness: robustSelect?.value || 'high',
+      documentary_tier: tierSelect?.value || null,
+      methodological_robustness: robustSelect?.value || null,
       citation_reference: cit,
       citation_url: urlInput?.value?.trim() || null,
       website_url: urlInput?.value?.trim() || null
@@ -2117,7 +2117,69 @@
           <!-- 5. Visualiseur Statistique Conforme -->
           ${visualizerHtml}
 
-          <!-- 6. Preuves documentaires et consultation directe (Lot 3C.3) -->
+          <!-- 5bis. Comparateur de Concordance Documentaire & Examen Critique (Lot 3E) -->
+          <div class="data-card" style="padding:16px; background:#fcfbf9; border:1px solid #e7e5e4; border-radius:8px;">
+            <div style="font-weight:700; font-size:0.9rem; color:#1c1917; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+              <i data-lucide="scale" style="width:16px;height:16px;color:#d97706;"></i>
+              Comparateur de Concordance &amp; Examen Critique Documentaire (Lot 3E)
+            </div>
+            <div class="data-table-wrapper" style="border:1px solid #d6d3d1; border-radius:6px; background:#fff;">
+              <table class="data-table data-table-sm" style="margin:0;">
+                <thead>
+                  <tr style="background:#f5f5f4;">
+                    <th>Paramètre d'audit</th>
+                    <th>Valeur en Base Solitiquo</th>
+                    <th>Donnée Source Primaire</th>
+                    <th>Conformité &amp; Évaluation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Valeur &amp; Unité</strong></td>
+                    <td style="font-size:0.92rem; font-weight:700; color:#0f172a;">
+                      ${formatNumber(obs.value_numeric)} ${escapeHTML(obs.indicator_unit || '')}
+                    </td>
+                    <td style="font-size:0.83rem; color:#44403c;">
+                      ${escapeHTML(obs.sources && obs.sources[0]?.citation_reference ? obs.sources[0].citation_reference : 'Non renseignée')}
+                    </td>
+                    <td>
+                      <span class="data-badge" style="font-size:0.7rem; background:#dcfce7; color:#15803d;">
+                        Conforme à la source citée
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>Nature Méthodologique</strong></td>
+                    <td><span class="data-nature-badge ${obs.methodology_nature}">${getNatureLabel(obs.methodology_nature)}</span></td>
+                    <td style="font-size:0.82rem; color:#44403c;">${escapeHTML(obs.survey_or_account_status || 'Cadre officiel institutionnel')}</td>
+                    <td>
+                      <span class="data-badge" style="font-size:0.7rem; background:#f3f4f6; color:#374151;">
+                        ${obs.methodology_nature === 'projection' ? 'Projection extrapolée' : (obs.methodology_nature === 'sample_survey' ? 'Enquête par échantillonnage' : 'Comptes / Registre')}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>Qualification Documentaire</strong></td>
+                    <td>
+                      <span style="font-weight:700; font-size:0.78rem; color:#0f766e;">
+                        ${escapeHTML(obs.sources && obs.sources[0]?.documentary_tier ? obs.sources[0].documentary_tier : 'TIER_1_OFFICIAL')}
+                      </span>
+                    </td>
+                    <td style="font-size:0.82rem; color:#44403c;">
+                      ${escapeHTML(obs.sources && obs.sources[0]?.source_name ? obs.sources[0].source_name : 'Institution nationale')} (${escapeHTML(obs.sources && obs.sources[0]?.source_acronym ? obs.sources[0].source_acronym : 'INS')})
+                    </td>
+                    <td>
+                      <span class="data-badge" style="font-size:0.7rem; background:#e0f2fe; color:#0369a1;">
+                        Source Primaire Qualifiée
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 6. Preuves documentaires et consultation directe (Lot 3C.3 & 3E) -->
           <div>
             <div class="data-subtable-title" style="display:flex; justify-content:space-between; align-items:center;">
               <span>Preuves documentaires et consultation directe (${obs.sources?.length || 0}) :</span>
@@ -2143,13 +2205,13 @@
                         <td>
                           <strong>${escapeHTML(s.source_acronym || s.source_name)}</strong>
                           <div style="font-size:0.7rem; color:#64748b;">${escapeHTML(s.source_name)}</div>
-                          <div style="font-size:0.68rem; color:#0f766e; font-weight:700;">${escapeHTML(s.documentary_tier || 'TIER_1_OFFICIAL')}</div>
+                          <div style="font-size:0.68rem; ${s.documentary_tier ? 'color:#0f766e; font-weight:700;' : 'color:#b45309; font-weight:600;'}">${escapeHTML(s.documentary_tier || 'Non qualifiée (Tier manquant)')}</div>
                         </td>
                         <td>
                           <span style="font-weight:700; color:#37463D;">${escapeHTML(s.source_role)}</span>
                           <div style="margin-top:2px;">
-                            <span class="data-pill-btn" style="${s.methodological_robustness === 'high' ? 'background:#dcfce7; color:#15803d;' : 'background:#fef3c7; color:#b45309;'}">
-                              Robustesse: ${escapeHTML(s.methodological_robustness || 'medium')}
+                            <span class="data-pill-btn" style="${s.methodological_robustness === 'high' ? 'background:#dcfce7; color:#15803d;' : (s.methodological_robustness ? 'background:#fef3c7; color:#b45309;' : 'background:#fee2e2; color:#b91c1c;')}">
+                              Robustesse: ${escapeHTML(s.methodological_robustness || 'Non qualifiée')}
                             </span>
                           </div>
                         </td>
@@ -2193,6 +2255,74 @@
               </table>
             </div>
           </div>
+
+          <!-- 6bis. Publications officielles associées dans le corpus vérifié (Lot 3E) -->
+          ${(obs.indicator_publications && obs.indicator_publications.length > 0) ? `
+            <div class="data-card" style="padding:14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+              <div style="font-weight:700; font-size:0.86rem; color:#0f172a; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                <i data-lucide="book-open" style="width:15px;height:15px;color:#0f766e;"></i>
+                Corpus documentaire officiel associé à cet indicateur (${obs.indicator_publications.length} publication${obs.indicator_publications.length > 1 ? 's' : ''}) :
+              </div>
+              <div class="data-table-wrapper" style="border:1px solid #cbd5e1; border-radius:6px; background:#fff;">
+                <table class="data-table data-table-sm" style="margin:0;">
+                  <thead>
+                    <tr style="background:#f1f5f9;">
+                      <th>Année</th>
+                      <th>Titre officiel de la publication</th>
+                      <th>Catégorie</th>
+                      <th>Statut</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${obs.indicator_publications.map(p => `
+                      <tr>
+                        <td style="font-weight:700;">${p.publication_year || '—'}</td>
+                        <td style="font-size:0.82rem; color:#1e293b;">
+                          <strong>${escapeHTML(p.title)}</strong>
+                          ${p.bibliographic_reference ? `<div style="font-size:0.7rem; color:#64748b;">${escapeHTML(p.bibliographic_reference)}</div>` : ''}
+                        </td>
+                        <td><span style="font-size:0.72rem; color:#475569;">${escapeHTML(p.document_category)}</span></td>
+                        <td>
+                          <span class="data-badge" style="font-size:0.68rem; background:#dcfce7; color:#15803d;">
+                            ${escapeHTML(p.verification_status)}
+                          </span>
+                        </td>
+                        <td>
+                          ${p.url ? `
+                            <a href="${escapeHTML(p.url)}" target="_blank" rel="noopener noreferrer" class="data-btn data-btn-xs data-btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center; gap:3px;">
+                              <i data-lucide="external-link" style="width:11px;height:11px;"></i> Ouvrir
+                            </a>
+                          ` : '—'}
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- 6ter. Pièces justificatives administratives enregistrées (Lot 3E) -->
+          ${(obs.audit_evidence_url || obs.audit_evidence_reference) ? `
+            <div class="data-card" style="padding:14px; background:#f0fdf4; border-left:4px solid #16a34a; border-radius:8px;">
+              <div style="font-weight:700; font-size:0.88rem; color:#15803d; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+                <i data-lucide="file-check" style="width:16px;height:16px;"></i>
+                Pièce justificative enregistrée pour cet audit :
+              </div>
+              <div style="font-size:0.84rem; color:#166534;">
+                ${obs.audit_evidence_reference ? `<strong>Référence :</strong> ${escapeHTML(obs.audit_evidence_reference)}<br>` : ''}
+                ${obs.audit_evidence_url ? `
+                  <div style="margin-top:6px;">
+                    <a href="${escapeHTML(obs.audit_evidence_url)}" target="_blank" rel="noopener noreferrer" class="data-btn data-btn-xs data-btn-primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-weight:700;">
+                      <i data-lucide="download" style="width:12px;height:12px;"></i> Télécharger / Consulter la pièce justificative
+                      <i data-lucide="external-link" style="width:10px;height:10px;"></i>
+                    </a>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          ` : ''}
 
           <!-- 7. Décisions de la Commission Éditoriale & Méthodologique (Lot 3C.3) -->
           ${isAdmin ? `
@@ -3022,7 +3152,7 @@
     document.getElementById('pub-form-year').value = pub?.publication_year || new Date().getFullYear();
     document.getElementById('pub-form-period-start').value = pub?.coverage_period_start ? pub.coverage_period_start.slice(0, 10) : '';
     document.getElementById('pub-form-period-end').value = pub?.coverage_period_end ? pub.coverage_period_end.slice(0, 10) : '';
-    document.getElementById('pub-form-tier').value = pub?.documentary_tier || 'TIER_1_OFFICIAL';
+    document.getElementById('pub-form-tier').value = pub?.documentary_tier || 'TIER_2_STATISTICAL';
     document.getElementById('pub-form-url').value = pub?.url || '';
     document.getElementById('pub-form-consult-date').value = pub?.consultation_date ? pub.consultation_date.slice(0, 10) : new Date().toISOString().slice(0, 10);
     document.getElementById('pub-form-geo').value = pub?.geographical_coverage || 'Cameroun (National)';

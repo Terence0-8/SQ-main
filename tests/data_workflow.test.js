@@ -446,6 +446,7 @@ describe('SOLITIQUO DATA — LOT 2B WORKFLOW ÉDITORIAL ET API D\'ADMINISTRATION
             {
               source_id: sourceId,
               source_role: 'primary',
+              documentary_tier: 'TIER_1_OFFICIAL',
               citation_reference: 'Registre 2023'
             }
           ],
@@ -591,6 +592,7 @@ describe('SOLITIQUO DATA — LOT 2B WORKFLOW ÉDITORIAL ET API D\'ADMINISTRATION
             {
               source_id: sourceId,
               source_role: 'primary',
+              documentary_tier: 'TIER_1_OFFICIAL',
               citation_reference: 'Recensement 2021'
             }
           ]

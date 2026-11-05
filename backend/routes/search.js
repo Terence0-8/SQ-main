@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
+const dataController = require('../controllers/dataController');
 
 const DATA_RESOURCES = [
   {
@@ -59,23 +60,12 @@ const DATA_RESOURCES = [
     keywords: 'social idh demographie sante education scolarisation hopitaux population minsante ins developpement'
   },
   {
-    id: 'data-securite',
-    title: 'Observatoire des Incidents Sécuritaires & Données ACLED',
-    description: 'Cartographie des conflits, séries chronologiques des incidents et intensité des crises territoriales au Cameroun.',
+    id: 'data-sources-doc',
+    title: 'Documentation Méthodologique & Corpus des Sources',
+    description: 'Cadre déontologique, catalogue des indicateurs normalisés, référentiel des 61 publications auditées et métadonnées de transparence.',
     image_url: '/data_hero_bg_1793188684198.jpg',
     category: 'Data',
-    date: '2026-01-20T09:00:00.000Z',
-    type: 'data',
-    href: 'data-cartographie.html',
-    keywords: 'securite acled conflits crises incidents noso extreme-nord boko haram attaques armee territoire'
-  },
-  {
-    id: 'data-sources',
-    title: 'Données, Méthodologie & Sources Officielles',
-    description: 'Audit et traçabilité des 5 familles d’organismes de référence : ELECAM, INS Cameroun, ACLED, Banque Mondiale, MinSANTE.',
-    image_url: '/data_hero_bg_1793188684198.jpg',
-    category: 'Data',
-    date: '2026-01-15T09:00:00.000Z',
+    date: '2026-02-01T08:00:00.000Z',
     type: 'data',
     href: 'data-sources.html',
     keywords: 'sources methodologie audit ins elecam acled banque mondiale minsante fiabilite open data'
@@ -99,13 +89,16 @@ router.get('/data-resources', (req, res) => {
   });
 });
 
+// ── GET /api/search/statistics : recherche statistique publique dédiée (Lot 3D) ──
+router.get('/statistics', dataController.searchStatistics);
+
 // ============================================================
-// GET /api/search?q=motcle&type=article|podcast|emission|data&sort=date|relevance&limit=50
-// Recherche ILIKE robuste sur articles + podcasts + émissions + ressources DATA
+// GET /api/search?q=motcle&type=article|podcast|emission|data|statistics&sort=date|relevance&limit=50
+// Recherche ILIKE robuste sur articles + podcasts + émissions + ressources DATA + observations statistiques publiées
 // ============================================================
 router.get('/', async (req, res) => {
   try {
-    const { q, type, sort = 'relevance', limit = 50, lang = 'fr' } = req.query;
+    const { q, type, _sort = 'relevance', limit = 50, lang = 'fr' } = req.query;
 
     // --- Validation ---
     if (!q || q.trim().length < 2) {
@@ -115,7 +108,7 @@ router.get('/', async (req, res) => {
       });
     }
 
-    const safeLimit = Math.min(Math.max(parseInt(limit) || 50, 1), 100);
+    const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 100);
     const term = q.trim();
     const ilike = `%${term}%`;
     const normalizedTerm = normalizeText(term);
@@ -124,11 +117,70 @@ router.get('/', async (req, res) => {
     // ── Matching des ressources DATA ──────────────────────────
     let dataMatches = [];
     if (!type || type === 'data') {
-      dataMatches = DATA_RESOURCES.filter(res => {
-        const fullContent = normalizeText(`${res.title} ${res.description} ${res.keywords} ${res.category}`);
+      dataMatches = DATA_RESOURCES.filter(resItem => {
+        const fullContent = normalizeText(`${resItem.title} ${resItem.description} ${resItem.keywords} ${resItem.category}`);
         if (fullContent.includes(normalizedTerm)) return true;
         return termTokens.length > 0 && termTokens.every(token => fullContent.includes(token));
       });
+    }
+
+    // ── Observations statistiques publiées (Lot 3D) ─────────────
+    let statRows = [];
+    if (!type || type === 'data' || type === 'statistics' || type === 'data_stat') {
+      const statsSQL = `
+        SELECT 
+          dv.id,
+          di.code AS indicator_code,
+          di.name AS indicator_name,
+          di.category AS indicator_category,
+          di.unit,
+          dv.value_numeric,
+          dv.period_type,
+          dv.period_start,
+          dv.period_end,
+          EXTRACT(YEAR FROM dv.period_start)::int AS period_year,
+          t.code AS territory_code,
+          t.name AS territory_name,
+          dv.methodology_nature,
+          dv.published_at AS date,
+          'data_stat' AS type,
+          0 AS rank
+        FROM data_values dv
+        JOIN data_indicators di ON di.id = dv.indicator_id
+        JOIN territories t ON t.id = dv.territory_id
+        WHERE dv.editorial_status = 'published'
+          AND dv.is_active = TRUE
+          AND (
+            di.name ILIKE $1 
+            OR di.code ILIKE $1 
+            OR di.description ILIKE $1
+            OR di.category ILIKE $1
+            OR t.name ILIKE $1
+            OR t.code ILIKE $1
+          )
+        ORDER BY dv.published_at DESC
+        LIMIT $2;
+      `;
+      const statRes = await pool.query(statsSQL, [ilike, safeLimit]).catch(() => ({ rows: [] }));
+      statRows = statRes.rows.map(r => ({
+        id: `stat-${r.id}`,
+        stat_id: r.id,
+        title: `${r.indicator_name} (${r.indicator_code}) — ${r.territory_name} : ${Number(r.value_numeric).toLocaleString('fr-FR')} ${r.unit}`,
+        description: `Observation ${r.period_type} (${r.period_year || ''}) • Territoire : ${r.territory_name} • Méthode : ${r.methodology_nature || 'officielle'}`,
+        category: 'Data',
+        date: r.date,
+        type: 'data_stat',
+        href: `data.html#indicator-${r.indicator_code}`,
+        indicator_code: r.indicator_code,
+        indicator_name: r.indicator_name,
+        value_numeric: Number(r.value_numeric),
+        unit: r.unit,
+        territory_code: r.territory_code,
+        territory_name: r.territory_name,
+        period_type: r.period_type,
+        period_year: r.period_year,
+        methodology_nature: r.methodology_nature
+      }));
     }
 
     // ── Articles ────────────────────────────────────────────
@@ -186,9 +238,9 @@ router.get('/', async (req, res) => {
       LIMIT $2
     `;
 
-    // ── Exécution en parallèle (requêtes BDD évitées si type = data) ──
+    // ── Exécution en parallèle (requêtes BDD éditoriales évitées si type = data ou statistics) ──
     let artRows = [], podRows = [], emiRows = [];
-    if (!type || type !== 'data') {
+    if (!type || (type !== 'data' && type !== 'statistics' && type !== 'data_stat')) {
       const [artRes, podRes, emiRes] = await Promise.all([
         (!type || type === 'article') ? pool.query(articlesSQL, [ilike, safeLimit, lang]).catch(() => ({ rows: [] })) : { rows: [] },
         (!type || type === 'podcast') ? pool.query(podcastsSQL, [ilike, safeLimit]).catch(() => ({ rows: [] })) : { rows: [] },
@@ -199,17 +251,25 @@ router.get('/', async (req, res) => {
       emiRows = emiRes.rows;
     }
 
-    let allResults = [...dataMatches, ...artRows, ...podRows, ...emiRows];
+    let allResults = [...dataMatches, ...statRows, ...artRows, ...podRows, ...emiRows];
 
     // ── Filtrage par type si demandé ──────────────────────────
-    if (type && ['article', 'podcast', 'emission', 'data'].includes(type)) {
-      allResults = allResults.filter(r => r.type === type);
+    if (type && ['article', 'podcast', 'emission', 'data', 'statistics', 'data_stat'].includes(type)) {
+      if (type === 'data') {
+        allResults = allResults.filter(r => r.type === 'data' || r.type === 'data_stat');
+      } else if (type === 'statistics' || type === 'data_stat') {
+        allResults = allResults.filter(r => r.type === 'data_stat');
+      } else {
+        allResults = allResults.filter(r => r.type === type);
+      }
     }
 
-    // ── Tri final (les résultats DATA pertinents sont valorisés en tête de tri si recherche liée aux données) ──
+    // ── Tri final (les résultats DATA / DATA_STAT pertinents sont valorisés en tête de tri si recherche liée aux données) ──
     allResults.sort((a, b) => {
-      if (a.type === 'data' && b.type !== 'data') return -1;
-      if (b.type === 'data' && a.type !== 'data') return 1;
+      const aIsData = a.type === 'data' || a.type === 'data_stat';
+      const bIsData = b.type === 'data' || b.type === 'data_stat';
+      if (aIsData && !bIsData) return -1;
+      if (bIsData && !aIsData) return 1;
       return new Date(b.date) - new Date(a.date);
     });
 
@@ -218,7 +278,7 @@ router.get('/', async (req, res) => {
       results: allResults,
       count: allResults.length,
       query: term,
-      mode: 'ilike+data'
+      mode: 'ilike+data+stats'
     });
 
   } catch (err) {
