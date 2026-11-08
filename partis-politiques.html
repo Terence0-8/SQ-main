@@ -240,8 +240,10 @@
       // --- FONCTIONS UTILITAIRES ---
       function isMajority(p) {
         return (p.acronym === 'RDPC' ||
+          p.acronym === 'UNDP' ||
+          p.type === 'majorite' ||
           (p.name && p.name.includes('Rassemblement Démocratique')) ||
-          (p.orientation && p.orientation === 'Majorité'));
+          (p.orientation && (p.orientation === 'Majorité' || p.orientation === 'majority')));
       }
 
       // --- RENDU GRILLE ---
@@ -255,37 +257,49 @@
         }
 
         grid.innerHTML = DOMPurify.sanitize(data.map(p => {
-          let orientation = p.orientation || 'Opposition';
+          let orientation = p.orientation || (isMajority(p) ? 'Majorité' : 'Opposition');
           if (isMajority(p)) orientation = 'Majorité';
 
           const tagColor = (orientation === 'Majorité') ? '#C82823' : '#37463D';
-          const logoSrc = p.logo_url || `https://placehold.co/150x150?text=${p.acronym}`;
+          const logoSrc = p.logo_url || `https://placehold.co/150x150?text=${p.acronym || 'Parti'}`;
 
           const leaderPhotoHtml = p.leader_photo_url
             ? `<img src="${p.leader_photo_url}" class="pf-leader-img" alt="${p.leader_name}" onerror="this.style.display='none'">`
             : '';
 
-          // Attention: handleImgError est global (dans <head>) donc accessible
+          // Formatage citoyen des sièges à l'Assemblée (10e Législature)
+          let seatsDisplay = 'Non renseigné';
+          if (p.seats_assembly !== null && p.seats_assembly !== undefined) {
+            const seatsNum = Number(p.seats_assembly);
+            if (seatsNum > 0) {
+              seatsDisplay = `${seatsNum} député${seatsNum > 1 ? 's' : ''}`;
+            } else {
+              seatsDisplay = 'Non représenté';
+            }
+          }
+
+          const leaderDisplay = (p.leader_name && p.leader_name.trim() !== '') ? p.leader_name : 'Non renseigné';
+
           return `
                 <a href="dossier.html?id=${p.id}" class="party-card">
                     <div class="party-tag" style="background:${tagColor};">${orientation}</div>
                     
-                    <img src="${logoSrc}" class="party-logo" alt="${p.acronym}" onerror="handleImgError(this)" loading="lazy">
+                    <img src="${logoSrc}" class="party-logo" alt="${p.acronym || 'Parti'}" onerror="handleImgError(this)" loading="lazy">
                     
                     <h3 class="party-full-name">${p.name}</h3>
-                    <p class="party-acronym">${p.acronym}</p>
+                    <p class="party-acronym">${p.acronym || ''}</p>
                     
                     <div class="party-footer">
                       <div class="pf-info pf-leader-info">
                           ${leaderPhotoHtml}
                           <div class="pf-leader-text">
-                              <span class="pf-label">Leader</span>
-                              <span class="pf-value">${p.leader_name || 'N/A'}</span>
+                              <span class="pf-label">Présidence / Leader</span>
+                              <span class="pf-value">${leaderDisplay}</span>
                           </div>
                       </div>
                       <div class="pf-info pf-seats-info">
-                          <span class="pf-label">${t('dossier_assembly_seats', 'Sièges')}</span>
-                          <span class="pf-value">${p.seats_assembly || '0'}</span>
+                          <span class="pf-label">${t('dossier_assembly_seats', 'Assemblée Nationale')}</span>
+                          <span class="pf-value" title="Représentation à l'Assemblée Nationale (10e Législature)">${seatsDisplay}</span>
                       </div>
                     </div>
                 </a>

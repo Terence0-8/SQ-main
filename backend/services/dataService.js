@@ -157,9 +157,49 @@ async function getTerritoryByCode(code) {
 }
 
 /**
+ * Formateur d'unités citoyennes normalisées (Lot 3H)
+ * Remplace les slugs techniques et abréviations cryptiques par des unités intelligibles pour le grand public.
+ */
+function formatCitizenUnit(rawUnit) {
+  if (!rawUnit) return 'valeur';
+  const u = String(rawUnit).trim().toLowerCase();
+  const dict = {
+    'milliards_fcfa': 'Milliards FCFA',
+    'pourcentage_pib': '% du PIB',
+    'pourcentage': 'pourcentage',
+    'pourcent': '%',
+    '%': '%',
+    'count': 'habitants',
+    'units': 'unités',
+    'unités': 'unités',
+    'habitants': 'habitants',
+    'habitants/km²': 'hab./km²',
+    'personnes': 'personnes',
+    'inscrits': 'électeurs inscrits',
+    'electeurs': 'électeurs inscrits',
+    'incidents': 'incidents répertoriés',
+    'partis': 'formations politiques',
+    'evenements': 'événements',
+    'agents': 'agents de l\'État',
+    'kilometres_carres': 'km²',
+    'km2': 'km²',
+    'score_sur_100': 'points / 100',
+    'tonnes_co2e_par_hab': 't CO2e / hab.',
+    'fcfa': 'FCFA',
+    'annees': 'ans',
+    'pour_mille': '‰',
+    'lits_pour_1000': 'lits / 1 000 hab.',
+    'pour_100k': 'pour 100 000 hab.',
+    'ecoles': 'établissements',
+    'eleves': 'élèves'
+  };
+  return dict[u] || rawUnit;
+}
+
+/**
  * 2. Liste des indicateurs publics
  */
-async function getIndicators({ category, domain, subdomain, status, definition_status } = {}) {
+async function getIndicators({ category, domain, subdomain, status, definition_status, exclude_tests, include_tests } = {}) {
   const conditions = [];
   const params = [];
 
@@ -169,6 +209,14 @@ async function getIndicators({ category, domain, subdomain, status, definition_s
     conditions.push(`di.status = $${params.length}`);
   } else {
     conditions.push('di.is_active = TRUE');
+  }
+
+  // Filtrage strict des indicateurs de test / migration pour les vues publiques et explorateurs
+  const shouldExclude = (exclude_tests === true || exclude_tests === 'true') ||
+                        (process.env.NODE_ENV === 'production' && include_tests !== true && include_tests !== 'true');
+  if (shouldExclude) {
+    conditions.push("di.code !~* '^(IND_MIG|IND_TEST|IND_[0-9]{10,}|IND_API|IND_UI|IND_WF|IND_INACT|IND_IMP)'");
+    conditions.push("di.name !~* '^(Indicateur Test|Indicateur Mig|Indicateur Inactif|Indicateur Import)'");
   }
 
   const cat = category || domain;
@@ -216,7 +264,11 @@ async function getIndicators({ category, domain, subdomain, status, definition_s
   `;
 
   const { rows } = await pool.query(sql, params);
-  return rows;
+  return rows.map(r => ({
+    ...r,
+    unit_raw: r.unit,
+    unit: formatCitizenUnit(r.unit)
+  }));
 }
 
 /**
@@ -316,13 +368,24 @@ async function getIndicatorByCode(code, { onlyActive = false, includeDetails = t
       ORDER BY dv.period_start ASC, t.code ASC;
     `;
     const historyRes = await pool.query(historySql, [indicator.id]);
-    indicator.published_history = historyRes.rows.map(r => ({
-      ...r,
-      value_numeric: Number(r.value_numeric),
-      period_start: r.period_start ? r.period_start.toISOString?.().slice(0, 10) || String(r.period_start).slice(0, 10) : null,
-      period_end: r.period_end ? r.period_end.toISOString?.().slice(0, 10) || String(r.period_end).slice(0, 10) : null
-    }));
+    indicator.published_history = historyRes.rows.map(r => {
+      const natureClass = classifyStatisticalNature(r);
+      return {
+        ...r,
+        unit_raw: r.unit,
+        unit: formatCitizenUnit(r.unit),
+        value_numeric: Number(r.value_numeric),
+        statistical_nature: natureClass,
+        is_estimation: natureClass.code === 'estimate' || natureClass.code === 'projection' || natureClass.code === 'estimate_or_projection',
+        estimation_status_label: natureClass.label,
+        period_start: r.period_start ? r.period_start.toISOString?.().slice(0, 10) || String(r.period_start).slice(0, 10) : null,
+        period_end: r.period_end ? r.period_end.toISOString?.().slice(0, 10) || String(r.period_end).slice(0, 10) : null
+      };
+    });
   }
+
+  indicator.unit_raw = indicator.unit;
+  indicator.unit = formatCitizenUnit(indicator.unit);
 
   return indicator;
 }
@@ -594,6 +657,10 @@ async function searchPublishedStatistics(params = {}) {
     "dv.editorial_status = 'published'",
     "dv.is_active = TRUE"
   ];
+  if (params.exclude_tests === true || params.exclude_tests === 'true' || process.env.NODE_ENV === 'production') {
+    conditions.push("di.code !~* '^(IND_MIG|IND_TEST|IND_[0-9]{10,}|IND_API|IND_UI|IND_WF|IND_INACT|IND_IMP)'");
+    conditions.push("di.name !~* '^(Indicateur Test|Indicateur Mig|Indicateur Inactif|Indicateur Import)'");
+  }
   const queryParams = [];
 
   // Recherche textuelle générale
@@ -740,31 +807,37 @@ async function searchPublishedStatistics(params = {}) {
 
   const { rows } = await pool.query(dataSql, queryParams);
 
-  const results = rows.map(r => ({
-    id: r.id,
-    indicator_code: r.indicator_code,
-    indicator_name: r.indicator_name,
-    indicator_category: r.indicator_category,
-    value_numeric: Number(r.value_numeric),
-    value_text: r.value_text,
-    unit: r.unit,
-    period_type: r.period_type,
-    period_start: r.period_start ? (r.period_start.toISOString?.().slice(0, 10) || String(r.period_start).slice(0, 10)) : null,
-    period_end: r.period_end ? (r.period_end.toISOString?.().slice(0, 10) || String(r.period_end).slice(0, 10)) : null,
-    period_year: r.period_year,
-    territory_code: r.territory_code,
-    territory_name: r.territory_name,
-    territory_type: r.territory_type,
-    methodology_nature: r.methodology_nature,
-    is_estimation: r.is_estimation,
-    estimation_status_label: r.is_estimation ? 'Estimation / Projection' : 'Donnée définitive',
-    methodology_notes: r.methodology_notes,
-    public_reason_summary: r.public_reason_summary,
-    audit_caveat: r.audit_caveat,
-    published_at: r.published_at,
-    detail_url: `/data.html#indicator-${r.indicator_code}`,
-    sources: r.sources || []
-  }));
+  const results = rows.map(r => {
+    const natureClass = classifyStatisticalNature(r);
+    const citizenUnit = formatCitizenUnit(r.unit);
+    return {
+      id: r.id,
+      indicator_code: r.indicator_code,
+      indicator_name: r.indicator_name,
+      indicator_category: r.indicator_category,
+      value_numeric: Number(r.value_numeric),
+      value_text: r.value_text,
+      unit: citizenUnit,
+      unit_raw: r.unit,
+      period_type: r.period_type,
+      period_start: r.period_start ? (r.period_start.toISOString?.().slice(0, 10) || String(r.period_start).slice(0, 10)) : null,
+      period_end: r.period_end ? (r.period_end.toISOString?.().slice(0, 10) || String(r.period_end).slice(0, 10)) : null,
+      period_year: r.period_year,
+      territory_code: r.territory_code,
+      territory_name: r.territory_name,
+      territory_type: r.territory_type,
+      methodology_nature: r.methodology_nature,
+      statistical_nature: natureClass,
+      is_estimation: natureClass.code === 'estimate' || natureClass.code === 'projection' || natureClass.code === 'estimate_or_projection',
+      estimation_status_label: natureClass.label,
+      methodology_notes: r.methodology_notes,
+      public_reason_summary: r.public_reason_summary,
+      audit_caveat: r.audit_caveat,
+      published_at: r.published_at,
+      detail_url: `/data.html#indicator-${r.indicator_code}`,
+      sources: r.sources || []
+    };
+  });
 
   return {
     data: results,
@@ -809,6 +882,10 @@ async function exportPublishedObservations(params = {}) {
     "dv.editorial_status = 'published'",
     "dv.is_active = TRUE"
   ];
+  if (params.exclude_tests === true || params.exclude_tests === 'true' || process.env.NODE_ENV === 'production') {
+    conditions.push("di.code !~* '^(IND_MIG|IND_TEST|IND_[0-9]{10,}|IND_API|IND_UI|IND_WF|IND_INACT|IND_IMP)'");
+    conditions.push("di.name !~* '^(Indicateur Test|Indicateur Mig|Indicateur Inactif|Indicateur Import)'");
+  }
   const queryParams = [];
 
   const indFilter = (indicator || indicator_code)?.trim();
@@ -899,30 +976,65 @@ async function exportPublishedObservations(params = {}) {
 
   const { rows } = await pool.query(sql, queryParams);
 
-  return rows.map(r => ({
-    id: r.id,
-    indicator_code: r.indicator_code,
-    indicator_name: r.indicator_name,
-    indicator_category: r.indicator_category,
-    value_numeric: Number(r.value_numeric),
-    value_text: r.value_text,
-    unit: r.unit,
-    period_type: r.period_type,
-    period_start: r.period_start ? (r.period_start.toISOString?.().slice(0, 10) || String(r.period_start).slice(0, 10)) : null,
-    period_end: r.period_end ? (r.period_end.toISOString?.().slice(0, 10) || String(r.period_end).slice(0, 10)) : null,
-    period_year: r.period_year,
-    territory_code: r.territory_code,
-    territory_name: r.territory_name,
-    territory_type: r.territory_type,
-    methodology_nature: r.methodology_nature,
-    is_estimation: r.is_estimation,
-    estimation_status_label: r.is_estimation ? 'Estimation / Projection' : 'Donnée définitive',
-    methodology_notes: r.methodology_notes,
-    public_reason_summary: r.public_reason_summary,
-    audit_caveat: r.audit_caveat,
-    published_at: r.published_at,
-    sources: r.sources || []
-  }));
+  return rows.map(r => {
+    const natureClass = classifyStatisticalNature(r);
+    const citizenUnit = formatCitizenUnit(r.unit);
+    return {
+      id: r.id,
+      indicator_code: r.indicator_code,
+      indicator_name: r.indicator_name,
+      indicator_category: r.indicator_category,
+      value_numeric: Number(r.value_numeric),
+      value_text: r.value_text,
+      unit: citizenUnit,
+      unit_raw: r.unit,
+      period_type: r.period_type,
+      period_start: r.period_start ? (r.period_start.toISOString?.().slice(0, 10) || String(r.period_start).slice(0, 10)) : null,
+      period_end: r.period_end ? (r.period_end.toISOString?.().slice(0, 10) || String(r.period_end).slice(0, 10)) : null,
+      period_year: r.period_year,
+      territory_code: r.territory_code,
+      territory_name: r.territory_name,
+      territory_type: r.territory_type,
+      methodology_nature: r.methodology_nature,
+      statistical_nature: natureClass,
+      is_estimation: natureClass.code === 'estimate' || natureClass.code === 'projection' || natureClass.code === 'estimate_or_projection',
+      estimation_status_label: natureClass.label,
+      methodology_notes: r.methodology_notes,
+      public_reason_summary: r.public_reason_summary,
+      audit_caveat: r.audit_caveat,
+      published_at: r.published_at,
+      sources: r.sources || []
+    };
+  });
+}
+
+/**
+ * Classification normalisée de la nature statistique d'une observation (Lot 3G)
+ * Distinction rigoureuse : définitive, provisoire / semi-définitive, estimation, projection, administrative.
+ */
+function classifyStatisticalNature(record) {
+  const nature = (record.methodology_nature || '').toLowerCase();
+  const text = `${record.methodology_notes || ''} ${record.public_reason_summary || ''} ${record.audit_caveat || ''}`.toLowerCase();
+
+  if (text.includes('semi-définitif') || text.includes('semi-definitif') || text.includes('provisoire')) {
+    return { code: 'provisional', label: 'Donnée provisoire / semi-définitive' };
+  }
+  if (nature === 'projection') {
+    return { code: 'projection', label: 'Projection' };
+  }
+  if (nature === 'nowcast_estimate' || nature === 'estimation' || nature.includes('estimate')) {
+    return { code: 'estimate', label: 'Estimation' };
+  }
+  if (nature === 'administrative_record') {
+    return { code: 'administrative', label: 'Donnée administrative' };
+  }
+  if (nature === 'census' || nature.includes('definitive') || nature === 'sample_survey') {
+    return { code: 'definitive', label: 'Donnée définitive' };
+  }
+  if (record.is_estimation) {
+    return { code: 'estimate_or_projection', label: 'Estimation / Projection' };
+  }
+  return { code: 'definitive', label: 'Donnée définitive' };
 }
 
 /**
@@ -976,6 +1088,8 @@ function generateCsv(records) {
       })
       .join(' | ');
 
+    const natureClass = classifyStatisticalNature(r);
+
     const line = [
       escapeCell(r.indicator_code),
       escapeCell(r.indicator_name),
@@ -990,7 +1104,7 @@ function generateCsv(records) {
       escapeCell(r.value_numeric !== null && !isNaN(r.value_numeric) ? String(r.value_numeric) : ''),
       escapeCell(r.unit),
       escapeCell(r.methodology_nature || ''),
-      escapeCell(r.is_estimation ? 'Estimation / Projection' : 'Donnée définitive'),
+      escapeCell(natureClass.label),
       escapeCell(r.audit_caveat || r.methodology_notes || ''),
       escapeCell(sourcesSummary),
       escapeCell(r.published_at ? new Date(r.published_at).toISOString() : ''),
@@ -1006,17 +1120,28 @@ function generateCsv(records) {
  * 10. Génération JSON classique structuré
  */
 function generateJson(records, filters = {}) {
+  const enhancedRecords = records.map(r => {
+    const natureClass = classifyStatisticalNature(r);
+    return {
+      ...r,
+      statistical_nature: natureClass,
+      estimation_status_label: natureClass.label
+    };
+  });
+
   return {
     success: true,
     meta: {
       format: 'json',
       exported_at: new Date().toISOString(),
-      total_records: records.length,
+      total_records: enhancedRecords.length,
       filters: filters || {},
-      license: 'https://creativecommons.org/licenses/by/4.0/',
+      license: 'https://solitiquo.cm/legal/data-license (Loi N° 2020/010 - Statistiques Officielles du Cameroun)',
+      legal_framework: 'Loi N° 2020/010 du 20 juillet 2020 régissant l\'activité statistique au Cameroun',
+      reuse_terms: 'Réutilisation libre sous réserve de mention expresse de la source officielle primaire et de Solitiquo DATA, sans altération des réserves méthodologiques.',
       attribution: 'Solitiquo DATA — Données Statistiques Officielles du Cameroun'
     },
-    data: records
+    data: enhancedRecords
   };
 }
 
@@ -1050,33 +1175,37 @@ function generateJsonLd(records) {
       'url': 'https://solitiquo.cm',
       'logo': 'https://solitiquo.cm/logo.svg'
     },
-    'license': 'https://creativecommons.org/licenses/by/4.0/',
+    'license': 'https://solitiquo.cm/legal/data-license',
+    'usageInfo': 'Données statistiques publiques régies par la Loi N° 2020/010 du 20 juillet 2020 du Cameroun. Réutilisation libre avec attribution obligatoire de la source primaire et respect des réserves méthodologiques.',
     'dateModified': new Date().toISOString(),
     'inLanguage': 'fr',
-    'dataFeedElement': records.map(r => ({
-      '@type': 'Observation',
-      'identifier': `${r.indicator_code}-${r.territory_code}-${r.period_year || r.period_start || r.id}`,
-      'name': `${r.indicator_name} (${r.territory_name}, ${r.period_year || r.period_start})`,
-      'variableMeasured': {
-        '@type': 'PropertyValue',
-        'name': r.indicator_name,
-        'propertyID': r.indicator_code,
-        'unitText': r.unit
-      },
-      'value': Number(r.value_numeric),
-      'observationDate': r.period_end || r.period_start,
-      'temporalCoverage': `${r.period_start}/${r.period_end}`,
-      'spatialCoverage': {
-        '@type': 'Place',
-        'name': r.territory_name,
-        'identifier': r.territory_code
-      },
-      'measurementTechnique': r.methodology_nature || 'official_statistical_record',
-      'description': r.public_reason_summary || r.methodology_notes || `Observation ${r.indicator_name} pour le territoire ${r.territory_name}`,
-      'disambiguatingDescription': r.is_estimation ? 'Estimation ou projection statistique sujette à révision' : 'Donnée statistique consolidée',
-      'citation': (r.sources || []).map(s => s.citation_reference || s.source_name).filter(Boolean),
-      'url': `https://solitiquo.cm/data.html#indicator-${r.indicator_code}`
-    }))
+    'dataFeedElement': records.map(r => {
+      const natureClass = classifyStatisticalNature(r);
+      return {
+        '@type': 'Observation',
+        'identifier': `${r.indicator_code}-${r.territory_code}-${r.period_year || r.period_start || r.id}`,
+        'name': `${r.indicator_name} (${r.territory_name}, ${r.period_year || r.period_start})`,
+        'variableMeasured': {
+          '@type': 'PropertyValue',
+          'name': r.indicator_name,
+          'propertyID': r.indicator_code,
+          'unitText': r.unit
+        },
+        'value': Number(r.value_numeric),
+        'observationDate': r.period_end || r.period_start,
+        'temporalCoverage': `${r.period_start}/${r.period_end}`,
+        'spatialCoverage': {
+          '@type': 'Place',
+          'name': r.territory_name,
+          'identifier': r.territory_code
+        },
+        'measurementTechnique': r.methodology_nature || 'official_statistical_record',
+        'description': r.public_reason_summary || r.methodology_notes || `Observation ${r.indicator_name} pour le territoire ${r.territory_name}`,
+        'disambiguatingDescription': natureClass.label,
+        'citation': (r.sources || []).map(s => s.citation_reference || s.source_name).filter(Boolean),
+        'url': `https://solitiquo.cm/data.html#indicator-${r.indicator_code}`
+      };
+    })
   };
 }
 
@@ -1091,6 +1220,8 @@ module.exports = {
   getValueById,
   searchPublishedStatistics,
   exportPublishedObservations,
+  formatCitizenUnit,
+  classifyStatisticalNature,
   generateCsv,
   generateJson,
   generateJsonLd

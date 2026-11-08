@@ -561,6 +561,19 @@
       document.getElementById('data-stat-published').textContent = (counts.published_count || 0).toLocaleString();
       document.getElementById('data-stat-revoked').textContent = (counts.revoked_count || 0).toLocaleString();
 
+      // Métriques opérationnelles Lot 3E.4
+      const elPendingArb = document.getElementById('data-stat-pending-arbitration');
+      if (elPendingArb) elPendingArb.textContent = (counts.pending_arbitration_count || 0).toLocaleString();
+
+      const elPendingEv = document.getElementById('data-stat-pending-evidence');
+      if (elPendingEv) elPendingEv.textContent = (counts.pending_evidence_count || 0).toLocaleString();
+
+      const elCorrections = document.getElementById('data-stat-corrections');
+      if (elCorrections) elCorrections.textContent = (counts.correction_requested_count || 0).toLocaleString();
+
+      const elReadyPub = document.getElementById('data-stat-ready-pub');
+      if (elReadyPub) elReadyPub.textContent = (counts.ready_for_publication_count || counts.validated_count || 0).toLocaleString();
+
       // Badge file de validation
       const badgeVal = document.getElementById('badge-validation-count');
       if (badgeVal) {
@@ -568,10 +581,30 @@
         badgeVal.style.display = counts.under_review_count > 0 ? 'inline-flex' : 'none';
       }
 
-      // Zone 1.A : Tâches nécessitant une intervention
+      // Zone 1.A : Tâches nécessitant une intervention (Lot 3E.4)
       const actionList = document.getElementById('data-action-required-list');
       if (actionList) {
         const tasks = [];
+        if (counts.pending_evidence_count > 0) {
+          tasks.push({
+            icon: 'file-warning',
+            color: '#dc2626',
+            title: `${counts.pending_evidence_count} observation(s) en attente de preuves documentaires`,
+            desc: 'Fichiers PDF originaux certifiés manquants. Rapprochement ou collecte requis.',
+            actionLabel: 'Filtrer preuves manquantes',
+            actionTab: 'explorer'
+          });
+        }
+        if (counts.correction_requested_count > 0) {
+          tasks.push({
+            icon: 'undo-2',
+            color: '#ea580c',
+            title: `${counts.correction_requested_count} observation(s) avec correction méthodologique demandée`,
+            desc: 'Anomalies ou compléments en attente de révision.',
+            actionLabel: 'Voir corrections',
+            actionTab: 'explorer'
+          });
+        }
         if (counts.under_review_count > 0) {
           tasks.push({
             icon: 'clock',
@@ -582,16 +615,6 @@
             actionTab: 'validation'
           });
         }
-        if (counts.draft_count > 0) {
-          tasks.push({
-            icon: 'file-edit',
-            color: '#475569',
-            title: `${counts.draft_count} brouillon(s) en cours de saisie`,
-            desc: 'Observations non encore soumises à la validation.',
-            actionLabel: 'Voir les brouillons',
-            actionFilter: 'draft'
-          });
-        }
         if (counts.validated_count > 0 && State.currentUser?.role === 'admin') {
           tasks.push({
             icon: 'check-circle-2',
@@ -600,6 +623,16 @@
             desc: 'Autorisation finale de diffusion publique par un Administrateur.',
             actionLabel: 'Publier',
             actionFilter: 'methodologically_validated'
+          });
+        }
+        if (counts.draft_count > 0) {
+          tasks.push({
+            icon: 'file-edit',
+            color: '#475569',
+            title: `${counts.draft_count} brouillon(s) en cours de saisie`,
+            desc: 'Observations non encore soumises à la validation.',
+            actionLabel: 'Voir les brouillons',
+            actionFilter: 'draft'
           });
         }
 
@@ -685,8 +718,76 @@
       }
 
       setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30);
+      loadQualityReport();
     } catch (e) {
       console.error('Erreur chargement dashboard DATA:', e);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 5.B MODULE DE CONTRÔLE DE QUALITÉ ÉDITORIALE (LOT 3H)
+  // ---------------------------------------------------------------------------
+  async function loadQualityReport() {
+    const bodyEl = document.getElementById('quality-report-body');
+    const badgeEl = document.getElementById('quality-score-badge');
+    if (!bodyEl) return;
+
+    bodyEl.innerHTML = '<div class="data-empty-state"><i data-lucide="loader" class="spin"></i> Évaluation de la qualité éditoriale en cours...</div>';
+    if (window.lucide) window.lucide.createIcons();
+
+    try {
+      const res = await fetch('/api/data/admin/quality-report');
+      const json = await res.json();
+      if (!json.success) {
+        bodyEl.innerHTML = `<div class="data-empty-state text-danger">Erreur : ${escapeHTML(json.error || 'Impossible de charger le rapport')}</div>`;
+        return;
+      }
+
+      if (badgeEl) {
+        badgeEl.textContent = `Score : ${json.quality_score}/100 — ${json.status}`;
+        badgeEl.className = json.quality_score >= 80 ? 'data-badge data-badge-success' : 'data-badge data-badge-warning';
+      }
+
+      let conformitiesHtml = (json.conformities || []).map(c => `
+        <div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:6px; font-size:0.85rem; color:#15803d;">
+          <span style="font-weight:700;">✓</span> <span>${escapeHTML(c.message)}</span>
+        </div>
+      `).join('');
+
+      let warningsHtml = (json.warnings || []).map(w => `
+        <div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:6px; font-size:0.85rem; color:#b45309;">
+          <span>⚠️</span> <span>${escapeHTML(w.message)}</span>
+        </div>
+      `).join('');
+
+      let anomaliesHtml = (json.anomalies || []).map(a => `
+        <div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:6px; font-size:0.85rem; color:#dc2626; font-weight:600;">
+          <span>❌</span> <span>${escapeHTML(a.message)}</span>
+        </div>
+      `).join('');
+
+      bodyEl.innerHTML = `
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+          <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px;">
+            <div style="font-weight:700; color:#166534; font-size:0.85rem; margin-bottom:8px;">POINTS DE CONFORMITÉ ÉDITORIALE (${json.conformities ? json.conformities.length : 0})</div>
+            ${conformitiesHtml || '<div class="text-muted">Aucun point listé</div>'}
+          </div>
+          <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:12px;">
+            <div style="font-weight:700; color:#92400e; font-size:0.85rem; margin-bottom:8px;">POINTS DE VIGILANCE &amp; ISOLATION (${json.warnings ? json.warnings.length : 0})</div>
+            ${warningsHtml || '<div class="text-muted">Aucun avertissement</div>'}
+          </div>
+          ${anomaliesHtml ? `
+          <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:12px; grid-column:1/-1;">
+            <div style="font-weight:700; color:#991b1b; font-size:0.85rem; margin-bottom:8px;">ANOMALIES CRITIQUES À CORRIGER (${json.anomalies.length})</div>
+            ${anomaliesHtml}
+          </div>
+          ` : ''}
+        </div>
+      `;
+      setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30);
+    } catch (err) {
+      console.error('Erreur loadQualityReport:', err);
+      bodyEl.innerHTML = '<div class="data-empty-state text-danger">Erreur réseau lors du chargement du rapport de qualité.</div>';
     }
   }
 
@@ -1698,7 +1799,10 @@
       const q = new URLSearchParams();
       const filter = State.validationFilter || 'pilot';
 
-      if (filter === 'pilot') {
+      if (filter === 'wave1') {
+        q.set('wave', 'wave1');
+        q.set('limit', '100');
+      } else if (filter === 'pilot') {
         q.set('pilot_only', 'true');
         q.set('limit', '100');
       } else if (filter === 'draft') {
@@ -1719,8 +1823,8 @@
       const res = await DataAdminAPI.getObservations('?' + q.toString());
       let items = res.data || [];
 
-      // Si filtre pilote, trier par code d'indicateur puis par date
-      if (filter === 'pilot') {
+      // Si filtre vague 1 ou pilote, trier par code d'indicateur puis par date
+      if (filter === 'wave1' || filter === 'pilot') {
         items.sort((a, b) => {
           if (a.indicator_code !== b.indicator_code) {
             return a.indicator_code.localeCompare(b.indicator_code);
@@ -1760,20 +1864,22 @@
 
       let auditTag = '';
       if (obs.audit_status === 'confirmed') {
-        auditTag = '<span class="data-tag-confirmed">✓ Conforme</span>';
+        auditTag = '<span class="data-tag-confirmed" title="Contrôle technique automatisé d\'ingestion (schéma et syntaxe conformes)">✓ Contrôle tech. OK</span>';
       } else if (obs.audit_status === 'confirmed_with_caveat') {
-        auditTag = '<span class="data-tag-caveat">⚠️ Avec réserve</span>';
+        auditTag = '<span class="data-tag-caveat" title="Contrôle technique avec réserve méthodologique">⚠️ Contrôle tech. (Réserve)</span>';
       }
 
       let decisionTag = '';
       if (obs.audit_decision === 'accepted') {
-        decisionTag = '<span style="font-size:0.68rem; font-weight:700; color:#059669;">[Audit Validé]</span>';
+        decisionTag = '<span style="font-size:0.68rem; font-weight:700; color:#059669;">[Arbitrage Validé]</span>';
       } else if (obs.audit_decision === 'rejected') {
-        decisionTag = '<span style="font-size:0.68rem; font-weight:700; color:#dc2626;">[Audit Refusé]</span>';
+        decisionTag = '<span style="font-size:0.68rem; font-weight:700; color:#dc2626;">[Arbitrage Refusé]</span>';
       } else if (obs.audit_decision === 'correction_requested') {
         decisionTag = '<span style="font-size:0.68rem; font-weight:700; color:#d97706;">[Correction Demandée]</span>';
       } else if (obs.audit_decision === 'pending_evidence') {
         decisionTag = '<span style="font-size:0.68rem; font-weight:700; color:#475569;">[Preuve en Attente]</span>';
+      } else {
+        decisionTag = '<span style="font-size:0.68rem; font-weight:700; color:#94a3b8;">[Arbitrage En Attente]</span>';
       }
 
       return `
@@ -1884,26 +1990,28 @@
       const isAdmin = State.currentUser?.role === 'admin';
       const isPilot = parseInt(obs.id, 10) >= 687 && parseInt(obs.id, 10) <= 710;
 
-      // 1. Audit status badge
+      // 1. Audit technique badge (contrôle automatisé d'ingestion)
       let auditStatusBadge = '';
       if (obs.audit_status === 'confirmed') {
-        auditStatusBadge = '<span class="data-badge-audit confirmed"><i data-lucide="check-circle-2"></i> Audit 3C.1 : Conforme</span>';
+        auditStatusBadge = '<span class="data-badge-audit confirmed" title="Contrôle technique automatisé d\'ingestion (schéma et syntaxe)"><i data-lucide="cpu"></i> Contrôle technique : Conforme</span>';
       } else if (obs.audit_status === 'confirmed_with_caveat') {
-        auditStatusBadge = '<span class="data-badge-audit caveat"><i data-lucide="alert-triangle"></i> Audit 3C.1 : Conforme avec réserve</span>';
+        auditStatusBadge = '<span class="data-badge-audit caveat" title="Contrôle technique avec réserve méthodologique"><i data-lucide="alert-triangle"></i> Contrôle technique : Conforme avec réserve</span>';
+      } else {
+        auditStatusBadge = '<span class="data-badge-audit" style="background:#f1f5f9; color:#475569;"><i data-lucide="help-circle"></i> Contrôle technique : Non vérifié</span>';
       }
 
-      // 2. Audit decision badge
+      // 2. Audit decision badge (décision humaine d'arbitrage)
       let auditDecisionBadge = '';
       if (obs.audit_decision === 'accepted') {
-        auditDecisionBadge = `<span class="data-badge-audit-decision accepted"><i data-lucide="check-check"></i> Audit Accepté par ${escapeHTML(obs.audit_decision_by_username || 'Admin')}</span>`;
+        auditDecisionBadge = `<span class="data-badge-audit-decision accepted"><i data-lucide="check-check"></i> Décision Humaine : Accepté par ${escapeHTML(obs.audit_decision_by_username || 'Admin')}</span>`;
       } else if (obs.audit_decision === 'rejected') {
-        auditDecisionBadge = `<span class="data-badge-audit-decision rejected"><i data-lucide="x-circle"></i> Audit Refusé / Contesté</span>`;
+        auditDecisionBadge = `<span class="data-badge-audit-decision rejected"><i data-lucide="x-circle"></i> Décision Humaine : Rejeté / Contesté</span>`;
       } else if (obs.audit_decision === 'correction_requested') {
-        auditDecisionBadge = `<span class="data-badge-audit-decision" style="background:#fef3c7; color:#92400e; border:1px solid #fde68a;"><i data-lucide="undo-2"></i> Correction Demandée</span>`;
+        auditDecisionBadge = `<span class="data-badge-audit-decision" style="background:#fef3c7; color:#92400e; border:1px solid #fde68a;"><i data-lucide="undo-2"></i> Décision Humaine : Correction Demandée</span>`;
       } else if (obs.audit_decision === 'pending_evidence') {
-        auditDecisionBadge = `<span class="data-badge-audit-decision" style="background:#e0f2fe; color:#075985; border:1px solid #bae6fd;"><i data-lucide="help-circle"></i> Preuve Complémentaire Demandée</span>`;
+        auditDecisionBadge = `<span class="data-badge-audit-decision" style="background:#e0f2fe; color:#075985; border:1px solid #bae6fd;"><i data-lucide="help-circle"></i> Décision Humaine : Preuve en Attente</span>`;
       } else {
-        auditDecisionBadge = `<span class="data-badge-audit-decision pending"><i data-lucide="clock"></i> Décision sur l'audit en attente</span>`;
+        auditDecisionBadge = `<span class="data-badge-audit-decision pending"><i data-lucide="clock"></i> Décision Humaine : En Attente d'Arbitrage</span>`;
       }
 
       // 3. Spécificités méthodologiques par série
@@ -2022,6 +2130,14 @@
       // Visualiseur statistique
       const visualizerHtml = renderSeriesVisualizer(obs, seriesItems);
 
+      const evEval = obs.evidence_evaluation || {};
+      const distinctStatuses = evEval.distinct_statuses || {
+        audit_decision: obs.audit_decision || 'pending',
+        editorial_status: obs.editorial_status,
+        document_status: (obs.sources && obs.sources[0]?.documentary_tier) ? 'institutional_reference_only' : 'unavailable',
+        methodological_robustness: (obs.sources && obs.sources[0]?.methodological_robustness) || 'high'
+      };
+
       // Fiche d'inspection complète
       dossierBox.innerHTML = `
         <div class="data-dossier-header">
@@ -2048,6 +2164,107 @@
         </div>
 
         <div class="data-dossier-body">
+          <!-- Panneau des 4 Statuts Distincts (Lot 3E.3.3) -->
+          <div class="data-card" style="padding:14px 18px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:14px;">
+            <div style="font-weight:700; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.04em; color:#475569; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+              <i data-lucide="layers" style="width:15px; height:15px; color:#2563eb;"></i>
+              Gouvernance Multi-Niveaux — 4 Notions Strictement Distinctes (Lot 3E.3.3)
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+              <div style="background:#fff; padding:10px 12px; border-radius:6px; border:1px solid #e2e8f0;">
+                <div style="font-size:0.72rem; color:#64748b; font-weight:700; text-transform:uppercase;">1. Contrôle Technique (Ingestion)</div>
+                <div style="margin-top:4px;">${auditStatusBadge}</div>
+                <div style="font-size:0.68rem; color:#64748b; margin-top:2px;">Contrôle automatisé de schéma et syntaxe</div>
+              </div>
+              <div style="background:#fff; padding:10px 12px; border-radius:6px; border:1px solid #e2e8f0;">
+                <div style="font-size:0.72rem; color:#64748b; font-weight:700; text-transform:uppercase;">2. Décision Humaine (Arbitrage)</div>
+                <div style="margin-top:4px;">${auditDecisionBadge}</div>
+                <div style="font-size:0.68rem; color:#64748b; margin-top:2px;">Arbitrage explicite par administrateur habilité</div>
+              </div>
+              <div style="background:#fff; padding:10px 12px; border-radius:6px; border:1px solid #e2e8f0;">
+                <div style="font-size:0.72rem; color:#64748b; font-weight:700; text-transform:uppercase;">3. Statut Éditorial (Diffusion)</div>
+                <div style="margin-top:4px;">${getStatusBadge(obs.editorial_status)}</div>
+                <div style="font-size:0.68rem; color:#64748b; margin-top:2px;">${obs.editorial_status === 'published' ? 'Diffusé publiquement' : 'Brouillon privé non diffusé'}</div>
+              </div>
+              <div style="background:#fff; padding:10px 12px; border-radius:6px; border:1px solid #e2e8f0;">
+                <div style="font-size:0.72rem; color:#64748b; font-weight:700; text-transform:uppercase;">4. Preuve Documentaire (Matérialité)</div>
+                <div style="margin-top:4px;">
+                  <span class="data-badge" style="font-size:0.75rem; font-weight:700; ${distinctStatuses.document_status === 'original_consulted' ? 'background:#dcfce7; color:#15803d;' : (distinctStatuses.document_status === 'institutional_reference_only' ? 'background:#fef3c7; color:#92400e;' : 'background:#fee2e2; color:#b91c1c;')}">
+                    ${escapeHTML(distinctStatuses.document_status)}
+                  </span>
+                </div>
+                <div style="font-size:0.68rem; color:#64748b; margin-top:2px;">${evEval.is_pdf_archived ? 'PDF archivé (SHA-256 certifié)' : 'PDF original non archivé'}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Les 3 Niveaux de Qualification de la Preuve Statistique (Lot 3E.3.3) -->
+          <div class="data-card" style="padding:14px 18px; background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; margin-bottom:14px;">
+            <div style="font-weight:700; font-size:0.84rem; text-transform:uppercase; letter-spacing:0.04em; color:#0369a1; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+              <i data-lucide="file-check-2" style="width:16px; height:16px; color:#0284c7;"></i>
+              Les 3 Niveaux de Qualification de la Preuve Statistique (Lot 3E.3.3)
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
+              <div style="background:#fff; padding:10px; border-radius:6px; border:1px solid #e0f2fe;">
+                <div style="font-size:0.73rem; font-weight:800; color:#0369a1;">Niveau 1 — Provenance Informatique</div>
+                <div style="font-size:0.8rem; color:#1e293b; margin-top:3px;">
+                  Fichier importé : <code>solitiquo_data_lot3c_pilot_cameroun.csv</code>
+                </div>
+                <div style="font-size:0.71rem; color:#059669; font-weight:600; margin-top:2px;">
+                  ✓ Horodaté &amp; journalisé (Audit log intègre)
+                </div>
+              </div>
+              <div style="background:#fff; padding:10px; border-radius:6px; border:1px solid #e0f2fe;">
+                <div style="font-size:0.73rem; font-weight:800; color:#0369a1;">Niveau 2 — Référence Institutionnelle</div>
+                <div style="font-size:0.8rem; color:#1e293b; margin-top:3px;">
+                  Source : <strong>${escapeHTML(obs.sources && obs.sources[0]?.source_acronym ? obs.sources[0].source_acronym : 'INS')}</strong> — ${escapeHTML(obs.sources && obs.sources[0]?.citation_reference ? obs.sources[0].citation_reference : 'Réf. paginée')}
+                </div>
+                <div style="font-size:0.71rem; color:#0284c7; font-weight:600; margin-top:2px;">
+                  ✓ Rattaché au catalogue de publications
+                </div>
+              </div>
+              <div style="background:#fff; padding:10px; border-radius:6px; border:1px solid #e0f2fe;">
+                <div style="font-size:0.73rem; font-weight:800; color:#0369a1;">Niveau 3 — Vérification Documentaire</div>
+                <div style="font-size:0.8rem; color:#1e293b; margin-top:3px;">
+                  PDF original &amp; consultation matérielle du tableau
+                </div>
+                <div style="font-size:0.71rem; font-weight:700; margin-top:2px; ${evEval.is_pdf_archived ? 'color:#15803d;' : 'color:#dc2626;'}">
+                  ${evEval.is_pdf_archived ? '✓ PDF archivé localement (SHA-256 certifié)' : '❌ Non vérifié matériellement (Document absent)'}
+                </div>
+              </div>
+            </div>
+            ${!evEval.is_pdf_archived ? `
+              <div style="margin-top:8px; font-size:0.76rem; color:#991b1b; background:#fee2e2; padding:6px 10px; border-radius:4px; font-weight:600;">
+                ⚠️ Limite méthodologique stricte : La provenance informatique (Niveau 1) et la citation (Niveau 2) ne constituent PAS une vérification statistique. Tant que le document original n'est pas consulté et archivé, la valeur reste « Non vérifiée matériellement ».
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Contrôle Préalable des Preuves & Alerte Archivage (Lot 3E.3) -->
+          <div class="data-card" style="padding:16px; margin-bottom:14px; border-radius:8px; ${evEval.is_pdf_archived ? 'background:#f0fdf4; border:1.5px solid #86efac;' : 'background:#fffbeb; border:1.5px solid #fde68a;'}">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
+              <div>
+                <div style="font-weight:700; font-size:0.92rem; ${evEval.is_pdf_archived ? 'color:#166534;' : 'color:#92400e;'} display:flex; align-items:center; gap:8px;">
+                  <i data-lucide="${evEval.is_pdf_archived ? 'shield-check' : 'shield-alert'}" style="width:20px; height:20px;"></i>
+                  Contrôle Préalable des Preuves &amp; Archivage Certifié (Lot 3E.3)
+                </div>
+                <div style="font-size:0.84rem; margin-top:6px; line-height:1.5; ${evEval.is_pdf_archived ? 'color:#15803d;' : 'color:#78350f;'}">
+                  ${escapeHTML(evEval.guidance_message || '')}
+                </div>
+                <div style="display:flex; gap:16px; margin-top:8px; font-size:0.78rem; flex-wrap:wrap;">
+                  <span><strong>Fichier PDF original :</strong> ${evEval.is_pdf_archived ? '<span style="color:#15803d; font-weight:700;">✓ Archivé localement (SHA-256 certifié)</span>' : '<span style="color:#b91c1c; font-weight:700;">❌ Non archivé localement</span>'}</span>
+                  <span><strong>Statut de preuve :</strong> <code>${escapeHTML(evEval.document_status || 'unavailable')}</code></span>
+                  <span><strong>Arbitrage recommandé :</strong> <strong style="color:${evEval.proposed_decision === 'accepted' ? '#15803d' : '#b45309'}; text-transform:uppercase;">${escapeHTML(evEval.proposed_decision || 'pending_evidence')}</strong></span>
+                </div>
+              </div>
+              ${!evEval.is_pdf_archived ? `
+                <div style="background:#fef3c7; border:1px solid #fde68a; padding:6px 10px; border-radius:6px; text-align:right;">
+                  <div style="font-size:0.7rem; font-weight:700; color:#b45309; text-transform:uppercase;">Garde-Fou Absolu</div>
+                  <div style="font-size:0.76rem; color:#92400e; font-weight:600;">Validation et publication bloquées sans acceptation d'audit</div>
+                </div>
+              ` : ''}
+            </div>
+          </div>
           <!-- 1. Carte Valeur Statistique & Période -->
           <div class="data-dossier-value-card">
             <div>
@@ -2106,7 +2323,7 @@
             <div class="data-card" style="padding:16px; border-left:4px solid #b45309; background:#fffbeb;">
               <div style="font-weight:700; font-size:0.88rem; color:#92400e; margin-bottom:4px;">
                 <i data-lucide="shield-alert" style="width:16px;height:16px;display:inline;vertical-align:text-bottom;"></i>
-                Réserves méthodologiques issues de l'audit 3C.1 :
+                Réserves méthodologiques issues du contrôle technique d'ingestion :
               </div>
               <p style="font-size:0.86rem; color:#78350f; margin:0; line-height:1.45;">
                 ${escapeHTML(obs.audit_caveat)}
@@ -2143,8 +2360,8 @@
                       ${escapeHTML(obs.sources && obs.sources[0]?.citation_reference ? obs.sources[0].citation_reference : 'Non renseignée')}
                     </td>
                     <td>
-                      <span class="data-badge" style="font-size:0.7rem; background:#dcfce7; color:#15803d;">
-                        Conforme à la source citée
+                      <span class="data-badge" style="font-size:0.7rem; ${evEval.is_pdf_archived ? 'background:#dcfce7; color:#15803d;' : 'background:#fef3c7; color:#92400e;'}">
+                        ${evEval.is_pdf_archived ? '✓ Vérifié dans le document archivé' : 'Concordance bibliographique déclarée (Vérification matérielle en attente)'}
                       </span>
                     </td>
                   </tr>
@@ -2218,9 +2435,11 @@
                         <td style="max-width:320px;">
                           <div style="font-size:0.85rem; color:#1e293b; font-weight:600;">${escapeHTML(citeRef)}</div>
                           <div style="font-size:0.72rem; color:#64748b; margin-top:2px;">
-                            ${isAvailable 
-                              ? `<span style="color:#059669; font-weight:700;"><i data-lucide="check" style="width:12px;height:12px;display:inline;"></i> Document vérifié et localisé</span>`
-                              : '<span style="color:#e11d48; font-weight:700;"><i data-lucide="alert-triangle" style="width:12px;height:12px;display:inline;"></i> Document original non disponible</span>'}
+                            ${evEval.is_pdf_archived 
+                              ? '<span style="color:#059669; font-weight:700;"><i data-lucide="check" style="width:12px;height:12px;display:inline;"></i> Document original archivé et vérifié (SHA-256 certifié)</span>'
+                              : (isAvailable 
+                                  ? '<span style="color:#b45309; font-weight:700;"><i data-lucide="globe" style="width:12px;height:12px;display:inline;"></i> Référence web institutionnelle (Document original non archivé)</span>'
+                                  : '<span style="color:#e11d48; font-weight:700;"><i data-lucide="alert-triangle" style="width:12px;height:12px;display:inline;"></i> Document original non disponible</span>')}
                           </div>
                           ${s.notes ? `
                             <div style="font-size:0.71rem; color:#475569; margin-top:4px; background:#f8fafc; padding:4px 7px; border-radius:4px; border:1px solid #e2e8f0; line-height:1.35;">
@@ -2284,7 +2503,15 @@
                         </td>
                         <td><span style="font-size:0.72rem; color:#475569;">${escapeHTML(p.document_category)}</span></td>
                         <td>
-                          <span class="data-badge" style="font-size:0.68rem; background:#dcfce7; color:#15803d;">
+                          <span class="data-badge" style="font-size:0.68rem; ${
+                            p.verification_status === 'verified_consulted'
+                              ? 'background:#dcfce7; color:#15803d;'
+                              : (p.verification_status === 'institutional_reference_only'
+                                  ? 'background:#e0f2fe; color:#0369a1;'
+                                  : (p.verification_status === 'unavailable' || p.verification_status === 'unavailable_or_broken'
+                                      ? 'background:#ffe4e6; color:#9f1239;'
+                                      : 'background:#f1f5f9; color:#475569;'))
+                          }">
                             ${escapeHTML(p.verification_status)}
                           </span>
                         </td>
@@ -2324,6 +2551,141 @@
             </div>
           ` : ''}
 
+          <!-- 6quater. Traçabilité Matérielle et Preuves d'Archivage (Lot 3E.3.5) -->
+          <div class="data-card" style="padding:14px; background:#fbfcfe; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:14px;">
+            <div style="font-weight:700; font-size:0.86rem; color:#0f172a; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+              <i data-lucide="archive" style="width:15px;height:15px;color:#0369a1;"></i>
+              Traçabilité Matérielle et Preuves d'Archivage (Lot 3E.3.5)
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:10px; margin-bottom:10px;">
+              <div style="background:#fff; padding:10px; border-radius:6px; border:1px solid #e2e8f0;">
+                <div style="font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase;">État de vérification matérielle</div>
+                <div style="margin-top:4px;">
+                  <span class="data-badge" style="font-size:0.75rem; ${
+                    evEval.document_status === 'original_consulted' ? 'background:#dcfce7; color:#15803d;' :
+                    (evEval.document_status === 'institutional_reference_only' ? 'background:#e0f2fe; color:#0369a1;' : 'background:#fee2e2; color:#b91c1c;')
+                  }">
+                    ${evEval.document_status === 'original_consulted' ? '✓ Original consulté et archivé' :
+                      (evEval.document_status === 'institutional_reference_only' ? 'ℹ Référence institutionnelle seule' : '❌ Document indisponible')}
+                  </span>
+                </div>
+                <div style="font-size:0.72rem; color:#475569; margin-top:4px;">
+                  Fichier physique : <strong>${evEval.is_pdf_archived ? 'Présent dans storage/ (SHA-256 certifié)' : 'Absent du coffre local'}</strong>
+                </div>
+              </div>
+              <div style="background:#fff; padding:10px; border-radius:6px; border:1px solid #e2e8f0;">
+                <div style="font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase;">Résultat de confrontation statistique</div>
+                <div style="margin-top:4px;">
+                  <span class="data-badge" style="font-size:0.75rem; ${
+                    evEval.confrontation_result === 'exact_match' ? 'background:#dcfce7; color:#15803d;' :
+                    (evEval.confrontation_result === 'match_with_rounding' ? 'background:#fef3c7; color:#92400e;' :
+                    (evEval.confrontation_result === 'methodological_difference' ? 'background:#ede9fe; color:#6d28d9;' : 'background:#f1f5f9; color:#475569;'))
+                  }">
+                    ${escapeHTML(evEval.confrontation_result || 'not_verifiable')}
+                  </span>
+                </div>
+                <div style="font-size:0.72rem; color:#475569; margin-top:4px;">
+                  ${escapeHTML(evEval.confrontation_details || 'Aucune confrontation matérielle possible.')}
+                </div>
+              </div>
+            </div>
+            ${(obs.document_evidences && obs.document_evidences.length > 0) ? `
+              <div class="data-table-wrapper" style="border:1px solid #e2e8f0; border-radius:6px; background:#fff;">
+                <table class="data-table data-table-sm" style="margin:0;">
+                  <thead>
+                    <tr style="background:#f8fafc;">
+                      <th>Document</th>
+                      <th>Fichier &amp; Empreinte SHA-256</th>
+                      <th>Collecte &amp; URL</th>
+                      <th>Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${obs.document_evidences.map(e => `
+                      <tr>
+                        <td style="font-size:0.8rem;">
+                          <strong>${escapeHTML(e.title)}</strong>
+                          <div style="font-size:0.7rem; color:#64748b;">${escapeHTML(e.institution_acronym)} (${e.publication_year || '—'})</div>
+                          <div style="font-size:0.68rem; color:#475569;">${escapeHTML(e.page_section_reference || '')}</div>
+                        </td>
+                        <td style="font-size:0.72rem;">
+                          ${e.file_path ? `
+                            <div style="font-weight:700; color:#0f766e;"><i data-lucide="file-check" style="width:12px;height:12px;display:inline;"></i> ${escapeHTML(e.file_path.split(/[\\\\/]/).pop())}</div>
+                            <div>Taille : ${e.file_size_bytes ? Math.round(e.file_size_bytes / 1024) + ' Ko' : '—'}</div>
+                            <div style="font-family:monospace; color:#475569;">SHA-256 : ${e.sha256_hash ? e.sha256_hash.slice(0, 16) + '...' : '—'}</div>
+                          ` : '<span style="color:#b91c1c; font-weight:600;">❌ Fichier original non archivé</span>'}
+                        </td>
+                        <td style="font-size:0.72rem;">
+                          ${e.retrieval_date ? `<div>Date : ${formatDate(e.retrieval_date)}</div>` : '<div>Date : non renseignée</div>'}
+                          ${e.original_url ? `
+                            <a href="${escapeHTML(e.original_url)}" target="_blank" rel="noopener noreferrer" style="color:#0284c7; text-decoration:none; display:inline-flex; align-items:center; gap:2px; margin-top:2px;">
+                              <i data-lucide="external-link" style="width:10px;height:10px;"></i> ${escapeHTML(e.original_url.slice(0, 35))}...
+                            </a>
+                          ` : '—'}
+                        </td>
+                        <td>
+                          <span class="data-badge" style="font-size:0.68rem; ${
+                            e.document_status === 'original_consulted' ? 'background:#dcfce7; color:#15803d;' :
+                            (e.document_status === 'institutional_reference_only' ? 'background:#e0f2fe; color:#0369a1;' : 'background:#fee2e2; color:#b91c1c;')
+                          }">
+                            ${escapeHTML(e.document_status)}
+                          </span>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- 6quinquies. Diagnostic d'Éligibilité à la Diffusion Publique (Lot 3E.4) -->
+          <div class="data-card" style="padding:14px; border-radius:8px; margin-bottom:14px; ${
+            obs.publication_eligibility?.is_eligible 
+              ? 'background:#f0fdf4; border:1.5px solid #86efac;' 
+              : 'background:#fef2f2; border:1.5px solid #fca5a5;'
+          }">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+              <div style="font-weight:700; font-size:0.9rem; color:${obs.publication_eligibility?.is_eligible ? '#15803d' : '#991b1b'}; display:flex; align-items:center; gap:6px;">
+                <i data-lucide="${obs.publication_eligibility?.is_eligible ? 'check-circle' : 'shield-alert'}" style="width:18px;height:18px;"></i>
+                Diagnostic d'Éligibilité à la Diffusion Publique (Lot 3E.4)
+              </div>
+              <span class="data-badge" style="font-size:0.75rem; font-weight:700; ${
+                obs.publication_eligibility?.is_eligible ? 'background:#dcfce7; color:#15803d;' : 'background:#fee2e2; color:#b91c1c;'
+              }">
+                ${obs.publication_eligibility?.is_eligible ? '✓ Dossier Complet & Éligible' : '❌ Non Publiable en l\'état'}
+              </span>
+            </div>
+            
+            <div style="font-size:0.82rem; color:#334155; margin-bottom:8px;">
+              ${obs.publication_eligibility?.is_eligible 
+                ? 'Cette observation satisfait tous les critères préalables de conformité technique, documentaire et méthodologique.' 
+                : 'La diffusion publique de cette observation est formellement bloquée pour les motifs suivants :'}
+            </div>
+
+            ${(!obs.publication_eligibility?.is_eligible && obs.publication_eligibility?.blockers?.length > 0) ? `
+              <ul style="margin:0 0 10px 18px; padding:0; font-size:0.8rem; color:#7f1d1d; line-height:1.5;">
+                ${obs.publication_eligibility.blockers.map(b => `<li>${escapeHTML(b)}</li>`).join('')}
+              </ul>
+            ` : ''}
+
+            <!-- 3 Volets de Contrôle distincts -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:8px; font-size:0.75rem;">
+              <div style="padding:6px 10px; border-radius:5px; background:#fff; border:1px solid #e2e8f0;">
+                <span style="font-weight:700;">1. Contrôle Technique :</span> 
+                ${obs.publication_eligibility?.breakdown?.technical?.passed ? '<span style="color:#15803d; font-weight:700;">✓ Conforme</span>' : '<span style="color:#b91c1c; font-weight:700;">❌ Incomplet</span>'}
+              </div>
+              <div style="padding:6px 10px; border-radius:5px; background:#fff; border:1px solid #e2e8f0;">
+                <span style="font-weight:700;">2. Contrôle Documentaire :</span> 
+                ${obs.publication_eligibility?.breakdown?.documentary?.passed ? '<span style="color:#15803d; font-weight:700;">✓ Conforme</span>' : '<span style="color:#b91c1c; font-weight:700;">❌ Preuve requise</span>'}
+              </div>
+              <div style="padding:6px 10px; border-radius:5px; background:#fff; border:1px solid #e2e8f0;">
+                <span style="font-weight:700;">3. Contrôle Méthodologique :</span> 
+                ${obs.publication_eligibility?.breakdown?.methodological?.passed ? '<span style="color:#15803d; font-weight:700;">✓ Conforme</span>' : '<span style="color:#b91c1c; font-weight:700;">❌ Arbitrage requis</span>'}
+              </div>
+            </div>
+          </div>
+
           <!-- 7. Décisions de la Commission Éditoriale & Méthodologique (Lot 3C.3) -->
           ${isAdmin ? `
             <div class="data-card" style="padding:18px; background:#f8fafc; border:1.5px solid #cbd5e1; border-radius:8px;">
@@ -2338,6 +2700,17 @@
                 </div>
                 ${auditDecisionBadge}
               </div>
+
+              <!-- Arbitrage recommandé selon les preuves (Lot 3E.3) -->
+              ${evEval.proposed_decision ? `
+                <div style="font-size:0.82rem; background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; padding:8px 12px; border-radius:6px; margin-bottom:12px; display:flex; align-items:flex-start; gap:8px;">
+                  <i data-lucide="info" style="width:16px; height:16px; flex-shrink:0; margin-top:2px;"></i>
+                  <div>
+                    <strong>Recommandation protocole Lot 3E.3 :</strong> Arbitrage proposé = <strong style="text-transform:uppercase;">${escapeHTML(evEval.proposed_decision)}</strong>.
+                    <div style="font-size:0.77rem; color:#1e3a8a; margin-top:2px;">${escapeHTML(evEval.guidance_message || '')}</div>
+                  </div>
+                </div>
+              ` : ''}
 
               <!-- Champ Motif obligatoire -->
               <div class="data-form-group" style="margin-bottom:10px;">
@@ -2410,9 +2783,15 @@
                 ` : ''}
 
                 ${obs.editorial_status === 'methodologically_validated' ? `
-                  <button type="button" class="data-btn data-btn-success" onclick="SolitiquoDataAdmin.publishFromValidation(${obs.id})">
-                    <i data-lucide="globe"></i> Publier formellement l'observation
-                  </button>
+                  ${obs.publication_eligibility?.can_publish ? `
+                    <button type="button" class="data-btn data-btn-success" onclick="SolitiquoDataAdmin.publishFromValidation(${obs.id})">
+                      <i data-lucide="globe"></i> Publier formellement l'observation
+                    </button>
+                  ` : `
+                    <button type="button" class="data-btn data-btn-disabled" disabled title="Publication bloquée : conditions préalables non satisfaites (voir diagnostic ci-dessus)" style="opacity:0.6; cursor:not-allowed;">
+                      <i data-lucide="lock"></i> Publication bloquée (conditions non remplies)
+                    </button>
+                  `}
                   <button type="button" class="data-btn data-btn-secondary" onclick="SolitiquoDataAdmin.submitCorrectionRequest(${obs.id})">
                     <i data-lucide="undo-2"></i> Révoquer vers brouillon pour correction
                   </button>
@@ -2686,6 +3065,16 @@
   function openValidationDossier(id) {
     switchDataTab('validation');
     selectValidationObservation(id);
+  }
+
+  function bindValidationEvents() {
+    const searchInput = document.getElementById('val-search-input');
+    if (searchInput && !searchInput.dataset.bound) {
+      searchInput.dataset.bound = 'true';
+      searchInput.addEventListener('input', (e) => {
+        filterValidationQueue(e.target.value);
+      });
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -4456,7 +4845,8 @@
     deletePublication,
     testPublicationUrl,
     viewPublicationDetails,
-    updatePublicationIndicatorsCount
+    updatePublicationIndicatorsCount,
+    loadQualityReport
   };
 
 })(window);

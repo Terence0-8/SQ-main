@@ -82,4 +82,18 @@ router.post('/imports/upload', isWriter, importUpload.single('file'), dataImport
 router.post('/imports/:id/validate', isWriter, dataImportController.validateMapping);
 router.post('/imports/:id/apply', isWriter, dataImportController.applyBatch);
 
+// ============================================================
+// Contrôle de Qualité Éditoriale Centralisé (Lot 3H)
+// ============================================================
+const editorialQualityService = require('../services/editorialQualityService');
+router.get('/quality-report', isWriter, async (req, res) => {
+  try {
+    const report = await editorialQualityService.generateEditorialQualityReport();
+    return res.json(report);
+  } catch (err) {
+    console.error('Erreur quality-report:', err);
+    return res.status(500).json({ success: false, error: 'Erreur lors de la génération du rapport de qualité éditoriale' });
+  }
+});
+
 module.exports = router;

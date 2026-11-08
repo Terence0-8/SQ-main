@@ -13,6 +13,10 @@ yarn-error.log*
 
 # Uploads et caches
 uploads/
+storage/
+backups/
+*.dump
+*.sql.gz
 *.log
 .DS_Store
 Thumbs.db

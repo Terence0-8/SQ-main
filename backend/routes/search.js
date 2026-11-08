@@ -150,6 +150,8 @@ router.get('/', async (req, res) => {
         JOIN territories t ON t.id = dv.territory_id
         WHERE dv.editorial_status = 'published'
           AND dv.is_active = TRUE
+          AND di.code !~* '^(IND_MIG[0-9]|IND_[0-9]{10,}|IND_API_|IND_INACT_)'
+          AND di.name !~* '^(Indicateur Mig|Parti Mig|Indicateur Test API)'
           AND (
             di.name ILIKE $1 
             OR di.code ILIKE $1 
@@ -162,25 +164,29 @@ router.get('/', async (req, res) => {
         LIMIT $2;
       `;
       const statRes = await pool.query(statsSQL, [ilike, safeLimit]).catch(() => ({ rows: [] }));
-      statRows = statRes.rows.map(r => ({
-        id: `stat-${r.id}`,
-        stat_id: r.id,
-        title: `${r.indicator_name} (${r.indicator_code}) — ${r.territory_name} : ${Number(r.value_numeric).toLocaleString('fr-FR')} ${r.unit}`,
-        description: `Observation ${r.period_type} (${r.period_year || ''}) • Territoire : ${r.territory_name} • Méthode : ${r.methodology_nature || 'officielle'}`,
-        category: 'Data',
-        date: r.date,
-        type: 'data_stat',
-        href: `data.html#indicator-${r.indicator_code}`,
-        indicator_code: r.indicator_code,
-        indicator_name: r.indicator_name,
-        value_numeric: Number(r.value_numeric),
-        unit: r.unit,
-        territory_code: r.territory_code,
-        territory_name: r.territory_name,
-        period_type: r.period_type,
-        period_year: r.period_year,
-        methodology_nature: r.methodology_nature
-      }));
+      const { formatCitizenUnit } = require('../services/dataService');
+      statRows = statRes.rows.map(r => {
+        const citizenUnit = formatCitizenUnit ? formatCitizenUnit(r.unit) : r.unit;
+        return {
+          id: `stat-${r.id}`,
+          stat_id: r.id,
+          title: `${r.indicator_name} — ${r.territory_name} : ${Number(r.value_numeric).toLocaleString('fr-FR')} ${citizenUnit}`,
+          description: `Observation ${r.period_type} (${r.period_year || ''}) • Territoire : ${r.territory_name} • Méthode : ${r.methodology_nature || 'officielle'}`,
+          category: 'Data',
+          date: r.date,
+          type: 'data_stat',
+          href: `data.html#indicator-${r.indicator_code}`,
+          indicator_code: r.indicator_code,
+          indicator_name: r.indicator_name,
+          value_numeric: Number(r.value_numeric),
+          unit: citizenUnit,
+          territory_code: r.territory_code,
+          territory_name: r.territory_name,
+          period_type: r.period_type,
+          period_year: r.period_year,
+          methodology_nature: r.methodology_nature
+        };
+      });
     }
 
     // ── Articles ────────────────────────────────────────────
@@ -196,6 +202,7 @@ router.get('/', async (req, res) => {
         0              AS rank
       FROM articles
       WHERE status = 'published'
+        AND title !~* '\\y(test|demo|migration)\\y'
         AND language = $3
         AND (title ILIKE $1 OR excerpt ILIKE $1 OR content ILIKE $1)
       ORDER BY published_at DESC
@@ -215,6 +222,7 @@ router.get('/', async (req, res) => {
         0               AS rank
       FROM podcasts
       WHERE status = 'published'
+        AND title !~* '\\y(test|demo|migration)\\y'
         AND (title ILIKE $1 OR description ILIKE $1)
       ORDER BY created_at DESC
       LIMIT $2
@@ -233,6 +241,7 @@ router.get('/', async (req, res) => {
         0             AS rank
       FROM emissions
       WHERE status = 'published'
+        AND title !~* '\\y(test|demo|migration)\\y'
         AND (title ILIKE $1 OR description ILIKE $1)
       ORDER BY created_at DESC
       LIMIT $2

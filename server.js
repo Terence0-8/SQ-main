@@ -20,6 +20,11 @@ const isProduction = process.env.NODE_ENV === 'production';
 const isTest = process.env.NODE_ENV === 'test';
 const BASE_URL = isProduction ? 'https://solitiquo.com' : `http://localhost:${PORT}`;
 
+// Reverse proxy trust (sécurisation des cookies de session en production derrière Nginx/Cloudflare/Heroku/Railway)
+if (isProduction || process.env.TRUST_PROXY === 'true') {
+  app.set('trust proxy', 1);
+}
+
 // =============================================================================
 // 1. COMPRESSION (avant tout le reste pour maximiser l'effet)
 // =============================================================================
@@ -325,8 +330,51 @@ app.get(/^\/(fr|en)\/([^/]+)\/(?!.*\.(css|js|png|jpg|jpeg|gif|ico|svg|json)$)(.+
 app.get(/^\/(fr|en)\/?$/, (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get(/^\/(fr|en)\/([^/]+)\/?$/, seoController.handleStaticSeoRoute);
 
-// Health Check
-app.get('/api/health', (req, res) => res.json({ status: 'Server Running', environment: isProduction ? 'production' : 'development' }));
+// Health Check (Surveillance de disponibilité applicative et PostgreSQL)
+app.get('/api/health', async (req, res) => {
+  const start = Date.now();
+  let dbStatus = 'connected';
+  let dbLatency = 0;
+  let isDbOk = true;
+
+  try {
+    await pool.query('SELECT 1');
+    dbLatency = Date.now() - start;
+  } catch (err) {
+    dbStatus = 'disconnected';
+    isDbOk = false;
+    logger.error({ err: err.message }, 'Healthcheck database ping failed');
+  }
+
+  const payload = {
+    status: isDbOk ? 'healthy' : 'degraded',
+    server: 'Server Running',
+    environment: isProduction ? 'production' : 'development',
+    timestamp: new Date().toISOString(),
+    uptime_seconds: Math.floor(process.uptime()),
+    database: {
+      status: dbStatus,
+      latency_ms: isDbOk ? dbLatency : null
+    },
+    memory: {
+      rss_mb: Math.round(process.memoryUsage().rss / 1024 / 1024),
+      heap_used_mb: Math.round(process.memoryUsage().heapUsed / 1024 / 1024)
+    }
+  };
+
+  return res.status(isDbOk ? 200 : 503).json(payload);
+});
+
+// Sondes de liveness et readiness (Kubernetes / Docker / Load Balancer)
+app.get('/api/health/live', (_req, res) => res.status(200).json({ status: 'live' }));
+app.get('/api/health/ready', async (_req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.status(200).json({ status: 'ready', database: 'connected' });
+  } catch (_err) {
+    res.status(503).json({ status: 'unready', database: 'disconnected' });
+  }
+});
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 // Error Handling

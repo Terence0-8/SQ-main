@@ -51,13 +51,15 @@ async function getTerritories(req, res) {
  */
 async function getIndicators(req, res) {
   try {
-    const { category, domain, subdomain, status, definition_status } = req.query;
+    const { category, domain, subdomain, status, definition_status, exclude_tests, include_tests } = req.query;
 
     const indicators = await dataService.getIndicators({
       category: (category || domain)?.trim(),
       subdomain: subdomain?.trim(),
       status: status?.trim(),
-      definition_status: definition_status?.trim()
+      definition_status: definition_status?.trim(),
+      exclude_tests: exclude_tests === 'true' || exclude_tests === true,
+      include_tests: include_tests === 'true'
     });
 
     return sendSuccess(res, indicators, { total: indicators.length });
@@ -326,7 +328,8 @@ async function searchStatistics(req, res) {
       period_end,
       page,
       limit,
-      sort
+      sort,
+      exclude_tests
     } = req.query;
 
     const result = await dataService.searchPublishedStatistics({
@@ -340,7 +343,8 @@ async function searchStatistics(req, res) {
       period_end: period_end?.trim(),
       page,
       limit,
-      sort
+      sort,
+      exclude_tests: exclude_tests === 'true' || exclude_tests === true
     });
 
     return sendSuccess(res, result.data, result.meta);

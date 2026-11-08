@@ -314,16 +314,28 @@
 
             // BADGES
             const badge = document.getElementById('p-type-badge');
-            if (data.type === 'majorite') { badge.textContent = "Majorité"; badge.className = "d-badge bg-maj"; }
-            else if (data.type === 'opposition') { badge.textContent = "Opposition"; badge.className = "d-badge bg-opp"; }
-            else { badge.textContent = "Historique"; badge.className = "d-badge bg-hist"; }
+            if (data.type === 'majorite' || data.acronym === 'RDPC' || data.acronym === 'UNDP') {
+                badge.textContent = "Majorité";
+                badge.className = "d-badge bg-maj";
+            } else if (data.type === 'opposition' || data.acronym === 'MRC' || data.acronym === 'SDF' || data.acronym === 'PCRN' || data.acronym === 'UDC') {
+                badge.textContent = "Opposition";
+                badge.className = "d-badge bg-opp";
+            } else {
+                badge.textContent = "Formation politique";
+                badge.className = "d-badge bg-hist";
+            }
 
-            document.getElementById('p-creation').textContent = "Fondé en " + data.creation_date;
-            document.getElementById('p-description').innerHTML = data.description;
-            document.getElementById('p-leader-name').textContent = data.leader_name;
-            document.getElementById('p-leader-img').src = data.leader_photo_url || `https://ui-avatars.com/api/?name=${data.leader_name}&background=random`;
-            document.getElementById('p-seats').textContent = data.seats_assembly;
-            document.getElementById('p-founded').textContent = data.creation_date;
+            document.getElementById('p-creation').textContent = data.creation_date ? "Fondé en " + data.creation_date : "Date de fondation non renseignée";
+            document.getElementById('p-description').innerHTML = data.description || "Présentation institutionnelle en cours de rédaction.";
+            document.getElementById('p-leader-name').textContent = data.leader_name || "Direction collégiale ou non renseignée";
+            if (data.leader_photo_url) {
+                document.getElementById('p-leader-img').src = data.leader_photo_url;
+            }
+            const seatsVal = (data.seats_assembly !== null && data.seats_assembly !== undefined)
+                ? (Number(data.seats_assembly) > 0 ? `${data.seats_assembly} député${Number(data.seats_assembly) > 1 ? 's' : ''} (10e Législature)` : `0 député (Non représenté à l'Assemblée Nationale - 10e Législature)`)
+                : 'Information non renseignée';
+            document.getElementById('p-seats').textContent = seatsVal;
+            document.getElementById('p-founded').textContent = data.creation_date || (data.founded_year ? String(data.founded_year) : 'Non renseignée');
 
             // LECTEUR AVEC PROGRESSION
             if (data.podcast_id) {

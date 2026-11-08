@@ -476,6 +476,55 @@
                         </div>
                     </div>
 
+                    <!-- Métriques Opérationnelles du Workflow (Lot 3E.4) -->
+                    <div class="data-stats-grid" style="margin-top:10px; margin-bottom:18px;">
+                        <div class="data-stat-card" style="border-left:3px solid #f59e0b;">
+                            <div class="data-stat-icon" style="background:#fef3c7; color:#d97706;"><i data-lucide="help-circle"></i></div>
+                            <div class="data-stat-info">
+                                <span class="data-stat-label">En attente d'arbitrage</span>
+                                <span id="data-stat-pending-arbitration" class="data-stat-value">—</span>
+                            </div>
+                        </div>
+                        <div class="data-stat-card" style="border-left:3px solid #dc2626;">
+                            <div class="data-stat-icon" style="background:#fee2e2; color:#dc2626;"><i data-lucide="file-warning"></i></div>
+                            <div class="data-stat-info">
+                                <span class="data-stat-label">Preuves manquantes</span>
+                                <span id="data-stat-pending-evidence" class="data-stat-value">—</span>
+                            </div>
+                        </div>
+                        <div class="data-stat-card" style="border-left:3px solid #ea580c;">
+                            <div class="data-stat-icon" style="background:#ffedd5; color:#ea580c;"><i data-lucide="undo-2"></i></div>
+                            <div class="data-stat-info">
+                                <span class="data-stat-label">Corrections demandées</span>
+                                <span id="data-stat-corrections" class="data-stat-value">—</span>
+                            </div>
+                        </div>
+                        <div class="data-stat-card" style="border-left:3px solid #16a34a;">
+                            <div class="data-stat-icon" style="background:#dcfce7; color:#16a34a;"><i data-lucide="check-check"></i></div>
+                            <div class="data-stat-info">
+                                <span class="data-stat-label">Prêtes à publier</span>
+                                <span id="data-stat-ready-pub" class="data-stat-value">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Module de Contrôle de Qualité Éditoriale Centralisé (Lot 3H) -->
+                    <div class="data-card" id="editorial-quality-card" style="margin-top:12px; margin-bottom:18px; border-top: 4px solid #15803d; background: #ffffff;">
+                        <div class="data-card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                            <div class="data-card-title" style="display:flex; align-items:center; gap:8px;">
+                                <i data-lucide="shield-check" style="color:#15803d;"></i>
+                                <span style="font-weight:700;">Contrôle Centralisé de Qualité Éditoriale &amp; Intelligibilité Citoyenne</span>
+                                <span id="quality-score-badge" class="data-badge data-badge-success" style="font-size:0.85rem; padding:4px 10px;">Score : —/100</span>
+                            </div>
+                            <button type="button" class="data-btn data-btn-xs data-btn-secondary" onclick="SolitiquoDataAdmin.loadQualityReport()">
+                                <i data-lucide="refresh-cw"></i> Actualiser l'audit
+                            </button>
+                        </div>
+                        <div id="quality-report-body" style="padding:16px;">
+                            <div class="data-empty-state"><i data-lucide="loader" class="spin"></i> Évaluation de la qualité éditoriale en cours...</div>
+                        </div>
+                    </div>
+
                     <!-- Deux zones de travail équilibrées -->
                     <div class="data-dashboard-workspace">
                         <!-- Zone 1 : Tâches d'intervention & Dernières publications -->
@@ -1129,6 +1178,7 @@
                                     <!-- Filtres rapides -->
                                     <div class="data-val-filter-chips" id="val-filter-chips">
                                         <button type="button" class="data-val-chip active" data-filter="pilot" onclick="SolitiquoDataAdmin.setValidationFilter('pilot')">⭐ Pilote 3C (24)</button>
+                                        <button type="button" class="data-val-chip" data-filter="wave1" onclick="SolitiquoDataAdmin.setValidationFilter('wave1')">🚀 Vague 1 (13)</button>
                                         <button type="button" class="data-val-chip" data-filter="all" onclick="SolitiquoDataAdmin.setValidationFilter('all')">Toutes</button>
                                         <button type="button" class="data-val-chip" data-filter="draft" onclick="SolitiquoDataAdmin.setValidationFilter('draft')">Brouillons</button>
                                         <button type="button" class="data-val-chip" data-filter="under_review" onclick="SolitiquoDataAdmin.setValidationFilter('under_review')">En revue</button>

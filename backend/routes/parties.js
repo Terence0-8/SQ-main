@@ -74,11 +74,11 @@ async function uploadToCloudinary(file, folder, resourceType = 'image') {
 }
 
 // ==========================================
-// 1. LISTE DES PARTIS
+// 1. LISTE DES PARTIS (Exclusion stricte des données de test pour les vues publiques)
 // ==========================================
 router.get('/', async (req, res) => {
     try {
-        const { active, lang } = req.query;
+        const { active, lang, include_tests } = req.query;
         const isEn = lang === 'en';
 
         let query = `
@@ -105,14 +105,29 @@ router.get('/', async (req, res) => {
             is_active
           FROM parties
         `;
+        const conditions = [];
         const params = [];
 
         if (active !== undefined) {
-            query += ' WHERE is_active = $1';
             params.push(active === 'true');
+            conditions.push(`is_active = $${params.length}`);
+        } else {
+            // Vue publique par défaut : actifs uniquement
+            conditions.push(`is_active = TRUE`);
         }
 
-        query += ' ORDER BY name ASC';
+        // Filtre d'exclusion stricte des résidus de tests, migrations et fiches incomplètes pour le public
+        if (include_tests !== 'true') {
+            conditions.push(`name !~* '^(Parti )?(Mig[0-9]|Test|Demo|Breakdown|[0-9]{4,})'`);
+            conditions.push(`(acronym IS NULL OR acronym !~* '^(P3|PTD|PTEST)$')`);
+            conditions.push(`description IS NOT NULL AND length(trim(description)) >= 20`);
+        }
+
+        if (conditions.length > 0) {
+            query += ' WHERE ' + conditions.join(' AND ');
+        }
+
+        query += ' ORDER BY CASE WHEN acronym = \'RDPC\' THEN 1 WHEN acronym = \'MRC\' THEN 2 WHEN acronym = \'SDF\' THEN 3 WHEN acronym = \'UNDP\' THEN 4 WHEN acronym = \'PCRN\' THEN 5 WHEN acronym = \'UDC\' THEN 6 ELSE 7 END, name ASC';
 
         const result = await pool.query(query, params);
         res.json({

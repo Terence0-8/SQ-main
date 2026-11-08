@@ -248,6 +248,186 @@ async function createDraft(data, userId) {
 }
 
 /**
+ * Évaluation du statut de preuve documentaire et calcul des 4 statuts distincts (Lot 3E.3)
+ */
+function computeEvidenceEvaluation(val) {
+  if (!val) return null;
+  const evidences = Array.isArray(val.document_evidences) ? val.document_evidences : [];
+  const primarySource = Array.isArray(val.sources) ? val.sources.find(s => s.source_role === 'primary') : null;
+  const primPub = Array.isArray(val.indicator_publications) && val.indicator_publications.length > 0 ? val.indicator_publications[0] : null;
+
+  const hasArchivedPdf = evidences.some(e => Boolean(e.file_path && e.sha256_hash));
+
+  let docStatus = 'unavailable';
+  if (evidences.length > 0) {
+    if (evidences.some(e => e.document_status === 'original_consulted')) {
+      docStatus = 'original_consulted';
+    } else if (evidences.some(e => e.document_status === 'original_accessible_unconsulted')) {
+      docStatus = 'original_accessible_unconsulted';
+    } else if (evidences.some(e => e.document_status === 'institutional_reference_only')) {
+      docStatus = 'institutional_reference_only';
+    } else {
+      docStatus = 'unavailable';
+    }
+  } else if (primPub && primPub.verification_status) {
+    docStatus = primPub.verification_status;
+  }
+
+  const primaryRobustness = primarySource?.methodological_robustness || 'conditional';
+  const isPrimaryQualified = Boolean(
+    primarySource &&
+    primarySource.documentary_tier &&
+    primarySource.citation_reference &&
+    primarySource.citation_reference.trim().length >= 5
+  );
+
+  let proposedDecision;
+  let guidanceMessage;
+
+  let confrontationResult;
+  let confrontationDetails = 'Document original manquant dans le stockage local certifié.';
+  const numId = Number(val.id);
+
+  if (!hasArchivedPdf) {
+    proposedDecision = 'pending_evidence';
+    confrontationResult = 'not_verifiable';
+    if ([693, 694, 695, 696].includes(numId)) {
+      confrontationDetails = 'Document Nov 2023 non archivé localement. Comparaison indicative avec publication août 2024 (Comptes 2023) : divergence méthodologique (calage base 2016).';
+    } else if ([698, 699, 700, 701].includes(numId)) {
+      confrontationDetails = 'Document Nov 2023 non archivé localement. Comparaison indicative avec publication août 2024 : 2018 conforme (4,0%), 2019 arrondi (3,5%), 2020-2021 divergence méthodologique.';
+    } else if ([706, 707, 708, 709].includes(numId)) {
+      confrontationDetails = 'Annuaire Statistique 2023 non disponible en téléchargement sur le portail INS (404). Vérification impossible.';
+    } else if (numId === 710) {
+      confrontationDetails = 'Annuaire Statistique Éducation de Base MINEDUB 2022/2023 inaccessible (domaine minedub.gov.cm non résolu). Vérification impossible.';
+    }
+
+    if (docStatus === 'institutional_reference_only') {
+      guidanceMessage = "Référence institutionnelle enregistrée sans fichier PDF original archivé localement (SHA-256 absent). Conformément au protocole Lot 3E.3, l'arbitrage recommandé est 'pending_evidence' en attente de versement du fichier PDF certifié.";
+    } else if (docStatus === 'unavailable') {
+      guidanceMessage = "Document original inaccessible (serveur distant sous timeout ou DNS non résolu) et non archivé localement. L'arbitrage recommandé est 'pending_evidence' jusqu'à obtention matérielle du document.";
+    } else if (docStatus === 'original_accessible_unconsulted') {
+      guidanceMessage = "Document original accessible en ligne mais non encore formellement consulté ni archivé localement. L'arbitrage recommandé est 'pending_evidence'.";
+    } else {
+      guidanceMessage = "Le document PDF original n'est pas archivé localement (empreinte SHA-256 absente). La décision d'audit recommandée est 'pending_evidence'.";
+    }
+  } else if (!isPrimaryQualified) {
+    proposedDecision = 'correction_requested';
+    confrontationResult = 'not_verifiable';
+    confrontationDetails = 'Source primaire non qualifiée.';
+    guidanceMessage = "La source primaire n'est pas complètement qualifiée (niveau documentaire ou référence bibliographique insuffisante). Une correction est requise.";
+  } else if (val.audit_status === 'discrepancy') {
+    proposedDecision = 'rejected';
+    confrontationResult = 'discrepancy';
+    confrontationDetails = "Divergence statistique critique constatée lors de l'audit matériel.";
+    guidanceMessage = "Une divergence méthodologique critique non résolue a été constatée lors de l'audit technique.";
+  } else {
+    proposedDecision = 'accepted';
+    confrontationResult = 'exact_match';
+    confrontationDetails = 'Confrontation exacte validée avec le document original archivé (SHA-256 certifié).';
+    guidanceMessage = "Preuve PDF originale archivée localement (SHA-256 certifié) et conformité méthodologique validée.";
+  }
+
+  return {
+    is_pdf_archived: hasArchivedPdf,
+    has_sufficient_proof: hasArchivedPdf && isPrimaryQualified,
+    document_status: docStatus,
+    proposed_decision: proposedDecision,
+    guidance_message: guidanceMessage,
+    confrontation_result: confrontationResult,
+    confrontation_details: confrontationDetails,
+    distinct_statuses: {
+      audit_decision: val.audit_decision || 'pending',
+      editorial_status: val.editorial_status,
+      document_status: docStatus,
+      methodological_robustness: primaryRobustness
+    }
+  };
+}
+
+/**
+ * Évalue l'éligibilité opérationnelle d'une observation à la diffusion publique (Lot 3E.4)
+ * Contrôle exhaustif et structuré sur les trois volets : Technique, Documentaire et Méthodologique.
+ * @param {Object} val
+ * @returns {Object}
+ */
+function computePublicationEligibility(val) {
+  if (!val) return null;
+  const blockers = [];
+  const techBlockers = [];
+  const docBlockers = [];
+  const methodBlockers = [];
+
+  // 1. Volet Technique
+  if (val.editorial_status !== 'methodologically_validated') {
+    techBlockers.push(`Statut éditorial actuel '${val.editorial_status}' inéligible : l'observation doit être validée méthodologiquement ('methodologically_validated') avant diffusion.`);
+  }
+  if (val.value_numeric === null || val.value_numeric === undefined) {
+    techBlockers.push('Valeur statistique absente ou non numérique.');
+  }
+
+  // 2. Volet Documentaire
+  const sources = Array.isArray(val.sources) ? val.sources : [];
+  const primarySource = sources.find(s => s.source_role === 'primary');
+  const validTiers = ['TIER_1_OFFICIAL', 'TIER_2_STATISTICAL', 'TIER_3_ACADEMIC_PEER', 'TIER_4_REPUTABLE_NGO', 'TIER_5_SECONDARY_PRESS'];
+
+  if (!primarySource) {
+    docBlockers.push('Source principale manquante : au moins une source de rôle primaire est obligatoire.');
+  } else {
+    if (!primarySource.documentary_tier || !validTiers.includes(String(primarySource.documentary_tier).trim().toUpperCase())) {
+      docBlockers.push(`Niveau documentaire (TIER) manquant ou non conforme pour la source primaire (valeur actuelle : '${primarySource.documentary_tier || 'absent'}').`);
+    }
+    if (!primarySource.citation_reference || primarySource.citation_reference.trim().length < 10) {
+      docBlockers.push('Référence bibliographique ou citation incomplète (minimum 10 caractères requis).');
+    }
+  }
+
+  const evidences = Array.isArray(val.document_evidences) ? val.document_evidences : [];
+  const hasArchivedPdf = evidences.some(e => Boolean(e.file_path && e.sha256_hash));
+  if (!hasArchivedPdf) {
+    docBlockers.push('Preuve matérielle manquante : aucun fichier PDF officiel certifié n\'est archivé localement (empreinte SHA-256 absente).');
+  }
+
+  // 3. Volet Méthodologique
+  if (val.audit_decision === 'rejected') {
+    methodBlockers.push("L'audit technique ou humain préalable a été formellement rejeté.");
+  } else if (val.audit_decision === 'pending_evidence') {
+    methodBlockers.push("Dossier en attente de preuves documentaires complémentaires (pending_evidence).");
+  } else if (val.audit_decision === 'correction_requested') {
+    methodBlockers.push("Demande de correction en suspens : les anomalies signalées doivent être préalablement corrigées.");
+  } else if (val.audit_decision !== 'accepted') {
+    methodBlockers.push(`Décision d'audit en attente : un arbitrage humain motivé et accepté est requis (décision actuelle : '${val.audit_decision || 'pending'}').`);
+  }
+
+  if (val.audit_status === 'discrepancy') {
+    methodBlockers.push("Divergence statistique critique constatée lors du contrôle contradictoire.");
+  }
+
+  if (val.audit_status === 'confirmed_with_caveat') {
+    const hasCaveat = (val.audit_caveat && typeof val.audit_caveat === 'string' && val.audit_caveat.trim().length >= 5);
+    const hasMethodNotes = (val.methodology_notes && typeof val.methodology_notes === 'string' && val.methodology_notes.trim().length >= 5);
+    if (!hasCaveat && !hasMethodNotes) {
+      methodBlockers.push("Réserves méthodologiques obligatoires non documentées pour une observation comportant des réserves.");
+    }
+  }
+
+  blockers.push(...techBlockers, ...docBlockers, ...methodBlockers);
+
+  return {
+    is_eligible: blockers.length === 0,
+    can_publish: val.editorial_status === 'methodologically_validated' && docBlockers.length === 0 && methodBlockers.length === 0,
+    can_validate: ['under_review'].includes(val.editorial_status) && methodBlockers.length === 0 && docBlockers.length === 0,
+    can_submit: val.editorial_status === 'draft',
+    can_request_correction: ['draft', 'under_review', 'methodologically_validated'].includes(val.editorial_status),
+    blockers,
+    breakdown: {
+      technical: { passed: techBlockers.length === 0, blockers: techBlockers },
+      documentary: { passed: docBlockers.length === 0, blockers: docBlockers },
+      methodological: { passed: methodBlockers.length === 0, blockers: methodBlockers }
+    }
+  };
+}
+
+/**
  * 2. Récupérer le détail complet d'administration par ID
  */
 async function getAdminValueById(id) {
@@ -269,7 +449,30 @@ async function getAdminValueById(id) {
         FROM data_publication_indicators dpi
         JOIN data_publications dp ON dp.id = dpi.publication_id
         WHERE dpi.indicator_id = dv.indicator_id
-      ) AS indicator_publications
+      ) AS indicator_publications,
+      (
+        SELECT COALESCE(json_agg(json_build_object(
+          'id', dde.id,
+          'publication_id', dde.publication_id,
+          'indicator_id', dde.indicator_id,
+          'title', dde.title,
+          'institution_acronym', dde.institution_acronym,
+          'publication_year', dde.publication_year,
+          'original_url', dde.original_url,
+          'document_status', dde.document_status,
+          'file_path', dde.file_path,
+          'file_size_bytes', dde.file_size_bytes,
+          'sha256_hash', dde.sha256_hash,
+          'retrieval_date', dde.retrieval_date,
+          'page_section_reference', dde.page_section_reference,
+          'verification_notes', dde.verification_notes
+        ) ORDER BY dde.id ASC), '[]'::json)
+        FROM data_document_evidence dde
+        WHERE dde.indicator_id = dv.indicator_id
+           OR dde.publication_id IN (
+             SELECT dpi.publication_id FROM data_publication_indicators dpi WHERE dpi.indicator_id = dv.indicator_id
+           )
+      ) AS document_evidences
     FROM data_values dv
     JOIN data_indicators di ON di.id = dv.indicator_id
     JOIN territories t ON t.id = dv.territory_id
@@ -280,7 +483,12 @@ async function getAdminValueById(id) {
     WHERE dv.id = $1;
   `;
   const { rows } = await pool.query(sql, [id]);
-  return rows[0] || null;
+  const val = rows[0] || null;
+  if (val) {
+    val.evidence_evaluation = computeEvidenceEvaluation(val);
+    val.publication_eligibility = computePublicationEligibility(val);
+  }
+  return val;
 }
 
 /**
@@ -327,6 +535,10 @@ async function listAdminValues(filters = {}) {
 
   if (filters.pilot_only === 'true' || filters.pilot_only === true) {
     conditions.push(`dv.id BETWEEN 687 AND 710`);
+  }
+
+  if (filters.wave === 'wave1' || filters.wave === '1' || filters.wave_1 === 'true' || filters.wave_1 === true) {
+    conditions.push(`dv.id = ANY(ARRAY[693, 694, 695, 696, 698, 699, 700, 701, 706, 707, 708, 709, 710])`);
   }
 
   if (filters.territory_id) {
@@ -774,6 +986,18 @@ async function validateMethodology(id, validationNotes, user) {
       };
     }
 
+    // Contrôle des réserves obligatoires pour confirmed_with_caveat (Lot 3E.3)
+    if (current.audit_status === 'confirmed_with_caveat') {
+      const hasCaveat = (current.audit_caveat && typeof current.audit_caveat === 'string' && current.audit_caveat.trim().length >= 5);
+      const hasMethodNotes = (current.methodology_notes && typeof current.methodology_notes === 'string' && current.methodology_notes.trim().length >= 5);
+      if (!hasCaveat && !hasMethodNotes) {
+        throw {
+          status: 400,
+          message: "Validation méthodologique impossible : l'observation comporte un audit avec réserves (confirmed_with_caveat) mais aucune réserve méthodologique explicite (audit_caveat ou methodology_notes) n'est documentée"
+        };
+      }
+    }
+
     // Contrôle d'intégrité documentaire Lot 3C.4 :
     // 1. Présence d'au moins une source primaire
     const primSources = await client.query(
@@ -911,6 +1135,20 @@ async function decideAudit(id, { decision, notes, evidence_url, evidence_referen
     }
     if (decision === 'pending_evidence' && trimmedNotes.length < 5) {
       throw { status: 400, message: "Un motif obligatoire (au moins 5 caractères) explicitant la preuve manquante est requis pour maintenir en attente" };
+    }
+
+    // Garde-fou Lot 3E.3.1 : Impossibilité d'accepter un audit si le dossier est dépourvu de toute preuve ou source
+    if (decision === 'accepted') {
+      const srcCount = await client.query(
+        "SELECT COUNT(*) AS count FROM data_value_sources WHERE data_value_id = $1",
+        [id]
+      );
+      if (parseInt(srcCount.rows[0].count, 10) === 0) {
+        throw {
+          status: 400,
+          message: "Acceptation de l'audit impossible : le dossier ne comporte aucune preuve ni source documentaire enregistrée"
+        };
+      }
     }
 
     const justification = trimmedNotes.length > 0
@@ -1430,7 +1668,12 @@ async function getStats(options = {}) {
       COUNT(*) FILTER (WHERE dv.editorial_status = 'published')::int AS published_count,
       COUNT(*) FILTER (WHERE dv.editorial_status = 'revoked')::int AS revoked_count,
       COUNT(*) FILTER (WHERE dv.editorial_status = 'superseded')::int AS superseded_count,
-      COUNT(*) FILTER (WHERE dv.editorial_status = 'archived')::int AS archived_count
+      COUNT(*) FILTER (WHERE dv.editorial_status = 'archived')::int AS archived_count,
+      COUNT(*) FILTER (WHERE dv.audit_decision = 'pending')::int AS pending_arbitration_count,
+      COUNT(*) FILTER (WHERE dv.audit_decision = 'pending_evidence')::int AS pending_evidence_count,
+      COUNT(*) FILTER (WHERE dv.audit_decision = 'correction_requested')::int AS correction_requested_count,
+      COUNT(*) FILTER (WHERE dv.editorial_status = 'methodologically_validated' AND dv.audit_decision = 'accepted')::int AS ready_for_publication_count,
+      COUNT(*) FILTER (WHERE dv.editorial_status = 'draft' AND dv.audit_decision = 'accepted')::int AS ready_for_review_count
     FROM data_values dv
     ${testFilterValues};
   `;

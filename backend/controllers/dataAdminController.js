@@ -100,6 +100,7 @@ async function listAdminValues(req, res) {
     } = req.query;
 
     const result = await dataAdminService.listAdminValues({
+      ...req.query,
       editorial_status,
       indicator_id,
       territory_id,

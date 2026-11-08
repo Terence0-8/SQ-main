@@ -582,6 +582,18 @@ router.delete('/polls/:id', isAdmin, async (req, res) => {
 // ==========================================
 // 8. GESTION PARTIS POLITIQUES
 // ==========================================
+const editorialQualityService = require('../services/editorialQualityService');
+
+router.get('/quality-report', isAdmin, async (req, res) => {
+  try {
+    const report = await editorialQualityService.generateEditorialQualityReport();
+    return res.json(report);
+  } catch (err) {
+    console.error('❌ Erreur quality-report:', err);
+    return res.status(500).json({ success: false, error: 'Erreur serveur lors de l\'audit qualité' });
+  }
+});
+
 router.get('/parties', isAdmin, async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM parties ORDER BY name ASC');
