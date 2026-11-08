@@ -6,7 +6,7 @@
 // ============================================================
 
 // CACHE_NAME inclut la version/date du déploiement
-const CACHE_NAME = 'solitiquo-v20260922-offline-fix-v1';
+const CACHE_NAME = 'solitiquo-v20261108-fix-admin-lot3i';
 
 // Assets à pré-cacher au moment de l'installation (TOUTES les pages et TOUS les fichiers CSS)
 const PRECACHE_URLS = [
@@ -40,7 +40,6 @@ const PRECACHE_URLS = [
     '/css/cameroon-map.css',
     '/css/pages/abonnement.css',
     '/css/pages/abonnement.css?v=38',
-    '/css/pages/admin.css',
     '/css/pages/article.css',
     '/css/pages/article.css?v=38',
     '/css/pages/auth.css',
@@ -119,6 +118,7 @@ self.addEventListener('activate', (event) => {
                         const oldCache = await caches.open(key);
                         const oldRequests = await oldCache.keys();
                         for (const req of oldRequests) {
+                            if (req.url && (req.url.includes('admin') || req.url.includes('admin-data'))) continue;
                             const match = await currentCache.match(req);
                             if (!match) {
                                 const oldRes = await oldCache.match(req);
@@ -143,6 +143,11 @@ self.addEventListener('fetch', (event) => {
 
     // Ignorer les requêtes non-GET
     if (request.method !== 'GET') return;
+
+    // ── Administration Back-Office : Toujours Network-Only direct, aucun cache SW (Lot 3I) ──
+    if (url.pathname.includes('admin') || url.pathname.startsWith('/api/admin')) {
+        return; // Laisser le navigateur gérer directement par le réseau sans intervention du SW
+    }
 
     // ── API GET : Network-Only ──
     if (url.pathname.startsWith('/api/')) {

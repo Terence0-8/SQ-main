@@ -33,30 +33,39 @@
   --sq-shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
 }
 
-/* --- Barre de navigation interne (8 sous-onglets DATA) --- */
+/* --- Barre de navigation interne (9 sous-onglets DATA adaptatifs - Lot 3I) --- */
 .data-subnav {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: space-between;
+  gap: 12px;
   background: var(--sq-surface);
-  padding: 8px 12px;
+  padding: 10px 14px;
   border-radius: var(--sq-radius-lg);
   border: 1px solid var(--sq-border);
   box-shadow: var(--sq-shadow-sm);
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
+}
+
+.data-subnav-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
 }
 
 .data-tab-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
+  gap: 7px;
+  padding: 8px 13px;
   border: 1px solid transparent;
   background: transparent;
   color: var(--sq-text-muted);
   font-family: 'Inter', sans-serif;
-  font-size: 0.86rem;
+  font-size: 0.84rem;
   font-weight: 600;
   border-radius: var(--sq-radius-md);
   cursor: pointer;
@@ -67,6 +76,7 @@
 .data-tab-btn i {
   width: 15px;
   height: 15px;
+  flex-shrink: 0;
 }
 
 .data-tab-btn:hover {
@@ -85,9 +95,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 2px 7px;
+  padding: 2px 6px;
   border-radius: 10px;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   background: var(--sq-red-light);
   color: var(--sq-red);
@@ -100,10 +110,10 @@
 }
 
 .data-subnav-actions {
-  margin-left: auto;
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .data-toggle-label {
@@ -114,12 +124,13 @@
   font-weight: 600;
   color: var(--sq-forest);
   background: var(--sq-forest-light);
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 20px;
   cursor: pointer;
-  border: 1px solid rgba(55, 70, 61, 0.15);
-  transition: background 0.2s;
+  border: 1px solid rgba(55, 70, 61, 0.2);
+  transition: all 0.2s;
   user-select: none;
+  white-space: nowrap;
 }
 
 .data-toggle-label input[type="checkbox"] {
@@ -130,7 +141,26 @@
 }
 
 .data-toggle-label:hover {
-  background: rgba(55, 70, 61, 0.14);
+  background: rgba(55, 70, 61, 0.16);
+  border-color: var(--sq-forest);
+}
+
+@media (max-width: 1100px) {
+  .data-subnav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .data-subnav-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .data-subnav-actions {
+    justify-content: flex-start;
+  }
 }
 
 /* --- Bandeau supérieur (Hero banner) --- */
@@ -191,8 +221,12 @@
 .data-hero-actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  min-width: 200px;
+  gap: 8px;
+  min-width: 230px;
+}
+
+.data-hero-actions .data-btn {
+  width: 100%;
 }
 
 /* --- Boutons Solitiquo DATA --- */
@@ -287,23 +321,49 @@
   border-radius: var(--sq-radius-sm);
 }
 
-/* --- Cartes KPI du Tableau de bord (6 synthétiques) --- */
+/* --- Cartes KPI du Tableau de bord (6 synthétiques régulières - Lot 3I) --- */
 .data-stats-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 14px;
+  margin-bottom: 14px;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1480px) {
   .data-stats-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
-@media (max-width: 680px) {
+@media (max-width: 860px) {
   .data-stats-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .data-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Grille des 4 Métriques Opérationnelles du Workflow (Lot 3E.4 & 3I) */
+.data-stats-workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 1024px) {
+  .data-stats-workflow-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .data-stats-workflow-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -316,6 +376,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
+  min-height: 84px;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -350,25 +411,379 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  flex: 1;
 }
 
 .data-stat-label {
   font-size: 0.74rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.4px;
   color: var(--sq-text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.3;
 }
 
 .data-stat-value {
-  font-size: 1.45rem;
+  font-size: 1.55rem;
   font-weight: 800;
   color: var(--sq-text-main);
+  line-height: 1.1;
+  margin-top: 3px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* --- Barre de Réconciliation Statistique & Périmètre (Lot 3I) --- */
+.data-reconciliation-bar {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--sq-radius-md);
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  color: #475569;
+}
+
+.data-reconciliation-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 260px;
+}
+
+.data-reconciliation-info i {
+  width: 16px;
+  height: 16px;
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+.data-reconciliation-breakdown {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.recon-pill {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 12px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  background: #e2e8f0;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.recon-pill.draft { background: #fee2e2; color: #b91c1c; }
+.recon-pill.published { background: #dcfce7; color: #15803d; }
+.recon-pill.revoked { background: #f1f5f9; color: #64748b; }
+.recon-pill.review { background: #fef3c7; color: #b45309; }
+.recon-pill.validated { background: #e0e7ff; color: #4338ca; }
+.recon-pill.archived { background: #f3e8ff; color: #7e22ce; }
+
+/* --- Module Centralisé de Qualité Éditoriale (Lot 3H & 3I) --- */
+.quality-widget-card {
+  margin-top: 14px;
+  margin-bottom: 24px;
+  border-top: 4px solid #16a34a;
+  background: #ffffff;
+  border-radius: var(--sq-radius-lg);
+  border: 1px solid var(--sq-border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.quality-widget-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
+}
+
+.quality-widget-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  background: #fcfdfd;
+  flex-wrap: wrap;
+}
+
+.quality-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 280px;
+}
+
+.quality-shield-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.quality-shield-icon i {
+  width: 24px;
+  height: 24px;
+}
+
+.quality-widget-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 3px 0;
+  line-height: 1.3;
+}
+
+.quality-widget-subtitle {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.quality-header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.quality-score-box {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 6px 14px;
+  border-radius: 12px;
+}
+
+.quality-score-val {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #15803d;
+  line-height: 1;
+  font-family: 'Inter', sans-serif;
+}
+
+.quality-score-total {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.quality-status-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  margin-left: 6px;
+  white-space: nowrap;
+}
+
+.quality-status-pill.status-success {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+.quality-status-pill.status-warning {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.quality-status-pill.status-error {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.quality-status-pill.status-loading {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.quality-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  padding: 8px 14px;
+}
+
+.quality-refresh-btn.loading i {
+  animation: spin 1s linear infinite;
+}
+
+.quality-report-body {
+  padding: 24px;
+}
+
+.quality-loading-state,
+.quality-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 36px 20px;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.92rem;
+}
+
+.quality-loading-state i {
+  width: 28px;
+  height: 28px;
+  color: #3b82f6;
+}
+
+.quality-error-state i {
+  width: 32px;
+  height: 32px;
+  color: #dc2626;
+}
+
+.quality-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 900px) {
+  .quality-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .quality-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.quality-kpi-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.quality-kpi-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+}
+
+.quality-kpi-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #1e293b;
   line-height: 1.2;
-  margin-top: 2px;
+}
+
+.quality-kpi-desc {
+  font-size: 0.74rem;
+  color: #94a3b8;
+}
+
+.quality-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.quality-column-box {
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+.quality-column-box.conformities {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+.quality-column-box.warnings {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+
+.quality-column-box.anomalies {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  grid-column: 1 / -1;
+}
+
+.quality-column-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quality-column-box.conformities .quality-column-title { color: #166534; }
+.quality-column-box.warnings .quality-column-title { color: #92400e; }
+.quality-column-box.anomalies .quality-column-title { color: #991b1b; }
+
+.quality-check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.86rem;
+  margin-bottom: 8px;
+  line-height: 1.45;
+}
+
+.quality-check-item:last-child {
+  margin-bottom: 0;
+}
+
+.quality-check-item.item-success { color: #166534; }
+.quality-check-item.item-warning { color: #92400e; }
+.quality-check-item.item-danger { color: #991b1b; font-weight: 600; }
+
+.quality-widget-footer {
+  padding: 12px 24px;
+  background: #f8fafc;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  color: #64748b;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 /* --- Grille à 2 zones équilibrées du Tableau de bord --- */
@@ -2002,3 +2417,67 @@
   padding: 10px 14px;
 }
 
+
+
+/* Supprimer définitivement les puces de liste sur le widget qualité (Lot 3I) */
+.quality-item-list,
+ul.quality-item-list {
+  list-style: none !important;
+  list-style-type: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.quality-item,
+ul.quality-item-list > li {
+  list-style: none !important;
+  list-style-type: none !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+  padding: 8px 10px !important;
+  border-radius: 6px !important;
+  font-size: 0.84rem !important;
+  line-height: 1.4 !important;
+}
+
+.quality-item::marker,
+ul.quality-item-list > li::marker,
+.quality-item::before,
+ul.quality-item-list > li::before {
+  display: none !important;
+  content: '' !important;
+}
+
+.quality-col-title {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.quality-col-title i {
+  width: 16px !important;
+  height: 16px !important;
+  flex-shrink: 0 !important;
+}
+
+
+/* Responsive adaptatif pour le Hero Banner Solitiquo DATA (Lot 3I) */
+@media (max-width: 860px) {
+  .data-hero-banner {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 20px !important;
+    gap: 18px !important;
+  }
+  .data-hero-title {
+    font-size: 1.35rem !important;
+  }
+  .data-hero-actions {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .data-hero-actions .data-btn {
+    width: 100% !important;
+  }
+}

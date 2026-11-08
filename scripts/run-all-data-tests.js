@@ -20,6 +20,7 @@ const testFiles = [
   'tests/data_e2e_launch_lot3f.test.js',
   'tests/data_production_readiness_lot3g.test.js',
   'tests/editorial_quality_lot3h.test.js',
+  'tests/admin_interface_visual_lot3i.test.js',
   'tests/data_import.test.js',
   'tests/data_indicators_catalog.test.js',
   'tests/data_migration_1.test.js',

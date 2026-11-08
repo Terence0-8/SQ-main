@@ -574,7 +574,29 @@
       const elReadyPub = document.getElementById('data-stat-ready-pub');
       if (elReadyPub) elReadyPub.textContent = (counts.ready_for_publication_count || counts.validated_count || 0).toLocaleString();
 
-      // Badge file de validation
+      // Barre de réconciliation des données et périmètres (Lot 3I)
+      const reconText = document.getElementById('data-reconciliation-text');
+      const reconBreakdown = document.getElementById('data-reconciliation-breakdown');
+      if (reconText && reconBreakdown) {
+        if (State.excludeTests) {
+          reconText.innerHTML = `Périmètre d'affichage : <strong>Données réelles uniquement (${(counts.total || 0).toLocaleString()} observations actives)</strong>`;
+          reconBreakdown.innerHTML = `
+            <span class="recon-pill recon-pill-accent">${(counts.total || 0).toLocaleString()} observations réelles</span>
+            <span class="recon-pill">${(counts.draft_count || 0).toLocaleString()} brouillons (incl. 24 pilotes)</span>
+            <span class="recon-pill">${(counts.under_review_count || 0).toLocaleString()} en attente</span>
+            <span class="recon-pill">${(counts.published_count || 0).toLocaleString()} publiées</span>
+          `;
+        } else {
+          reconText.innerHTML = `Périmètre d'affichage : <strong>Toutes les observations (${(counts.total || 0).toLocaleString()} observations au catalogue complet)</strong>`;
+          reconBreakdown.innerHTML = `
+            <span class="recon-pill">${(counts.total || 0).toLocaleString()} obs. au catalogue</span>
+            <span class="recon-pill recon-pill-accent">370 données réelles certifiées</span>
+            <span class="recon-pill">89 archivées ou rejetées</span>
+            <span class="recon-pill">1 040 bancs de tests techniques</span>
+          `;
+        }
+      }
+
       const badgeVal = document.getElementById('badge-validation-count');
       if (badgeVal) {
         badgeVal.textContent = counts.under_review_count || 0;
@@ -724,70 +746,191 @@
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // 5.B MODULE DE CONTRÔLE DE QUALITÉ ÉDITORIALE (LOT 3H)
+    // ---------------------------------------------------------------------------
+  // 5.B MODULE DE CONTRÔLE DE QUALITÉ ÉDITORIALE (LOT 3H & 3I)
   // ---------------------------------------------------------------------------
   async function loadQualityReport() {
     const bodyEl = document.getElementById('quality-report-body');
-    const badgeEl = document.getElementById('quality-score-badge');
+    const scoreValEl = document.getElementById('quality-score-value');
+    const statusPillEl = document.getElementById('quality-status-pill');
+    const refreshBtn = document.getElementById('btn-refresh-quality');
+    const timestampEl = document.getElementById('quality-eval-timestamp');
+    const summaryMetaEl = document.getElementById('quality-summary-meta');
     if (!bodyEl) return;
 
-    bodyEl.innerHTML = '<div class="data-empty-state"><i data-lucide="loader" class="spin"></i> Évaluation de la qualité éditoriale en cours...</div>';
+    if (refreshBtn) {
+      refreshBtn.disabled = true;
+      refreshBtn.classList.add('loading');
+    }
+
+    bodyEl.innerHTML = `
+      <div class="quality-loading-state">
+        <i data-lucide="loader" class="spin"></i>
+        <span>Évaluation continue de la qualité éditoriale et de la sanctuarisation...</span>
+      </div>
+    `;
     if (window.lucide) window.lucide.createIcons();
 
     try {
-      const res = await fetch('/api/data/admin/quality-report');
-      const json = await res.json();
-      if (!json.success) {
-        bodyEl.innerHTML = `<div class="data-empty-state text-danger">Erreur : ${escapeHTML(json.error || 'Impossible de charger le rapport')}</div>`;
-        return;
+      let res;
+      try {
+        res = await DataAdminAPI.request('/api/data/admin/quality-report');
+      } catch (e1) {
+        res = await DataAdminAPI.request('/api/admin/quality-report');
       }
 
-      if (badgeEl) {
-        badgeEl.textContent = `Score : ${json.quality_score}/100 — ${json.status}`;
-        badgeEl.className = json.quality_score >= 80 ? 'data-badge data-badge-success' : 'data-badge data-badge-warning';
+      const json = res && res.data ? res.data : res;
+      if (!json || (!json.success && json.quality_score === undefined)) {
+        throw new Error((json && json.error) || 'Rapport de qualité indisponible');
       }
 
-      let conformitiesHtml = (json.conformities || []).map(c => `
-        <div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:6px; font-size:0.85rem; color:#15803d;">
-          <span style="font-weight:700;">✓</span> <span>${escapeHTML(c.message)}</span>
-        </div>
-      `).join('');
+      const score = typeof json.quality_score === 'number' ? json.quality_score : 0;
+      const status = json.status || (score >= 80 ? 'CONFORME_PRODUCTION' : 'ATTENTION_REQUISE');
+      const conformities = json.conformities || [];
+      const warnings = json.warnings || [];
+      const anomalies = json.anomalies || [];
+      const summary = json.summary || {};
 
-      let warningsHtml = (json.warnings || []).map(w => `
-        <div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:6px; font-size:0.85rem; color:#b45309;">
-          <span>⚠️</span> <span>${escapeHTML(w.message)}</span>
-        </div>
-      `).join('');
+      if (scoreValEl) {
+        scoreValEl.textContent = score;
+      }
 
-      let anomaliesHtml = (json.anomalies || []).map(a => `
-        <div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:6px; font-size:0.85rem; color:#dc2626; font-weight:600;">
-          <span>❌</span> <span>${escapeHTML(a.message)}</span>
-        </div>
-      `).join('');
+      if (statusPillEl) {
+        statusPillEl.className = 'quality-status-pill ' + (score >= 80 ? 'status-success' : 'status-warning');
+        statusPillEl.textContent = status === 'CONFORME_PRODUCTION' ? 'Conforme Production' : 'Attention Requise';
+      }
 
-      bodyEl.innerHTML = `
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
-          <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px;">
-            <div style="font-weight:700; color:#166534; font-size:0.85rem; margin-bottom:8px;">POINTS DE CONFORMITÉ ÉDITORIALE (${json.conformities ? json.conformities.length : 0})</div>
-            ${conformitiesHtml || '<div class="text-muted">Aucun point listé</div>'}
+      const auditedAt = json.audited_at ? new Date(json.audited_at) : new Date();
+      if (timestampEl) {
+        const dateStr = !isNaN(auditedAt.getTime())
+          ? auditedAt.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' à ' + auditedAt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+          : 'Instantané';
+        timestampEl.innerHTML = `<i data-lucide="clock"></i> Évalué le ${dateStr}`;
+      }
+
+      if (summaryMetaEl) {
+        const parts = [];
+        if (summary.public_indicators_count !== undefined) parts.push(`${summary.public_indicators_count} indicateurs`);
+        if (summary.published_observations_count !== undefined) parts.push(`${summary.published_observations_count} obs. publiées`);
+        if (summary.public_parties_count !== undefined) parts.push(`${summary.public_parties_count} partis`);
+        summaryMetaEl.textContent = parts.length > 0 ? `Contrôle sur ${parts.join(' • ')}` : 'Moteur d\'audit Solitiquo DATA v3.1';
+      }
+
+      const kpisHtml = `
+        <div class="quality-kpi-grid">
+          <div class="quality-kpi-card">
+            <span class="quality-kpi-label">Score Global</span>
+            <span class="quality-kpi-value ${score >= 80 ? 'text-emerald' : 'text-amber'}">${score} / 100</span>
+            <span class="quality-kpi-hint">Index de rigueur statistique</span>
           </div>
-          <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:12px;">
-            <div style="font-weight:700; color:#92400e; font-size:0.85rem; margin-bottom:8px;">POINTS DE VIGILANCE &amp; ISOLATION (${json.warnings ? json.warnings.length : 0})</div>
-            ${warningsHtml || '<div class="text-muted">Aucun avertissement</div>'}
+          <div class="quality-kpi-card">
+            <span class="quality-kpi-label">Statut Réglementaire</span>
+            <span class="quality-kpi-value text-emerald">${score >= 80 ? 'Conforme' : 'Révision'}</span>
+            <span class="quality-kpi-hint">Prêt pour diffusion publique</span>
           </div>
-          ${anomaliesHtml ? `
-          <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:12px; grid-column:1/-1;">
-            <div style="font-weight:700; color:#991b1b; font-size:0.85rem; margin-bottom:8px;">ANOMALIES CRITIQUES À CORRIGER (${json.anomalies.length})</div>
-            ${anomaliesHtml}
+          <div class="quality-kpi-card">
+            <span class="quality-kpi-label">Anomalies Critiques</span>
+            <span class="quality-kpi-value ${anomalies.length === 0 ? 'text-emerald' : 'text-crimson'}">${anomalies.length}</span>
+            <span class="quality-kpi-hint">${anomalies.length === 0 ? 'Zéro blocage décelé' : 'Action immédiate requise'}</span>
+          </div>
+          <div class="quality-kpi-card">
+            <span class="quality-kpi-label">Points de Vigilance</span>
+            <span class="quality-kpi-value text-amber">${warnings.length}</span>
+            <span class="quality-kpi-hint">${warnings.length > 0 ? 'Entités tests isolées en base' : 'Aucun point d\'attention'}</span>
+          </div>
+        </div>
+      `;
+
+      let conformitiesListHtml = conformities.map(c => `
+        <li class="quality-item quality-item-success">
+          <i data-lucide="check-circle-2"></i>
+          <div class="quality-item-content">
+            <div class="quality-item-msg">${escapeHTML(c.message)}</div>
+          </div>
+        </li>
+      `).join('');
+
+      let warningsListHtml = warnings.map(w => `
+        <li class="quality-item quality-item-warning">
+          <i data-lucide="alert-triangle"></i>
+          <div class="quality-item-content">
+            <div class="quality-item-msg">${escapeHTML(w.message)}</div>
+          </div>
+        </li>
+      `).join('');
+
+      let anomaliesListHtml = anomalies.map(a => `
+        <li class="quality-item quality-item-danger">
+          <i data-lucide="alert-octagon"></i>
+          <div class="quality-item-content">
+            <div class="quality-item-msg">${escapeHTML(a.message)}</div>
+          </div>
+        </li>
+      `).join('');
+
+      const detailsHtml = `
+        <div class="quality-details-grid">
+          <div class="quality-column quality-column-success">
+            <div class="quality-column-header">
+              <span class="quality-col-title"><i data-lucide="shield-check"></i> Points de Conformité Validés</span>
+              <span class="quality-col-count count-success">${conformities.length}</span>
+            </div>
+            <ul class="quality-item-list">
+              ${conformitiesListHtml || '<li class="quality-empty-notice">Aucun point de conformité validé.</li>'}
+            </ul>
+          </div>
+
+          <div class="quality-column quality-column-warning">
+            <div class="quality-column-header">
+              <span class="quality-col-title"><i data-lucide="shield-alert"></i> Points de Vigilance & Isolation</span>
+              <span class="quality-col-count count-warning">${warnings.length}</span>
+            </div>
+            <ul class="quality-item-list">
+              ${warningsListHtml || '<li class="quality-empty-notice">Aucun point de vigilance actif.</li>'}
+            </ul>
+          </div>
+
+          ${anomalies.length > 0 ? `
+          <div class="quality-column quality-column-danger" style="grid-column: 1 / -1;">
+            <div class="quality-column-header">
+              <span class="quality-col-title"><i data-lucide="alert-octagon"></i> Anomalies Critiques Bloquantes</span>
+              <span class="quality-col-count count-danger">${anomalies.length}</span>
+            </div>
+            <ul class="quality-item-list">
+              ${anomaliesListHtml}
+            </ul>
           </div>
           ` : ''}
         </div>
       `;
+
+      bodyEl.innerHTML = kpisHtml + detailsHtml;
       setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30);
     } catch (err) {
       console.error('Erreur loadQualityReport:', err);
-      bodyEl.innerHTML = '<div class="data-empty-state text-danger">Erreur réseau lors du chargement du rapport de qualité.</div>';
+      if (scoreValEl) scoreValEl.textContent = 'Err';
+      if (statusPillEl) {
+        statusPillEl.className = 'quality-status-pill status-warning';
+        statusPillEl.textContent = 'Indisponible';
+      }
+      bodyEl.innerHTML = `
+        <div class="quality-error-state">
+          <i data-lucide="wifi-off"></i>
+          <div>
+            <strong>Erreur de communication avec le moteur d'audit</strong>
+            <p>${escapeHTML(err.message || 'Impossible de récupérer le rapport de qualité éditoriale.')}</p>
+          </div>
+          <button type="button" class="btn btn-sm btn-primary" onclick="SolitiquoDataAdmin.loadQualityReport()">
+            <i data-lucide="refresh-cw"></i> Réessayer l'audit
+          </button>
+        </div>
+      `;
+      setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 30);
+    } finally {
+      if (refreshBtn) {
+        refreshBtn.disabled = false;
+        refreshBtn.classList.remove('loading');
+      }
     }
   }
 

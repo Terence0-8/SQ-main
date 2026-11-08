@@ -18,9 +18,27 @@
     <link rel="dns-prefetch" href="https://www.youtube.com" />
     <link rel="dns-prefetch" href="https://img.youtube.com" />
     <title>Console Admin — Solitiquo</title>
-    <link rel="stylesheet" href="css/shared.css?v=38" />
-    <link rel="stylesheet" href="/css/pages/admin.css?v=2" />
-    <link rel="stylesheet" href="/css/pages/admin-data.css?v=2" />
+    <script>
+        // Purge proactive des caches Service Worker pour l'espace d'administration
+        if ('serviceWorker' in navigator && window.caches) {
+            caches.keys().then(function(keys) {
+                keys.forEach(function(k) {
+                    caches.open(k).then(function(c) {
+                        c.keys().then(function(reqs) {
+                            reqs.forEach(function(r) {
+                                if (r.url.indexOf('admin') !== -1) {
+                                    c.delete(r);
+                                }
+                            });
+                        });
+                    });
+                });
+            });
+        }
+    </script>
+    <link rel="stylesheet" href="/css/shared.css?v=20261108b" />
+    <link rel="stylesheet" href="/css/pages/admin.css?v=20261108b" />
+    <link rel="stylesheet" href="/css/pages/admin-data.css?v=20261108b" />
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
         rel="stylesheet" />
@@ -43,45 +61,49 @@
 
 <body id="page-admin">
 
-    <aside class="sidebar">
-        <a href="/index.html" class="brand">
-            <img src="/logo.svg" alt="S" onerror="this.style.display='none'">
-            <span>Solitiquo</span>
+    <aside class="sidebar" id="sidebar">
+        <a href="/index.html" class="brand" title="Retourner au portail Solitiquo">
+            <img src="/logo-admin.svg" alt="Solitiquo" class="brand-logo" onerror="this.src='/logo.png'">
+            <span class="brand-text">Solitiquo</span>
         </a>
         <nav class="nav-menu">
-            <div class="nav-item active" data-view="dashboard"><i data-lucide="layout-dashboard"></i> Vue d'ensemble
-            </div>
-            <div class="nav-item" data-view="analytics"><i data-lucide="line-chart"></i> Analytics</div>
+            <div class="nav-item active" data-view="dashboard"><i data-lucide="layout-dashboard"></i> <span>Vue d'ensemble</span></div>
+            <div class="nav-item" data-view="analytics"><i data-lucide="line-chart"></i> <span>Analytics</span></div>
             <div class="nav-item" data-view="articles">
-                <i data-lucide="file-text"></i> Articles
-                <span id="badge-art-pending" class="badge badge-pending"
-                    style="display:none; margin-left:auto; font-size:0.6rem;">0</span>
+                <i data-lucide="file-text"></i> <span>Articles</span>
+                <span id="badge-art-pending" class="nav-badge nav-badge-pending" style="display:none;">0</span>
             </div>
-            <div class="nav-item" data-view="podcasts"><i data-lucide="mic"></i> Podcasts</div>
-            <div class="nav-item" data-view="emissions"><i data-lucide="tv"></i> Émissions</div>
-            <div class="nav-item" data-view="parties"><i data-lucide="landmark"></i> Partis</div>
-            <div class="nav-item" data-view="polls"><i data-lucide="bar-chart-2"></i> Sondages</div>
+            <div class="nav-item" data-view="podcasts"><i data-lucide="mic"></i> <span>Podcasts</span></div>
+            <div class="nav-item" data-view="emissions"><i data-lucide="tv"></i> <span>Émissions</span></div>
+            <div class="nav-item" data-view="parties"><i data-lucide="landmark"></i> <span>Partis</span></div>
+            <div class="nav-item" data-view="polls"><i data-lucide="bar-chart-2"></i> <span>Sondages</span></div>
             <div class="nav-item" data-view="data">
-                <i data-lucide="database"></i> Solitiquo DATA
-                <span class="badge" style="background:rgba(200,40,35,0.12); color:#C82823; font-weight:700; margin-left:auto; font-size:0.65rem; padding:2px 7px; border-radius:4px;">10 rég.</span>
+                <i data-lucide="database"></i> <span>Solitiquo DATA</span>
+                <span class="nav-badge nav-badge-data">10 rég.</span>
             </div>
             <div class="nav-item" data-view="moderation">
-                <i data-lucide="shield-alert"></i> Modération
-                <span id="badge-mod" class="badge badge-draft" style="display:none; margin-left:auto;">0</span>
+                <i data-lucide="shield-alert"></i> <span>Modération</span>
+                <span id="badge-mod" class="nav-badge nav-badge-draft" style="display:none;">0</span>
             </div>
-            <div class="nav-item" data-view="users"><i data-lucide="users"></i> Utilisateurs</div>
+            <div class="nav-item" data-view="users"><i data-lucide="users"></i> <span>Utilisateurs</span></div>
 
             <div class="nav-spacer" style="margin-top:auto;"></div>
 
-            <div class="nav-item" id="btn-home"><i data-lucide="external-link"></i> Retour Site</div>
-            <div class="nav-item" id="btn-logout"><i data-lucide="log-out"></i> Déconnexion</div>
+            <div class="nav-item" id="btn-home"><i data-lucide="external-link"></i> <span>Retour Site</span></div>
+            <div class="nav-item" id="btn-logout"><i data-lucide="log-out"></i> <span>Déconnexion</span></div>
         </nav>
     </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
     <main class="main-content">
         <!-- TOP BAR (Remplacement de premium-header) -->
         <header class="top-bar">
-            <div class="page-title" id="page-header"><i data-lucide="layout-dashboard"></i> Vue d'ensemble</div>
+            <div class="top-bar-left">
+                <button type="button" class="sidebar-toggle-btn" id="btn-toggle-sidebar" aria-label="Ouvrir le menu de navigation">
+                    <i data-lucide="menu"></i>
+                </button>
+                <div class="page-title" id="page-header"><i data-lucide="layout-dashboard"></i> Vue d'ensemble</div>
+            </div>
             <div class="header-actions" id="header-actions"></div>
         </header>
 
@@ -363,38 +385,40 @@
                 </div>
             </div>
 
-                        <!-- 📊 SECTION SOLITIQUO DATA (Lot 2C.1 : Refonte Complète UX/UI) -->
+                        <!-- 📊 SECTION SOLITIQUO DATA (Lot 2C.1 & Lot 3I : Refonte Complète UX/UI) -->
             <div id="view-data" class="view-section">
-                <!-- Navigation interne de l'Espace DATA (8 vues distinctes) -->
+                <!-- Navigation interne de l'Espace DATA (9 onglets adaptatifs) -->
                 <div class="data-subnav">
-                    <button type="button" class="data-tab-btn active" data-tab="dashboard">
-                        <i data-lucide="layout-dashboard"></i> 1. Vue d'ensemble
-                    </button>
-                    <button type="button" class="data-tab-btn" data-tab="observations">
-                        <i data-lucide="table"></i> 2. Observations
-                    </button>
-                    <button type="button" class="data-tab-btn" data-tab="editor">
-                        <i data-lucide="plus-circle"></i> 3. Nouvelle observation
-                    </button>
-                    <button type="button" class="data-tab-btn" data-tab="validation">
-                        <i data-lucide="check-square"></i> 4. Validation méthodologique
-                        <span id="badge-validation-count" class="data-tab-badge" style="display:none;">0</span>
-                    </button>
-                    <button type="button" class="data-tab-btn" data-tab="publications">
-                        <i data-lucide="globe"></i> 5. Publications
-                    </button>
-                    <button type="button" class="data-tab-btn" data-tab="sources">
-                        <i data-lucide="book-open"></i> 6. Sources documentaires
-                    </button>
-                    <button type="button" class="data-tab-btn" data-tab="referentials">
-                        <i data-lucide="layers"></i> 7. Référentiels
-                    </button>
-                    <button type="button" class="data-tab-btn" data-tab="audit">
-                        <i data-lucide="shield-check"></i> 8. Historique et audit
-                    </button>
-                    <button type="button" class="data-tab-btn" data-tab="import">
-                        <i data-lucide="upload-cloud"></i> 9. Importation
-                    </button>
+                    <div class="data-subnav-tabs">
+                        <button type="button" class="data-tab-btn active" data-tab="dashboard">
+                            <i data-lucide="layout-dashboard"></i> 1. Vue d'ensemble
+                        </button>
+                        <button type="button" class="data-tab-btn" data-tab="observations">
+                            <i data-lucide="table"></i> 2. Observations
+                        </button>
+                        <button type="button" class="data-tab-btn" data-tab="editor">
+                            <i data-lucide="plus-circle"></i> 3. Nouvelle observation
+                        </button>
+                        <button type="button" class="data-tab-btn" data-tab="validation">
+                            <i data-lucide="check-square"></i> 4. Validation méthodologique
+                            <span id="badge-validation-count" class="data-tab-badge" style="display:none;">0</span>
+                        </button>
+                        <button type="button" class="data-tab-btn" data-tab="publications">
+                            <i data-lucide="globe"></i> 5. Publications
+                        </button>
+                        <button type="button" class="data-tab-btn" data-tab="sources">
+                            <i data-lucide="book-open"></i> 6. Sources documentaires
+                        </button>
+                        <button type="button" class="data-tab-btn" data-tab="referentials">
+                            <i data-lucide="layers"></i> 7. Référentiels
+                        </button>
+                        <button type="button" class="data-tab-btn" data-tab="audit">
+                            <i data-lucide="shield-check"></i> 8. Historique et audit
+                        </button>
+                        <button type="button" class="data-tab-btn" data-tab="import">
+                            <i data-lucide="upload-cloud"></i> 9. Importation
+                        </button>
+                    </div>
 
                     <div class="data-subnav-actions">
                         <label class="data-toggle-label" title="Filtrer les jeux de tests automatisés pour n'afficher que les données réelles du Cameroun">
@@ -422,15 +446,18 @@
                                 <i data-lucide="plus"></i> Nouvelle observation
                             </button>
                             <a href="/data.html" target="_blank" class="data-btn data-btn-outline">
-                                <i data-lucide="external-link"></i> Portail public
+                                <i data-lucide="external-link"></i> Voir Hub Public
                             </a>
                             <a href="/data-cartographie.html" target="_blank" class="data-btn data-btn-outline">
-                                <i data-lucide="map"></i> Cartographie
+                                <i data-lucide="map-pin"></i> Ouvrir Carte
+                            </a>
+                            <a href="/data-sources.html" target="_blank" class="data-btn data-btn-outline">
+                                <i data-lucide="book-open"></i> Sources &amp; Méthodes
                             </a>
                         </div>
                     </div>
 
-                    <!-- 6 Indicateurs synthétiques proportionnés -->
+                    <!-- 6 Indicateurs synthétiques réguliers (Lot 3I) -->
                     <div class="data-stats-grid">
                         <div class="data-stat-card">
                             <div class="data-stat-icon total"><i data-lucide="layers"></i></div>
@@ -476,8 +503,8 @@
                         </div>
                     </div>
 
-                    <!-- Métriques Opérationnelles du Workflow (Lot 3E.4) -->
-                    <div class="data-stats-grid" style="margin-top:10px; margin-bottom:18px;">
+                    <!-- Métriques Opérationnelles du Workflow (Lot 3E.4 & 3I) -->
+                    <div class="data-stats-workflow-grid">
                         <div class="data-stat-card" style="border-left:3px solid #f59e0b;">
                             <div class="data-stat-icon" style="background:#fef3c7; color:#d97706;"><i data-lucide="help-circle"></i></div>
                             <div class="data-stat-info">
@@ -508,20 +535,49 @@
                         </div>
                     </div>
 
-                    <!-- Module de Contrôle de Qualité Éditoriale Centralisé (Lot 3H) -->
-                    <div class="data-card" id="editorial-quality-card" style="margin-top:12px; margin-bottom:18px; border-top: 4px solid #15803d; background: #ffffff;">
-                        <div class="data-card-header" style="display:flex; justify-content:space-between; align-items:center;">
-                            <div class="data-card-title" style="display:flex; align-items:center; gap:8px;">
-                                <i data-lucide="shield-check" style="color:#15803d;"></i>
-                                <span style="font-weight:700;">Contrôle Centralisé de Qualité Éditoriale &amp; Intelligibilité Citoyenne</span>
-                                <span id="quality-score-badge" class="data-badge data-badge-success" style="font-size:0.85rem; padding:4px 10px;">Score : —/100</span>
-                            </div>
-                            <button type="button" class="data-btn data-btn-xs data-btn-secondary" onclick="SolitiquoDataAdmin.loadQualityReport()">
-                                <i data-lucide="refresh-cw"></i> Actualiser l'audit
-                            </button>
+                    <!-- Barre de Réconciliation Statistique & Périmètre (Lot 3I) -->
+                    <div class="data-reconciliation-bar" id="data-reconciliation-bar">
+                        <div class="data-reconciliation-info">
+                            <i data-lucide="info"></i>
+                            <span id="data-reconciliation-text">Chargement du périmètre statistique...</span>
                         </div>
-                        <div id="quality-report-body" style="padding:16px;">
-                            <div class="data-empty-state"><i data-lucide="loader" class="spin"></i> Évaluation de la qualité éditoriale en cours...</div>
+                        <div class="data-reconciliation-breakdown" id="data-reconciliation-breakdown"></div>
+                    </div>
+
+                    <!-- Module de Contrôle de Qualité Éditoriale Centralisé (Lot 3H & 3I) -->
+                    <div class="data-card quality-widget-card" id="editorial-quality-card">
+                        <div class="quality-widget-header">
+                            <div class="quality-header-left">
+                                <div class="quality-shield-icon">
+                                    <i data-lucide="shield-check"></i>
+                                </div>
+                                <div>
+                                    <h3 class="quality-widget-title">Contrôle Centralisé de Qualité Éditoriale &amp; Intelligibilité Citoyenne</h3>
+                                    <p class="quality-widget-subtitle">Audit permanent des données publiques, référentiels, unités et fiches d'interprétation citoyenne</p>
+                                </div>
+                            </div>
+                            <div class="quality-header-right">
+                                <div id="quality-score-container" class="quality-score-box">
+                                    <span class="quality-score-val" id="quality-score-value">—</span>
+                                    <span class="quality-score-total">/100</span>
+                                    <span id="quality-status-pill" class="quality-status-pill status-loading">Évaluation...</span>
+                                </div>
+                                <button type="button" class="data-btn data-btn-sm data-btn-secondary quality-refresh-btn" id="btn-refresh-quality" onclick="SolitiquoDataAdmin.loadQualityReport()">
+                                    <i data-lucide="refresh-cw"></i> <span>Actualiser l'audit</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="quality-report-body" class="quality-report-body">
+                            <div class="quality-loading-state">
+                                <i data-lucide="loader" class="spin"></i>
+                                <span>Évaluation contradictoire de la qualité éditoriale en cours...</span>
+                            </div>
+                        </div>
+
+                        <div class="quality-widget-footer" id="quality-widget-footer" style="display:none;">
+                            <span class="quality-eval-timestamp" id="quality-eval-timestamp">Dernière évaluation : —</span>
+                            <span class="quality-summary-meta" id="quality-summary-meta"></span>
                         </div>
                     </div>
 
@@ -2079,6 +2135,21 @@
             loadAllData();
 
             // 2. GESTION NAVIGATION (Sidebar)
+            // Gestion ouverture/fermeture sidebar mobile (Lot 3I)
+            const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            if (btnToggleSidebar && sidebar && sidebarOverlay) {
+                btnToggleSidebar.addEventListener('click', () => {
+                    sidebar.classList.toggle('open');
+                    sidebarOverlay.classList.toggle('active');
+                });
+                sidebarOverlay.addEventListener('click', () => {
+                    sidebar.classList.remove('open');
+                    sidebarOverlay.classList.remove('active');
+                });
+            }
+
             document.querySelectorAll('.nav-item[data-view]').forEach(item => {
                 item.addEventListener('click', () => {
                     switchView(item.dataset.view);
@@ -2119,6 +2190,12 @@
 
             // 4. FONCTIONS METIERS
             function switchView(viewName) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            if (window.innerWidth <= 991 && sidebar && sidebarOverlay) {
+                sidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('active');
+            }
                 document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
                 const activeNav = document.querySelector(`.nav-item[data-view="${viewName}"]`);
                 if (activeNav) activeNav.classList.add('active');
