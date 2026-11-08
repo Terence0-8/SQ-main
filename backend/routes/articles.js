@@ -1,13 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
-const multer = require('multer');
 const cloudinary = require('../config/cloudinary');
 const fs = require('fs');
 const Joi = require('joi');
 const { isWriter, isAuthenticated } = require('../middleware/auth');
 const { createUniqueSlug } = require('../utils/slugify');
-const translationService = require('../services/translationService');
 const { sanitizeHTML, sanitizeText, sanitizeArray } = require('../middleware/sanitize');
 
 
@@ -588,8 +586,6 @@ router.delete('/:id', isWriter, async (req, res) => {
 // ==========================================
 const PDFDocument = require('pdfkit');
 const { isSubscriber } = require('../middleware/auth');
-const https = require('https');
-const http = require('http');
 
 router.get('/:slug/download', isSubscriber, async (req, res) => {
   try {

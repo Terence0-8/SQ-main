@@ -2,8 +2,6 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
 const Joi = require('joi');
-const { isAuthenticated } = require('../middleware/auth');
-const { verifyCsrf } = require('../middleware/csrf');
 
 // ==========================================
 // VALIDATION SCHEMA

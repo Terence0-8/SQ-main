@@ -41,7 +41,7 @@ function countryFromReq(req) {
     const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || req.ip;
     if (!ip || ip === '::1' || ip === '127.0.0.1' || ip.startsWith('::ffff:127.')) return null;
     return geoip.lookup(ip.replace('::ffff:', ''))?.country || null;
-  } catch (_) {
+  } catch {
     return null;
   }
 }
@@ -111,7 +111,7 @@ async function syncUserEntitlement(userId, client = pool) {
   }
 
   const now = new Date();
-  let entitled = false;
+  let entitled;
   let endDate = sub.stripe_current_period_end ? new Date(sub.stripe_current_period_end) : (sub.ends_at ? new Date(sub.ends_at) : null);
 
   if (['active', 'trialing'].includes(sub.stripe_status)) {
@@ -143,7 +143,7 @@ async function getOrCreateStripeCustomer(stripe, user) {
      ORDER BY id DESC LIMIT 1`,
     [user.id]
   );
-  let customerId = localSub.rows[0]?.stripe_customer_id;
+  const customerId = localSub.rows[0]?.stripe_customer_id;
 
   if (customerId) {
     try {
@@ -151,8 +151,8 @@ async function getOrCreateStripeCustomer(stripe, user) {
       if (existing && !existing.deleted) {
         return customerId;
       }
-    } catch (_) {
-      customerId = null;
+    } catch {
+      // Customer local inexistant ou invalide chez Stripe, recherche/création ci-dessous
     }
   }
 
@@ -164,12 +164,14 @@ async function getOrCreateStripeCustomer(stripe, user) {
     if (searchRes.data && searchRes.data.length > 0 && !searchRes.data[0].deleted) {
       return searchRes.data[0].id;
     }
-  } catch (_) {
+  } catch {
     try {
       const listRes = await stripe.customers.list({ email: user.email, limit: 10 });
       const match = listRes.data.find(c => c.metadata?.solitiquo_user_id === String(user.id) && !c.deleted);
       if (match) return match.id;
-    } catch (__) {}
+    } catch {
+      // Aucun client trouvé par listing, création nécessaire ci-dessous
+    }
   }
 
   const customer = await stripe.customers.create({
@@ -200,7 +202,7 @@ async function upsertSubscription(subscription, session, userId, client = pool, 
                       null;
   const start = rawStartSec ? new Date(rawStartSec * 1000) : new Date();
 
-  let rawEndSec = null;
+  let rawEndSec;
   if (status === 'trialing') {
     rawEndSec = subscription.trial_end ||
                 subscription.items?.data?.[0]?.current_period_end ||
@@ -364,7 +366,7 @@ async function executeCheckoutTransaction({
   userId,
   userEmail,
   plan,
-  country,
+  country: _country,
   p,
   idempotencyKey,
   testCountry,
@@ -657,7 +659,7 @@ async function executeCancelSubscription({ stripe = stripeClient(), userId, sess
     cancel_at_period_end: true
   });
 
-  let endTimestamp = null;
+  let endTimestamp;
   if (stripeSub.status === 'trialing') {
     endTimestamp = updated?.trial_end ||
                    updated?.cancel_at ||
@@ -967,7 +969,9 @@ async function processWebhookEvent(event, { stripe = stripeClient(), client: ext
           try {
             const cust = await stripe.customers.retrieve(customerId);
             userId = Number(cust.metadata?.solitiquo_user_id || 0);
-          } catch (_) {}
+          } catch {
+            // Client Stripe introuvable ou échec de récupération webhook
+          }
         }
 
         if (userId) {

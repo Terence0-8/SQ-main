@@ -351,7 +351,7 @@ function parseAllRows(buffer) {
 /**
  * 3. Validation exhaustive et insertion dans import_lines
  */
-async function validateAndStageLines(batchId, buffer, { mapping = {}, defaults = {} }, userId) {
+async function validateAndStageLines(batchId, buffer, { mapping = {}, defaults = {} }, _userId) {
   const client = await pool.connect();
 
   try {

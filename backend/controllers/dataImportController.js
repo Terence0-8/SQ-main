@@ -31,7 +31,7 @@ async function uploadAndPreview(req, res) {
       return sendError(res, 'Aucun fichier transmis dans la requête');
     }
 
-    const { originalname, mimetype, buffer, size } = req.file;
+    const { originalname, mimetype, buffer } = req.file;
 
     // Validation stricte des extensions autorisées
     const ext = path.extname(originalname).toLowerCase();

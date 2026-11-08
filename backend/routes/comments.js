@@ -334,7 +334,6 @@ router.post('/', isAuthenticated, verifyCsrf, async (req, res) => {
 router.delete('/:id', isAuthenticated, async (req, res) => {
   try {
     const { id } = req.params;
-    const user_id = req.session.user.id;
 
     if (isNaN(id)) {
       return res.status(400).json({ success: false, error: 'ID invalide' });

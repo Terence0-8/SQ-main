@@ -780,11 +780,11 @@
       }
 
       const json = res && res.data ? res.data : res;
-      if (!json || (!json.success && json.quality_score === undefined)) {
-        throw new Error((json && json.error) || 'Rapport de qualité indisponible');
+      if (!json || !json.success || typeof json.quality_score !== 'number') {
+        throw new Error((json && json.error) || 'Rapport de qualité indisponible ou invalide');
       }
 
-      const score = typeof json.quality_score === 'number' ? json.quality_score : 0;
+      const score = json.quality_score;
       const status = json.status || (score >= 80 ? 'CONFORME_PRODUCTION' : 'ATTENTION_REQUISE');
       const conformities = json.conformities || [];
       const warnings = json.warnings || [];

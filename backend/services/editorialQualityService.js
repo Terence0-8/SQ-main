@@ -209,7 +209,6 @@ async function generateEditorialQualityReport() {
   }
 
   // Calcul du score global de qualité éditoriale (0 à 100)
-  const totalChecks = 6;
   const criticalPenalties = anomalies.length * 20;
   const warningPenalties = warnings.length * 5;
   const qualityScore = Math.max(0, Math.min(100, 100 - criticalPenalties - warningPenalties));

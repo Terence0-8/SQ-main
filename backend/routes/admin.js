@@ -16,14 +16,6 @@ const pollSchema = Joi.object({
   category: Joi.string().allow('', null).optional()
 });
 
-const partySchema = Joi.object({
-  name: Joi.string().min(3).max(255).required(),
-  acronym: Joi.string().max(20).allow('').optional(),
-  logo_url: Joi.string().uri().allow('').optional(),
-  ideology: Joi.string().max(100).allow('').optional(),
-  description: Joi.string().allow('').optional()
-});
-
 // ==========================================
 // 1. STATISTIQUES GÉNÉRALES
 // ==========================================

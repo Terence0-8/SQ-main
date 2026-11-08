@@ -266,7 +266,7 @@ describe('SOLITIQUO DATA — LOT 3C PILOTE DE DONNÉES RÉELLES SUITE', () => {
 
     test('4.2 L\'API d\'administration permet la revue éditoriale des brouillons', async () => {
       let draftIds = [];
-      for (let p = 1; p <= 5; p++) {
+      for (let p = 1; p <= 10; p++) {
         const res = await adminAgent
           .get(`/api/data/admin/values?editorial_status=draft&limit=200&page=${p}`)
           .expect(200);

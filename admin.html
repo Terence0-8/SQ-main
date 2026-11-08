@@ -19,15 +19,21 @@
     <link rel="dns-prefetch" href="https://img.youtube.com" />
     <title>Console Admin — Solitiquo</title>
     <script>
-        // Purge proactive des caches Service Worker pour l'espace d'administration
+        // Invalidation ciblée des seuls actifs d'administration sans toucher aux ressources partagées
         if ('serviceWorker' in navigator && window.caches) {
+            var ADMIN_PATH_REGEX = /\/(admin\.html|css\/pages\/admin.*\.css|js\/admin.*\.js|logo-admin\.svg)(\?.*)?$/i;
             caches.keys().then(function(keys) {
                 keys.forEach(function(k) {
                     caches.open(k).then(function(c) {
                         c.keys().then(function(reqs) {
                             reqs.forEach(function(r) {
-                                if (r.url.indexOf('admin') !== -1) {
-                                    c.delete(r);
+                                try {
+                                    var pathname = new URL(r.url).pathname;
+                                    if (ADMIN_PATH_REGEX.test(pathname)) {
+                                        c.delete(r);
+                                    }
+                                } catch (_) {
+                                    // URL non analysable
                                 }
                             });
                         });

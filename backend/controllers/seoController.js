@@ -226,7 +226,7 @@ exports.handleArticleById = async (req, res, next) => {
 };
 
 exports.handleStaticSeoRoute = async (req, res, next) => {
-    const lang = req.params[0]; // 'fr' or 'en'
+    const _lang = req.params[0]; // 'fr' or 'en'
     const slug = req.params[1]; // 'politique', 'social', etc.
 
     const map = {

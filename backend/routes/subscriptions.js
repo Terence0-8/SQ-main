@@ -5,7 +5,6 @@ const pool = require('../config/database');
 const { isAuthenticated } = require('../middleware/auth');
 const { verifyCsrf } = require('../middleware/csrf');
 const axios = require('axios');
-const crypto = require('crypto');
 
 // ==========================================
 // GEO-PRICING CONFIGURATION
@@ -162,7 +161,7 @@ router.post('/init-payment', verifyCsrf, isAuthenticated, async (req, res) => {
       "SELECT id, ends_at FROM subscriptions WHERE user_id = $1 AND status = 'active' AND ends_at > NOW() ORDER BY ends_at DESC LIMIT 1",
       [userId]
     );
-    const isExtension = activeCheck.rows.length > 0;
+    const _isExtension = activeCheck.rows.length > 0;
 
     // Détecter le pays pour choisir la devise (XOF ou XAF)
     const country = getCountryFromReq(req);
@@ -444,7 +443,7 @@ router.post('/init-stripe-payment', verifyCsrf, isAuthenticated, async (req, res
       "SELECT id, ends_at FROM subscriptions WHERE user_id = $1 AND status = 'active' AND ends_at > NOW() ORDER BY ends_at DESC LIMIT 1",
       [userId]
     );
-    const isExtensionStripe = activeCheckStripe.rows.length > 0;
+    const _isExtensionStripe = activeCheckStripe.rows.length > 0;
 
     const country = getCountryFromReq(req);
     const geoPricing = getPricingForCountry(country);
