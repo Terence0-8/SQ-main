@@ -1,0 +1,41 @@
+[
+  {
+    "id": 1,
+    "question": "jkvnpdvmwcv",
+    "options": [
+      {
+        "text": "zeflkn qzkj",
+        "votes": 1
+      },
+      {
+        "text": "vkmvljbbzemjnkn",
+        "votes": 1
+      }
+    ],
+    "is_active": false,
+    "ends_at": "2026-03-22T00:14:21.232Z",
+    "category": "Social",
+    "question_en": null,
+    "notes": "Sondage de test brut issu de la base de dev — conservé pour revue éditoriale ultérieure avant réintégration."
+  },
+  {
+    "id": 2,
+    "question": "MZENMKV?DSIOD",
+    "options": [
+      {
+        "text": "ivundsinvs",
+        "votes": 3
+      },
+      {
+        "text": "vljejisnsqcsn",
+        "votes": 1
+      }
+    ],
+    "is_active": false,
+    "ends_at": "2026-03-22T00:14:21.232Z",
+    "category": "Politique",
+    "question_en": null,
+    "notes": "Sondage de test brut issu de la base de dev — conservé pour revue éditoriale ultérieure avant réintégration."
+  }
+]
+

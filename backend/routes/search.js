@@ -199,6 +199,7 @@ router.get('/', async (req, res) => {
         category,
         published_at   AS date,
         'article'      AS type,
+        is_demo,
         0              AS rank
       FROM articles
       WHERE status = 'published'

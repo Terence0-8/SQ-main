@@ -497,6 +497,16 @@
             ? `<span class="hero-lang-badge">🇫🇷 ${une.language.toUpperCase()}</span>`
             : '';
 
+          const _lb = (art) => art.language !== lang
+            ? `<span style="background:#37463D;color:white;padding:2px 6px;border-radius:3px;font-size:0.65rem;margin-left:6px;">🇫🇷 ${art.language.toUpperCase()}</span>`
+            : '';
+          const _pb = (art) => art.is_premium
+            ? `<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-right:6px;" loading="lazy"> `
+            : '';
+          const _db = (art) => art.is_demo
+            ? `<span class="badge-demo" style="background:#fff3cd; color:#856404; border:1px solid #ffeeba; font-size:0.62rem; font-weight:800; padding:2px 6px; border-radius:3px; letter-spacing:0.5px; text-transform:uppercase; margin-left:6px; vertical-align:middle;">${lang === 'en' ? 'DEMO' : 'DÉMO'}</span>`
+            : '';
+
           document.getElementById('hero-dynamic').innerHTML = `
             <section class="grand-hero-section">
               <a href="${linkUne}" class="hero-link-full"></a>
@@ -506,7 +516,7 @@
                     <span class="hero-badge-une">${t('badge_une', 'À LA UNE')}</span>
                     <span class="hero-badge-cat">${tCategory(une.category)}</span>
                     ${langBadge}
-
+                    ${_db(une)}
                 </div>
                 <h1 class="hero-title-main">${une.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-right:6px;" loading="lazy"> ' : ''}${une.title}</h1>
                 <p class="hero-excerpt">${une.excerpt || ''}</p>
@@ -517,18 +527,11 @@
           const featured = articles[1];
           const gridList = articles.slice(2, 8);
 
-          const _lb = (art) => art.language !== lang
-            ? `<span style="background:#37463D;color:white;padding:2px 6px;border-radius:3px;font-size:0.65rem;margin-left:6px;">🇫🇷 ${art.language.toUpperCase()}</span>`
-            : '';
-          const _pb = (art) => art.is_premium
-            ? `<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-right:6px;" loading="lazy"> `
-            : '';
-
           document.getElementById('magazine-feed').innerHTML = `
             <article class="article-magazine">
               <img src="${featured.image_url}" class="mag-img" onerror="handleImgError(this)" loading="lazy">
               <div class="mag-content">
-                <a href="article.html?id=${featured.id}" style="text-decoration:none;"><h3>${_pb(featured)}${featured.title} ${_lb(featured)}</h3></a>
+                <a href="article.html?id=${featured.id}" style="text-decoration:none;"><h3>${_pb(featured)}${featured.title} ${_lb(featured)} ${_db(featured)}</h3></a>
                 <p class="mag-excerpt">${featured.excerpt || featured.slug}</p>
                 <small style="color:#888;font-size:0.85rem;">${SolitiquoAPI.formatDate(featured.published_at)}</small>
               </div>
@@ -541,7 +544,7 @@
                     ${art.is_premium ? '<img src="GOLD.png" alt="Premium" class="premium-badge-card" loading="lazy">' : ''}
                   </div>
                   <div class="grid-card-body">
-                    <span class="grid-card-cat">${tCategory(art.category || 'POLITIQUE')}</span>
+                    <span class="grid-card-cat">${tCategory(art.category || 'POLITIQUE')} ${_db(art)}</span>
                     <h4 class="grid-card-title">${_pb(art)}${art.title} ${_lb(art)}</h4>
                     <p class="grid-card-excerpt">${art.read_time || 3} ${t('article_reading_time', 'min de lecture')}</p>
                     <div class="grid-card-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
@@ -593,6 +596,7 @@
 
                 const linkDisco = 'article.html?id=' + art.id;
                 const pb = art.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-right:6px;" loading="lazy"> ' : '';
+                const db = art.is_demo ? '<span class="badge-demo" style="background:#fff3cd; color:#856404; border:1px solid #ffeeba; font-size:0.62rem; font-weight:800; padding:2px 6px; border-radius:3px; letter-spacing:0.5px; text-transform:uppercase; margin-left:6px; vertical-align:middle;">' + (lang === 'en' ? 'DEMO' : 'DÉMO') + '</span>' : '';
                 const catTag = art.category || 'Politique';
 
                 return '<a href="' + linkDisco + '" class="' + cardClass + '">' +
@@ -600,7 +604,7 @@
                     '<img src="' + (art.image_url || 'https://via.placeholder.com/600x400') + '" class="disco-img" onerror="handleImgError(this)" loading="lazy">' +
                   '</div>' +
                   '<div class="disco-body">' +
-                    '<span class="art-cat" style="font-size:0.65rem; margin-bottom:4px; color:#C82823; font-weight:800; text-transform:uppercase;">' + tCategory(catTag) + '</span>' +
+                    '<span class="art-cat" style="font-size:0.65rem; margin-bottom:4px; color:#C82823; font-weight:800; text-transform:uppercase;">' + tCategory(catTag) + db + '</span>' +
                     '<h4 class="disco-title">' + pb + art.title + '</h4>' +
                     excerptHtml +
                     '<div class="disco-date">' + SolitiquoAPI.formatDate(art.published_at) + '</div>' +

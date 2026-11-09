@@ -58,6 +58,7 @@ router.get('/content/articles', isWriter, async (req, res) => {
         a.published_at, 
         a.views_count, 
         a.is_premium,
+        a.is_demo,
         CASE 
           WHEN LOWER(COALESCE(a.language, '')) = 'en' 
             OR a.title ILIKE '% the %' 

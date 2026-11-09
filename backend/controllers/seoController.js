@@ -11,7 +11,7 @@ const injectMetaTags = (html, data, url, alternates = []) => {
     const description = (data.description || "Le média de référence au Cameroun.").replace(/"/g, '&quot;');
     const image = data.image || `${BASE_URL}/social-share.jpg`;
 
-    const robotsMeta = appConfig.isNoIndex ? '<meta name="robots" content="noindex, nofollow, noarchive" />\n    ' : '';
+    const robotsMeta = (appConfig.isNoIndex || data.is_demo) ? '<meta name="robots" content="noindex, nofollow, noarchive" />\n    ' : '';
 
     let metaTags = `
     <title>${title}</title>
@@ -60,7 +60,7 @@ exports.handleSeoRoute = async (req, res, next) => {
             case 'article': {
                 templateFile = 'article.html';
                 const articleRes = await pool.query(
-                    'SELECT a.title, a.excerpt, a.featured_image, a.language, a.category, a.slug, ' +
+                    'SELECT a.title, a.excerpt, a.featured_image, a.language, a.category, a.slug, a.is_demo, ' +
                     't.slug as trans_slug, t.language as trans_lang, t.category as trans_cat ' +
                     'FROM articles a ' +
                     'LEFT JOIN articles t ON (a.translation_id = t.id OR t.translation_id = a.id OR (a.translation_id IS NOT NULL AND t.translation_id = a.translation_id)) ' +
@@ -174,7 +174,7 @@ exports.handleArticleById = async (req, res, next) => {
 
     try {
         const result = await pool.query(
-            `SELECT a.title, a.excerpt, a.image_url, a.language, a.category, a.slug,
+            `SELECT a.title, a.excerpt, a.image_url, a.language, a.category, a.slug, a.is_demo,
                     t.id AS trans_id, t.language AS trans_lang, t.category AS trans_cat, t.slug AS trans_slug
              FROM articles a
              LEFT JOIN articles t

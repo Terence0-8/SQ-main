@@ -1125,6 +1125,9 @@
   </div>
 
   <main class="article-detail-container" id="main-article" style="display:none;">
+    <div id="art-demo-banner" style="display:none; background:#fff3cd; color:#856404; border:1px solid #ffeeba; border-radius:6px; padding:12px 18px; margin:0 auto 1.5rem auto; max-width:800px; font-size:0.88rem; line-height:1.45; text-align:center; font-weight:600; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+      ⚠️ <span id="art-demo-text">Contenu de démonstration — informations fictives, ne pas considérer comme une actualité vérifiée.</span>
+    </div>
     <div style="text-align:center;margin-bottom:1rem;">
       <span id="art-category-badge"
         style="background:var(--primary-dark);color:white;padding:4px 12px;border-radius:4px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;"></span>
@@ -2279,6 +2282,25 @@
           if (badge) {
             badge.textContent = typeof tCategory === 'function' ? tCategory(article.category) : (article.category || 'Décryptage');
             if (article.is_premium) { badge.innerHTML += ' <img src="GOLD.png" alt="Premium" style="height:1.2em;vertical-align:middle;margin-left:5px;" loading="lazy">'; badge.style.backgroundColor = '#222'; }
+            if (article.is_demo) {
+              const demoTextBadge = ((typeof getLanguage === 'function' && getLanguage() === 'en') || article.language === 'en') ? 'DEMO' : 'DÉMONSTRATION';
+              badge.innerHTML += ` <span style="background:#fff3cd; color:#856404; border:1px solid #ffeeba; padding:2px 7px; border-radius:3px; font-size:0.65rem; margin-left:6px; vertical-align:middle;">${demoTextBadge}</span>`;
+            }
+          }
+          const demoBanner = document.getElementById('art-demo-banner');
+          if (demoBanner) {
+            if (article.is_demo) {
+              demoBanner.style.display = 'block';
+              const isEn = (typeof getLanguage === 'function' ? getLanguage() : 'fr') === 'en' || article.language === 'en';
+              const demoText = document.getElementById('art-demo-text');
+              if (demoText) {
+                demoText.textContent = isEn
+                  ? 'Demo content — fictional information, not verified news.'
+                  : 'Contenu de démonstration — informations fictives, ne pas considérer comme une actualité vérifiée.';
+              }
+            } else {
+              demoBanner.style.display = 'none';
+            }
           }
           const authorEl = document.getElementById('art-author');
           if (authorEl) authorEl.textContent = article.author_name || article.author || 'La Rédaction';

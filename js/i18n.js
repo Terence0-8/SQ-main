@@ -1344,6 +1344,7 @@ async function loadArticles(lang = getLanguage()) {
         const uneExcerpt = une.excerpt || une.description || '';
         const uneCat = une.category || '';
         const badgeLabel = t('badge_une', 'À LA UNE');
+        const demoTag = une.is_demo ? ' • ' + (lang === 'en' ? 'DEMO CONTENT' : 'CONTENU FICTIF') : '';
 
         const uneBadge = une.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-right:6px;" loading="lazy">' : '';
 
@@ -1352,7 +1353,7 @@ async function loadArticles(lang = getLanguage()) {
             <a href="${linkUne}" style="position:absolute; inset:0; z-index:2;" aria-label="${uneTitle}"></a>
             <img src="${uneImg}" class="hero-bg-img" style="object-position: top center;" alt="${uneTitle}">
             <div class="hero-overlay">
-              <span class="hero-tag">${badgeLabel}${uneCat ? ' • ' + tCategory(uneCat) : ''}</span>
+              <span class="hero-tag">${badgeLabel}${uneCat ? ' • ' + tCategory(uneCat) : ''}${demoTag}</span>
               <h1 class="hero-title-main">${uneBadge}${uneTitle}</h1>
               <p class="hero-excerpt">${uneExcerpt}</p>
             </div>
@@ -1376,6 +1377,7 @@ async function loadArticles(lang = getLanguage()) {
             const artCat = art.category || '';
             const artDate = art.published_at || art.date ? (window.SolitiquoAPI && window.SolitiquoAPI.formatDate ? window.SolitiquoAPI.formatDate(art.published_at || art.date) : '') : '';
             const artBadge = art.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-right:6px;" loading="lazy">' : '';
+            const demoBadge = art.is_demo ? '<span class="badge-demo" style="background:#fff3cd; color:#856404; border:1px solid #ffeeba; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:3px; letter-spacing:0.5px; text-transform:uppercase; margin-left:6px; vertical-align:middle;">' + (lang === 'en' ? 'DEMO' : 'DÉMONSTRATION') + '</span>' : '';
 
             return `
               <article class="article-row">
@@ -1385,7 +1387,7 @@ async function loadArticles(lang = getLanguage()) {
                   </a>
                 </div>
                 <div class="art-info">
-                  <span class="art-cat">${tCategory(artCat)}</span>
+                  <span class="art-cat">${tCategory(artCat)}${demoBadge}</span>
                   <a href="${linkArt}" style="text-decoration:none;">
                     <h3 class="art-title">${artBadge}${artTitle}</h3>
                   </a>
@@ -1425,6 +1427,7 @@ async function loadArticles(lang = getLanguage()) {
             const pb = art.is_premium ? '<img src="GOLD.png" alt="★" style="height:0.75em;vertical-align:middle;margin-right:6px;" loading="lazy">' : '';
             const catTag = art.category || '';
             const artDate = art.published_at || art.date ? (window.SolitiquoAPI && window.SolitiquoAPI.formatDate ? window.SolitiquoAPI.formatDate(art.published_at || art.date) : '') : '';
+            const demoBadge = art.is_demo ? '<span class="badge-demo" style="background:#fff3cd; color:#856404; border:1px solid #ffeeba; font-size:0.62rem; font-weight:800; padding:2px 6px; border-radius:3px; letter-spacing:0.5px; text-transform:uppercase; margin-left:6px; vertical-align:middle;">' + (lang === 'en' ? 'DEMO' : 'DÉMO') + '</span>' : '';
 
             return `
               <a href="${linkDisco}" class="${cardClass}">
@@ -1432,7 +1435,7 @@ async function loadArticles(lang = getLanguage()) {
                   <img src="${art.image_url || 'https://via.placeholder.com/600x400'}" class="disco-img" alt="${art.title}" onerror="handleImgError(this)" loading="lazy">
                 </div>
                 <div class="disco-body">
-                  <span class="art-cat" style="font-size:0.65rem; margin-bottom:4px; color:#C82823; font-weight:800; text-transform:uppercase;">${tCategory(catTag)}</span>
+                  <span class="art-cat" style="font-size:0.65rem; margin-bottom:4px; color:#C82823; font-weight:800; text-transform:uppercase;">${tCategory(catTag)}${demoBadge}</span>
                   <h4 class="disco-title">${pb}${art.title}</h4>
                   ${excerptHtml}
                   ${artDate ? `<div class="disco-date">${artDate}</div>` : ''}

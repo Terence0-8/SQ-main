@@ -96,6 +96,7 @@ router.get('/', async (req, res) => {
         a.translation_id,
         a.translation_method,
         a.is_premium,
+        a.is_demo,
         u.username as author_name,
         -- Vérifier si une traduction existe
         CASE 
@@ -158,6 +159,7 @@ router.get('/by-slug/:slug', async (req, res) => {
         a.category,
         a.status,
         a.is_premium,
+        a.is_demo,
         a.language,
         a.tags,
         a.views_count,
@@ -233,6 +235,7 @@ router.get('/:id', async (req, res) => {
         a.category,
         a.status,
         a.is_premium,
+        a.is_demo,
         a.language,
         a.tags,
         a.views_count,
@@ -546,6 +549,42 @@ router.put('/:id', isWriter, articleUpload, async (req, res) => {
       });
     }
 
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
+// ==========================================
+// 4 bis. CONVERSION VOLONTAIRE STATUT DÉMONSTRATION
+// ==========================================
+router.patch('/:id/demo-status', isWriter, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { is_demo } = req.body;
+
+    if (isNaN(id)) {
+      return res.status(400).json({ success: false, error: 'ID invalide' });
+    }
+
+    if (typeof is_demo !== 'boolean') {
+      return res.status(400).json({ success: false, error: 'Le champ is_demo (booléen) est requis' });
+    }
+
+    const result = await pool.query(
+      'UPDATE articles SET is_demo = $1, updated_at = NOW() WHERE id = $2 RETURNING id, title, is_demo, status',
+      [is_demo, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Article introuvable' });
+    }
+
+    res.json({
+      success: true,
+      message: is_demo ? 'Article marqué comme contenu de démonstration' : 'Article converti en contenu éditorial standard',
+      article: result.rows[0]
+    });
+  } catch (err) {
+    console.error('❌ Erreur modification statut démo:', err);
     res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 });

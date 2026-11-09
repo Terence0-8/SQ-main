@@ -2649,6 +2649,7 @@
                 tbody.innerHTML = safeHTML(data.map(art => {
                     const isPrem = (art.is_premium === true);
                     const statusBadge = art.status === 'draft' ? '<span class="badge badge-draft">Brouillon</span>' : '<span class="badge badge-pub">Publié</span>';
+                    const demoBadge = art.is_demo ? '<span class="badge" style="background:#fff3cd; color:#856404; border:1px solid #ffeeba; font-weight:800; padding:4px 8px; border-radius:12px; font-size:0.75rem; margin-left:6px;">⚠️ DÉMO</span>' : '';
                     const premStyle = isPrem ? 'color:#b91c1c; background:#fef2f2; border-color:#fecaca;' : 'color:#64748b; background:#f1f5f9; border-color:#e2e8f0;';
 
                     const isEn = (art.language || '').toLowerCase() === 'en';
@@ -2668,7 +2669,7 @@
                             </div>
                         </td>
                         <td>${langBadge}</td>
-                        <td>${statusBadge}</td>
+                        <td>${statusBadge}${demoBadge}</td>
                         <td>
                             <button class="btn-sm" style="${premStyle}" data-action="toggle-premium" data-type="article" data-id="${art.id}" data-isprem="${isPrem}">
                                 ${isPrem ? '🔒 Premium' : '🔓 Gratuit'}
