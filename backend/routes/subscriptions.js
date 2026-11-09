@@ -68,13 +68,13 @@ const PLAN_CONFIG = {
   }
 };
 
+const appConfig = require('../config/appConfig');
+
 function validatePlan(plan) {
   return PLAN_CONFIG[plan] || null;
 }
 
-const BASE_URL = process.env.NODE_ENV === 'production'
-  ? 'https://solitiquo.com'
-  : 'http://localhost:5000';
+const BASE_URL = appConfig.BASE_URL;
 
 // ==========================================
 // FLUTTERWAVE HELPERS

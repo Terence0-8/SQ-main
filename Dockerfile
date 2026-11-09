@@ -13,11 +13,16 @@ ENV NODE_ENV=production
 # Copie des dépendances
 COPY --from=deps /app/node_modules ./node_modules
 
-# Copie du code source (sans uploads ni node_modules grâce au .dockerignore)
+# Copie du code source
 COPY . .
 
-# Répertoire uploads persistant (monté via volume en prod)
-RUN mkdir -p uploads
+# Minification CSS au build (sans dépendances externes)
+RUN node scripts/minify-css.js
+
+# Répertoire temporaire uploads avec permissions utilisateur non-root node
+RUN mkdir -p uploads && chown -R node:node /app
+
+USER node
 
 EXPOSE 5000
 CMD ["node", "server.js"]

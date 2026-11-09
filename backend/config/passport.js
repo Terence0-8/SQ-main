@@ -3,10 +3,9 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
 const pool = require('./database');
+const appConfig = require('./appConfig');
 
-const BASE_URL = process.env.NODE_ENV === 'production'
-    ? 'https://solitiquo.com'
-    : `http://localhost:${process.env.PORT || 5000}`;
+const BASE_URL = appConfig.BASE_URL;
 
 // ============================================
 // STRATÉGIE GOOGLE
@@ -15,7 +14,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     passport.use(new GoogleStrategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: `${BASE_URL}/api/auth/google/callback`,
+        callbackURL: process.env.GOOGLE_CALLBACK_URL || `${BASE_URL}/api/auth/google/callback`,
         passReqToCallback: true
     },
         async (req, accessToken, refreshToken, profile, done) => {
@@ -78,7 +77,7 @@ if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
     passport.use(new FacebookStrategy({
         clientID: process.env.FACEBOOK_APP_ID,
         clientSecret: process.env.FACEBOOK_APP_SECRET,
-        callbackURL: `${BASE_URL}/api/auth/facebook/callback`,
+        callbackURL: process.env.FACEBOOK_CALLBACK_URL || `${BASE_URL}/api/auth/facebook/callback`,
         profileFields: ['id', 'displayName', 'emails', 'picture.type(large)'],
         passReqToCallback: true
     },

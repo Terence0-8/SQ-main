@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "build": "npm run css:minify && npm run migrate",
+    "build": "npm run css:minify",
     "dev": "nodemon server.js",
     "css:minify": "node scripts/minify-css.js",
     "test": "node --test --test-concurrency=1 --test-force-exit tests/**/*.test.js",

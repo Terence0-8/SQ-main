@@ -1,10 +1,9 @@
 const pool = require('../config/database');
 const path = require('path');
 const fs = require('fs');
+const appConfig = require('../config/appConfig');
 
-const BASE_URL = process.env.NODE_ENV === 'production'
-    ? 'https://solitiquo.com'
-    : `http://localhost:${process.env.PORT || 5000}`;
+const BASE_URL = appConfig.BASE_URL;
 
 // Helper: Inject Meta Tags
 const injectMetaTags = (html, data, url, alternates = []) => {
@@ -12,11 +11,13 @@ const injectMetaTags = (html, data, url, alternates = []) => {
     const description = (data.description || "Le média de référence au Cameroun.").replace(/"/g, '&quot;');
     const image = data.image || `${BASE_URL}/social-share.jpg`;
 
+    const robotsMeta = appConfig.isNoIndex ? '<meta name="robots" content="noindex, nofollow, noarchive" />\n    ' : '';
+
     let metaTags = `
     <title>${title}</title>
     <meta name="description" content="${description}" />
     <link rel="canonical" href="${url}" />
-    `;
+    ${robotsMeta}`;
 
     // Inject Alternate Hreflang Tags
     alternates.forEach(alt => {

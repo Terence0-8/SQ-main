@@ -4,10 +4,9 @@ const pool = require('../config/database');
 const { isAuthenticated } = require('../middleware/auth');
 const { verifyCsrf } = require('../middleware/csrf');
 const Stripe = require('stripe');
+const appConfig = require('../config/appConfig');
 
-const BASE_URL = process.env.NODE_ENV === 'production'
-  ? 'https://solitiquo.com'
-  : (process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`);
+const BASE_URL = appConfig.BASE_URL;
 
 const EU_COUNTRIES = [
   'AT','BE','BG','CY','CZ','DE','DK','EE','ES','FI',

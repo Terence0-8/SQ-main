@@ -10,20 +10,41 @@ const compression = require('compression');
 const pinoHttp = require('pino-http');
 const logger = require('./backend/config/logger');
 const pool = require('./backend/config/database');
+const appConfig = require('./backend/config/appConfig');
+const siteAccess = require('./backend/middleware/siteAccess');
 const slugResolver = require('./backend/middleware/slugResolver');
 const seoController = require('./backend/controllers/seoController');
 const legacyRedirects = require('./backend/routes/legacyRedirects');
 
+// Validation de la configuration d'accès avant tout démarrage
+appConfig.validateSiteAccessConfig();
+
 const app = express();
-const PORT = process.env.PORT || 5000;
-const isProduction = process.env.NODE_ENV === 'production';
-const isTest = process.env.NODE_ENV === 'test';
-const BASE_URL = isProduction ? 'https://solitiquo.com' : `http://localhost:${PORT}`;
+const PORT = appConfig.PORT;
+const isProduction = appConfig.isProduction;
+const isTest = appConfig.isTest;
+const BASE_URL = appConfig.BASE_URL;
 
 // Reverse proxy trust (sécurisation des cookies de session en production derrière Nginx/Cloudflare/Heroku/Railway)
-if (isProduction || process.env.TRUST_PROXY === 'true') {
+if (appConfig.trustProxy) {
   app.set('trust proxy', 1);
 }
+
+// =============================================================================
+// 0. PROTECTION GLOBALE DU SITE & NOINDEX (HTTP Basic Auth & X-Robots-Tag)
+// =============================================================================
+// Doit intercepter toutes les requêtes (HTML, CSS, JS, API, médias) avant tout
+// service de fichiers statiques ou de routes, sauf exception (/api/ping).
+app.use(siteAccess);
+
+// Route dynamique robots.txt servie AVANT express.static pour appliquer Disallow: / en bêta
+app.get('/robots.txt', (req, res) => {
+  if (appConfig.isNoIndex) {
+    res.type('text/plain');
+    return res.send('User-agent: *\nDisallow: /\n');
+  }
+  res.sendFile(path.join(__dirname, 'robots.txt'));
+});
 
 // =============================================================================
 // 1. COMPRESSION (avant tout le reste pour maximiser l'effet)
@@ -103,7 +124,7 @@ app.use(helmet({
 }));
 
 const corsOptions = {
-  origin: isProduction ? (process.env.ALLOWED_ORIGINS || 'https://solitiquo.com').split(',').filter(Boolean) : true,
+  origin: appConfig.ALLOWED_ORIGINS,
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token']
 };
@@ -417,6 +438,25 @@ if (require.main === module) {
       console.error('\n❌ ERREUR au démarrage du serveur :', err.message, '\n');
     }
   });
+
+  const gracefulShutdown = async (signal) => {
+    logger.info({ signal }, 'Signal de fermeture reçu. Arrêt gracieux du serveur...');
+    server.close(async () => {
+      logger.info('Serveur HTTP fermé.');
+      if (pool.closePool) {
+        await pool.closePool();
+        logger.info('Pool PostgreSQL fermé proprement.');
+      }
+      process.exit(0);
+    });
+    setTimeout(() => {
+      logger.error('Fermeture forcée après délai d\'attente.');
+      process.exit(1);
+    }, 10000).unref();
+  };
+
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 }
 
 module.exports = app;
