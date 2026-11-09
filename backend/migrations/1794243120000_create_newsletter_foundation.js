@@ -21,7 +21,12 @@ exports.up = (pgm) => {
       unsubscribed_at TIMESTAMPTZ,
       brevo_contact_id VARCHAR(100),
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      CONSTRAINT newsletter_confirmed_requires_consent
+        CHECK (
+          status <> 'confirmed'
+          OR (consented_at IS NOT NULL AND confirmed_at IS NOT NULL)
+        )
     );
 
     CREATE UNIQUE INDEX newsletter_subscribers_email_lower_uidx
@@ -77,7 +82,7 @@ exports.up = (pgm) => {
     CREATE TABLE newsletter_campaign_sends (
       id BIGSERIAL PRIMARY KEY,
       campaign_id BIGINT NOT NULL
-        REFERENCES newsletter_campaigns(id) ON DELETE CASCADE,
+        REFERENCES newsletter_campaigns(id) ON DELETE RESTRICT,
       subscriber_id BIGINT NOT NULL
         REFERENCES newsletter_subscribers(id) ON DELETE RESTRICT,
       status VARCHAR(20) NOT NULL DEFAULT 'queued'
@@ -105,6 +110,7 @@ exports.up = (pgm) => {
       id BIGSERIAL PRIMARY KEY,
       provider VARCHAR(30) NOT NULL DEFAULT 'brevo',
       provider_event_id VARCHAR(150),
+      deduplication_key VARCHAR(200),
       event_type VARCHAR(60) NOT NULL,
       subscriber_id BIGINT REFERENCES newsletter_subscribers(id) ON DELETE SET NULL,
       campaign_id BIGINT REFERENCES newsletter_campaigns(id) ON DELETE SET NULL,
@@ -119,6 +125,9 @@ exports.up = (pgm) => {
     CREATE UNIQUE INDEX newsletter_events_provider_event_uidx
       ON newsletter_events (provider, provider_event_id)
       WHERE provider_event_id IS NOT NULL;
+    CREATE UNIQUE INDEX newsletter_events_deduplication_uidx
+      ON newsletter_events (provider, deduplication_key)
+      WHERE deduplication_key IS NOT NULL;
     CREATE INDEX newsletter_events_subscriber_received_idx
       ON newsletter_events (subscriber_id, received_at DESC);
     CREATE INDEX newsletter_events_campaign_received_idx
