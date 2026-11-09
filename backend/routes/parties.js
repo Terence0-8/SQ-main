@@ -72,6 +72,49 @@ async function uploadToCloudinary(file, folder, resourceType = 'image') {
     }
 }
 
+// Référentiel des métadonnées institutionnelles de référence des 6 partis permanents
+// Note citoyenne : Les données de sièges relèvent strictement de la 10e Législature (2020) de l'Assemblée Nationale du Cameroun.
+const PERMANENT_PARTIES_METADATA = {
+    'RDPC': { seats_assembly: 152, type: 'majorite', leader_photo_url: null },
+    'UNDP': { seats_assembly: 7, type: 'majorite', leader_photo_url: null },
+    'MRC': { seats_assembly: 0, type: 'opposition', leader_photo_url: 'https://res.cloudinary.com/doa4gov1w/image/upload/v1787075390/solitiquo_leaders/eeakljokblqke4rfyolc.jpg' },
+    'SDF': { seats_assembly: 5, type: 'opposition', leader_photo_url: 'https://res.cloudinary.com/doa4gov1w/image/upload/v1786891816/solitiquo_leaders/qro7scqfhju9ceytywbl.png' },
+    'PCRN': { seats_assembly: 5, type: 'opposition', leader_photo_url: null },
+    'UDC': { seats_assembly: 4, type: 'opposition', leader_photo_url: null }
+};
+
+/**
+ * Normalise un enregistrement de parti vers le format d'exposition API
+ * en utilisant exclusivement les colonnes réelles de la table parties et le référentiel institutionnel.
+ */
+function formatParty(row) {
+    if (!row) return null;
+    const acronym = row.acronym ? String(row.acronym).trim().toUpperCase() : '';
+    const meta = PERMANENT_PARTIES_METADATA[acronym] || {};
+    return {
+        id: row.id,
+        name: row.name,
+        acronym: row.acronym,
+        logo_url: row.logo_url,
+        leader_photo_url: meta.leader_photo_url !== undefined ? meta.leader_photo_url : null,
+        color: row.color,
+        founded_year: row.founded_year,
+        creation_date: row.founded_year ? String(row.founded_year) : null,
+        type: meta.type || (acronym === 'RDPC' || acronym === 'UNDP' ? 'majorite' : 'opposition'),
+        seats_assembly: meta.seats_assembly !== undefined ? meta.seats_assembly : null,
+        leader_name: row.leader_name,
+        ideology: row.ideology,
+        description: row.description,
+        program_summary: row.program_summary,
+        website_url: row.website_url,
+        social_twitter: row.social_twitter,
+        social_facebook: row.social_facebook,
+        contact_email: row.contact_email,
+        podcast_id: null,
+        is_active: row.is_active
+    };
+}
+
 // ==========================================
 // 1. LISTE DES PARTIS (Exclusion stricte des données de test pour les vues publiques)
 // ==========================================
@@ -86,12 +129,8 @@ router.get('/', async (req, res) => {
             ${isEn ? 'COALESCE(title_en, name)' : 'name'} as name,
             acronym,
             logo_url,
-            leader_photo_url,
             color,
             founded_year,
-            creation_date,
-            type,
-            seats_assembly,
             leader_name,
             ideology,
             ${isEn ? 'COALESCE(description_en, description)' : 'description'} as description,
@@ -100,7 +139,6 @@ router.get('/', async (req, res) => {
             social_twitter,
             social_facebook,
             contact_email,
-            podcast_id,
             is_active
           FROM parties
         `;
@@ -132,7 +170,7 @@ router.get('/', async (req, res) => {
         res.json({
             success: true,
             count: result.rows.length,
-            data: result.rows
+            data: result.rows.map(formatParty)
         });
     } catch (err) {
         console.error('❌ Erreur liste partis:', err);
@@ -159,12 +197,8 @@ router.get('/:id', async (req, res) => {
             ${isEn ? 'COALESCE(title_en, name)' : 'name'} as name,
             acronym,
             logo_url,
-            leader_photo_url,
             color,
             founded_year,
-            creation_date,
-            type,
-            seats_assembly,
             leader_name,
             ideology,
             ${isEn ? 'COALESCE(description_en, description)' : 'description'} as description,
@@ -173,7 +207,6 @@ router.get('/:id', async (req, res) => {
             social_twitter,
             social_facebook,
             contact_email,
-            podcast_id,
             is_active
           FROM parties WHERE id = $1
         `;
@@ -187,7 +220,7 @@ router.get('/:id', async (req, res) => {
             });
         }
 
-        res.json({ success: true, data: result.rows[0] });
+        res.json({ success: true, data: formatParty(result.rows[0]) });
     } catch (err) {
         console.error('❌ Erreur détail parti:', err);
         res.status(500).json({ success: false, error: 'Erreur serveur' });
@@ -212,12 +245,12 @@ router.post('/', isAdmin, partyUpload, async (req, res) => {
             name,
             acronym,
             logo_url,
-            leader_photo_url,
+            leader_photo_url: _leader_photo_url,
             color,
             founded_year,
             creation_date,
-            type,
-            seats_assembly,
+            type: _type,
+            seats_assembly: _seats_assembly,
             leader_name,
             ideology,
             description,
@@ -226,8 +259,8 @@ router.post('/', isAdmin, partyUpload, async (req, res) => {
             social_twitter,
             social_facebook,
             contact_email,
-            podcast_id,
-            podcast_title,
+            podcast_id: _podcast_id,
+            podcast_title: _podcast_title,
             is_active
         } = value;
 
@@ -239,25 +272,25 @@ router.post('/', isAdmin, partyUpload, async (req, res) => {
             if (uploadedUrl) finalLogoUrl = uploadedUrl;
         }
 
-        // Upload Photo Leader
+        // Upload Photo Leader (si fichier transmis)
         const leaderFile = req.files && (req.files['leader_file']?.[0] || req.files['leader']?.[0]);
-        let finalLeaderPhotoUrl = leader_photo_url || null;
+        let _finalLeaderPhotoUrl = _leader_photo_url || null;
         if (leaderFile) {
             const uploadedUrl = await uploadToCloudinary(leaderFile, 'solitiquo_leaders');
-            if (uploadedUrl) finalLeaderPhotoUrl = uploadedUrl;
+            if (uploadedUrl) _finalLeaderPhotoUrl = uploadedUrl;
         }
 
-        // Upload Audio Podcast
+        // Upload Audio Podcast (si fichier transmis)
         const audioFile = req.files && req.files['audio_file']?.[0];
-        let finalPodcastId = podcast_id || null;
+        let _finalPodcastId = _podcast_id || null;
         if (audioFile) {
             const audioUrl = await uploadToCloudinary(audioFile, 'solitiquo_podcasts', 'video');
             if (audioUrl) {
                 const podRes = await pool.query(
                     `INSERT INTO podcasts (title, audio_url, created_at, updated_at) VALUES ($1, $2, NOW(), NOW()) RETURNING id`,
-                    [podcast_title || `Podcast ${name}`, audioUrl]
+                    [_podcast_title || `Podcast ${name}`, audioUrl]
                 );
-                finalPodcastId = podRes.rows[0].id;
+                _finalPodcastId = podRes.rows[0].id;
             }
         }
 
@@ -268,12 +301,11 @@ router.post('/', isAdmin, partyUpload, async (req, res) => {
         ideology = ideology ? sanitizeText(ideology) : null;
 
         const foundedYearVal = founded_year || (creation_date ? (parseInt(creation_date) || null) : null);
-        const creationDateVal = creation_date || (founded_year ? String(founded_year) : null);
 
         const query = `
           INSERT INTO parties 
-          (name, acronym, logo_url, leader_photo_url, color, founded_year, creation_date, type, seats_assembly, leader_name, ideology, description, program_summary, website_url, social_twitter, social_facebook, contact_email, podcast_id, is_active, created_at, updated_at)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, NOW(), NOW())
+          (name, acronym, logo_url, color, founded_year, leader_name, ideology, description, program_summary, website_url, social_twitter, social_facebook, contact_email, is_active, created_at, updated_at)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), NOW())
           RETURNING id, name, acronym
         `;
 
@@ -281,12 +313,8 @@ router.post('/', isAdmin, partyUpload, async (req, res) => {
             name,
             acronym || null,
             finalLogoUrl,
-            finalLeaderPhotoUrl,
             color || null,
             foundedYearVal,
-            creationDateVal,
-            type || 'opposition',
-            seats_assembly || 0,
             leader_name,
             ideology,
             description,
@@ -295,7 +323,6 @@ router.post('/', isAdmin, partyUpload, async (req, res) => {
             social_twitter || null,
             social_facebook || null,
             contact_email || null,
-            finalPodcastId,
             is_active !== undefined ? is_active : true
         ];
 
@@ -337,12 +364,12 @@ router.put('/:id', isAdmin, partyUpload, async (req, res) => {
             name,
             acronym,
             logo_url,
-            leader_photo_url,
+            leader_photo_url: _leader_photo_url,
             color,
             founded_year,
             creation_date,
-            type,
-            seats_assembly,
+            type: _type,
+            seats_assembly: _seats_assembly,
             leader_name,
             ideology,
             description,
@@ -351,8 +378,8 @@ router.put('/:id', isAdmin, partyUpload, async (req, res) => {
             social_twitter,
             social_facebook,
             contact_email,
-            podcast_id,
-            podcast_title,
+            podcast_id: _podcast_id,
+            podcast_title: _podcast_title,
             is_active
         } = value;
 
@@ -373,23 +400,23 @@ router.put('/:id', isAdmin, partyUpload, async (req, res) => {
 
         // Upload Photo Leader
         const leaderFile = req.files && (req.files['leader_file']?.[0] || req.files['leader']?.[0]);
-        let finalLeaderPhotoUrl = leader_photo_url || existing.leader_photo_url;
+        let _finalLeaderPhotoUrl = _leader_photo_url || existing.leader_photo_url;
         if (leaderFile) {
             const uploadedUrl = await uploadToCloudinary(leaderFile, 'solitiquo_leaders');
-            if (uploadedUrl) finalLeaderPhotoUrl = uploadedUrl;
+            if (uploadedUrl) _finalLeaderPhotoUrl = uploadedUrl;
         }
 
         // Upload Audio Podcast
         const audioFile = req.files && req.files['audio_file']?.[0];
-        let finalPodcastId = podcast_id || existing.podcast_id || null;
+        let _finalPodcastId = _podcast_id || existing.podcast_id || null;
         if (audioFile) {
             const audioUrl = await uploadToCloudinary(audioFile, 'solitiquo_podcasts', 'video');
             if (audioUrl) {
                 const podRes = await pool.query(
                     `INSERT INTO podcasts (title, audio_url, created_at, updated_at) VALUES ($1, $2, NOW(), NOW()) RETURNING id`,
-                    [podcast_title || `Podcast ${name}`, audioUrl]
+                    [_podcast_title || `Podcast ${name}`, audioUrl]
                 );
-                finalPodcastId = podRes.rows[0].id;
+                _finalPodcastId = podRes.rows[0].id;
             }
         }
 
@@ -400,7 +427,6 @@ router.put('/:id', isAdmin, partyUpload, async (req, res) => {
         ideology = ideology ? sanitizeText(ideology) : null;
 
         const foundedYearVal = founded_year || (creation_date ? (parseInt(creation_date) || null) : existing.founded_year);
-        const creationDateVal = creation_date || (founded_year ? String(founded_year) : existing.creation_date);
 
         const query = `
           UPDATE parties 
@@ -408,24 +434,19 @@ router.put('/:id', isAdmin, partyUpload, async (req, res) => {
             name = $1,
             acronym = $2,
             logo_url = $3,
-            leader_photo_url = $4,
-            color = $5,
-            founded_year = $6,
-            creation_date = $7,
-            type = $8,
-            seats_assembly = $9,
-            leader_name = $10,
-            ideology = $11,
-            description = $12,
-            program_summary = $13,
-            website_url = $14,
-            social_twitter = $15,
-            social_facebook = $16,
-            contact_email = $17,
-            podcast_id = $18,
-            is_active = $19,
+            color = $4,
+            founded_year = $5,
+            leader_name = $6,
+            ideology = $7,
+            description = $8,
+            program_summary = $9,
+            website_url = $10,
+            social_twitter = $11,
+            social_facebook = $12,
+            contact_email = $13,
+            is_active = $14,
             updated_at = NOW()
-          WHERE id = $20
+          WHERE id = $15
           RETURNING id, name, acronym
         `;
 
@@ -433,12 +454,8 @@ router.put('/:id', isAdmin, partyUpload, async (req, res) => {
             name,
             acronym || null,
             finalLogoUrl,
-            finalLeaderPhotoUrl,
             color || null,
             foundedYearVal,
-            creationDateVal,
-            type || 'opposition',
-            seats_assembly || 0,
             leader_name,
             ideology,
             description,
@@ -447,7 +464,6 @@ router.put('/:id', isAdmin, partyUpload, async (req, res) => {
             social_twitter || null,
             social_facebook || null,
             contact_email || null,
-            finalPodcastId,
             is_active !== undefined ? is_active : true,
             id
         ];
