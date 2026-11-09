@@ -206,7 +206,7 @@ describe('PRÉPARATION AU DÉPLOIEMENT RAILWAY — SUITE DE SÉCURITÉ ET CONFIG
     });
   });
 
-  // 9. Précision PostgreSQL SSL (Priorité absolue de DB_SSL=false)
+  // 9. Précision PostgreSQL SSL (Priorité absolue de DB_SSL=false et validation certificats par défaut)
   describe('9. Priorité SSL de la connexion PostgreSQL', () => {
     test('DB_SSL=false désactive formellement le SSL même en présence de DATABASE_URL avec sslmode=require', async () => {
       // Nettoyage du cache require pour tester la logique de construction du pool
@@ -231,6 +231,53 @@ describe('PRÉPARATION AU DÉPLOIEMENT RAILWAY — SUITE DE SÉCURITÉ ET CONFIG
       // Rétablir
       process.env.DB_SSL = originalDbSsl;
       process.env.DATABASE_URL = originalDbUrl;
+      delete require.cache[require.resolve('../backend/config/database')];
+    });
+
+    test('DB_SSL=true active la validation des certificats par défaut (rejectUnauthorized: true)', async () => {
+      const originalDbSsl = process.env.DB_SSL;
+      const originalDbUrl = process.env.DATABASE_URL;
+      const originalReject = process.env.DB_SSL_REJECT_UNAUTHORIZED;
+
+      delete process.env.DB_SSL_REJECT_UNAUTHORIZED;
+      process.env.DB_SSL = 'true';
+      process.env.DATABASE_URL = 'postgresql://user:secret@postgres.railway.internal:5432/solitiquo';
+
+      delete require.cache[require.resolve('../backend/config/database')];
+      const freshPool = require('../backend/config/database');
+
+      assert.equal(typeof freshPool.options.ssl, 'object');
+      assert.equal(freshPool.options.ssl.rejectUnauthorized, true);
+
+      await freshPool.end();
+
+      process.env.DB_SSL = originalDbSsl;
+      process.env.DATABASE_URL = originalDbUrl;
+      if (originalReject !== undefined) process.env.DB_SSL_REJECT_UNAUTHORIZED = originalReject;
+      delete require.cache[require.resolve('../backend/config/database')];
+    });
+
+    test('DB_SSL=true avec DB_SSL_REJECT_UNAUTHORIZED=false désactive explicitement la validation des certificats', async () => {
+      const originalDbSsl = process.env.DB_SSL;
+      const originalDbUrl = process.env.DATABASE_URL;
+      const originalReject = process.env.DB_SSL_REJECT_UNAUTHORIZED;
+
+      process.env.DB_SSL = 'true';
+      process.env.DB_SSL_REJECT_UNAUTHORIZED = 'false';
+      process.env.DATABASE_URL = 'postgresql://user:secret@postgres.railway.internal:5432/solitiquo';
+
+      delete require.cache[require.resolve('../backend/config/database')];
+      const freshPool = require('../backend/config/database');
+
+      assert.equal(typeof freshPool.options.ssl, 'object');
+      assert.equal(freshPool.options.ssl.rejectUnauthorized, false);
+
+      await freshPool.end();
+
+      process.env.DB_SSL = originalDbSsl;
+      process.env.DATABASE_URL = originalDbUrl;
+      if (originalReject !== undefined) process.env.DB_SSL_REJECT_UNAUTHORIZED = originalReject;
+      else delete process.env.DB_SSL_REJECT_UNAUTHORIZED;
       delete require.cache[require.resolve('../backend/config/database')];
     });
   });

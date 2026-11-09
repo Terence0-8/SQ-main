@@ -38,7 +38,7 @@ if (process.env.DATABASE_URL) {
   } else if (dbSslEnv === 'true') {
     poolConfig.connectionString = connectionUrl;
     poolConfig.ssl = {
-      rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true'
+      rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false'
     };
   } else {
     // Si DB_SSL n'est pas spécifié, laisser la chaîne DATABASE_URL ou le défaut opérer
@@ -56,12 +56,12 @@ if (process.env.DATABASE_URL) {
     poolConfig.ssl = false;
   } else if (dbSslEnv === 'true') {
     poolConfig.ssl = {
-      rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true'
+      rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false'
     };
   } else if (isProduction && process.env.DB_HOST && process.env.DB_HOST !== 'localhost' && process.env.DB_HOST !== '127.0.0.1') {
     // Fallback de sécurité historique si hôte externe en production sans désactivation explicite
     poolConfig.ssl = {
-      rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true'
+      rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false'
     };
   }
 }

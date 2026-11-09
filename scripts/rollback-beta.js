@@ -40,6 +40,49 @@ const PERMANENT_CANDIDATE_NAMES = [
   'Patricia Hermine Ndam Njoya'
 ];
 
+// Sous-requête consolidée identifiant toutes les observations DATA ayant fait l'objet de modifications
+// manuelles ou éditoriales postérieures au seed, pour sanctuarisation absolue lors du rollback :
+// 1. Révisions incrémentées (revision_number > 1)
+// 2. Arbre généalogique complet des révisions successives multi-générations (chaîne supersedes_id / superseded_by_id bidirectionnelle)
+// 3. Versions créées manuellement (non tracées dans _seed_beta_log pour le seed)
+// 4. Modifications manuelles de valeurs ou métadonnées tracées dans l'audit log (même en brouillon, sans dépendance temporelle)
+// 5. Modifications temporelles ou d'attribution à un utilisateur réel
+// 6. Sources documentaires ajoutées manuellement après l'import
+const PRESERVED_OBSERVATIONS_SQL = `
+  WITH RECURSIVE revision_chain AS (
+    -- Termes d'ancrage non-récursifs : toutes les observations directement impliquées dans une révision
+    SELECT id AS dv_id FROM data_values WHERE supersedes_id IS NOT NULL OR superseded_by_id IS NOT NULL
+    UNION
+    SELECT supersedes_id AS dv_id FROM data_values WHERE supersedes_id IS NOT NULL
+    UNION
+    SELECT superseded_by_id AS dv_id FROM data_values WHERE superseded_by_id IS NOT NULL
+    UNION
+    -- Terme récursif : traversée ascendante complète de tous les ancêtres de révision
+    SELECT dv.supersedes_id AS dv_id
+    FROM data_values dv
+    JOIN revision_chain rc ON dv.id = rc.dv_id
+    WHERE dv.supersedes_id IS NOT NULL
+  )
+  SELECT id FROM data_values WHERE revision_number > 1
+  UNION
+  SELECT dv_id FROM revision_chain WHERE dv_id IS NOT NULL
+  UNION
+  SELECT data_value_id FROM data_value_versions
+  WHERE id NOT IN (SELECT record_id FROM _seed_beta_log WHERE table_name = 'data_value_versions')
+  UNION
+  SELECT data_value_id FROM data_value_audit_log WHERE action != 'CREATE'
+  UNION
+  SELECT dv.id FROM data_values dv
+  JOIN _seed_beta_log sbl ON sbl.table_name = 'data_values' AND sbl.record_id = dv.id
+  WHERE dv.updated_at > sbl.seeded_at + INTERVAL '2 seconds'
+     OR dv.validated_by IS NOT NULL
+     OR dv.published_by IS NOT NULL
+     OR dv.created_by != (SELECT id FROM users WHERE email = 'redaction@solitiquo.com' LIMIT 1)
+  UNION
+  SELECT data_value_id FROM data_value_sources
+  WHERE id NOT IN (SELECT record_id FROM _seed_beta_log WHERE table_name = 'data_value_sources')
+`;
+
 async function runRollback() {
   const isDryRun = process.argv.includes('--dry-run');
   const isConfirmed = process.argv.includes('--confirm');
@@ -99,6 +142,7 @@ async function runRollback() {
           WHERE id IN (
             SELECT record_id FROM _seed_beta_log WHERE table_name = 'data_value_sources' AND is_permanent = FALSE
           )
+          AND data_value_id NOT IN (${PRESERVED_OBSERVATIONS_SQL})
         `,
         execute: async (c) => {
           return await c.query(`
@@ -106,6 +150,7 @@ async function runRollback() {
             WHERE id IN (
               SELECT record_id FROM _seed_beta_log WHERE table_name = 'data_value_sources' AND is_permanent = FALSE
             )
+            AND data_value_id NOT IN (${PRESERVED_OBSERVATIONS_SQL});
           `);
         }
       },
@@ -113,18 +158,20 @@ async function runRollback() {
         table: 'data_value_versions',
         countQuery: `
           SELECT COUNT(*)::int as cnt FROM data_value_versions
-          WHERE data_value_id IN (
-            SELECT record_id FROM _seed_beta_log WHERE table_name = 'data_values' AND is_permanent = FALSE
+          WHERE id IN (
+            SELECT record_id FROM _seed_beta_log WHERE table_name = 'data_value_versions' AND is_permanent = FALSE
           )
+          AND data_value_id NOT IN (${PRESERVED_OBSERVATIONS_SQL})
         `,
         execute: async (c) => {
           await c.query(`ALTER TABLE data_value_versions DISABLE TRIGGER trg_protect_versions_no_update_delete;`);
           try {
             return await c.query(`
               DELETE FROM data_value_versions
-              WHERE data_value_id IN (
-                SELECT record_id FROM _seed_beta_log WHERE table_name = 'data_values' AND is_permanent = FALSE
-              );
+              WHERE id IN (
+                SELECT record_id FROM _seed_beta_log WHERE table_name = 'data_value_versions' AND is_permanent = FALSE
+              )
+              AND data_value_id NOT IN (${PRESERVED_OBSERVATIONS_SQL});
             `);
           } finally {
             await c.query(`ALTER TABLE data_value_versions ENABLE TRIGGER trg_protect_versions_no_update_delete;`);
@@ -138,6 +185,7 @@ async function runRollback() {
           WHERE id IN (
             SELECT record_id FROM _seed_beta_log WHERE table_name = 'data_values' AND is_permanent = FALSE
           )
+          AND id NOT IN (${PRESERVED_OBSERVATIONS_SQL})
         `,
         execute: async (c) => {
           return await c.query(`
@@ -145,6 +193,7 @@ async function runRollback() {
             WHERE id IN (
               SELECT record_id FROM _seed_beta_log WHERE table_name = 'data_values' AND is_permanent = FALSE
             )
+            AND id NOT IN (${PRESERVED_OBSERVATIONS_SQL});
           `);
         }
       },
@@ -298,10 +347,25 @@ async function runRollback() {
       }
     }
 
-    // Nettoyage des logs
+    // Nettoyage sélectif des logs uniquement pour les enregistrements effectivement supprimés
     if (!isDryRun) {
-      await client.query(`DELETE FROM _seed_beta_log WHERE is_permanent = FALSE;`);
-      console.log('   ✓ Nettoyage de `_seed_beta_log` effectué.');
+      await client.query(`
+        DELETE FROM _seed_beta_log sbl
+        WHERE is_permanent = FALSE
+          AND (
+            (table_name = 'data_value_sources' AND NOT EXISTS (SELECT 1 FROM data_value_sources WHERE id = sbl.record_id))
+            OR (table_name = 'data_value_versions' AND NOT EXISTS (SELECT 1 FROM data_value_versions WHERE id = sbl.record_id))
+            OR (table_name = 'data_values' AND NOT EXISTS (SELECT 1 FROM data_values WHERE id = sbl.record_id))
+            OR (table_name = 'candidates' AND NOT EXISTS (SELECT 1 FROM candidates WHERE id = sbl.record_id))
+            OR (table_name = 'parties' AND NOT EXISTS (SELECT 1 FROM parties WHERE id = sbl.record_id))
+            OR (table_name = 'articles' AND NOT EXISTS (SELECT 1 FROM articles WHERE id = sbl.record_id))
+            OR (table_name = 'podcasts' AND NOT EXISTS (SELECT 1 FROM podcasts WHERE id = sbl.record_id))
+            OR (table_name = 'emissions' AND NOT EXISTS (SELECT 1 FROM emissions WHERE id = sbl.record_id))
+            OR (table_name = 'polls' AND NOT EXISTS (SELECT 1 FROM polls WHERE id = sbl.record_id))
+            OR (table_name = 'users' AND NOT EXISTS (SELECT 1 FROM users WHERE id = sbl.record_id))
+          );
+      `);
+      console.log('   ✓ Nettoyage sélectif de `_seed_beta_log` effectué (les données préservées restent tracées).');
       await client.query('COMMIT');
       console.log(`\n🎉 Rollback achevé avec succès (${totalDeleted} enregistrements révoqués, données permanentes préservées).`);
     } else {

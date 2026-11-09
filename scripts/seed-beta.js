@@ -517,15 +517,48 @@ async function runSeed() {
 
       if (res.rowCount > 0) {
         dvInserted++;
+        const dvId = res.rows[0].id;
         const businessKey = `${dv.indicator_code}_${dv.territory_code}_${dv.period_type}_${dv.period_start}`;
-        await logSeed('data_values', res.rows[0].id, businessKey, false);
+        await logSeed('data_values', dvId, businessKey, false);
+
+        // Traçabilité fine des versions initiales créées lors du seed (via le trigger de publication fn_create_data_value_version_snapshot)
+        const versionRes = await client.query(`
+          SELECT id, revision_number FROM data_value_versions
+          WHERE data_value_id = $1;
+        `, [dvId]);
+        for (const vRow of versionRes.rows) {
+          await logSeed('data_value_versions', vRow.id, `${businessKey}_v${vRow.revision_number}`, false);
+        }
       }
+    }
+
+    // Garantie de traçabilité des versions initiales pour toutes les observations du seed (y compris lors de ré-exécutions idempotentes)
+    const initialVersions = await client.query(`
+      SELECT dvv.id, dvv.data_value_id, dvv.revision_number, sbl.business_key
+      FROM data_value_versions dvv
+      JOIN _seed_beta_log sbl ON sbl.table_name = 'data_values' AND sbl.record_id = dvv.data_value_id
+      WHERE dvv.revision_number = 1
+        AND NOT EXISTS (
+          SELECT 1 FROM _seed_beta_log existing
+          WHERE existing.table_name = 'data_value_versions' AND existing.record_id = dvv.id
+        );
+    `);
+    for (const vRow of initialVersions.rows) {
+      await logSeed('data_value_versions', vRow.id, `${vRow.business_key}_v${vRow.revision_number}`, false);
     }
     console.log(`   ✓ Observations : ${dvInserted} insérée(s) (${dataValues.length - dvInserted} déjà existante(s)).`);
 
     // Rattachement des sources documentaires (28 entrées)
+    // Sécurité stricte :
+    // - Uniquement aux observations créées par le seed (garanti par JOIN sur _seed_beta_log)
+    // - Correspondance exacte sur l'indicateur, le territoire et la période
+    // - Jamais rattaché à une observation préexistante non créée par le seed
     let sourcesLinked = 0;
     for (const s of dataSources) {
+      const territoryCode = s.territory_code || 'CMR';
+      const periodType = s.period_type || 'ANNUAL';
+      const periodEnd = s.period_end || `${s.period_start.substring(0, 4)}-12-31`;
+
       const res = await client.query(`
         INSERT INTO data_value_sources (
           data_value_id, source_id, source_role, documentary_tier,
@@ -534,28 +567,34 @@ async function runSeed() {
         SELECT 
           dv.id,
           ds.id,
-          $4::varchar, $5::varchar, $6::text, $7::text, $8::varchar, $9::text, $10::integer
+          $6::varchar, $7::varchar, $8::text, $9::text, $10::varchar, $11::text, $12::integer
         FROM data_values dv
         JOIN data_indicators di ON di.id = dv.indicator_id
-        JOIN data_sources ds ON ds.acronym = $3::varchar
+        JOIN territories t ON t.id = dv.territory_id
+        JOIN _seed_beta_log sbl ON sbl.table_name = 'data_values' AND sbl.record_id = dv.id
+        JOIN data_sources ds ON ds.acronym = $5::varchar
         WHERE di.code = $1::varchar 
-          AND dv.period_start = $2::date
+          AND t.code = $2::varchar
+          AND dv.period_type = $3::varchar
+          AND dv.period_start = $4::date
+          AND dv.period_end = $13::date
           AND NOT EXISTS (
             SELECT 1 FROM data_value_sources existing
             WHERE existing.data_value_id = dv.id
               AND existing.source_id = ds.id
-              AND existing.source_role = $4::varchar
+              AND existing.source_role = $6::varchar
           )
         RETURNING id;
       `, [
-        s.indicator_code, s.period_start, s.source_acronym,
-        s.source_role, s.documentary_tier, s.citation_reference,
-        s.citation_url, s.methodological_robustness, s.notes, systemAuthorId
+        s.indicator_code, territoryCode, periodType, s.period_start,
+        s.source_acronym, s.source_role, s.documentary_tier, s.citation_reference,
+        s.citation_url, s.methodological_robustness, s.notes, systemAuthorId,
+        periodEnd
       ]);
 
       if (res.rowCount > 0) {
         sourcesLinked++;
-        const businessKey = `${s.indicator_code}_${s.period_start}_${s.source_acronym}_${s.source_role}`;
+        const businessKey = `${s.indicator_code}_${territoryCode}_${periodType}_${s.period_start}_${s.source_acronym}_${s.source_role}`;
         await logSeed('data_value_sources', res.rows[0].id, businessKey, false);
       }
     }

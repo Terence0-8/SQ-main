@@ -89,6 +89,33 @@ async function runTestSuite() {
     const initialCandCount = (await testClient.query('SELECT COUNT(*)::int as cnt FROM candidates')).rows[0].cnt;
     console.log(`   ✓ 6 partis et 6 candidats permanents pré-insérés (Partis: ${initialPartyCount}, Candidats: ${initialCandCount}).`);
 
+    // 3 bis. Pré-insertion d'une observation DATA préexistante pour tester l'étanchéité du seed
+    console.log('\n[Test Préliminaire bis] Pré-insertion d\'une observation DATA préexistante (non issue du seed)...');
+    const preUserRes = await testClient.query(`
+      INSERT INTO users (username, email, password, role)
+      VALUES ('pre_admin', 'pre_admin@test.cm', 'hash', 'admin')
+      RETURNING id;
+    `);
+    const preUserId = preUserRes.rows[0].id;
+
+    await testClient.query(`
+      INSERT INTO data_indicators (code, name, description, category, unit, is_active, expected_periodicity)
+      VALUES ('DEMO_POP_TOT', 'Population totale du Cameroun', 'Effectif INS', 'demographie', 'habitants', TRUE, 'ANNUAL')
+      ON CONFLICT (code) DO NOTHING;
+    `);
+    const preExistingDvRes = await testClient.query(`
+      INSERT INTO data_values (
+        indicator_id, territory_id, period_type, period_start, period_end,
+        value_numeric, methodology_nature, editorial_status, is_active, revision_number, created_by
+      )
+      SELECT di.id, t.id, 'ANNUAL', '2015-01-01', '2015-12-31', 22000000.0, 'census', 'draft', FALSE, 1, $1
+      FROM data_indicators di, territories t
+      WHERE di.code = 'DEMO_POP_TOT' AND t.code = 'CMR'
+      RETURNING id;
+    `, [preUserId]);
+    const preExistingDvId = preExistingDvRes.rows[0].id;
+    console.log(`   ✓ Observation DATA préexistante insérée (ID: ${preExistingDvId}, DEMO_POP_TOT 2015 CMR).`);
+
     // 4. Test 1 : Première exécution complète de npm run seed:beta
     console.log('\n[Test 1 & 2] Exécution 1 de npm run seed:beta...');
     execSync(`node scripts/seed-beta.js`, {
@@ -115,11 +142,20 @@ async function runTestSuite() {
     console.log(`   - Partis politiques : ${partyCount} (attendu : 167)`);
     console.log(`   - Candidats : ${candCount} (attendu : 166, soit 6 permanents + 160 du seed)`);
     console.log(`   - Sondages : ${pollCount} (attendu : 0 - exclus du seed car suspects)`);
-    console.log(`   - Observations DATA : ${dvCount} (attendu : 28)`);
+    console.log(`   - Observations DATA : ${dvCount} (attendu : 29, soit 1 préexistante + 28 du seed)`);
     console.log(`   - Sources documentaires : ${dvsCount} (attendu : 28)`);
     console.log(`   - Compte technique rédaction : ${userCount} (attendu : 1)`);
 
-    if (artCount !== 80 || demoArtCount !== 80 || podCount !== 14 || emCount !== 4 || partyCount !== 167 || candCount !== 166 || pollCount !== 0 || dvCount !== 28 || dvsCount !== 28 || userCount !== 1) {
+    // Vérification de sécurité stricte : aucune source n'a été rattachée à l'observation préexistante
+    const preExistingSourcesCheck = await testClient.query(`
+      SELECT COUNT(*)::int as cnt FROM data_value_sources WHERE data_value_id = $1;
+    `, [preExistingDvId]);
+    if (preExistingSourcesCheck.rows[0].cnt !== 0) {
+      throw new Error(`Violation critique : le seed a rattaché ${preExistingSourcesCheck.rows[0].cnt} source(s) à l'observation préexistante non créée par le seed !`);
+    }
+    console.log('   ✓ Sécurité vérifiée : 0 source rattachée à l\'observation préexistante (étanchéité stricte garantie).');
+
+    if (artCount !== 80 || demoArtCount !== 80 || podCount !== 14 || emCount !== 4 || partyCount !== 167 || candCount !== 166 || pollCount !== 0 || dvCount !== 29 || dvsCount !== 28 || userCount !== 1) {
       throw new Error('Échec de validation des volumes après le premier seed.');
     }
     console.log('   ✅ Test 1 & 2 validés : tous les volumes correspondent exactement et 100% des articles sont identifiés en mode démonstration.');
@@ -163,16 +199,16 @@ async function runTestSuite() {
 
     // 7. Test 6 : Vérification des 4 observations publiées et 24 brouillons
     console.log('\n[Test 6] Vérification des statuts éditoriaux DATA...');
-    const pubCount = (await testClient.query("SELECT COUNT(*)::int as cnt FROM data_values WHERE editorial_status = 'published'")).rows[0].cnt;
-    const draftCount = (await testClient.query("SELECT COUNT(*)::int as cnt FROM data_values WHERE editorial_status = 'draft'")).rows[0].cnt;
+    const pubCount = (await testClient.query("SELECT COUNT(*)::int as cnt FROM data_values WHERE editorial_status = 'published' AND id IN (SELECT record_id FROM _seed_beta_log WHERE table_name = 'data_values')")).rows[0].cnt;
+    const draftCount = (await testClient.query("SELECT COUNT(*)::int as cnt FROM data_values WHERE editorial_status = 'draft' AND id IN (SELECT record_id FROM _seed_beta_log WHERE table_name = 'data_values')")).rows[0].cnt;
 
-    console.log(`   - Observations publiées : ${pubCount} (attendu : 4)`);
-    console.log(`   - Observations brouillons : ${draftCount} (attendu : 24)`);
+    console.log(`   - Observations publiées du seed : ${pubCount} (attendu : 4)`);
+    console.log(`   - Observations brouillons du seed : ${draftCount} (attendu : 24)`);
 
     if (pubCount !== 4 || draftCount !== 24) {
       throw new Error('Incohérence sur la répartition des statuts éditoriaux.');
     }
-    console.log('   ✅ Test 6 validé : 4 publiées et 24 brouillons exactement.');
+    console.log('   ✅ Test 6 validé : 4 publiées et 24 brouillons exactement pour le seed.');
 
     // 8. Test 7 : Deuxième exécution du seed (Idempotence)
     console.log('\n[Test 7] Deuxième exécution de npm run seed:beta (vérification idempotence)...');
@@ -260,6 +296,123 @@ async function runTestSuite() {
     console.log(`   ✓ Données manuelles créées avec succès (Article #${manualArticleId}, Podcast #${manualPodcastId}, Parti #${manualPartyId}, Candidat #${manualCandId}).`);
     console.log('   ✅ Test 7 bis validé : les contenus manuels sont insérés sans parasiter le seed.');
 
+    // 8 ter. Test 7 ter : Tests des cas limites du cycle de vie éditorial post-seed
+    console.log('\n[Test 7 ter] Tests des cas limites du cycle de vie éditorial post-seed...');
+
+    // Cas 1 : Révision successive multi-générations A -> B -> C avec supersedes_id
+    const seedPubToSupersede = (await testClient.query(`
+      SELECT id, indicator_id, territory_id, period_type, period_start, period_end, methodology_nature
+      FROM data_values
+      WHERE id IN (SELECT record_id FROM _seed_beta_log WHERE table_name = 'data_values')
+        AND editorial_status = 'published'
+      ORDER BY id ASC
+      LIMIT 1;
+    `)).rows[0];
+
+    // Génération 1 (A) -> bascule vers superseded
+    // Génération 2 (B) -> révision 2, supersedes_id = A, puis bascule vers superseded
+    // Génération 3 (C) -> révision 3, supersedes_id = B, statut published actif
+    await testClient.query('BEGIN');
+    await testClient.query(`
+      UPDATE data_values
+      SET editorial_status = 'superseded', is_active = FALSE
+      WHERE id = $1;
+    `, [seedPubToSupersede.id]);
+
+    const genBRes = await testClient.query(`
+      INSERT INTO data_values (
+        indicator_id, territory_id, period_type, period_start, period_end,
+        value_numeric, methodology_nature, editorial_status, is_active, revision_number,
+        supersedes_id, created_by
+      )
+      VALUES ($1, $2, $3, $4, $5, 29000000.0, $6, 'superseded', FALSE, 2, $7, $8)
+      RETURNING id;
+    `, [
+      seedPubToSupersede.indicator_id, seedPubToSupersede.territory_id,
+      seedPubToSupersede.period_type, seedPubToSupersede.period_start,
+      seedPubToSupersede.period_end, seedPubToSupersede.methodology_nature,
+      seedPubToSupersede.id, manualAuthorId
+    ]);
+    const genBId = genBRes.rows[0].id;
+
+    await testClient.query(`UPDATE data_values SET superseded_by_id = $1 WHERE id = $2;`, [genBId, seedPubToSupersede.id]);
+
+    const genCRes = await testClient.query(`
+      INSERT INTO data_values (
+        indicator_id, territory_id, period_type, period_start, period_end,
+        value_numeric, methodology_nature, editorial_status, is_active, revision_number,
+        supersedes_id, created_by, published_by, published_at
+      )
+      VALUES ($1, $2, $3, $4, $5, 29500000.0, $6, 'published', TRUE, 3, $7, $8, $8, NOW())
+      RETURNING id;
+    `, [
+      seedPubToSupersede.indicator_id, seedPubToSupersede.territory_id,
+      seedPubToSupersede.period_type, seedPubToSupersede.period_start,
+      seedPubToSupersede.period_end, seedPubToSupersede.methodology_nature,
+      genBId, manualAuthorId
+    ]);
+    const genCId = genCRes.rows[0].id;
+
+    await testClient.query(`UPDATE data_values SET superseded_by_id = $1 WHERE id = $2;`, [genCId, genBId]);
+
+    // Attachement d'une source documentaire manuelle à la révision de 3e génération
+    await testClient.query(`
+      INSERT INTO data_value_sources (
+        data_value_id, source_id, source_role, documentary_tier,
+        citation_reference, citation_url, methodological_robustness, created_by
+      )
+      SELECT $1, id, 'primary', 'TIER_1_OFFICIAL', 'Source manuelle génération 3', 'https://example.com/source3', 'high', $2
+      FROM data_sources LIMIT 1;
+    `, [genCId, manualAuthorId]);
+    await testClient.query('COMMIT');
+
+    console.log(`   ✓ Cas 1 : Chaîne 3 générations A (#${seedPubToSupersede.id}) -> B (#${genBId}) -> C (#${genCId}) créée avec succès.`);
+
+    // Cas 2 : Modification manuelle d'un brouillon du seed SANS publication et avec updated_at identique à created_at
+    // (Test de détection pure par data_value_audit_log, sans aucune dépendance temporelle à updated_at)
+    const seedDraftToModify = (await testClient.query(`
+      SELECT id, created_at FROM data_values
+      WHERE id IN (SELECT record_id FROM _seed_beta_log WHERE table_name = 'data_values')
+        AND editorial_status = 'draft'
+      ORDER BY id ASC
+      LIMIT 1;
+    `)).rows[0];
+
+    await testClient.query(`
+      UPDATE data_values
+      SET value_numeric = 123456.0, internal_notes = 'Brouillon modifié immédiatement sans publication',
+          updated_at = created_at
+      WHERE id = $1;
+    `, [seedDraftToModify.id]);
+
+    // Vérification que le trigger a bien consigné l'action UPDATE_DRAFT dans data_value_audit_log
+    const auditCheck = await testClient.query(`
+      SELECT action FROM data_value_audit_log WHERE data_value_id = $1 AND action = 'UPDATE_DRAFT';
+    `, [seedDraftToModify.id]);
+    if (auditCheck.rowCount < 1) throw new Error('Le trigger audit log n\'a pas enregistré la mutation du brouillon.');
+
+    console.log(`   ✓ Cas 2 : Brouillon #${seedDraftToModify.id} modifié sans publication avec updated_at = created_at (action '${auditCheck.rows[0].action}' tracée dans l'audit log).`);
+
+    // Cas 3 : Brouillon du seed publié manuellement par un éditeur
+    const seedDraftToPublish = (await testClient.query(`
+      SELECT id FROM data_values
+      WHERE id IN (SELECT record_id FROM _seed_beta_log WHERE table_name = 'data_values')
+        AND editorial_status = 'draft'
+        AND id != $1
+      ORDER BY id ASC
+      LIMIT 1;
+    `, [seedDraftToModify.id])).rows[0];
+
+    await testClient.query(`
+      UPDATE data_values
+      SET value_numeric = 35000000.0, editorial_status = 'published', is_active = TRUE,
+          published_by = $2, published_at = NOW(), internal_notes = 'Validation manuelle éditoriale'
+      WHERE id = $1;
+    `, [seedDraftToPublish.id, manualAuthorId]);
+
+    console.log(`   ✓ Cas 3 : Brouillon #${seedDraftToPublish.id} publié manuellement par l'éditeur #${manualAuthorId}.`);
+    console.log('   ✅ Test 7 ter validé : les 3 cas limites éditoriaux sont mis en place.');
+
     // 9. Test 8 & 9 : Test du Rollback et conservation des données préexistantes et manuelles
     console.log('\n[Test 8 & 9] Test du rollback contrôlé sur la base temporaire...');
     // D'abord test dry-run
@@ -286,13 +439,60 @@ async function runTestSuite() {
 
     console.log(`   - Articles restants : ${artCountAfterRollback} (attendu : 1 manuel, 0 du seed)`);
     console.log(`   - Podcasts restants : ${podCountAfterRollback} (attendu : 1 manuel, 0 du seed)`);
-    console.log(`   - Observations restants : ${dvCountAfterRollback} (attendu : 0 du seed)`);
+    console.log(`   - Observations restantes : ${dvCountAfterRollback} (attendu : 6 préservées)`);
     console.log(`   - Partis restants : ${partyCountAfterRollback} (attendu : 7, soit 6 permanents + 1 manuel)`);
     console.log(`   - Candidats restants : ${candCountAfterRollback} (attendu : 7, soit 6 permanents + 1 manuel)`);
 
-    if (artCountAfterRollback !== 1 || podCountAfterRollback !== 1 || dvCountAfterRollback !== 0 || partyCountAfterRollback !== 7 || candCountAfterRollback !== 7) {
-      throw new Error('Échec du rollback : les volumes après rollback sont incorrects.');
+    // Attendu pour dvCountAfterRollback : 6 observations
+    // 1. Observation préexistante (#preExistingDvId)
+    // 2. Observation initiale Génération A (#seedPubToSupersede.id)
+    // 3. Révision Génération B (#genBId)
+    // 4. Révision Génération C (#genCId)
+    // 5. Brouillon modifié sans publication (#seedDraftToModify.id)
+    // 6. Brouillon publié (#seedDraftToPublish.id)
+    if (artCountAfterRollback !== 1 || podCountAfterRollback !== 1 || dvCountAfterRollback !== 6 || partyCountAfterRollback !== 7 || candCountAfterRollback !== 7) {
+      throw new Error(`Échec du rollback : les volumes après rollback sont incorrects (dvCount: ${dvCountAfterRollback}, attendu: 6).`);
     }
+
+    // Vérification individuelle de la chaîne complète 3 générations A -> B -> C
+    const genACheck = await testClient.query('SELECT id, superseded_by_id FROM data_values WHERE id = $1', [seedPubToSupersede.id]);
+    const genBCheck = await testClient.query('SELECT id, supersedes_id, superseded_by_id, revision_number FROM data_values WHERE id = $1', [genBId]);
+    const genCCheck = await testClient.query('SELECT id, supersedes_id, revision_number FROM data_values WHERE id = $1', [genCId]);
+
+    if (genACheck.rowCount !== 1) throw new Error('La génération A (parent initiale) a été détruite !');
+    if (genBCheck.rowCount !== 1) throw new Error('La génération B (intermédiaire) a été détruite !');
+    if (genCCheck.rowCount !== 1) throw new Error('La génération C (révision finale) a été détruite !');
+
+    if (genBCheck.rows[0].supersedes_id !== seedPubToSupersede.id) throw new Error('Lien B -> A rompu.');
+    if (genCCheck.rows[0].supersedes_id !== genBId) throw new Error('Lien C -> B rompu.');
+    console.log(`   ✓ Cas 1 vérifié : chaîne complète 3 générations A (#${seedPubToSupersede.id}) -> B (#${genBId}) -> C (#${genCId}) 100% préservée.`);
+
+    // Vérification du brouillon modifié sans publication et sans delta temporel (Cas 2)
+    const draftModifiedCheck = await testClient.query('SELECT id, value_numeric, editorial_status FROM data_values WHERE id = $1', [seedDraftToModify.id]);
+    if (draftModifiedCheck.rowCount !== 1) throw new Error('Le brouillon modifié sans publication a été supprimé à tort !');
+    if (parseFloat(draftModifiedCheck.rows[0].value_numeric) !== 123456.0) throw new Error('La valeur du brouillon modifié a été écrasée.');
+    console.log(`   ✓ Cas 2 vérifié : brouillon modifié #${seedDraftToModify.id} préservé exclusivement par détection audit log.`);
+
+    // Vérification du brouillon publié (Cas 3)
+    const draftPublishedCheck = await testClient.query('SELECT id, editorial_status FROM data_values WHERE id = $1', [seedDraftToPublish.id]);
+    if (draftPublishedCheck.rowCount !== 1) throw new Error('Le brouillon publié manuellement a été supprimé à tort !');
+    console.log(`   ✓ Cas 3 vérifié : brouillon publié #${seedDraftToPublish.id} 100% préservé.`);
+
+    // Vérification de la conservation des sources documentaires (Cas 4)
+    const aSourcesCheck = await testClient.query('SELECT COUNT(*)::int as cnt FROM data_value_sources WHERE data_value_id = $1', [seedPubToSupersede.id]);
+    const cSourcesCheck = await testClient.query('SELECT COUNT(*)::int as cnt FROM data_value_sources WHERE data_value_id = $1', [genCId]);
+    const draftSourcesCheck = await testClient.query('SELECT COUNT(*)::int as cnt FROM data_value_sources WHERE data_value_id = $1', [seedDraftToModify.id]);
+    if (aSourcesCheck.rows[0].cnt < 1) throw new Error('Les sources de l\'observation génération A ont été supprimées !');
+    if (cSourcesCheck.rows[0].cnt < 1) throw new Error('La source manuelle de la révision génération C a été supprimée !');
+    if (draftSourcesCheck.rows[0].cnt < 1) throw new Error('La source du brouillon modifié a été supprimée !');
+    console.log(`   ✓ Cas 4 vérifié : 100% des sources documentaires liées aux observations conservées sont préservées.`);
+
+    // Vérification que l'observation préexistante est également conservée
+    const preExistingCheck = await testClient.query(`
+      SELECT id FROM data_values WHERE id = $1;
+    `, [preExistingDvId]);
+    if (preExistingCheck.rowCount !== 1) throw new Error('L\'observation préexistante a été indûment supprimée par le rollback !');
+    console.log(`   ✓ Observation préexistante #${preExistingDvId} 100% conservée.`);
 
     // Vérification individuelle de la survie de chaque contenu manuel
     const manualArtCheck = await testClient.query('SELECT title, is_demo FROM articles WHERE id = $1', [manualArticleId]);
