@@ -304,8 +304,8 @@ async function upsertSubscription(subscription, session, userId, client = pool, 
       console.warn(`⚠️ Conflit abonnement live pour user ${userId}:`, err.message);
       await client.query(
         `UPDATE subscriptions SET
-          stripe_status = $1, status = $2, ends_at = $3,
-          stripe_current_period_end = $3,
+          stripe_status = $1, status = $2, ends_at = $3::timestamp,
+          stripe_current_period_end = $3::timestamptz,
           stripe_event_created_at = CASE WHEN $4::bigint IS NOT NULL THEN GREATEST(COALESCE(stripe_event_created_at, 0), $4::bigint) ELSE stripe_event_created_at END,
           updated_at = NOW()
          WHERE stripe_subscription_id = $5`,
