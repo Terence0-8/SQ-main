@@ -39,14 +39,23 @@ exports.up = (pgm) => {
     SET verification_status = 'institutional_reference_only',
         consultation_date = NULL,
         updated_at = NOW()
-    WHERE id IN (2, 72);
+    WHERE LOWER(TRIM(title)) IN (
+      LOWER('Comptes Nationaux du Cameroun — Résultats définitifs 2021 et semi-définitifs 2022'),
+      LOWER('Quatrième Enquête Camerounaise auprès des Ménages (ECAM 4) — Rapport Emploi')
+    ) OR id IN (2, 72);
 
     -- Publications indisponibles (serveurs en timeout, DNS en échec, certificat TLS invalide)
     UPDATE data_publications
     SET verification_status = 'unavailable',
         consultation_date = NULL,
         updated_at = NOW()
-    WHERE id IN (1, 4, 6, 8, 12);
+    WHERE LOWER(TRIM(title)) IN (
+      LOWER('Annuaire Statistique du Cameroun — Édition 2023'),
+      LOWER('Deuxième Enquête sur l''Emploi et le Secteur Informel (EESI 2) — Rapport Principal'),
+      LOWER('Cinquième Enquête Camerounaise auprès des Ménages (ECAM 5) — Rapport sur la Pauvreté'),
+      LOWER('Perspectives Démographiques du Cameroun 2010-2035 — Actualisation post-RGPH 3'),
+      LOWER('Annuaire Statistique de l''Éducation de Base — Année scolaire 2022/2023')
+    ) OR id IN (1, 4, 6, 8, 12);
   `);
 };
 
@@ -57,7 +66,15 @@ exports.down = (pgm) => {
     SET verification_status = 'verified_consulted',
         consultation_date = '2026-03-01',
         updated_at = NOW()
-    WHERE id IN (1, 2, 4, 6, 8, 12, 72);
+    WHERE LOWER(TRIM(title)) IN (
+      LOWER('Comptes Nationaux du Cameroun — Résultats définitifs 2021 et semi-définitifs 2022'),
+      LOWER('Quatrième Enquête Camerounaise auprès des Ménages (ECAM 4) — Rapport Emploi'),
+      LOWER('Annuaire Statistique du Cameroun — Édition 2023'),
+      LOWER('Deuxième Enquête sur l''Emploi et le Secteur Informel (EESI 2) — Rapport Principal'),
+      LOWER('Cinquième Enquête Camerounaise auprès des Ménages (ECAM 5) — Rapport sur la Pauvreté'),
+      LOWER('Perspectives Démographiques du Cameroun 2010-2035 — Actualisation post-RGPH 3'),
+      LOWER('Annuaire Statistique de l''Éducation de Base — Année scolaire 2022/2023')
+    ) OR id IN (1, 2, 4, 6, 8, 12, 72);
 
     ALTER TABLE data_publications
       DROP CONSTRAINT IF EXISTS data_publications_verification_status_check;

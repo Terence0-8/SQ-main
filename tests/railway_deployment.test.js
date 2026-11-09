@@ -3,11 +3,12 @@
 process.env.NODE_ENV = 'test';
 process.env.SESSION_SECRET = 'test-secret-only';
 
-const { describe, test, beforeEach, afterEach } = require('node:test');
+const { describe, test, beforeEach, afterEach, after } = require('node:test');
 const assert = require('node:assert/strict');
 const request = require('supertest');
 const app = require('../server');
 const appConfig = require('../backend/config/appConfig');
+const db = require('../backend/config/database');
 
 const TEST_USER = 'solitiquo_beta';
 const TEST_PASS = 'P@ssw0rdSecurise2026!';
@@ -26,6 +27,11 @@ describe('PRÉPARATION AU DÉPLOIEMENT RAILWAY — SUITE DE SÉCURITÉ ET CONFIG
   afterEach(() => {
     // Rétablir pour ne pas perturber les tests ultérieurs
     appConfig.siteAccess.enabled = false;
+  });
+
+  after(async () => {
+    // Fermer le pool de connexion DB principal pour terminer proprement le processus
+    await db.closePool();
   });
 
   // 1. Health check : /api/ping exempté
