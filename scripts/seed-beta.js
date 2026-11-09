@@ -278,10 +278,11 @@ async function runSeed() {
     console.log(`   ✓ Candidats permanents : ${permCandInserted} inséré(s), ${PERMANENT_CANDIDATES.length - permCandInserted} déjà présent(s).`);
 
     // -------------------------------------------------------------------------
-    // 4. Partis politiques du seed (167 entrées au total)
+    // 4. Partis politiques du seed (6 références permanentes exclusivement)
     // -------------------------------------------------------------------------
-    const parties = loadSeedData('parties.json');
-    console.log(`\n4️⃣  Traitement des partis politiques du seed (${parties.length} entrées)...`);
+    const permPartyAcronyms = PERMANENT_PARTIES.map(p => p.acronym);
+    const parties = loadSeedData('parties.json').filter(p => permPartyAcronyms.includes(p.acronym) || PERMANENT_PARTIES.some(perm => perm.name === p.name));
+    console.log(`\n4️⃣  Traitement des partis politiques du seed (${parties.length} références permanentes)...`);
     let partiesInserted = 0;
 
     for (const p of parties) {
@@ -302,17 +303,17 @@ async function runSeed() {
 
       if (res.rowCount > 0) {
         partiesInserted++;
-        const isPerm = PERMANENT_PARTIES.some(perm => perm.name === p.name);
-        await logSeed('parties', res.rows[0].id, p.name, isPerm);
+        await logSeed('parties', res.rows[0].id, p.name, true);
       }
     }
-    console.log(`   ✓ Partis : ${partiesInserted} nouveau(x) inséré(s) (${parties.length - partiesInserted} déjà existant(s)).`);
+    console.log(`   ✓ Partis : ${partiesInserted} inséré(s) (${parties.length - partiesInserted} déjà existant(s)).`);
 
     // -------------------------------------------------------------------------
-    // 5. Candidats du seed (160 entrées au total)
+    // 5. Candidats du seed (6 références permanentes exclusivement)
     // -------------------------------------------------------------------------
-    const candidates = loadSeedData('candidates.json');
-    console.log(`\n5️⃣  Traitement des candidats du seed (${candidates.length} entrées)...`);
+    const permCandidateNames = PERMANENT_CANDIDATES.map(c => c.full_name);
+    const candidates = loadSeedData('candidates.json').filter(c => permCandidateNames.includes(c.full_name));
+    console.log(`\n5️⃣  Traitement des candidats du seed (${candidates.length} références permanentes)...`);
     let candInserted = 0;
 
     for (const c of candidates) {
@@ -334,11 +335,10 @@ async function runSeed() {
 
       if (res.rowCount > 0) {
         candInserted++;
-        const isPerm = PERMANENT_CANDIDATES.some(perm => perm.full_name === c.full_name);
-        await logSeed('candidates', res.rows[0].id, c.full_name, isPerm);
+        await logSeed('candidates', res.rows[0].id, c.full_name, true);
       }
     }
-    console.log(`   ✓ Candidats : ${candInserted} nouveau(x) inséré(s) (${candidates.length - candInserted} déjà existant(s)).`);
+    console.log(`   ✓ Candidats : ${candInserted} inséré(s) (${candidates.length - candInserted} déjà existant(s)).`);
 
     // -------------------------------------------------------------------------
     // 6. Podcasts (14 entrées)

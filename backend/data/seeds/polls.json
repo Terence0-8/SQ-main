@@ -1,1 +1,52 @@
-[]
+[
+  {
+    "question": "[DÉMONSTRATION — DONNÉES FICTIVES] Quelle réforme institutionnelle devrait être prioritaire pour renforcer la gouvernance locale au Cameroun ? (Exemple de sondage participatif — Données simulées : 450 participants fictifs)",
+    "question_en": "[DEMO — FICTITIOUS DATA] Which institutional reform should be prioritized to strengthen local governance in Cameroon? (Mock participatory poll — Simulated data: 450 fictitious participants)",
+    "category": "Politique",
+    "is_active": true,
+    "ends_at": "2027-12-31T23:59:59Z",
+    "options": [
+      {
+        "text": "Transfert accru des compétences financières et fiscales aux régions (Simulation : 42%)",
+        "text_en": "Increased transfer of financial and tax powers to regions (Simulation: 42%)"
+      },
+      {
+        "text": "Renforcement de l'autonomie de gestion des conseils municipaux (Simulation : 31%)",
+        "text_en": "Strengthening management autonomy of municipal councils (Simulation: 31%)"
+      },
+      {
+        "text": "Accélération de la modernisation des services administratifs régionaux (Simulation : 18%)",
+        "text_en": "Accelerating modernization of regional administrative services (Simulation: 18%)"
+      },
+      {
+        "text": "Sans opinion / En attente d'évaluation (Simulation : 9%)",
+        "text_en": "No opinion / Awaiting evaluation (Simulation: 9%)"
+      }
+    ]
+  },
+  {
+    "question": "[DÉMONSTRATION — DONNÉES FICTIVES] Quel secteur d'action prioritaire permettrait d'accélérer l'inclusion des jeunes sur le marché de l'emploi ? (Exemple de sondage participatif — Données simulées : 520 participants fictifs)",
+    "question_en": "[DEMO — FICTITIOUS DATA] Which priority action sector would accelerate youth inclusion in the job market? (Mock participatory poll — Simulated data: 520 fictitious participants)",
+    "category": "Social",
+    "is_active": true,
+    "ends_at": "2027-12-31T23:59:59Z",
+    "options": [
+      {
+        "text": "Renforcement des filières de formation technique et professionnelle (Simulation : 45%)",
+        "text_en": "Strengthening technical and vocational training programs (Simulation: 45%)"
+      },
+      {
+        "text": "Accès facilité aux micro-crédits et incubateurs d'entreprises (Simulation : 28%)",
+        "text_en": "Easier access to micro-credits and business incubators (Simulation: 28%)"
+      },
+      {
+        "text": "Développement des infrastructures d'apprentissage numérique (Simulation : 19%)",
+        "text_en": "Development of digital learning infrastructure (Simulation: 19%)"
+      },
+      {
+        "text": "Sans opinion / En attente d'évaluation (Simulation : 8%)",
+        "text_en": "No opinion / Awaiting evaluation (Simulation: 8%)"
+      }
+    ]
+  }
+]

@@ -139,9 +139,9 @@ async function runTestSuite() {
     console.log(`   - Articles : ${artCount} (attendu : 80) [dont ${demoArtCount} marqués is_demo = TRUE]`);
     console.log(`   - Podcasts : ${podCount} (attendu : 14)`);
     console.log(`   - Émissions : ${emCount} (attendu : 4)`);
-    console.log(`   - Partis politiques : ${partyCount} (attendu : 167)`);
-    console.log(`   - Candidats : ${candCount} (attendu : 166, soit 6 permanents + 160 du seed)`);
-    console.log(`   - Sondages : ${pollCount} (attendu : 0 - exclus du seed car suspects)`);
+    console.log(`   - Partis politiques : ${partyCount} (attendu : 6 permanents uniquement)`);
+    console.log(`   - Candidats : ${candCount} (attendu : 6 permanents uniquement)`);
+    console.log(`   - Sondages : ${pollCount} (attendu : 2 sondages fictifs de démonstration)`);
     console.log(`   - Observations DATA : ${dvCount} (attendu : 29, soit 1 préexistante + 28 du seed)`);
     console.log(`   - Sources documentaires : ${dvsCount} (attendu : 28)`);
     console.log(`   - Compte technique rédaction : ${userCount} (attendu : 1)`);
@@ -155,10 +155,24 @@ async function runTestSuite() {
     }
     console.log('   ✓ Sécurité vérifiée : 0 source rattachée à l\'observation préexistante (étanchéité stricte garantie).');
 
-    if (artCount !== 80 || demoArtCount !== 80 || podCount !== 14 || emCount !== 4 || partyCount !== 167 || candCount !== 166 || pollCount !== 0 || dvCount !== 29 || dvsCount !== 28 || userCount !== 1) {
+    // Vérification spécifique des 2 sondages de démonstration
+    const demoPollsCheck = await testClient.query(`
+      SELECT question, category, is_active FROM polls ORDER BY category ASC;
+    `);
+    if (demoPollsCheck.rowCount !== 2) {
+      throw new Error(`Attendu 2 sondages de démonstration, obtenu ${demoPollsCheck.rowCount}.`);
+    }
+    demoPollsCheck.rows.forEach(p => {
+      if (!p.question.includes('DÉMONSTRATION — DONNÉES FICTIVES')) {
+        throw new Error(`Le sondage "${p.question}" ne comporte pas la mention explicite de démonstration.`);
+      }
+      console.log(`   ✓ Sondage "${p.category}" identifié conforme : ${p.question.substring(0, 75)}...`);
+    });
+
+    if (artCount !== 80 || demoArtCount !== 80 || podCount !== 14 || emCount !== 4 || partyCount !== 6 || candCount !== 6 || pollCount !== 2 || dvCount !== 29 || dvsCount !== 28 || userCount !== 1) {
       throw new Error('Échec de validation des volumes après le premier seed.');
     }
-    console.log('   ✅ Test 1 & 2 validés : tous les volumes correspondent exactement et 100% des articles sont identifiés en mode démonstration.');
+    console.log('   ✅ Test 1 & 2 validés : tous les volumes correspondent exactement (6 partis, 6 candidats, 2 sondages démo, 80 articles démo).');
 
     // 5. Test 3 : Vérification des clés étrangères
     console.log('\n[Test 3] Vérification de l\'intégrité des clés étrangères...');
@@ -220,14 +234,16 @@ async function runTestSuite() {
     const artCount2 = (await testClient.query('SELECT COUNT(*)::int as cnt FROM articles')).rows[0].cnt;
     const candCount2 = (await testClient.query('SELECT COUNT(*)::int as cnt FROM candidates')).rows[0].cnt;
     const partyCount2 = (await testClient.query('SELECT COUNT(*)::int as cnt FROM parties')).rows[0].cnt;
+    const pollCount2 = (await testClient.query('SELECT COUNT(*)::int as cnt FROM polls')).rows[0].cnt;
     const dvCount2 = (await testClient.query('SELECT COUNT(*)::int as cnt FROM data_values')).rows[0].cnt;
 
     console.log(`   - Articles après 2e run : ${artCount2} (delta : ${artCount2 - artCount})`);
     console.log(`   - Partis après 2e run : ${partyCount2} (delta : ${partyCount2 - partyCount})`);
     console.log(`   - Candidats après 2e run : ${candCount2} (delta : ${candCount2 - candCount})`);
+    console.log(`   - Sondages après 2e run : ${pollCount2} (delta : ${pollCount2 - pollCount})`);
     console.log(`   - Observations DATA après 2e run : ${dvCount2} (delta : ${dvCount2 - dvCount})`);
 
-    if (artCount2 !== artCount || candCount2 !== candCount || partyCount2 !== partyCount || dvCount2 !== dvCount) {
+    if (artCount2 !== artCount || candCount2 !== candCount || partyCount2 !== partyCount || pollCount2 !== pollCount || dvCount2 !== dvCount) {
       throw new Error('Échec d\'idempotence : des doublons ont été créés lors de la 2e exécution.');
     }
     console.log('   ✅ Test 7 validé : 0 doublon créé lors de la ré-exécution (idempotence absolue).');
@@ -293,7 +309,15 @@ async function runTestSuite() {
     `, [manualPartyId]);
     const manualCandId = manualCandRes.rows[0].id;
 
-    console.log(`   ✓ Données manuelles créées avec succès (Article #${manualArticleId}, Podcast #${manualPodcastId}, Parti #${manualPartyId}, Candidat #${manualCandId}).`);
+    // Sondage manuel
+    const manualPollRes = await testClient.query(`
+      INSERT INTO polls (question, options, category, is_active)
+      VALUES ('Question légitime de sondage manuel ?', '["Réponse A", "Réponse B"]', 'Politique', TRUE)
+      RETURNING id;
+    `);
+    const manualPollId = manualPollRes.rows[0].id;
+
+    console.log(`   ✓ Données manuelles créées avec succès (Article #${manualArticleId}, Podcast #${manualPodcastId}, Parti #${manualPartyId}, Candidat #${manualCandId}, Sondage #${manualPollId}).`);
     console.log('   ✅ Test 7 bis validé : les contenus manuels sont insérés sans parasiter le seed.');
 
     // 8 ter. Test 7 ter : Tests des cas limites du cycle de vie éditorial post-seed
@@ -435,6 +459,7 @@ async function runTestSuite() {
     const podCountAfterRollback = (await testClient.query('SELECT COUNT(*)::int as cnt FROM podcasts')).rows[0].cnt;
     const partyCountAfterRollback = (await testClient.query('SELECT COUNT(*)::int as cnt FROM parties')).rows[0].cnt;
     const candCountAfterRollback = (await testClient.query('SELECT COUNT(*)::int as cnt FROM candidates')).rows[0].cnt;
+    const pollCountAfterRollback = (await testClient.query('SELECT COUNT(*)::int as cnt FROM polls')).rows[0].cnt;
     const dvCountAfterRollback = (await testClient.query('SELECT COUNT(*)::int as cnt FROM data_values')).rows[0].cnt;
 
     console.log(`   - Articles restants : ${artCountAfterRollback} (attendu : 1 manuel, 0 du seed)`);
@@ -442,6 +467,7 @@ async function runTestSuite() {
     console.log(`   - Observations restantes : ${dvCountAfterRollback} (attendu : 6 préservées)`);
     console.log(`   - Partis restants : ${partyCountAfterRollback} (attendu : 7, soit 6 permanents + 1 manuel)`);
     console.log(`   - Candidats restants : ${candCountAfterRollback} (attendu : 7, soit 6 permanents + 1 manuel)`);
+    console.log(`   - Sondages restants : ${pollCountAfterRollback} (attendu : 1 manuel, 0 du seed)`);
 
     // Attendu pour dvCountAfterRollback : 6 observations
     // 1. Observation préexistante (#preExistingDvId)
@@ -450,9 +476,16 @@ async function runTestSuite() {
     // 4. Révision Génération C (#genCId)
     // 5. Brouillon modifié sans publication (#seedDraftToModify.id)
     // 6. Brouillon publié (#seedDraftToPublish.id)
-    if (artCountAfterRollback !== 1 || podCountAfterRollback !== 1 || dvCountAfterRollback !== 6 || partyCountAfterRollback !== 7 || candCountAfterRollback !== 7) {
-      throw new Error(`Échec du rollback : les volumes après rollback sont incorrects (dvCount: ${dvCountAfterRollback}, attendu: 6).`);
+    if (artCountAfterRollback !== 1 || podCountAfterRollback !== 1 || dvCountAfterRollback !== 6 || partyCountAfterRollback !== 7 || candCountAfterRollback !== 7 || pollCountAfterRollback !== 1) {
+      throw new Error(`Échec du rollback : les volumes après rollback sont incorrects (dvCount: ${dvCountAfterRollback}, pollCount: ${pollCountAfterRollback}).`);
     }
+
+    // Vérification de la survie du sondage manuel et de la disparition des 2 sondages démo du seed
+    const manualPollCheck = await testClient.query('SELECT id, question FROM polls WHERE id = $1', [manualPollId]);
+    if (manualPollCheck.rowCount !== 1) throw new Error('Le sondage créé manuellement a été indûment supprimé par le rollback !');
+    const seedPollsCheck = await testClient.query("SELECT COUNT(*)::int as cnt FROM polls WHERE question LIKE '%DÉMONSTRATION — DONNÉES FICTIVES%'");
+    if (seedPollsCheck.rows[0].cnt !== 0) throw new Error('Les sondages de démonstration du seed n\'ont pas été supprimés par le rollback !');
+    console.log(`   ✓ Sondages vérifiés : sondage manuel #${manualPollId} conservé et 2 sondages démo révoqués avec succès.`);
 
     // Vérification individuelle de la chaîne complète 3 générations A -> B -> C
     const genACheck = await testClient.query('SELECT id, superseded_by_id FROM data_values WHERE id = $1', [seedPubToSupersede.id]);
