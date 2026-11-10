@@ -123,10 +123,17 @@ const SolitiquoAPI = {
   register: async (userData) => {
     try {
       const res = await fetch(`${API_URL}/auth/register`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+        credentials: 'include'
       });
-      return await res.json();
+      const json = await res.json();
+      if (json.success && json.user) {
+        try { localStorage.setItem('solitiquo_cached_user', JSON.stringify(json.user)); } catch (_e) {}
+        window._currentUser = json.user;
+      }
+      return json;
     } catch (e) { return { success: false, error: e.message }; }
   },
 

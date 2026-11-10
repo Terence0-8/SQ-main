@@ -80,10 +80,25 @@ router.post('/register', async (req, res) => {
 
     const { rows } = await pool.query(query, [username, email, hashedPassword]);
 
-    // Connexion automatique après inscription
-    req.session.user = rows[0];
+    const userObj = {
+      id: rows[0].id,
+      username: rows[0].username,
+      email: rows[0].email,
+      role: rows[0].role,
+      is_subscriber: rows[0].is_subscriber,
+      subscription_start_date: rows[0].subscription_start_date,
+      subscription_end_date: rows[0].subscription_end_date
+    };
 
-    res.json({ success: true, user: rows[0], message: "Compte créé avec succès !" });
+    // Connexion automatique après inscription
+    req.session.user = userObj;
+
+    req.session.save((saveErr) => {
+      if (saveErr) {
+        console.error('Erreur sauvegarde session après inscription:', saveErr);
+      }
+      res.json({ success: true, user: userObj, message: "Compte créé avec succès !" });
+    });
 
   } catch (err) {
     console.error(err);
@@ -226,7 +241,7 @@ router.get('/google/callback', (req, res) => {
   });
 });
 
-// ➔ Facebook  
+// ➔ Facebook
 router.get('/facebook', (req, res, next) => {
   if (!passport.isFacebookConfigured()) {
     return res.status(503).json({
@@ -420,9 +435,9 @@ router.put('/update', verifyCsrf, async (req, res) => {
 
   try {
     const result = await pool.query(
-      `UPDATE users 
+      `UPDATE users
        SET username = $1, email = $2, updated_at = NOW()
-       WHERE id = $3 
+       WHERE id = $3
        RETURNING id, username, email, role, is_subscriber, subscription_start_date, subscription_end_date`,
       [username, email, req.session.user.id]
     );

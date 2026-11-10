@@ -319,20 +319,23 @@
       async function handleSubscribe(plan) {
         try {
           const user = await SolitiquoAPI.getProfile();
+          const currency = geoPricing?.currency;
+          const currencyParam = currency ? `&currency=${encodeURIComponent(currency)}` : '';
+          const tcParam = testCountry ? `&testCountry=${encodeURIComponent(testCountry)}` : '';
+          const targetCheckoutUrl = `paiement.html?plan=${encodeURIComponent(plan)}${currencyParam}${tcParam}`;
 
           if (!user) {
             sessionStorage.setItem('wantsToSubscribe', plan);
-            window.location.href = 'auth.html';
+            window.location.href = `auth.html?redirect=${encodeURIComponent(targetCheckoutUrl)}`;
             return;
           }
 
           // Direction la caisse avec la devise détectée
-          const currency = geoPricing?.currency || 'USD';
-          const tcParam = testCountry ? `&testCountry=${encodeURIComponent(testCountry)}` : '';
-          window.location.href = `paiement.html?plan=${plan}&currency=${currency}${tcParam}`;
+          window.location.href = targetCheckoutUrl;
         } catch (e) {
           console.error("Erreur profil:", e);
-          window.location.href = 'auth.html';
+          sessionStorage.setItem('wantsToSubscribe', plan);
+          window.location.href = `auth.html?redirect=${encodeURIComponent('paiement.html?plan=' + plan)}`;
         }
       }
 

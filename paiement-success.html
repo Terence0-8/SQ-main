@@ -41,13 +41,13 @@
     <div class="success-card">
         <img src="logo.svg" alt="Solitiquo" class="success-logo" onerror="this.style.display='none'">
 
-        <div class="success-icon">✓</div>
+        <div class="success-icon" id="statusIcon">⏳</div>
 
-        <h1>Abonnement confirmé !</h1>
+        <h1 id="statusTitle">Vérification de votre paiement...</h1>
 
-        <p>
-            Merci de votre confiance. Votre paiement a été validé avec succès.<br>
-            Vous avez désormais un accès illimité à l'ensemble de nos contenus.
+        <p id="statusDesc">
+            Nous vérifions la validation de votre transaction auprès de nos services sécurisés.<br>
+            Veuillez patienter un instant.
         </p>
 
         <div class="success-trans-id">
@@ -56,8 +56,8 @@
 
         <!-- Message de synchronisation -->
         <div id="syncMessage" style="margin: 20px 0; padding: 15px; background: #f0f9ff; border-radius: 8px; color: #0369a1; display: none;">
-            <strong>🔄 Synchronisation en cours...</strong><br>
-            <small>Activation de votre accès premium</small>
+            <strong>🔄 Vérification en cours...</strong><br>
+            <small>Validation sécurisée de votre accès premium</small>
         </div>
 
         <div id="syncSuccess" style="margin: 20px 0; padding: 15px; background: #f0fdf4; border-radius: 8px; color: #15803d; display: none;">
@@ -65,7 +65,13 @@
             <small>Redirection vers votre profil...</small>
         </div>
 
-        <a href="profil.html" class="btn-home" id="btnProfil">Voir mon profil</a>
+        <div id="authRequired" style="margin: 20px 0; padding: 15px; background: #fffbeb; border-radius: 8px; color: #92400e; display: none;">
+            <strong>⚠️ Connexion requise</strong><br>
+            <small>Veuillez vous connecter avec votre compte pour associer et activer votre abonnement.</small><br>
+            <a href="auth.html" id="btnAuthLogin" style="display:inline-block; margin-top:10px; background:#37463D; color:#fff; padding:6px 16px; border-radius:20px; text-decoration:none; font-weight:700;">Se connecter</a>
+        </div>
+
+        <a href="profil.html" class="btn-home" id="btnProfil" style="display: none;">Voir mon profil</a>
         <a href="index.html" class="btn-home" style="margin-top: 10px; background: #6b7280;">Retour à l'accueil</a>
     </div>
 
@@ -82,9 +88,65 @@
         const isMock          = params.get('mock') === 'true';
         const testCountry     = params.get('testCountry');
 
-        const transIdEl     = document.getElementById('transId');
-        const syncMessageEl = document.getElementById('syncMessage');
-        const syncSuccessEl = document.getElementById('syncSuccess');
+        const statusIconEl    = document.getElementById('statusIcon');
+        const statusTitleEl   = document.getElementById('statusTitle');
+        const statusDescEl    = document.getElementById('statusDesc');
+        const transIdEl       = document.getElementById('transId');
+        const syncMessageEl   = document.getElementById('syncMessage');
+        const syncSuccessEl   = document.getElementById('syncSuccess');
+        const authRequiredEl  = document.getElementById('authRequired');
+        const btnAuthLoginEl  = document.getElementById('btnAuthLogin');
+        const btnProfilEl     = document.getElementById('btnProfil');
+
+        function setConfirmedState(user) {
+            statusIconEl.textContent = '✓';
+            statusIconEl.style.color = '#10b981';
+            statusTitleEl.textContent = 'Abonnement confirmé !';
+            statusDescEl.innerHTML = 'Merci de votre confiance. Votre paiement a été validé avec succès.<br>Vous avez désormais un accès illimité à l\’ensemble de nos contenus.';
+            syncMessageEl.style.display = 'none';
+            authRequiredEl.style.display = 'none';
+            syncSuccessEl.style.display = 'block';
+            btnProfilEl.style.display = 'inline-block';
+            if (user) {
+                try {
+                    localStorage.setItem('user', JSON.stringify(user));
+                    localStorage.setItem('solitiquo_cached_user', JSON.stringify(user));
+                } catch (_e) {}
+            }
+            setTimeout(() => { window.location.href = 'profil.html'; }, 2500);
+        }
+
+        function setUnauthenticatedState() {
+            statusIconEl.textContent = '🔒';
+            statusIconEl.style.color = '#b45309';
+            statusTitleEl.textContent = 'Connexion requise';
+            statusDescEl.innerHTML = 'Votre paiement a été initié, mais vous n\’êtes pas connecté.<br>Veuillez vous identifier pour activer l\’accès Premium sur votre compte.';
+            syncMessageEl.style.display = 'none';
+            syncSuccessEl.style.display = 'none';
+            authRequiredEl.style.display = 'block';
+            btnAuthLoginEl.href = 'auth.html?redirect=' + encodeURIComponent(window.location.href);
+        }
+
+        function setPendingState(msg) {
+            statusIconEl.textContent = '⏳';
+            statusIconEl.style.color = '#d97706';
+            statusTitleEl.textContent = 'Activation en attente';
+            statusDescEl.innerHTML = msg || 'Votre paiement a été reçu. L\’accès sera activé dans quelques instants dès réception de la confirmation finale.';
+            syncMessageEl.style.display = 'none';
+            syncSuccessEl.innerHTML = '<strong>⏳ Activation en attente</strong><br><small>Votre transaction est en cours de traitement. Contactez le support si le problème persiste.</small>';
+            syncSuccessEl.style.background = '#fef3c7';
+            syncSuccessEl.style.color = '#92400e';
+            syncSuccessEl.style.display = 'block';
+        }
+
+        function setErrorState(msg) {
+            statusIconEl.textContent = '⚠️';
+            statusIconEl.style.color = '#dc2626';
+            statusTitleEl.textContent = 'Échec ou session invalide';
+            statusDescEl.textContent = msg || 'Impossible de valider cette session de paiement.';
+            syncMessageEl.style.display = 'none';
+            syncSuccessEl.style.display = 'none';
+        }
 
         // ── Afficher l'ID ─────────────────────────────────────────────────────
         if (transactionId) {
@@ -108,49 +170,6 @@
             syncMessageEl.style.display = 'block';
 
             try {
-
-                // ══════════════════════════════════════════════════════════════
-                // CAS 1 : Retour Flutterwave
-                // Flutterwave redirige vers :
-                // /paiement-success.html?transaction_id=FLW-xxx&provider=flutterwave&status=successful
-                // On appelle /confirm-flutterwave pour vérifier le paiement et activer l'abo.
-                // ══════════════════════════════════════════════════════════════
-                if (provider === 'flutterwave' && transactionId && !isMock) {
-                    try {
-                        const flwRes = await fetch(
-                            `${window.API_URL}/subscriptions/confirm-flutterwave?tx_ref=${encodeURIComponent(transactionId)}&status=${encodeURIComponent(flwStatus || 'successful')}`,
-                            { credentials: 'include' }
-                        );
-                        const flwData = await flwRes.json();
-                        if (!flwData.success) {
-                            console.warn('confirm-flutterwave en attente:', flwData.error);
-                        }
-                    } catch (flwErr) {
-                        console.warn('Erreur confirm-flutterwave (non bloquant):', flwErr);
-                    }
-                }
-
-                // ══════════════════════════════════════════════════════════════
-                // CAS 2 : Retour Stripe Payment Element
-                // Stripe redirige vers :
-                // /paiement-success.html?payment_intent=pi_xxx&redirect_status=succeeded
-                // On appelle /confirm-stripe pour activer l'abo si le webhook n'est pas encore passé.
-                // ══════════════════════════════════════════════════════════════
-                if (paymentIntentId && !isMock && redirectStatus === 'succeeded') {
-                    try {
-                        const confirmRes = await fetch(
-                            `${window.API_URL}/subscriptions/confirm-stripe?payment_intent=${encodeURIComponent(paymentIntentId)}`,
-                            { credentials: 'include' }
-                        );
-                        const confirmData = await confirmRes.json();
-                        if (!confirmData.success) {
-                            console.warn('confirm-stripe en attente:', confirmData.error);
-                        }
-                    } catch (confirmErr) {
-                        console.warn('Erreur confirm-stripe (non bloquant):', confirmErr);
-                    }
-                }
-
                 // ── Récupérer le token CSRF pour les requêtes POST ──
                 let csrfToken = (window.SolitiquoAPI && SolitiquoAPI.csrfToken) || '';
                 if (!csrfToken) {
@@ -168,21 +187,94 @@
                     postHeaders['X-CSRF-Token'] = csrfToken;
                 }
 
-                // ── Synchroniser la session utilisateur (commun aux deux providers) ──
+                // ══════════════════════════════════════════════════════════════
+                // CAS 1 : Retour Stripe Checkout (session_id)
+                // ══════════════════════════════════════════════════════════════
+                if (sessionId && !isMock) {
+                    try {
+                        const confirmRes = await fetch(`${window.API_URL}/stripe/confirm-session`, {
+                            method: 'POST',
+                            credentials: 'include',
+                            headers: postHeaders,
+                            body: JSON.stringify({ session_id: sessionId })
+                        });
+
+                        if (confirmRes.status === 401) {
+                            setUnauthenticatedState();
+                            return;
+                        }
+
+                        const confirmData = await confirmRes.json();
+                        if (confirmRes.status === 403) {
+                            setErrorState(confirmData.error || 'Cette session de paiement ne correspond pas à votre compte.');
+                            return;
+                        }
+
+                        if (confirmRes.ok && confirmData.success && confirmData.user?.is_subscriber) {
+                            setConfirmedState(confirmData.user);
+                            return;
+                        } else if (!confirmRes.ok) {
+                            setErrorState(confirmData.error || 'La confirmation de paiement a été rejetée.');
+                            return;
+                        }
+                    } catch (confirmErr) {
+                        console.warn('Erreur confirm-session:', confirmErr);
+                    }
+                }
+
+                // ══════════════════════════════════════════════════════════════
+                // CAS 2 : Retour Flutterwave
+                // ══════════════════════════════════════════════════════════════
+                if (provider === 'flutterwave' && transactionId && !isMock) {
+                    try {
+                        const flwRes = await fetch(
+                            `${window.API_URL}/subscriptions/confirm-flutterwave?tx_ref=${encodeURIComponent(transactionId)}&status=${encodeURIComponent(flwStatus || 'successful')}`,
+                            { credentials: 'include' }
+                        );
+                        const flwData = await flwRes.json();
+                        if (!flwData.success) {
+                            console.warn('confirm-flutterwave en attente:', flwData.error);
+                        }
+                    } catch (flwErr) {
+                        console.warn('Erreur confirm-flutterwave (non bloquant):', flwErr);
+                    }
+                }
+
+                // ══════════════════════════════════════════════════════════════
+                // CAS 3 : Retour Stripe Payment Element
+                // ══════════════════════════════════════════════════════════════
+                if (paymentIntentId && !isMock && redirectStatus === 'succeeded') {
+                    try {
+                        const confirmRes = await fetch(
+                            `${window.API_URL}/subscriptions/confirm-stripe?payment_intent=${encodeURIComponent(paymentIntentId)}`,
+                            { credentials: 'include' }
+                        );
+                        const confirmData = await confirmRes.json();
+                        if (!confirmData.success) {
+                            console.warn('confirm-stripe en attente:', confirmData.error);
+                        }
+                    } catch (confirmErr) {
+                        console.warn('Erreur confirm-stripe (non bloquant):', confirmErr);
+                    }
+                }
+
+                // ── Synchroniser la session utilisateur ──
                 const refreshRes = await fetch(`${window.API_URL}/auth/refresh-user`, {
                     method: 'POST',
                     credentials: 'include',
                     headers: postHeaders
                 });
+
+                if (refreshRes.status === 401) {
+                    setUnauthenticatedState();
+                    return;
+                }
+
                 const data = await refreshRes.json();
 
                 if (data.success && data.user) {
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    syncMessageEl.style.display = 'none';
-                    syncSuccessEl.style.display = 'block';
-
                     if (data.user.is_subscriber) {
-                        setTimeout(() => { window.location.href = 'profil.html'; }, 3000);
+                        setConfirmedState(data.user);
                     } else {
                         // Webhook pas encore arrivé — on retente après 3 s
                         setTimeout(async () => {
@@ -193,30 +285,30 @@
                                 });
                                 const retryData = await retry.json();
                                 if (retryData.success && retryData.user?.is_subscriber) {
-                                    localStorage.setItem('user', JSON.stringify(retryData.user));
-                                    window.location.href = 'profil.html';
+                                    setConfirmedState(retryData.user);
                                 } else {
-                                    syncSuccessEl.innerHTML = '<strong>⚠️ Activation en attente</strong><br><small>Votre paiement a été reçu. L\'accès sera activé dans quelques instants. Contactez le support si le problème persiste.</small>';
-                                    syncSuccessEl.style.background = '#fef3c7';
-                                    syncSuccessEl.style.color = '#92400e';
+                                    setPendingState();
                                 }
-                            } catch (e) { console.error('Retry refresh-user:', e); }
+                            } catch (e) {
+                                console.error('Retry refresh-user:', e);
+                                setPendingState();
+                            }
                         }, 3000);
                     }
                 } else {
-                    syncMessageEl.style.display = 'none';
+                    setPendingState();
                     console.error('Erreur refresh-user:', data);
                 }
             } catch (err) {
                 console.error('Erreur sync:', err);
-                syncMessageEl.innerHTML = '<strong>⚠️ Erreur de synchronisation</strong><br><small>Veuillez rafraîchir la page</small>';
-                syncMessageEl.style.background = '#fef2f2';
-                syncMessageEl.style.color = '#991b1b';
+                setErrorState('Une erreur réseau est survenue lors de la vérification.');
             }
         }
 
         if (transactionId || paymentIntentId || sessionId) {
             syncAndRedirect();
+        } else {
+            setErrorState('Aucune transaction spécifiée dans l\’URL.');
         }
     </script>
   <script src="/js/lazyload.js"></script>

@@ -405,7 +405,7 @@
             const result = await SolitiquoAPI.login({ email: identifier, password });
             if (result.success) {
               const params = new URLSearchParams(window.location.search);
-              let redirect = params.get('redirect') || 'index.html';
+              let redirect = params.get('redirect');
 
               // Sécurité: Validation du redirect (Open Redirect fix)
               const isValidRedirect = (url) => {
@@ -417,8 +417,16 @@
                 }
               };
 
-              if (!isValidRedirect(redirect)) {
-                redirect = 'index.html';
+              if (!redirect || !isValidRedirect(redirect)) {
+                const wantsPlan = sessionStorage.getItem('wantsToSubscribe');
+                if (wantsPlan) {
+                  sessionStorage.removeItem('wantsToSubscribe');
+                  redirect = 'paiement.html?plan=' + encodeURIComponent(wantsPlan);
+                } else {
+                  redirect = 'index.html';
+                }
+              } else {
+                sessionStorage.removeItem('wantsToSubscribe');
               }
               window.location.href = redirect;
             } else {
@@ -449,10 +457,34 @@
           try {
             const result = await SolitiquoAPI.register({ username, email, password });
             if (result.success) {
+              const params = new URLSearchParams(window.location.search);
+              let redirect = params.get('redirect');
+
+              const isValidRedirect = (url) => {
+                try {
+                  const target = new URL(url, window.location.origin);
+                  return target.origin === window.location.origin;
+                } catch (e) {
+                  return false;
+                }
+              };
+
+              if (!redirect || !isValidRedirect(redirect)) {
+                const wantsPlan = sessionStorage.getItem('wantsToSubscribe');
+                if (wantsPlan) {
+                  sessionStorage.removeItem('wantsToSubscribe');
+                  redirect = 'paiement.html?plan=' + encodeURIComponent(wantsPlan);
+                } else {
+                  redirect = 'index.html';
+                }
+              } else {
+                sessionStorage.removeItem('wantsToSubscribe');
+              }
+
               successBox.textContent = "Compte créé ! Redirection...";
               successBox.style.display = 'block'; msgBox.style.display = 'none';
               registerForm.reset();
-              setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+              setTimeout(() => { window.location.href = redirect; }, 800);
             } else {
               msgBox.textContent = result.error; msgBox.style.display = 'block';
               btn.textContent = "Créer mon compte"; btn.disabled = false;
