@@ -25,7 +25,9 @@ const CURRENCY_PRICING = {
 };
 
 function getPricingForCountry(countryCode) {
-  if (['CM', 'BJ', 'TG', 'SN', 'CI'].includes(countryCode))
+  if (countryCode === 'CM')
+    return { country: 'CM', currency: 'XAF', ...CURRENCY_PRICING['XAF'] };
+  if (['BJ', 'TG', 'SN', 'CI'].includes(countryCode))
     return { country: countryCode, currency: 'XOF', ...CURRENCY_PRICING['XOF'] };
   if (EU_COUNTRIES.includes(countryCode))
     return { country: countryCode, currency: 'EUR', ...CURRENCY_PRICING['EUR'] };
@@ -95,13 +97,16 @@ function isFlutterwaveConfigured() {
 /**
  * Vérifie la signature du webhook Flutterwave
  * Flutterwave envoie le header "verif-hash" contenant le hash secret configuré
- * dans le dashboard Flutterwave (champ "Secret Hash")
+ * dans le dashboard Flutterwave (champ "Secret Hash").
+ * Sécurité stricte : jamais d'acceptation aveugle sans secret valide configuré.
  */
 function verifyFlutterwaveWebhook(req) {
   const secretHash = process.env.FLUTTERWAVE_WEBHOOK_SECRET;
-  if (!secretHash) return true; // En dev sans secret configuré, on laisse passer
+  if (!secretHash || secretHash.trim() === '' || secretHash.startsWith('choisir_un_secret')) {
+    return false;
+  }
   const signature = req.headers['verif-hash'];
-  return signature === secretHash;
+  return Boolean(signature && signature === secretHash);
 }
 
 // ==========================================
@@ -414,76 +419,17 @@ async function _activateFlutterwaveSubscription(userId, transactionId, paymentMe
 }
 
 // ==========================================
-// 4. INIT PAIEMENT — Stripe Payment Element
+// 4. INIT PAIEMENT — Stripe Payment Element (DÉPRÉCIÉ)
 // POST /api/subscriptions/init-stripe-payment
-// Retourne un clientSecret pour monter le Payment Element côté front.
-// Apple Pay, Google Pay et PayPal sont automatiquement inclus via
-// automatic_payment_methods: { enabled: true }.
+// Le moteur canonique unique pour Stripe est /api/stripe/checkout.
 // ==========================================
 router.post('/init-stripe-payment', verifyCsrf, isAuthenticated, async (req, res) => {
-  try {
-    if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.startsWith('sk_test_REMPLACER')) {
-      return res.status(503).json({ success: false, error: 'Stripe non configuré — ajoutez STRIPE_SECRET_KEY dans .env' });
-    }
-
-    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-    const userId = req.session.user.id;
-    const { plan } = req.body;
-
-    if (!plan) {
-      return res.status(400).json({ success: false, error: 'plan requis' });
-    }
-
-    const planConfig = validatePlan(plan);
-    if (!planConfig) {
-      return res.status(400).json({ success: false, error: 'Plan invalide' });
-    }
-
-    const activeCheckStripe = await pool.query(
-      "SELECT id, ends_at FROM subscriptions WHERE user_id = $1 AND status = 'active' AND ends_at > NOW() ORDER BY ends_at DESC LIMIT 1",
-      [userId]
-    );
-    const _isExtensionStripe = activeCheckStripe.rows.length > 0;
-
-    const country = getCountryFromReq(req);
-    const geoPricing = getPricingForCountry(country);
-    const currency = geoPricing.currency;
-
-    const currencyConfig = CURRENCY_PRICING[currency];
-    if (!currencyConfig || currencyConfig.provider !== 'stripe') {
-      return res.status(400).json({ success: false, error: 'Devise invalide pour Stripe' });
-    }
-
-    const transactionId = `STR-${Date.now()}-${userId}`;
-
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: currencyConfig.stripe_cents,
-      currency: currency.toLowerCase(),
-      automatic_payment_methods: { enabled: true },
-      description: planConfig.description,
-      metadata: {
-        userId: userId.toString(),
-        plan,
-        transactionId,
-        currency
-      },
-    });
-
-    await pool.query(
-      `INSERT INTO subscriptions (user_id, plan, amount, currency, transaction_id, status, starts_at, ends_at)
-       VALUES ($1, $2, $3, $4, $5, 'pending', NOW(), NOW())`,
-      [userId, plan, currencyConfig.amount, currency, transactionId]
-    );
-
-    res.json({
-      success: true,
-      clientSecret: paymentIntent.client_secret,
-      transactionId
-    });
-  } catch (err) {
-    console.error('❌ Erreur init-stripe-payment:', err);
-    res.status(500).json({ success: false, error: 'Erreur serveur Stripe' });
-  }
+  return res.status(410).json({
+    success: false,
+    deprecated: true,
+    error: "Ce point d'accès est déprécié. Veuillez utiliser /api/stripe/checkout.",
+    canonical_endpoint: "/api/stripe/checkout"
+  });
 });
 
 // ==========================================
@@ -703,3 +649,7 @@ router.post('/cancel', verifyCsrf, isAuthenticated, async (req, res) => {
 });
 
 module.exports = router;
+module.exports.getPricingForCountry = getPricingForCountry;
+module.exports.verifyFlutterwaveWebhook = verifyFlutterwaveWebhook;
+module.exports.isFlutterwaveConfigured = isFlutterwaveConfigured;
+module.exports.CURRENCY_PRICING = CURRENCY_PRICING;

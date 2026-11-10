@@ -244,7 +244,7 @@
           <div class="form-group">
             <label data-i18n="auth_password">Mot de passe</label>
             <div class="password-wrapper">
-              <input type="password" id="regPwd" class="form-input" required placeholder="Minimum 6 caractères" data-i18n-placeholder="auth_password_placeholder">
+              <input type="password" id="regPwd" class="form-input" required placeholder="8 car. min (Maj, min, chiffre)">
               <button type="button" id="toggle-reg-pwd" class="btn-toggle-pass" aria-label="Afficher le mot de passe">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                   stroke-linecap="round" stroke-linejoin="round">
@@ -253,6 +253,7 @@
                 </svg>
               </button>
             </div>
+            <small style="display:block; margin-top:4px; font-size:0.75rem; color:#777;">8 caractères minimum (une majuscule, une minuscule, un chiffre).</small>
           </div>
 
           <button type="submit" class="btn-auth-submit" style="background:#C82823;" data-i18n="auth_register_btn">Créer mon compte</button>

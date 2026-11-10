@@ -148,6 +148,14 @@ const loginLimiter = rateLimit({
   message: { success: false, error: 'Trop de tentatives de connexion, réessayez dans 15 minutes' }
 });
 
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: isTest ? 10 : 5,
+  message: { success: false, error: "Trop de tentatives d'inscription, réessayez dans une heure" },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
 const commentsLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -169,6 +177,7 @@ const translationLimiter = rateLimit({
 });
 
 app.use('/api/auth/login', loginLimiter);
+app.use('/api/auth/register', registerLimiter);
 app.post('/api/comments', commentsLimiter);
 app.use('/api/admin', adminLimiter);
 app.use('/api/translate', translationLimiter);

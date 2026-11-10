@@ -136,6 +136,14 @@ router.post('/login', async (req, res) => {
       });
     }
 
+    // Vérifier l'état du compte (is_active)
+    if (!user.is_active) {
+      return res.status(403).json({
+        success: false,
+        error: "Ce compte est suspendu ou inactif."
+      });
+    }
+
     // Sauvegarder dans session (avec données abonnement)
     req.session.user = {
       id: user.id,
@@ -179,11 +187,31 @@ router.all('/logout', (req, res) => {
 const passport = require('../config/passport');
 
 // ➔ Google
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google', (req, res, next) => {
+  if (!passport.isGoogleConfigured()) {
+    return res.status(503).json({
+      success: false,
+      error: "Service d'authentification Google non configuré ou temporairement indisponible."
+    });
+  }
+  passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+});
 
-router.get('/google/callback',
-  passport.authenticate('google', { failureRedirect: '/auth.html?error=oauth_failed', session: false }),
-  (req, res) => {
+router.get('/google/callback', (req, res) => {
+  if (!passport.isGoogleConfigured()) {
+    return res.status(503).json({
+      success: false,
+      error: "Service d'authentification Google non configuré ou temporairement indisponible."
+    });
+  }
+  passport.authenticate('google', { failureRedirect: '/auth.html?error=oauth_failed', session: false })(req, res, (err) => {
+    if (err) {
+      console.error('Erreur callback Google:', err);
+      return res.redirect('/auth.html?error=oauth_failed');
+    }
+    if (!req.user) {
+      return res.redirect('/auth.html?error=oauth_failed');
+    }
     // Authentification réussie
     req.session.user = {
       id: req.user.id,
@@ -195,15 +223,35 @@ router.get('/google/callback',
       subscription_end_date: req.user.subscription_end_date
     };
     res.redirect('/');
-  }
-);
+  });
+});
 
 // ➔ Facebook  
-router.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }));
+router.get('/facebook', (req, res, next) => {
+  if (!passport.isFacebookConfigured()) {
+    return res.status(503).json({
+      success: false,
+      error: "Service d'authentification Facebook non configuré ou temporairement indisponible."
+    });
+  }
+  passport.authenticate('facebook', { scope: ['email'] })(req, res, next);
+});
 
-router.get('/facebook/callback',
-  passport.authenticate('facebook', { failureRedirect: '/auth.html?error=oauth_failed', session: false }),
-  (req, res) => {
+router.get('/facebook/callback', (req, res) => {
+  if (!passport.isFacebookConfigured()) {
+    return res.status(503).json({
+      success: false,
+      error: "Service d'authentification Facebook non configuré ou temporairement indisponible."
+    });
+  }
+  passport.authenticate('facebook', { failureRedirect: '/auth.html?error=oauth_failed', session: false })(req, res, (err) => {
+    if (err) {
+      console.error('Erreur callback Facebook:', err);
+      return res.redirect('/auth.html?error=oauth_failed');
+    }
+    if (!req.user) {
+      return res.redirect('/auth.html?error=oauth_failed');
+    }
     // Authentification réussie
     req.session.user = {
       id: req.user.id,
@@ -215,8 +263,8 @@ router.get('/facebook/callback',
       subscription_end_date: req.user.subscription_end_date
     };
     res.redirect('/');
-  }
-);
+  });
+});
 
 // ============================================
 // 4. QUI SUIS-JE ? (Check Session)
