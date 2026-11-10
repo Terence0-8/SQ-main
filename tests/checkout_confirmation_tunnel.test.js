@@ -1191,5 +1191,192 @@ describe('TUNNEL COMPLET INSCRIPTION → ABONNEMENT → STRIPE CHECKOUT → CONF
       }
     }
   });
+
+  // -------------------------------------------------------------------------
+  // 18. Limite d'expansion Stripe (<= 4 niveaux) & fallback subscriptions.retrieve
+  // -------------------------------------------------------------------------
+  test('18. Expansion Stripe checkout.sessions.retrieve <= 4 niveaux et fallback subscriptions.retrieve', async () => {
+    const uRes = await pool.query(
+      `INSERT INTO users (username, email, password, role, is_active, is_subscriber, created_at, updated_at)
+       VALUES ('tunnelexpand', 'tunnel_reg_expand@example.com', 'hash', 'reader', TRUE, FALSE, NOW(), NOW())
+       RETURNING id`
+    );
+    const uid = uRes.rows[0].id;
+    const nowSec = Math.floor(Date.now() / 1000);
+    const futureDate = nowSec + 30 * 86400;
+    const subId = `sub_tunnel_expand_${Date.now()}`;
+    const sessionId = `cs_tunnel_expand_${Date.now()}`;
+
+    try {
+      let capturedSessionExpand = null;
+      let capturedSubExpand = null;
+
+      const fullSubscription = {
+        id: subId,
+        status: 'active',
+        created: nowSec,
+        customer: `cus_tunnel_expand_${uid}`,
+        metadata: { solitiquo_user_id: String(uid), solitiquo_plan: 'monthly', solitiquo_currency: 'EUR' },
+        current_period_start: nowSec,
+        current_period_end: futureDate,
+        cancel_at_period_end: false,
+        items: {
+          data: [{
+            price: {
+              id: PRICES.EUR.monthly,
+              unit_amount: 699,
+              currency: 'eur',
+              recurring: { interval: 'month' },
+              product: { id: 'prod_expand_mock' }
+            },
+            current_period_start: nowSec,
+            current_period_end: futureDate
+          }]
+        }
+      };
+
+      const mockStripe = {
+        checkout: {
+          sessions: {
+            retrieve: async (_sid, opts = {}) => {
+              capturedSessionExpand = opts.expand || [];
+              // Simulation stricte de la limite Stripe à 4 niveaux
+              for (const path of capturedSessionExpand) {
+                const depth = String(path).split('.').length;
+                if (depth > 4) {
+                  throw new Error(`You cannot expand more than 4 levels of a property. Property: ${path}`);
+                }
+              }
+              return {
+                id: sessionId,
+                customer: `cus_tunnel_expand_${uid}`,
+                client_reference_id: String(uid),
+                metadata: { solitiquo_user_id: String(uid), solitiquo_plan: 'monthly', solitiquo_currency: 'EUR' },
+                livemode: false,
+                status: 'complete',
+                payment_status: 'paid',
+                amount_total: 699,
+                currency: 'eur',
+                mode: 'subscription',
+                // Simule le cas où subscription est retournée comme simple ID string
+                subscription: subId,
+                created: nowSec
+              };
+            }
+          }
+        },
+        subscriptions: {
+          retrieve: async (id, opts = {}) => {
+            assert.equal(id, subId);
+            capturedSubExpand = opts.expand || [];
+            for (const path of capturedSubExpand) {
+              const depth = String(path).split('.').length;
+              if (depth > 4) {
+                throw new Error(`You cannot expand more than 4 levels of a property. Property: ${path}`);
+              }
+            }
+            return fullSubscription;
+          }
+        }
+      };
+
+      const res = await executeConfirmSession({ stripe: mockStripe, userId: uid, sessionId });
+      assert.equal(res.status, 200);
+      assert.equal(res.data.success, true);
+
+      assert.ok(Array.isArray(capturedSessionExpand) && capturedSessionExpand.length > 0);
+      for (const path of capturedSessionExpand) {
+        assert.ok(path.split('.').length <= 4, `Expansion Checkout trop profonde: ${path}`);
+      }
+      assert.deepEqual(capturedSessionExpand, ['subscription', 'subscription.default_payment_method']);
+
+      assert.ok(Array.isArray(capturedSubExpand) && capturedSubExpand.length > 0);
+      for (const path of capturedSubExpand) {
+        assert.ok(path.split('.').length <= 4, `Expansion Subscription trop profonde: ${path}`);
+      }
+
+      const uCheck = await pool.query('SELECT is_subscriber FROM users WHERE id = $1', [uid]);
+      assert.equal(uCheck.rows[0].is_subscriber, true);
+    } finally {
+      await pool.query('DELETE FROM subscriptions WHERE user_id = $1', [uid]);
+      await pool.query('DELETE FROM stripe_webhook_events WHERE event_id = $1', [`checkout_session_${sessionId}`]);
+      await pool.query('DELETE FROM users WHERE id = $1', [uid]);
+    }
+  });
+
+  // -------------------------------------------------------------------------
+  // 19. Idempotence stricte d'une confirmation synchrone répétée
+  // -------------------------------------------------------------------------
+  test('19. Confirmation répétée séquentiellement sur la même session reste idempotente (200 sans doublon)', async () => {
+    const uRes = await pool.query(
+      `INSERT INTO users (username, email, password, role, is_active, is_subscriber, created_at, updated_at)
+       VALUES ('tunnelrepeat', 'tunnel_reg_repeat@example.com', 'hash', 'reader', TRUE, FALSE, NOW(), NOW())
+       RETURNING id`
+    );
+    const uid = uRes.rows[0].id;
+    const nowSec = Math.floor(Date.now() / 1000);
+    const futureDate = nowSec + 30 * 86400;
+    const subId = `sub_tunnel_repeat_${Date.now()}`;
+    const sessionId = `cs_tunnel_repeat_${Date.now()}`;
+
+    try {
+      const mockSub = {
+        id: subId,
+        status: 'active',
+        created: nowSec,
+        customer: `cus_tunnel_repeat_${uid}`,
+        metadata: { solitiquo_user_id: String(uid), solitiquo_plan: 'monthly', solitiquo_currency: 'EUR' },
+        current_period_start: nowSec,
+        current_period_end: futureDate,
+        cancel_at_period_end: false,
+        items: {
+          data: [{
+            price: { id: PRICES.EUR.monthly, unit_amount: 699, currency: 'eur', recurring: { interval: 'month' }, product: 'prod_repeat' },
+            current_period_start: nowSec,
+            current_period_end: futureDate
+          }]
+        }
+      };
+
+      const mockStripe = {
+        checkout: {
+          sessions: {
+            retrieve: async () => ({
+              id: sessionId,
+              customer: `cus_tunnel_repeat_${uid}`,
+              client_reference_id: String(uid),
+              metadata: { solitiquo_user_id: String(uid), solitiquo_plan: 'monthly', solitiquo_currency: 'EUR' },
+              livemode: false,
+              status: 'complete',
+              payment_status: 'paid',
+              amount_total: 699,
+              currency: 'eur',
+              mode: 'subscription',
+              subscription: mockSub,
+              created: nowSec
+            })
+          }
+        }
+      };
+
+      const res1 = await executeConfirmSession({ stripe: mockStripe, userId: uid, sessionId });
+      const res2 = await executeConfirmSession({ stripe: mockStripe, userId: uid, sessionId });
+
+      assert.equal(res1.status, 200);
+      assert.equal(res2.status, 200);
+      assert.equal(res1.data.success, true);
+      assert.equal(res2.data.success, true);
+
+      const subRows = await pool.query('SELECT id FROM subscriptions WHERE stripe_subscription_id = $1', [subId]);
+      assert.equal(subRows.rows.length, 1);
+
+      const uCheck = await pool.query('SELECT is_subscriber FROM users WHERE id = $1', [uid]);
+      assert.equal(uCheck.rows[0].is_subscriber, true);
+    } finally {
+      await pool.query('DELETE FROM subscriptions WHERE user_id = $1', [uid]);
+      await pool.query('DELETE FROM stripe_webhook_events WHERE event_id = $1', [`checkout_session_${sessionId}`]);
+      await pool.query('DELETE FROM users WHERE id = $1', [uid]);
+    }
+  });
 });
 

@@ -771,7 +771,6 @@ async function executeConfirmSession({
     session = await stripe.checkout.sessions.retrieve(sessionId, {
       expand: [
         'subscription',
-        'subscription.items.data.price.product',
         'subscription.default_payment_method'
       ]
     });
@@ -801,9 +800,10 @@ async function executeConfirmSession({
 
   // 3. Récupération et vérification du statut de l'abonnement associé
   let subscription = session.subscription;
-  if (typeof subscription === 'string') {
+  if (typeof subscription === 'string' || !subscription?.items?.data?.[0]?.price) {
+    const subIdToRetrieve = typeof subscription === 'string' ? subscription : subscription?.id;
     try {
-      subscription = await stripe.subscriptions.retrieve(subscription, {
+      subscription = await stripe.subscriptions.retrieve(subIdToRetrieve, {
         expand: ['items.data.price.product', 'default_payment_method']
       });
     } catch (subErr) {
