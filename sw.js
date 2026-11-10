@@ -6,7 +6,15 @@
 // ============================================================
 
 // CACHE_NAME inclut la version/date du déploiement
-const CACHE_NAME = 'solitiquo-v20261108-fix-admin-lot3i';
+const CACHE_NAME = 'solitiquo-v20261110-fix-sw-ping-lot0708';
+
+// Sondes de disponibilité / santé à laisser passer directement sans interception SW
+const NETWORK_PASSTHROUGH_API_PATHS = new Set([
+    '/api/ping',
+    '/api/health',
+    '/api/health/live',
+    '/api/health/ready'
+]);
 
 // Assets à pré-cacher au moment de l'installation (TOUTES les pages et TOUS les fichiers CSS)
 const PRECACHE_URLS = [
@@ -147,6 +155,19 @@ self.addEventListener('fetch', (event) => {
     // ── Administration Back-Office : Toujours Network-Only direct, aucun cache SW (Lot 3I) ──
     if (url.pathname.includes('admin') || url.pathname.startsWith('/api/admin')) {
         return; // Laisser le navigateur gérer directement par le réseau sans intervention du SW
+    }
+
+    // ── Sondes de santé et navigations directes vers /api/* : passthrough réseau direct sans fallback SW ──
+    const normalizedPath =
+        url.pathname.length > 1 && url.pathname.endsWith('/')
+            ? url.pathname.slice(0, -1)
+            : url.pathname;
+    if (
+        url.hostname === self.location.hostname &&
+        (NETWORK_PASSTHROUGH_API_PATHS.has(normalizedPath) ||
+            (url.pathname.startsWith('/api/') && request.mode === 'navigate'))
+    ) {
+        return;
     }
 
     // ── API GET : Network-Only ──
