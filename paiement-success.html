@@ -191,6 +191,7 @@
                 // CAS 1 : Retour Stripe Checkout (session_id)
                 // ══════════════════════════════════════════════════════════════
                 if (sessionId && !isMock) {
+                    let confirmHandled = false;
                     try {
                         const confirmRes = await fetch(`${window.API_URL}/stripe/confirm-session`, {
                             method: 'POST',
@@ -213,12 +214,60 @@
                         if (confirmRes.ok && confirmData.success && confirmData.user?.is_subscriber) {
                             setConfirmedState(confirmData.user);
                             return;
-                        } else if (!confirmRes.ok) {
-                            setErrorState(confirmData.error || 'La confirmation de paiement a été rejetée.');
-                            return;
                         }
+                        console.warn('confirm-session non concluant, vérification via session-status...', confirmData);
                     } catch (confirmErr) {
                         console.warn('Erreur confirm-session:', confirmErr);
+                    }
+
+                    // En cas d'échec ou d'attente de confirm-session, vérification côté serveur liée à cette session spécifique
+                    try {
+                        let attempts = 0;
+                        const maxAttempts = 3;
+
+                        while (attempts < maxAttempts && !confirmHandled) {
+                            attempts++;
+                            const statusRes = await fetch(`${window.API_URL}/stripe/session-status?session_id=${encodeURIComponent(sessionId)}`, {
+                                credentials: 'include'
+                            });
+
+                            if (statusRes.status === 401) {
+                                setUnauthenticatedState();
+                                return;
+                            }
+                            if (statusRes.status === 403) {
+                                const errData = await statusRes.json();
+                                setErrorState(errData.error || 'Cette session ne correspond pas à votre compte.');
+                                return;
+                            }
+
+                            if (statusRes.ok) {
+                                const statusData = await statusRes.json();
+                                if (statusData.confirmed && statusData.user?.is_subscriber) {
+                                    setConfirmedState(statusData.user);
+                                    confirmHandled = true;
+                                    return;
+                                } else if (statusData.status === 'processing') {
+                                    setPendingState('Votre paiement a été reçu. L\’activation de votre abonnement est en cours de finalisation...');
+                                } else if (statusData.status === 'expired') {
+                                    setErrorState('Cette session de paiement a expiré.');
+                                    return;
+                                }
+                            }
+
+                            if (!confirmHandled && attempts < maxAttempts) {
+                                await new Promise(r => setTimeout(r, 2000));
+                            }
+                        }
+
+                        if (!confirmHandled) {
+                            setPendingState('Votre paiement a été pris en compte. L\’accès Premium sera activé d’ici quelques instants dès réception de la confirmation finale.');
+                            return;
+                        }
+                    } catch (statusErr) {
+                        console.warn('Erreur session-status:', statusErr);
+                        setPendingState('Votre session a été soumise. Si votre accès ne s\’active pas automatiquement, veuillez rafraîchir cette page ou contacter le support.');
+                        return;
                     }
                 }
 

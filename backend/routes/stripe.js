@@ -135,8 +135,8 @@ async function syncUserEntitlement(userId, client = pool) {
   return { is_subscriber: entitled, subscription_end_date: endDate };
 }
 
-async function getOrCreateStripeCustomer(stripe, user) {
-  const localSub = await pool.query(
+async function getOrCreateStripeCustomer(stripe, user, client = pool) {
+  const localSub = await client.query(
     `SELECT stripe_customer_id FROM subscriptions
      WHERE user_id = $1 AND stripe_customer_id IS NOT NULL
      ORDER BY id DESC LIMIT 1`,
@@ -166,20 +166,34 @@ async function getOrCreateStripeCustomer(stripe, user) {
   } catch {
     try {
       const listRes = await stripe.customers.list({ email: user.email, limit: 10 });
-      const match = listRes.data.find(c => c.metadata?.solitiquo_user_id === String(user.id) && !c.deleted);
+      const match = listRes.data?.find(c => c.metadata?.solitiquo_user_id === String(user.id) && !c.deleted);
       if (match) return match.id;
     } catch {
       // Aucun client trouvé par listing, création nécessaire ci-dessous
     }
   }
 
-  const customer = await stripe.customers.create({
-    email: user.email,
-    name: user.username,
-    metadata: { solitiquo_user_id: String(user.id) }
-  }, {
-    idempotencyKey: `create_customer_user_${user.id}`
-  });
+  let customer;
+  try {
+    customer = await stripe.customers.create({
+      email: user.email,
+      name: user.username,
+      metadata: { solitiquo_user_id: String(user.id) }
+    }, {
+      idempotencyKey: `create_customer_user_${user.id}`
+    });
+    if (customer && customer.deleted) {
+      throw new Error('Customer returned by idempotency cache is deleted');
+    }
+  } catch {
+    customer = await stripe.customers.create({
+      email: user.email,
+      name: user.username,
+      metadata: { solitiquo_user_id: String(user.id) }
+    }, {
+      idempotencyKey: `create_customer_user_${user.id}_${Date.now()}`
+    });
+  }
   return customer.id;
 }
 
@@ -385,6 +399,7 @@ async function executeCheckoutTransaction({
   testCountry,
   locale
 }) {
+  const pConfig = p || pricing(testCountry || _country || 'FR');
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -440,33 +455,11 @@ async function executeCheckoutTransaction({
     }
 
     // 4. Recherche et réutilisation du Customer Stripe (ou création sous verrou avec clé idempotente)
-    let customerId;
-    const localCustRes = await client.query(
-      `SELECT stripe_customer_id FROM subscriptions
-       WHERE user_id = $1 AND stripe_customer_id IS NOT NULL
-       ORDER BY id DESC LIMIT 1`,
-      [userId]
-    );
-    if (localCustRes.rows[0]?.stripe_customer_id) {
-      customerId = localCustRes.rows[0].stripe_customer_id;
-    } else {
-      const searchRes = await stripe.customers.search({
-        query: `metadata['solitiquo_user_id']:'${userId}'`,
-        limit: 1
-      });
-      if (searchRes.data && searchRes.data.length > 0 && !searchRes.data[0].deleted) {
-        customerId = searchRes.data[0].id;
-      } else {
-        const newCust = await stripe.customers.create({
-          email: user.email || userEmail,
-          name: user.username,
-          metadata: { solitiquo_user_id: String(userId) }
-        }, {
-          idempotencyKey: `create_customer_user_${userId}`
-        });
-        customerId = newCust.id;
-      }
-    }
+    const customerId = await getOrCreateStripeCustomer(stripe, {
+      id: userId,
+      email: user.email || userEmail,
+      username: user.username
+    }, client);
 
     // 5. Création de la réservation locale (status='pending', stripe_subscription_id=NULL) AVANT l'appel Stripe
     const tempTxId = `pending_${userId}_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
@@ -480,18 +473,18 @@ async function executeCheckoutTransaction({
          'pending', NOW(), NOW() + INTERVAL '1 hour', $6, NULL,
          NULL, NOW(), NOW()
        ) RETURNING id`,
-      [userId, plan, p[plan] || p.monthly, p.currency, tempTxId, customerId]
+      [userId, plan, pConfig[plan] || pConfig.monthly, pConfig.currency, tempTxId, customerId]
     );
     const reservationId = pendingInsert.rows[0].id;
 
     const trialEligible = plan === 'monthly' && !user.subscription_trial_used_at;
-    const priceId = plan === 'yearly' ? p.yearlyPriceId : p.monthlyPriceId;
+    const priceId = plan === 'yearly' ? pConfig.yearlyPriceId : pConfig.monthlyPriceId;
     const integrationId = generateIntegrationIdentifier();
 
     const metadata = {
       solitiquo_user_id: String(userId),
       solitiquo_plan: plan,
-      solitiquo_currency: p.currency,
+      solitiquo_currency: pConfig.currency,
       solitiquo_trial_eligible: trialEligible ? 'true' : 'false',
       integration_identifier: integrationId
     };
@@ -720,19 +713,29 @@ function validateCheckoutSessionPricingAndPlan(session, subscription) {
     return { status: 400, error: 'Montant du tarif Stripe incohérent avec la grille tarifaire.' };
   }
 
-  if (session.payment_status === 'no_payment_required') {
-    if (subscription.status !== 'trialing') {
-      return { status: 400, error: 'Paiement requis pour un abonnement sans période d’essai active.' };
+  const isTrial = subscription.status === 'trialing';
+
+  if (isTrial) {
+    if (purchasedPlan !== 'monthly') {
+      return { status: 400, error: 'Période d’essai non autorisée pour cette formule d’abonnement.' };
+    }
+    if (session.payment_status !== 'paid' && session.payment_status !== 'no_payment_required') {
+      return { status: 400, error: 'Le paiement n’a pas été validé.' };
     }
     if (typeof session.amount_total !== 'number' || session.amount_total !== 0) {
       return { status: 400, error: 'Montant initial incohérent pour une session en essai gratuit.' };
     }
-  } else if (session.payment_status === 'paid') {
-    if (typeof session.amount_total !== 'number' || session.amount_total !== expectedAmountCents) {
-      return { status: 400, error: 'Montant total payé incohérent avec le prix du plan choisi.' };
-    }
   } else {
-    return { status: 400, error: 'Le paiement n’a pas été validé.' };
+    if (session.payment_status === 'no_payment_required') {
+      return { status: 400, error: 'Paiement requis pour un abonnement sans période d’essai active.' };
+    }
+    if (session.payment_status === 'paid') {
+      if (typeof session.amount_total !== 'number' || session.amount_total !== expectedAmountCents) {
+        return { status: 400, error: 'Montant total payé incohérent avec le prix du plan choisi.' };
+      }
+    } else {
+      return { status: 400, error: 'Le paiement n’a pas été validé.' };
+    }
   }
 
   return { status: 200, currency, purchasedPlan, expectedAmountCents };
@@ -872,11 +875,22 @@ async function executeConfirmSession({
       [userId]
     );
     if (userExistingCust.rows[0]?.stripe_customer_id && userExistingCust.rows[0].stripe_customer_id !== sessionCustomerId) {
-      if (!isExternalClient) await client.query('ROLLBACK');
-      return {
-        status: 409,
-        data: { success: false, error: 'Conflit d’identifiant client Stripe avec votre compte existant.' }
-      };
+      let oldCustomerValid = true;
+      try {
+        const oldCust = await stripe.customers.retrieve(userExistingCust.rows[0].stripe_customer_id);
+        if (!oldCust || oldCust.deleted) {
+          oldCustomerValid = false;
+        }
+      } catch {
+        oldCustomerValid = false;
+      }
+      if (oldCustomerValid) {
+        if (!isExternalClient) await client.query('ROLLBACK');
+        return {
+          status: 409,
+          data: { success: false, error: 'Conflit d’identifiant client Stripe avec votre compte existant.' }
+        };
+      }
     }
 
     // Contrôle d'obsolescence sur une éventuelle souscription déjà enregistrée
@@ -1019,6 +1033,104 @@ router.post('/confirm-session', verifyCsrf, isAuthenticated, async (req, res) =>
   });
 
   return res.status(result.status).json(result.data);
+});
+
+// ---------------------------------------------------------------------------
+// GET /api/stripe/session-status — Authentifié (Vérification résiliente de session)
+// ---------------------------------------------------------------------------
+router.get('/session-status', isAuthenticated, async (req, res) => {
+  const stripe = stripeClient();
+  if (!stripe) {
+    return res.status(503).json({ success: false, error: 'Stripe non configuré.' });
+  }
+
+  const sessionId = req.query?.session_id;
+  const userId = req.session?.user?.id;
+
+  if (!sessionId || typeof sessionId !== 'string' || !sessionId.startsWith('cs_')) {
+    return res.status(400).json({ success: false, error: 'Identifiant de session invalide.' });
+  }
+
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['subscription']
+    });
+
+    if (!session) {
+      return res.status(404).json({ success: false, error: 'Session introuvable.' });
+    }
+
+    const expectedUid = String(userId);
+    const clientRefUid = session.client_reference_id ? String(session.client_reference_id) : null;
+    const sessionMetaUid = session.metadata?.solitiquo_user_id ? String(session.metadata.solitiquo_user_id) : null;
+
+    if ((clientRefUid && clientRefUid !== expectedUid) || (sessionMetaUid && sessionMetaUid !== expectedUid)) {
+      return res.status(403).json({ success: false, error: 'Cette session de paiement ne correspond pas à votre compte.' });
+    }
+
+    const subId = typeof session.subscription === 'string'
+      ? session.subscription
+      : session.subscription?.id || null;
+
+    if (!subId) {
+      if (session.status === 'expired') {
+        return res.status(400).json({ success: false, status: 'expired', error: 'Session expirée.' });
+      }
+      return res.json({ success: true, confirmed: false, status: session.status || 'pending' });
+    }
+
+    const dbSub = await pool.query(
+      `SELECT id, user_id, plan, stripe_status, ends_at FROM subscriptions
+       WHERE stripe_subscription_id = $1 AND user_id = $2
+       LIMIT 1`,
+      [subId, userId]
+    );
+
+    const isConfirmed = dbSub.rows.length > 0 && ['active', 'trialing'].includes(dbSub.rows[0].stripe_status);
+
+    if (isConfirmed) {
+      const entitlement = await syncUserEntitlement(userId);
+      const endDateIso = entitlement.subscription_end_date
+        ? new Date(entitlement.subscription_end_date).toISOString()
+        : null;
+      await syncExpressUserSession(req.session, entitlement.is_subscriber, endDateIso);
+
+      return res.json({
+        success: true,
+        confirmed: true,
+        status: dbSub.rows[0].stripe_status,
+        user: req.session?.user || {
+          id: userId,
+          is_subscriber: entitlement.is_subscriber,
+          subscription_end_date: endDateIso
+        },
+        subscription: {
+          id: subId,
+          plan: dbSub.rows[0].plan,
+          status: dbSub.rows[0].stripe_status,
+          current_period_end: endDateIso
+        }
+      });
+    }
+
+    if (session.status === 'complete') {
+      return res.json({
+        success: true,
+        confirmed: false,
+        status: 'processing',
+        message: 'Abonnement en cours de synchronisation.'
+      });
+    }
+
+    return res.json({
+      success: true,
+      confirmed: false,
+      status: session.status || 'pending'
+    });
+  } catch (err) {
+    console.error('Erreur session-status:', err.message);
+    return res.status(500).json({ success: false, error: 'Impossible de vérifier l’état de la session.' });
+  }
 });
 
 // ---------------------------------------------------------------------------
@@ -1622,3 +1734,4 @@ module.exports.executeCheckoutTransaction = executeCheckoutTransaction;
 module.exports.executeConfirmSession = executeConfirmSession;
 module.exports.executeCancelSubscription = executeCancelSubscription;
 module.exports.processWebhookEvent = processWebhookEvent;
+module.exports.validateCheckoutSessionPricingAndPlan = validateCheckoutSessionPricingAndPlan;
