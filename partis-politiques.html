@@ -36,10 +36,12 @@
     rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
+  <script src="/js/image-fallback.js"></script>
   <script>
     function handleImgError(i) {
-      i.onerror = null;
-      i.src = 'https://placehold.co/150x150/f0f0f0/999?text=Logo';
+      if (typeof window.handleImageError === 'function') {
+        window.handleImageError(i, 'square');
+      }
     }
   </script>
   <!-- Favicon & icônes app -->
@@ -140,7 +142,7 @@
     <div class="mobile-nav-header">
       <div style="display:flex;align-items:center;gap:10px;">
         <img src="logo.svg" class="mobile-logo" style="height:30px;filter:brightness(0) invert(1);" alt="S"
-          onerror="this.style.display='none'">
+          onerror="if (typeof handleImageError === 'function') handleImageError(this, 'leader'); else this.style.display='none';">
         <span style="font-family:'Playfair Display';font-weight:700;font-size:1.5rem;">Solitiquo</span>
       </div>
       <button id="mobileNavClose" class="mobile-nav-close">×</button>
@@ -261,10 +263,11 @@
           if (isMajority(p)) orientation = 'Majorité';
 
           const tagColor = (orientation === 'Majorité') ? '#C82823' : '#37463D';
-          const logoSrc = p.logo_url || `https://placehold.co/150x150?text=${p.acronym || 'Parti'}`;
+          const defaultLogo = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.get) ? window.SolitiquoPlaceholders.get('square') : '/logo.svg';
+          const logoSrc = p.logo_url || defaultLogo;
 
           const leaderPhotoHtml = p.leader_photo_url
-            ? `<img src="${p.leader_photo_url}" class="pf-leader-img" alt="${p.leader_name}" onerror="this.style.display='none'">`
+            ? `<img src="${p.leader_photo_url}" class="pf-leader-img" alt="${p.leader_name}" onerror="if(typeof handleImageError==='function') handleImageError(this, 'leader'); else this.style.display='none';">`
             : '';
 
           // Formatage citoyen des sièges à l'Assemblée (10e Législature)

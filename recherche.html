@@ -29,7 +29,8 @@
         rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
-    <script>function handleImgError(i) { i.onerror = null; i.src = 'https://placehold.co/300x200/eee/999?text=Solitiquo'; }</script>
+    <script src="/js/image-fallback.js"></script>
+  <script>function handleImgError(i) { if (typeof window.handleImageError === 'function') window.handleImageError(i, 'card'); }</script>
     <script src="js/i18n.js"></script>
     <script src="js/config.js"></script>
     <script src="/js/api.js?v=38"></script>
@@ -541,7 +542,7 @@
 
                 return `
             <a href="${link}" class="result-card">
-                <img src="${img}" class="res-img" onerror="handleImgError(this)" loading="lazy">
+                <img src="${img || (window.SolitiquoPlaceholders ? window.SolitiquoPlaceholders.get('card') : '/logo.svg')}" class="res-img" onerror="if(typeof handleImageError==='function') handleImageError(this, 'card'); else handleImgError(this);" loading="lazy">
                 <div class="res-info">
                     <div>
                         <span class="res-type-badge ${badgeClass}">${badgeText}</span>

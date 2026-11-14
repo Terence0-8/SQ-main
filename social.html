@@ -40,10 +40,12 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
     rel="stylesheet" />
+  <script src="/js/image-fallback.js"></script>
   <script>
     function handleImgError(img) {
-      img.onerror = null;
-      img.src = 'https://placehold.co/600x400/eee/999?text=Solitiquo';
+      if (typeof window.handleImageError === 'function') {
+        window.handleImageError(img);
+      }
     }
   </script>
 
@@ -450,7 +452,10 @@
           });
           const une = articles[0];
           const linkUne = `article.html?id=${une.id}`;
-          const uneImg = une.image_url || 'https://via.placeholder.com/1600x900';
+          const defaultHero = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.get) ? window.SolitiquoPlaceholders.get('hero') : '';
+          const defaultArt = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.get) ? window.SolitiquoPlaceholders.get('article') : '';
+          const defaultCard = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.get) ? window.SolitiquoPlaceholders.get('card') : '';
+          const uneImg = une.image_url || defaultHero;
           let langBadgeUne = '';
           if (une.language !== lang) { langBadgeUne = une.language === 'fr' ? '🇫🇷' : '🇬🇧'; }
           const _lb = (art) => art.language !== lang
@@ -466,7 +471,7 @@
           document.getElementById('hero-dynamic').innerHTML = `
             <section class="grand-hero-section">
               <a href="${linkUne}" class="hero-link-full"></a>
-              <img src="${uneImg}" class="hero-bg-img" onerror="handleImgError(this)" loading="lazy">
+              <img src="${uneImg}" class="hero-bg-img" onerror="if(typeof handleImageError==='function') handleImageError(this, 'hero'); else handleImgError(this);" loading="lazy">
               <div class="hero-overlay">
                 <div class="hero-tags-wrap">
                     <span class="hero-badge-une">${t('badge_une', 'À LA UNE')}</span>
@@ -484,7 +489,7 @@
 
           document.getElementById('magazine-feed').innerHTML = `
             <article class="article-magazine">
-              <img src="${featured.image_url}" class="mag-img" onerror="handleImgError(this)" loading="lazy">
+              <img src="${featured.image_url || defaultArt}" class="mag-img" onerror="if(typeof handleImageError==='function') handleImageError(this, 'article'); else handleImgError(this);" loading="lazy">
               <div class="mag-content">
                 <a href="article.html?id=${featured.id}" style="text-decoration:none;"><h3>${_pb(featured)}${featured.title} ${_lb(featured)} ${_db(featured)}</h3></a>
                 <p class="mag-excerpt">${featured.excerpt || featured.slug}</p>
@@ -495,7 +500,7 @@
               ${gridList.map(art => `
                 <a href="article.html?id=${art.id}" class="grid-card">
                   <div class="grid-card-img-wrap">
-                    <img src="${art.image_url}" class="grid-card-img" onerror="handleImgError(this)" loading="lazy">
+                    <img src="${art.image_url || defaultCard}" class="grid-card-img" onerror="if(typeof handleImageError==='function') handleImageError(this, 'card'); else handleImgError(this);" loading="lazy">
                     ${art.is_premium ? '<img src="GOLD.png" alt="Premium" class="premium-badge-card" loading="lazy">' : ''}
                   </div>
                   <div class="grid-card-body">
@@ -559,7 +564,7 @@
 
                 return '<a href="' + linkDisco + '" class="' + cardClass + '">' +
                   '<div class="disco-img-wrap">' +
-                    '<img src="' + (art.image_url || 'https://via.placeholder.com/600x400') + '" class="disco-img" onerror="handleImgError(this)" loading="lazy">' +
+                    '<img src="' + (art.image_url || defaultCard) + '" class="disco-img" onerror="if(typeof handleImageError===\'function\') handleImageError(this, \'card\'); else handleImgError(this);" loading="lazy">' +
                   '</div>' +
                   '<div class="disco-body">' +
                     '<span class="art-cat" style="font-size:0.65rem; margin-bottom:4px; color:#C82823; font-weight:800; text-transform:uppercase;">' + tCategory(catTag) + db + '</span>' +
@@ -610,7 +615,7 @@
           const cat = document.getElementById('soc-pod-cat');
           const link = document.getElementById('soc-pod-link');
 
-          if (img) img.src = pod.image_url || pod.cover_image || 'https://placehold.co/400x300';
+          if (img) { img.src = pod.image_url || pod.cover_image || ((window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.get) ? window.SolitiquoPlaceholders.get('podcast') : '/logo.svg'); img.onerror = function() { if (typeof handleImageError === 'function') handleImageError(this, 'podcast'); }; }
           if (title) title.textContent = pod.title;
           if (cat) cat.textContent = (tCategory(pod.category || 'Social')).toUpperCase();
           if (link) link.href = `podcast.html?id=${pod.id}`;

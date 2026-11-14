@@ -6849,3 +6849,61 @@ aside.content-right {
         grid-column: span 1;
     }
 }
+
+/* ================================================================
+   SOLITIQUO IMAGE RESILIENCE & CSS PLACEHOLDERS
+   Garantit qu'aucun conteneur d'image ne reste vide, même sans JS
+   ================================================================ */
+.grand-hero-section {
+    background-color: #1E2621 !important;
+    background-image:
+        radial-gradient(circle at 50% 45%, rgba(197, 197, 169, 0.08) 0%, transparent 60%),
+        linear-gradient(135deg, #1E2621 0%, #2B3730 50%, #171E1A 100%) !important;
+}
+
+.hero-bg-img {
+    background-color: #1E2621;
+    min-height: 100%;
+    width: 100%;
+}
+
+.article-row > div:first-child,
+.art-img-wrap,
+.disco-img-wrap,
+.article-hero-figure,
+.article-featured-image,
+.mag-img,
+.pod-thumb-container,
+.replay-card-thumb,
+.grid-card-img-wrap {
+    background-color: #242E28;
+    background-image: radial-gradient(circle at 50% 50%, rgba(197, 197, 169, 0.06) 0%, transparent 70%);
+}
+
+.hero-bg-img,
+.art-img,
+.disco-img,
+.grid-card-img,
+.related-card-img,
+.pod-thumb,
+.replay-img,
+.hero-cover,
+.pc-img,
+.hl-img {
+    background-color: #242E28;
+    color: transparent;
+    font-size: 0; /* Supprime tout texte alt encombrant */
+}
+
+/* Évite les icônes d'images brisées natives du navigateur avant l'application du fallback */
+img:not([src]),
+img[src=""],
+img[src="null"],
+img[src="undefined"] {
+    opacity: 0;
+}
+
+img.sq-img-fallback-applied {
+    object-fit: cover !important;
+    opacity: 1 !important;
+}

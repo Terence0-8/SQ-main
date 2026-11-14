@@ -1084,8 +1084,9 @@
     }
   </style>
 
+  <script src="/js/image-fallback.js"></script>
   <script>
-    function handleImgError(img) { img.onerror = null; img.src = 'https://placehold.co/600x400/eee/999?text=Solitiquo'; }
+    function handleImgError(img) { if (typeof window.handleImageError === 'function') window.handleImageError(img, 'article'); }
   </script>
   <!-- Favicon & icônes app -->
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
@@ -1595,12 +1596,13 @@
           const catText = (typeof tCategory === 'function') ? tCategory(art.category) : (art.category || 'Solitiquo');
           const dateStr = SolitiquoAPI.formatDate(art.published_at, lang);
           const readTime = art.read_time || Math.max(Math.ceil((art.content || '').replace(/<[^>]*>/g, ' ').split(/\s+/).filter(w => w).length / 230), 1);
-          const imgUrl = art.image_url || 'https://placehold.co/600x400/eee/999?text=Solitiquo';
+          const defaultCard = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.get) ? window.SolitiquoPlaceholders.get('card') : 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20600%20400%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23242E28%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20fill%3D%22%23C5C5A9%22%20font-family%3D%22serif%22%20font-size%3D%2228%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%3ESOLITIQUO%3C%2Ftext%3E%3C%2Fsvg%3E';
+          const imgUrl = art.image_url || defaultCard;
 
           return `
             <a href="article.html?id=${art.id}" class="related-card">
-              <div class="related-card-img-wrapper">
-                <img src="${imgUrl}" alt="${(art.title || '').replace(/"/g, '&quot;')}" class="related-card-img" onerror="handleImgError(this)" loading="lazy">
+              <div class="related-card-img-wrapper" style="background:#242E28;">
+                <img src="${imgUrl}" alt="${(art.title || '').replace(/"/g, '&quot;')}" class="related-card-img" onerror="if(typeof handleImageError==='function') handleImageError(this, 'card'); else handleImgError(this);" loading="lazy">
                 <span class="related-card-badge">${catText}</span>
               </div>
               <div class="related-card-content">
@@ -2319,12 +2321,19 @@
 
           const imgEl = document.getElementById('art-image');
           const figEl = document.getElementById('art-figure');
+          const capEl = document.getElementById('art-caption');
+          if (figEl) figEl.style.display = 'block';
           if (article.image_url) {
             if (imgEl) imgEl.src = article.image_url;
-            const capEl = document.getElementById('art-caption');
             if (capEl) capEl.textContent = article.image_caption || '© Solitiquo';
-          } else if (figEl) {
-            figEl.style.display = 'none';
+          } else {
+            if (imgEl) {
+              imgEl.src = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.get)
+                ? window.SolitiquoPlaceholders.get('article')
+                : 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20800%20500%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23242E28%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20fill%3D%22%23C5C5A9%22%20font-family%3D%22serif%22%20font-size%3D%2236%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%3ESOLITIQUO%3C%2Ftext%3E%3C%2Fsvg%3E';
+              imgEl.classList.add('sq-img-fallback-applied');
+            }
+            if (capEl) capEl.textContent = article.image_caption || '© Solitiquo';
           }
 
           try {

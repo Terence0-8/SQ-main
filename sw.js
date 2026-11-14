@@ -88,6 +88,7 @@ const PRECACHE_URLS = [
     '/js/api.js?v=offline-fix1',
     '/js/config.js',
     '/js/i18n.js',
+    '/js/image-fallback.js',
     '/js/lazyload.js',
     '/js/offline-manager.js',
     '/js/offline-manager.js?v=offline-fix1',
@@ -234,18 +235,29 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // ── Assets externes cross-origin (fonts Google, Cloudinary) : cache si dispo, sinon réseau ──
+    // ── Assets externes cross-origin (fonts Google, Cloudinary, Unsplash) : cache si dispo, sinon réseau ──
     if (url.hostname !== self.location.hostname) {
         event.respondWith(
             caches.match(request).then((cached) => {
                 if (cached) return cached;
                 return fetch(request).then((response) => {
-                    if (response && response.status === 200 && response.type === 'cors') {
+                    if (response && (response.status === 200 || response.type === 'opaque')) {
                         const clone = response.clone();
                         caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
                     }
                     return response;
-                }).catch(() => null);
+                }).catch(() => {
+                    // Si l'asset externe est une image et que la requête échoue, servir un SVG de secours valide au lieu de crasher
+                    const isImage = request.destination === 'image' || /\.(jpe?g|png|gif|webp|svg|ico)(\?.*)?$/i.test(url.pathname);
+                    if (isImage) {
+                        const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500"><rect width="100%" height="100%" fill="#1E2621"/><text x="50%" y="50%" fill="#C5C5A9" font-family="serif" font-size="36" text-anchor="middle" dominant-baseline="middle">SOLITIQUO</text></svg>`;
+                        return new Response(fallbackSvg, {
+                            status: 200,
+                            headers: { 'Content-Type': 'image/svg+xml; charset=utf-8' }
+                        });
+                    }
+                    return new Response('', { status: 408, statusText: 'External Asset Timeout' });
+                });
             })
         );
         return;
@@ -296,6 +308,14 @@ self.addEventListener('fetch', (event) => {
                     if (fallbackCss) return fallbackCss;
                     return new Response('/* Solitiquo offline fallback css */', {
                         headers: { 'Content-Type': 'text/css' }
+                    });
+                }
+                const isImage = request.destination === 'image' || /\.(jpe?g|png|gif|webp|svg|ico)(\?.*)?$/i.test(url.pathname);
+                if (isImage) {
+                    const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500"><rect width="100%" height="100%" fill="#1E2621"/><text x="50%" y="50%" fill="#C5C5A9" font-family="serif" font-size="36" text-anchor="middle" dominant-baseline="middle">SOLITIQUO</text></svg>`;
+                    return new Response(fallbackSvg, {
+                        status: 200,
+                        headers: { 'Content-Type': 'image/svg+xml; charset=utf-8' }
                     });
                 }
                 return new Response('', { status: 503, statusText: 'Offline Asset Unavailable' });

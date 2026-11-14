@@ -1339,7 +1339,10 @@ async function loadArticles(lang = getLanguage()) {
       if (heroContainer) {
         const une = articles[0];
         const linkUne = `article.html?id=${une.id}`;
-        const uneImg = une.image_url || 'https://via.placeholder.com/1600x900';
+        const defaultHero = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.get)
+          ? window.SolitiquoPlaceholders.get('hero')
+          : 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201600%20900%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%231E2621%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20fill%3D%22%23C5C5A9%22%20font-family%3D%22serif%22%20font-size%3D%2260%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%3ESOLITIQUO%3C%2Ftext%3E%3C%2Fsvg%3E';
+        const uneImg = une.image_url || defaultHero;
         const uneTitle = une.title || '';
         const uneExcerpt = une.excerpt || une.description || '';
         const uneCat = une.category || '';
@@ -1351,7 +1354,7 @@ async function loadArticles(lang = getLanguage()) {
         heroContainer.innerHTML = `
           <section class="grand-hero-section">
             <a href="${linkUne}" style="position:absolute; inset:0; z-index:2;" aria-label="${uneTitle}"></a>
-            <img src="${uneImg}" class="hero-bg-img" style="object-position: top center;" alt="${uneTitle}">
+            <img src="${uneImg}" class="hero-bg-img" style="object-position: top center;" alt="${uneTitle}" onerror="if(typeof handleImageError==='function') handleImageError(this, 'hero');">
             <div class="hero-overlay">
               <span class="hero-tag">${badgeLabel}${uneCat ? ' • ' + tCategory(uneCat) : ''}${demoTag}</span>
               <h1 class="hero-title-main">${uneBadge}${uneTitle}</h1>
@@ -1369,9 +1372,12 @@ async function loadArticles(lang = getLanguage()) {
       if (magazineFeed) {
         const mainList = articles.slice(1, 6);
         if (mainList.length > 0) {
+          const defaultArt = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.get)
+            ? window.SolitiquoPlaceholders.get('article')
+            : 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20800%20500%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23242E28%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20fill%3D%22%23C5C5A9%22%20font-family%3D%22serif%22%20font-size%3D%2236%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%3ESOLITIQUO%3C%2Ftext%3E%3C%2Fsvg%3E';
           magazineFeed.innerHTML = mainList.map(art => {
             const linkArt = `article.html?id=${art.id}`;
-            const artImg = art.image_url || 'https://via.placeholder.com/600x400';
+            const artImg = art.image_url || defaultArt;
             const artTitle = art.title || '';
             const artExcerpt = art.excerpt || art.description || '';
             const artCat = art.category || '';
@@ -1381,9 +1387,9 @@ async function loadArticles(lang = getLanguage()) {
 
             return `
               <article class="article-row">
-                <div style="overflow:hidden; border-radius:4px; height:220px;">
+                <div style="overflow:hidden; border-radius:4px; height:220px; background:#242E28;">
                   <a href="${linkArt}">
-                    <img src="${artImg}" class="art-img" alt="${artTitle}" loading="lazy">
+                    <img src="${artImg}" class="art-img" alt="${artTitle}" loading="lazy" onerror="if(typeof handleImageError==='function') handleImageError(this, 'article');">
                   </a>
                 </div>
                 <div class="art-info">
@@ -1413,6 +1419,9 @@ async function loadArticles(lang = getLanguage()) {
             discoverGrid.innerHTML = `<p style="text-align:center; grid-column: 1 / -1; padding:2rem; color:#888;">${t('msg_no_data')}</p>`;
             return;
           }
+          const defaultCard = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.get)
+            ? window.SolitiquoPlaceholders.get('card')
+            : 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20600%20400%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23242E28%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20fill%3D%22%23C5C5A9%22%20font-family%3D%22serif%22%20font-size%3D%2228%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%3ESOLITIQUO%3C%2Ftext%3E%3C%2Fsvg%3E';
           discoverGrid.innerHTML = list.map((art, idx) => {
             let cardClass = 'disco-card';
             const patternIndex = idx % 10;
@@ -1431,8 +1440,8 @@ async function loadArticles(lang = getLanguage()) {
 
             return `
               <a href="${linkDisco}" class="${cardClass}">
-                <div class="disco-img-wrap">
-                  <img src="${art.image_url || 'https://via.placeholder.com/600x400'}" class="disco-img" alt="${art.title}" onerror="handleImgError(this)" loading="lazy">
+                <div class="disco-img-wrap" style="background:#242E28;">
+                  <img src="${art.image_url || defaultCard}" class="disco-img" alt="${art.title}" onerror="if(typeof handleImageError==='function') handleImageError(this, 'card'); else handleImgError(this);" loading="lazy">
                 </div>
                 <div class="disco-body">
                   <span class="art-cat" style="font-size:0.65rem; margin-bottom:4px; color:#C82823; font-weight:800; text-transform:uppercase;">${tCategory(catTag)}${demoBadge}</span>

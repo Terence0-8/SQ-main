@@ -35,26 +35,17 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
     rel="stylesheet" />
 
-  <!-- ✅ Version CSP-compliant : pas de inline handlers -->
+  <script src="/js/image-fallback.js"></script>
   <script>
-    // Gestion globale des erreurs d'images
-    document.addEventListener('DOMContentLoaded', () => {
-      // Attacher les gestionnaires aux images existantes
-      document.querySelectorAll('img').forEach(img => {
-        img.addEventListener('error', function () {
-          this.onerror = null; // Éviter les boucles infinies
-          this.src = 'https://placehold.co/600x400/eee/999?text=Solitiquo';
-        });
-      });
-    });
-
     // Pour les images ajoutées dynamiquement
     function attachImageErrorHandlers(container) {
+      if (!container || !container.querySelectorAll) return;
       container.querySelectorAll('img').forEach(img => {
-        img.addEventListener('error', function () {
-          this.onerror = null;
-          this.src = 'https://placehold.co/600x400/eee/999?text=Solitiquo';
-        });
+        if (typeof window.handleImageError === 'function') {
+          img.addEventListener('error', function () {
+            window.handleImageError(this);
+          });
+        }
       });
     }
   </script>
