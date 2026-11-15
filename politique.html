@@ -168,7 +168,7 @@
 
 
   <div id="hero-dynamic">
-    <section class="grand-hero-section" style="background:#eee;"></section>
+    <section class="grand-hero-section" style="background:#1E2621;"></section>
   </div>
 
   <div class="main-grid">
@@ -305,10 +305,10 @@
     </div>
   </footer>
 
-  <script src="js/i18n.js"></script>
-  <script src="/js/solitiquo.js?v=38"></script>
-  <script src="js/config.js"></script>
-  <script src="/js/api.js?v=38"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/i18n.js?v=43"></script>
+  <script src="/js/api.js?v=43"></script>
+  <script src="/js/solitiquo.js?v=43"></script>
   <script>
     // --- 1. GESTIONNAIRE DE CLICS GLOBAL (LA SOLUTION) ---
     // Cette partie écoute tous les clics sur la page et réagit si c'est un bouton de sondage
@@ -490,6 +490,8 @@
             return 0;
           });
 
+          const une = articles[0];
+          const linkUne = `article.html?id=${une.id}`;
           const defaultHero = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.get) ? window.SolitiquoPlaceholders.get('hero') : '';
           const uneImg = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.getSafeUrl)
             ? window.SolitiquoPlaceholders.getSafeUrl(une.image_url, 'hero')
@@ -527,14 +529,17 @@
             </section>
           `;
 
-          const featured = articles[1];
+          const featured = articles[1] || articles[0];
           const gridList = articles.slice(2, 8);
           const defaultArt = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.get) ? window.SolitiquoPlaceholders.get('article') : '';
           const defaultCard = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.get) ? window.SolitiquoPlaceholders.get('card') : '';
+          const featuredImg = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.getSafeUrl)
+            ? window.SolitiquoPlaceholders.getSafeUrl(featured.image_url, 'article')
+            : (featured.image_url || defaultArt);
 
           document.getElementById('magazine-feed').innerHTML = `
             <article class="article-magazine">
-              <img src="${featured.image_url || defaultArt}" class="mag-img" onerror="if(typeof handleImageError==='function') handleImageError(this, 'article'); else handleImgError(this);" loading="lazy">
+              <img src="${featuredImg}" class="mag-img" onerror="if(typeof handleImageError==='function') handleImageError(this, 'article'); else handleImgError(this);" loading="lazy">
               <div class="mag-content">
                 <a href="article.html?id=${featured.id}" style="text-decoration:none;"><h3>${_pb(featured)}${featured.title} ${_lb(featured)} ${_db(featured)}</h3></a>
                 <p class="mag-excerpt">${featured.excerpt || featured.slug}</p>
@@ -542,10 +547,14 @@
               </div>
             </article>
             <div class="pol-news-grid">
-              ${gridList.map(art => `
+              ${gridList.map(art => {
+                const artImg = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.getSafeUrl)
+                  ? window.SolitiquoPlaceholders.getSafeUrl(art.image_url, 'card')
+                  : (art.image_url || defaultCard);
+                return `
                 <a href="article.html?id=${art.id}" class="grid-card">
                   <div class="grid-card-img-wrap" style="background:#242E28;">
-                    <img src="${art.image_url || defaultCard}" class="grid-card-img" onerror="if(typeof handleImageError==='function') handleImageError(this, 'card'); else handleImgError(this);" loading="lazy">
+                    <img src="${artImg}" class="grid-card-img" onerror="if(typeof handleImageError==='function') handleImageError(this, 'card'); else handleImgError(this);" loading="lazy">
                     ${art.is_premium ? '<img src="GOLD.png" alt="Premium" class="premium-badge-card" loading="lazy">' : ''}
                   </div>
                   <div class="grid-card-body">
@@ -555,7 +564,7 @@
                     <div class="grid-card-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
                   </div>
                 </a>
-              `).join('')}
+              `}).join('')}
             </div>
           `;
 
