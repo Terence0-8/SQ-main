@@ -26,6 +26,16 @@
 })(typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : this, function () {
   'use strict';
 
+  // Échappe strictement les caractères spéciaux XML/SVG pour garantir des Data-URIs valides
+  function escapeXml(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
+  }
+
   // Palette de la charte officielle Solitiquo
   const COLORS = {
     bgDark: '#1E2621',
@@ -48,8 +58,13 @@
     const circleRadius = Math.round(minDim * 0.22);
     const fontSizeTitle = Math.max(16, Math.round(minDim * 0.10));
     const fontSizeSub = Math.max(10, Math.round(minDim * 0.04));
-    const centerY = Math.round(h / 2);
+
+    // Pour le hero (16:9), on centre l'emblème légèrement plus haut pour ne pas masquer le texte éditorial
+    const centerY = (iconType === 'hero' || (w >= 1200 && h >= 600)) ? Math.round(h * 0.38) : Math.round(h / 2);
     const centerX = Math.round(w / 2);
+
+    const safeTitle = escapeXml(title);
+    const safeSub = escapeXml(subtitle);
 
     let iconPath = '';
     if (iconType === 'podcast') {
@@ -98,18 +113,18 @@
   <rect width="100%" height="100%" fill="url(#sq-grad-${w}-${h})"/>
   <rect width="100%" height="100%" fill="url(#sq-glow-${w}-${h})"/>
   <rect width="100%" height="100%" fill="url(#sq-pat-${w}-${h})"/>
-  <circle cx="${centerX}" cy="${centerY - (subtitle ? 12 : 0)}" r="${circleRadius}" fill="none" stroke="rgba(197, 197, 169, 0.12)" stroke-width="1.5"/>
+  <circle cx="${centerX}" cy="${centerY - (safeSub ? 12 : 0)}" r="${circleRadius}" fill="none" stroke="rgba(197, 197, 169, 0.12)" stroke-width="1.5"/>
   ${iconPath}
-  <text x="${centerX}" y="${centerY + Math.round(minDim * 0.17)}" fill="${COLORS.gold}" font-family="'Playfair Display', Georgia, serif" font-size="${fontSizeTitle}" font-weight="bold" text-anchor="middle" dominant-baseline="middle" letter-spacing="2">${title}</text>
-  ${subtitle ? `<text x="${centerX}" y="${centerY + Math.round(minDim * 0.28)}" fill="${COLORS.textMuted}" font-family="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="${fontSizeSub}" font-weight="600" text-anchor="middle" dominant-baseline="middle" letter-spacing="1.5" text-transform="uppercase">${subtitle}</text>` : ''}
+  <text x="${centerX}" y="${centerY + Math.round(minDim * 0.17)}" fill="${COLORS.gold}" font-family="'Playfair Display', Georgia, serif" font-size="${fontSizeTitle}" font-weight="bold" text-anchor="middle" dominant-baseline="middle" letter-spacing="2">${safeTitle}</text>
+  ${safeSub ? `<text x="${centerX}" y="${centerY + Math.round(minDim * 0.28)}" fill="${COLORS.textMuted}" font-family="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="${fontSizeSub}" font-weight="600" text-anchor="middle" dominant-baseline="middle" letter-spacing="1.5" text-transform="uppercase">${safeSub}</text>` : ''}
 </svg>`.trim();
 
     return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
   }
 
-  // Cache mémoire des Data-URIs précalculées pour performances maximales
+  // Cache mémoire des Data-URIs précalculées pour performances maximales (validées XML)
   const cache = {
-    hero: buildSvg(1600, 900, 'SOLITIQUO', 'Le média d\'analyse & d\'information', 'monogram'),
+    hero: buildSvg(1600, 900, 'SOLITIQUO', "Le média d'analyse & d'information", 'hero'),
     article: buildSvg(800, 500, 'SOLITIQUO', 'Actualité & Analyse', 'monogram'),
     card: buildSvg(600, 400, 'SOLITIQUO', 'Éditorial', 'monogram'),
     square: buildSvg(400, 400, 'SOLITIQUO', 'Média', 'monogram'),
@@ -259,22 +274,34 @@
       scanImages();
     }
 
-    // Observer pour les images ajoutées dynamiquement dans le DOM
-    if (typeof MutationObserver !== 'undefined' && document.body) {
-      const observer = new MutationObserver((mutations) => {
-        for (const m of mutations) {
-          for (const node of m.addedNodes) {
-            if (node.nodeType === 1) {
-              if (node.tagName === 'IMG') {
-                monitorImage(node);
-              } else if (node.querySelectorAll) {
-                node.querySelectorAll('img').forEach(monitorImage);
+    // Observer pour les images ajoutées dynamiquement dans le DOM (racine documentElement toujours disponible)
+    if (typeof MutationObserver !== 'undefined') {
+      const attachObserver = () => {
+        const root = document.documentElement || document.body;
+        if (!root) return;
+        const observer = new MutationObserver((mutations) => {
+          for (let i = 0; i < mutations.length; i++) {
+            const m = mutations[i];
+            for (let j = 0; j < m.addedNodes.length; j++) {
+              const node = m.addedNodes[j];
+              if (node.nodeType === 1) {
+                if (node.tagName === 'IMG') {
+                  monitorImage(node);
+                } else if (node.querySelectorAll) {
+                  node.querySelectorAll('img').forEach(monitorImage);
+                }
               }
             }
           }
-        }
-      });
-      observer.observe(document.body, { childList: true, subtree: true });
+        });
+        observer.observe(root, { childList: true, subtree: true });
+      };
+
+      if (document.documentElement || document.body) {
+        attachObserver();
+      } else {
+        document.addEventListener('DOMContentLoaded', attachObserver);
+      }
     }
   }
 
@@ -286,6 +313,7 @@
   return {
     get: getPlaceholder,
     handleError: handleError,
+    monitor: monitorImage,
     buildSvg: buildSvg,
     cache: cache
   };

@@ -46,6 +46,9 @@
             window.handleImageError(this);
           });
         }
+        if (window.SolitiquoPlaceholders && typeof window.SolitiquoPlaceholders.monitor === 'function') {
+          window.SolitiquoPlaceholders.monitor(img);
+        }
       });
     }
   </script>

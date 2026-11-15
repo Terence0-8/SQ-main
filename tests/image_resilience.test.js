@@ -81,6 +81,8 @@ describe('SOLITIQUO — AUDIT ET RÉSILIENCE DU SYSTÈME GLOBAL D\'IMAGES', () =
         assert.ok(svgContent.includes('</svg>'), `Doit clore la balise </svg>`);
         assert.ok(svgContent.includes('SOLITIQUO') || svgContent.includes('>S<'), `Doit contenir la marque Solitiquo`);
         assert.ok(svgContent.includes('#1E2621') || svgContent.includes('#242E28'), `Doit respecter la palette sombre Solitiquo`);
+        // Validation XML stricte : aucun ampersand non échappé
+        assert.ok(!/(?!&(?:amp|lt|gt|quot|apos);)&/.test(svgContent), `Le SVG pour '${t}' ne doit contenir aucun '&' non échappé`);
       });
     });
 

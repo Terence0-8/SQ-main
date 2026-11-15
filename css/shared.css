@@ -6865,6 +6865,7 @@ aside.content-right {
     background-color: #1E2621;
     min-height: 100%;
     width: 100%;
+    display: block;
 }
 
 .article-row > div:first-child,
