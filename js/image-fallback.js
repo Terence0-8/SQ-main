@@ -184,11 +184,43 @@
   }
 
   /**
+   * Vérifie si une URL d'image est absente, invalide ou pointe vers un service tiers instable
+   */
+  function isUnreliableUrl(url) {
+    if (!url || typeof url !== 'string') return true;
+    const str = url.trim();
+    return (
+      str === '' ||
+      str === 'null' ||
+      str === 'undefined' ||
+      str.includes('picsum.photos') ||
+      str.includes('placehold.co') ||
+      str.includes('via.placeholder.com')
+    );
+  }
+
+  /**
+   * Retourne une URL sécurisée : l'URL réelle si valide, ou le placeholder vectoriel officiel immédiat
+   */
+  function getSafeUrl(url, type) {
+    if (isUnreliableUrl(url)) {
+      return getPlaceholder(type);
+    }
+    return url.trim();
+  }
+
+  /**
    * Surveille le chargement d'une image pour éviter qu'un serveur externe suspendu (timeout) ne bloque l'affichage
    */
   function monitorImage(img, explicitType) {
     if (!img || img.dataset.sqMonitored === 'true') return;
     img.dataset.sqMonitored = 'true';
+
+    const src = img.getAttribute('src') || img.src || '';
+    if (isUnreliableUrl(src)) {
+      handleError(img, explicitType);
+      return;
+    }
 
     if (img.complete) {
       if (img.naturalWidth === 0) handleError(img, explicitType);
@@ -196,8 +228,7 @@
     }
 
     // Délai maximal avant bascule gracieuse sur le placeholder local (accéléré pour les serveurs instables)
-    const src = img.src || '';
-    const delay = (src.includes('picsum.photos') || src.includes('placehold.co') || src.includes('via.placeholder.com')) ? 1000 : 2500;
+    const delay = (src.includes('picsum.photos') || src.includes('placehold.co') || src.includes('via.placeholder.com')) ? 200 : 2500;
 
     const timer = setTimeout(() => {
       if (!img.dataset.sqFallbackApplied && (!img.complete || img.naturalWidth === 0)) {
@@ -260,7 +291,7 @@
     const scanImages = () => {
       document.querySelectorAll('img').forEach((img) => {
         const src = img.getAttribute('src');
-        if (!src || src === '' || src === 'null' || src === 'undefined' || src.includes('placehold.co') || src.includes('via.placeholder.com')) {
+        if (isUnreliableUrl(src)) {
           handleError(img);
         } else {
           monitorImage(img);
@@ -312,6 +343,8 @@
 
   return {
     get: getPlaceholder,
+    getSafeUrl: getSafeUrl,
+    isUnreliableUrl: isUnreliableUrl,
     handleError: handleError,
     monitor: monitorImage,
     buildSvg: buildSvg,

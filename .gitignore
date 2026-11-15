@@ -34,3 +34,5 @@ build/
 # AI agent settings
 .claude/
 codex-plugin-antigravity/
+.agents/
+skills-lock.json

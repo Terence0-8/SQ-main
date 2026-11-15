@@ -6862,10 +6862,13 @@ aside.content-right {
 }
 
 .hero-bg-img {
-    background-color: #1E2621;
+    background-color: #1E2621 !important;
     min-height: 100%;
     width: 100%;
     display: block;
+    color: transparent !important;
+    font-size: 0 !important;
+    text-indent: -9999px !important;
 }
 
 .article-row > div:first-child,
@@ -6892,8 +6895,9 @@ aside.content-right {
 .pc-img,
 .hl-img {
     background-color: #242E28;
-    color: transparent;
-    font-size: 0; /* Supprime tout texte alt encombrant */
+    color: transparent !important;
+    font-size: 0 !important;
+    text-indent: -9999px !important; /* Supprime tout texte alt encombrant du viewport */
 }
 
 /* Évite les icônes d'images brisées natives du navigateur avant l'application du fallback */

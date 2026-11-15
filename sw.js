@@ -6,7 +6,7 @@
 // ============================================================
 
 // CACHE_NAME inclut la version/date du déploiement
-const CACHE_NAME = 'solitiquo-v20261110-fix-sw-ping-lot0708';
+const CACHE_NAME = 'solitiquo-v20261115-fix-hero-image-fallback-v2';
 
 // Sondes de disponibilité / santé à laisser passer directement sans interception SW
 const NETWORK_PASSTHROUGH_API_PATHS = new Set([
@@ -89,6 +89,7 @@ const PRECACHE_URLS = [
     '/js/config.js',
     '/js/i18n.js',
     '/js/image-fallback.js',
+    '/js/image-fallback.js?v=43',
     '/js/lazyload.js',
     '/js/offline-manager.js',
     '/js/offline-manager.js?v=offline-fix1',
@@ -240,17 +241,26 @@ self.addEventListener('fetch', (event) => {
         event.respondWith(
             caches.match(request).then((cached) => {
                 if (cached) return cached;
-                return fetch(request).then((response) => {
+                const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+                const timeoutId = controller ? setTimeout(() => controller.abort(), 3500) : null;
+                return fetch(request, { signal: controller ? controller.signal : undefined }).then((response) => {
+                    if (timeoutId) clearTimeout(timeoutId);
                     if (response && (response.status === 200 || response.type === 'opaque')) {
                         const clone = response.clone();
                         caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
                     }
                     return response;
                 }).catch(() => {
-                    // Si l'asset externe est une image et que la requête échoue, servir un SVG de secours valide au lieu de crasher
-                    const isImage = request.destination === 'image' || /\.(jpe?g|png|gif|webp|svg|ico)(\?.*)?$/i.test(url.pathname);
+                    if (timeoutId) clearTimeout(timeoutId);
+                    // Si l'asset externe est une image et que la requête échoue ou timeout, servir un SVG de secours valide au lieu de crasher
+                    const isImage = request.destination === 'image' ||
+                        /\.(jpe?g|png|gif|webp|svg|ico)(\?.*)?$/i.test(url.pathname) ||
+                        url.hostname.includes('picsum.photos') ||
+                        url.hostname.includes('unsplash.com') ||
+                        url.hostname.includes('cloudinary.com') ||
+                        url.hostname.includes('placehold');
                     if (isImage) {
-                        const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500"><rect width="100%" height="100%" fill="#1E2621"/><text x="50%" y="50%" fill="#C5C5A9" font-family="serif" font-size="36" text-anchor="middle" dominant-baseline="middle">SOLITIQUO</text></svg>`;
+                        const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900"><rect width="100%" height="100%" fill="#1E2621"/><text x="50%" y="50%" fill="#C5C5A9" font-family="serif" font-size="48" font-weight="bold" text-anchor="middle" dominant-baseline="middle">SOLITIQUO</text></svg>`;
                         return new Response(fallbackSvg, {
                             status: 200,
                             headers: { 'Content-Type': 'image/svg+xml; charset=utf-8' }

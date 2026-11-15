@@ -40,7 +40,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
     rel="stylesheet" />
-  <script src="/js/image-fallback.js"></script>
+  <script src="/js/image-fallback.js?v=43"></script>
   <script>
     function handleImgError(img) {
       if (typeof window.handleImageError === 'function') {
@@ -455,7 +455,9 @@
           const defaultHero = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.get) ? window.SolitiquoPlaceholders.get('hero') : '';
           const defaultArt = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.get) ? window.SolitiquoPlaceholders.get('article') : '';
           const defaultCard = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.get) ? window.SolitiquoPlaceholders.get('card') : '';
-          const uneImg = une.image_url || defaultHero;
+          const uneImg = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.getSafeUrl)
+            ? window.SolitiquoPlaceholders.getSafeUrl(une.image_url, 'hero')
+            : (une.image_url || defaultHero);
           let langBadgeUne = '';
           if (une.language !== lang) { langBadgeUne = une.language === 'fr' ? '🇫🇷' : '🇬🇧'; }
           const _lb = (art) => art.language !== lang

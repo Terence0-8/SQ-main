@@ -88,8 +88,14 @@ router.get('/', async (req, res) => {
         a.excerpt, 
         a.category, 
         a.published_at, 
-        a.featured_image AS image_url,
-        a.featured_image,
+        CASE 
+          WHEN a.featured_image LIKE '%picsum.photos%' THEN 'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?w=800'
+          ELSE a.featured_image 
+        END AS image_url,
+        CASE 
+          WHEN a.featured_image LIKE '%picsum.photos%' THEN 'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?w=800'
+          ELSE a.featured_image 
+        END AS featured_image,
         a.language, 
         a.tags,
         a.views_count,
@@ -165,8 +171,14 @@ router.get('/by-slug/:slug', async (req, res) => {
         a.tags,
         a.views_count,
         a.read_time,
-        a.featured_image AS image_url,
-        a.featured_image,
+        CASE 
+          WHEN a.featured_image LIKE '%picsum.photos%' THEN 'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?w=800'
+          ELSE a.featured_image 
+        END AS image_url,
+        CASE 
+          WHEN a.featured_image LIKE '%picsum.photos%' THEN 'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?w=800'
+          ELSE a.featured_image 
+        END AS featured_image,
         a.published_at,
         a.created_at,
         a.updated_at,
@@ -242,8 +254,14 @@ router.get('/:id', async (req, res) => {
         a.tags,
         a.views_count,
         a.read_time,
-        a.featured_image AS image_url,
-        a.featured_image,
+        CASE 
+          WHEN a.featured_image LIKE '%picsum.photos%' THEN 'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?w=800'
+          ELSE a.featured_image 
+        END AS image_url,
+        CASE 
+          WHEN a.featured_image LIKE '%picsum.photos%' THEN 'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?w=800'
+          ELSE a.featured_image 
+        END AS featured_image,
         a.published_at,
         a.created_at,
         a.updated_at,
@@ -796,8 +814,14 @@ router.get('/bookmarks/my-bookmarks', isAuthenticated, async (req, res) => {
         a.slug, 
         a.excerpt, 
         a.category, 
-        a.featured_image AS image_url,
-        a.featured_image,
+        CASE 
+          WHEN a.featured_image LIKE '%picsum.photos%' THEN 'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?w=800'
+          ELSE a.featured_image 
+        END AS image_url,
+        CASE 
+          WHEN a.featured_image LIKE '%picsum.photos%' THEN 'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?w=800'
+          ELSE a.featured_image 
+        END AS featured_image,
         a.read_time, 
         a.is_premium, 
         a.published_at,

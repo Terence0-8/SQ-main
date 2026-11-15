@@ -195,7 +195,10 @@ router.get('/', async (req, res) => {
         id,
         title,
         excerpt        AS description,
-        featured_image AS image_url,
+        CASE 
+          WHEN featured_image LIKE '%picsum.photos%' THEN 'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?w=800'
+          ELSE featured_image 
+        END AS image_url,
         category,
         published_at   AS date,
         'article'      AS type,

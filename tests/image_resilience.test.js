@@ -46,6 +46,12 @@ describe('SOLITIQUO — AUDIT ET RÉSILIENCE DU SYSTÈME GLOBAL D\'IMAGES', () =
     if (server) {
       await new Promise((resolve) => server.close(resolve));
     }
+    try {
+      const pool = require('../backend/config/database.js');
+      if (pool && typeof pool.closePool === 'function') {
+        await pool.closePool();
+      }
+    } catch (_e) {}
   });
 
   // Helper HTTP fetch simple
@@ -165,8 +171,15 @@ describe('SOLITIQUO — AUDIT ET RÉSILIENCE DU SYSTÈME GLOBAL D\'IMAGES', () =
   describe('3. Scénarios éditoriaux spécifiques (Points 1 à 10 du cahier des charges)', () => {
     test('1. Article avec image valide : l\'URL réelle est préservée sans remplacement forcé', () => {
       const validUrl = 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=800';
-      const uneImg = validUrl || SolitiquoPlaceholders.get('hero');
-      assert.equal(uneImg, validUrl, 'L\'URL réelle doit être conservée prioritairement');
+      const uneImg = SolitiquoPlaceholders.getSafeUrl(validUrl, 'hero');
+      assert.equal(uneImg, validUrl, 'L\'URL réelle valide doit être conservée prioritairement');
+    });
+
+    test('1b. Article avec URL instable (picsum, placehold) : bascule immédiate sur placeholder', () => {
+      const picsumUrl = 'https://picsum.photos/seed/pol001/800/450';
+      const safeHero = SolitiquoPlaceholders.getSafeUrl(picsumUrl, 'hero');
+      assert.ok(safeHero.startsWith('data:image/svg+xml;charset=UTF-8,'), 'Les URLs picsum doivent basculer immédiatement');
+      assert.ok(decodeURIComponent(safeHero).includes('viewBox="0 0 1600 900"'), 'Doit renvoyer le placeholder hero 16:9');
     });
 
     test('2. Article sans image (null, undefined, vide) : placeholder visible garanti', () => {

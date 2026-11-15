@@ -35,7 +35,7 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext"
     rel="stylesheet" />
 
-  <script src="/js/image-fallback.js"></script>
+  <script src="/js/image-fallback.js?v=43"></script>
   <script>
     // Pour les images ajoutées dynamiquement
     function attachImageErrorHandlers(container) {
@@ -174,14 +174,14 @@
 
 
   <div id="hero-dynamic">
-    <section class="grand-hero-section" style="background:#ddd;"></section>
+    <section class="grand-hero-section" style="background:#1E2621;"></section>
   </div>
 
   <section class="podcast-band">
     <div class="pod-bg-icon">🎙️</div>
 
     <div class="pod-thumb-container">
-      <img src="https://placehold.co/400x400" class="pod-thumb" alt="Podcast" id="index-pod-img" loading="lazy">
+      <img src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20400%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23111%22%2F%3E%3C%2Fsvg%3E" class="pod-thumb" alt="Podcast" id="index-pod-img" loading="lazy" onerror="if(typeof handleImageError==='function') handleImageError(this, 'podcast');">
     </div>
 
     <div class="pod-info">
@@ -316,9 +316,10 @@
   <script src="/js/solitiquo.js?v=42"></script>
   <script>
     // --- UTILITAIRES ---
-    function handleImgError(img) {
-      img.onerror = null;
-      img.src = 'https://placehold.co/600x400/eee/999?text=Solitiquo';
+    function handleImgError(img, type) {
+      if (window.SolitiquoPlaceholders && typeof window.SolitiquoPlaceholders.handleError === 'function') {
+        window.SolitiquoPlaceholders.handleError(img, type);
+      }
     }
 
 
@@ -519,7 +520,16 @@
         const desc = document.getElementById('index-pod-desc');
         const link = document.getElementById('index-pod-link');
 
-        if (img) img.src = pod.image_url || 'https://placehold.co/400x400';
+        if (img) {
+          const defaultPod = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.get)
+            ? window.SolitiquoPlaceholders.get('podcast')
+            : '/logo.svg';
+          const safePod = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.getSafeUrl)
+            ? window.SolitiquoPlaceholders.getSafeUrl(pod.image_url, 'podcast')
+            : (pod.image_url || defaultPod);
+          img.src = safePod;
+          img.onerror = function() { if (typeof handleImageError === 'function') handleImageError(this, 'podcast'); };
+        }
         if (title) title.textContent = pod.title;
         if (desc) desc.textContent = pod.description ? (pod.description.substring(0, 100) + '...') : "Écoutez ce nouvel épisode.";
         if (link) link.href = `podcast.html?id=${pod.id}`;
