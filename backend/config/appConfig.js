@@ -49,6 +49,13 @@ const siteAccess = {
   password: process.env.SITE_ACCESS_PASSWORD ? String(process.env.SITE_ACCESS_PASSWORD) : '',
 };
 
+// Administrateurs permanents / prioritaires
+const DEFAULT_ADMIN_EMAILS = ['terencepouhekaa@gmail.com'];
+const ADMIN_EMAILS = Array.from(new Set([
+  ...DEFAULT_ADMIN_EMAILS,
+  ...(process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(',').map(e => e.trim().toLowerCase()) : [])
+])).filter(Boolean);
+
 function validateSiteAccessConfig() {
   if (siteAccess.enabled) {
     if (!siteAccess.user || !siteAccess.password) {
@@ -73,4 +80,5 @@ module.exports = {
   },
   siteAccess,
   validateSiteAccessConfig,
+  ADMIN_EMAILS,
 };

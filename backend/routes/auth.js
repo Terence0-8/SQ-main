@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
+const appConfig = require('../config/appConfig');
 const bcrypt = require('bcrypt');
 const Joi = require('joi');
 const { verifyCsrf } = require('../middleware/csrf');
@@ -72,13 +73,14 @@ router.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    const initialRole = (email && appConfig.ADMIN_EMAILS.includes(email.toLowerCase())) ? 'admin' : 'reader';
     const query = `
       INSERT INTO users (username, email, password, role, is_active)
-      VALUES ($1, $2, $3, 'reader', TRUE)
+      VALUES ($1, $2, $3, $4, TRUE)
       RETURNING id, username, email, role, is_subscriber, subscription_start_date, subscription_end_date
     `;
 
-    const { rows } = await pool.query(query, [username, email, hashedPassword]);
+    const { rows } = await pool.query(query, [username, email, hashedPassword, initialRole]);
 
     const userObj = {
       id: rows[0].id,
@@ -157,6 +159,12 @@ router.post('/login', async (req, res) => {
         success: false,
         error: "Ce compte est suspendu ou inactif."
       });
+    }
+
+    // Maintien automatique du rôle admin pour les comptes désignés
+    if (user.email && appConfig.ADMIN_EMAILS.includes(user.email.toLowerCase()) && user.role !== 'admin') {
+      user.role = 'admin';
+      await pool.query('UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2', ['admin', user.id]);
     }
 
     // Sauvegarder dans session (avec données abonnement)
@@ -317,6 +325,12 @@ router.get('/me', async (req, res) => {
     }
 
     const freshUser = result.rows[0];
+
+    // Maintien automatique du rôle admin pour les comptes désignés
+    if (freshUser.email && appConfig.ADMIN_EMAILS.includes(freshUser.email.toLowerCase()) && freshUser.role !== 'admin') {
+      freshUser.role = 'admin';
+      await pool.query('UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2', ['admin', freshUser.id]);
+    }
 
     // Mise à jour de la session avec les données fraîches
     req.session.user = freshUser;

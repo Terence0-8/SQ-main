@@ -64,7 +64,12 @@ if (isGoogleConfigured()) {
                             'UPDATE users SET google_id = $1, avatar_url = COALESCE(avatar_url, $2), updated_at = NOW() WHERE email = $3 RETURNING *',
                             [profile.id, profile.photos?.[0]?.value, email]
                         );
-                        return done(null, updateUser.rows[0]);
+                        let finalUser = updateUser.rows[0];
+                        if (email && appConfig.ADMIN_EMAILS.includes(email.toLowerCase()) && finalUser.role !== 'admin') {
+                            const promoted = await pool.query('UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2 RETURNING *', ['admin', finalUser.id]);
+                            finalUser = promoted.rows[0];
+                        }
+                        return done(null, finalUser);
                     }
 
                     // 3. Créer un NOUVEAU compte
@@ -78,16 +83,22 @@ if (isGoogleConfigured()) {
                         username = `${baseUsername}${counter++}`;
                     }
 
+                    const initialRole = (email && appConfig.ADMIN_EMAILS.includes(email.toLowerCase())) ? 'admin' : 'reader';
                     const insertUser = await pool.query(
                         `INSERT INTO users (username, email, google_id, avatar_url, role, is_active)
-                         VALUES ($1, $2, $3, $4, 'reader', TRUE) RETURNING *`,
-                        [username, email, profile.id, profile.photos?.[0]?.value]
+                         VALUES ($1, $2, $3, $4, $5, TRUE) RETURNING *`,
+                        [username, email, profile.id, profile.photos?.[0]?.value, initialRole]
                     );
                     return done(null, insertUser.rows[0]);
                 }
 
                 // L'utilisateur existe via google_id
-                return done(null, result.rows[0]);
+                let existingUser = result.rows[0];
+                if (existingUser.email && appConfig.ADMIN_EMAILS.includes(existingUser.email.toLowerCase()) && existingUser.role !== 'admin') {
+                    const promoted = await pool.query('UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2 RETURNING *', ['admin', existingUser.id]);
+                    existingUser = promoted.rows[0];
+                }
+                return done(null, existingUser);
 
             } catch (error) {
                 console.error("Erreur Google OAuth:", error);
