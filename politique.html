@@ -614,17 +614,23 @@
                 const catTag = art.category || 'Politique';
 
                 const defaultCard = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.get) ? window.SolitiquoPlaceholders.get('card') : '';
-                return '<a href="' + linkDisco + '" class="' + cardClass + '">' +
-                  '<div class="disco-img-wrap" style="background:#242E28;">' +
-                    '<img src="' + (art.image_url || defaultCard) + '" class="disco-img" onerror="if(typeof handleImageError==='function') handleImageError(this, \'card\'); else handleImgError(this);" loading="lazy">' +
-                  '</div>' +
-                  '<div class="disco-body">' +
-                    '<span class="art-cat" style="font-size:0.65rem; margin-bottom:4px; color:#C82823; font-weight:800; text-transform:uppercase;">' + tCategory(catTag) + db + '</span>' +
-                    '<h4 class="disco-title">' + pb + art.title + '</h4>' +
-                    excerptHtml +
-                    '<div class="disco-date">' + SolitiquoAPI.formatDate(art.published_at) + '</div>' +
-                  '</div>' +
-                '</a>';
+                const safeCardImg = (window.SolitiquoPlaceholders && window.SolitiquoPlaceholders.getSafeUrl)
+                  ? window.SolitiquoPlaceholders.getSafeUrl(art.image_url, 'card')
+                  : (art.image_url || defaultCard);
+
+                return `
+                  <a href="${linkDisco}" class="${cardClass}">
+                    <div class="disco-img-wrap" style="background:#242E28;">
+                      <img src="${safeCardImg}" class="disco-img" onerror="if(typeof handleImageError==='function') handleImageError(this, 'card'); else handleImgError(this);" loading="lazy">
+                    </div>
+                    <div class="disco-body">
+                      <span class="art-cat" style="font-size:0.65rem; margin-bottom:4px; color:#C82823; font-weight:800; text-transform:uppercase;">${tCategory(catTag)}${db}</span>
+                      <h4 class="disco-title">${pb}${art.title}</h4>
+                      ${excerptHtml}
+                      <div class="disco-date">${SolitiquoAPI.formatDate(art.published_at)}</div>
+                    </div>
+                  </a>
+                `;
               }).join('');
             } else {
               discoverGrid.innerHTML = '<p style="text-align:center; color:#999; grid-column:1/-1; padding:2rem;">Aucun article disponible.</p>';

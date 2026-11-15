@@ -6,7 +6,7 @@
 // ============================================================
 
 // CACHE_NAME inclut la version/date du déploiement
-const CACHE_NAME = 'solitiquo-v20261115-fix-hero-image-fallback-v2';
+const CACHE_NAME = 'solitiquo-v20261115-fix-politique-syntax-v3';
 
 // Sondes de disponibilité / santé à laisser passer directement sans interception SW
 const NETWORK_PASSTHROUGH_API_PATHS = new Set([
