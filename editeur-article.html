@@ -130,9 +130,9 @@
 
     <div class="paper-zone">
       <div class="paper-sheet">
-        <input type="text" id="title" placeholder="Titre de l'article..." autocomplete="off" required>
+        <input type="text" id="title" placeholder="Titre de l'article..." data-i18n-placeholder="editor_title_placeholder" autocomplete="off" required>
         <div id="editor-content" contenteditable="true">
-          <p>Écrivez votre article ici...</p>
+          <p data-i18n="editor_content_placeholder">Écrivez votre article ici...</p>
         </div>
       </div>
     </div>
@@ -140,10 +140,10 @@
     <aside class="settings-right">
       <div class="settings-scroll">
 
-        <h3 class="panel-title">Publication</h3>
+        <h3 class="panel-title" data-i18n="editor_panel_publication">Publication</h3>
 
         <div class="field-group">
-          <label>Catégorie / Thème</label>
+          <label data-i18n="editor_label_category">Catégorie / Thème</label>
           <select id="category" class="sidebar-input" onchange="toggleCustomCategory(this.value)">
             <option value="Politique">Politique</option>
             <option value="Social">Social</option>
@@ -159,41 +159,41 @@
             <option value="Opinions">Opinions</option>
             <option value="Partis">Partis</option>
             <option value="Général">Général</option>
-            <option value="custom">✏️ Thème personnalisé...</option>
+            <option value="custom" data-i18n="editor_category_custom">✏️ Thème personnalisé...</option>
           </select>
-          <input type="text" id="custom_category" class="sidebar-input" placeholder="Saisissez votre thème personnalisé..." style="display:none; margin-top:8px;" />
+          <input type="text" id="custom_category" class="sidebar-input" placeholder="Saisissez votre thème personnalisé..." data-i18n-placeholder="editor_custom_placeholder" style="display:none; margin-top:8px;" />
         </div>
 
         <div class="field-group">
-          <label>Tags / Mots-clés</label>
+          <label data-i18n="editor_label_tags">Tags / Mots-clés</label>
           <div class="tags-container" id="tags-container">
-            <input type="text" id="tag-input" placeholder="Ajouter + Entrée">
+            <input type="text" id="tag-input" placeholder="Ajouter + Entrée" data-i18n-placeholder="editor_tag_placeholder">
           </div>
-          <small style="color:#999; font-size:0.75rem;">Appuyez sur Entrée pour valider un tag.</small>
+          <small style="color:#999; font-size:0.75rem;" data-i18n="editor_tag_hint">Appuyez sur Entrée pour valider un tag.</small>
         </div>
 
         <div class="field-group">
-          <label>Résumé</label>
-          <textarea id="excerpt" rows="4" class="sidebar-input" placeholder="Accroche..."></textarea>
+          <label data-i18n="editor_label_excerpt">Résumé</label>
+          <textarea id="excerpt" rows="4" class="sidebar-input" placeholder="Accroche..." data-i18n-placeholder="editor_excerpt_placeholder"></textarea>
         </div>
 
-        <h3 class="panel-title">Illustration</h3>
+        <h3 class="panel-title" data-i18n="editor_panel_illustration">Illustration</h3>
         <div class="field-group">
           <div class="img-preview-box" onclick="document.getElementById('image_file').click()">
             <img id="current-image-preview" src="" style="display:none;" loading="lazy">
-            <span id="upload-text" class="upload-label">📷 Ajouter image</span>
+            <span id="upload-text" class="upload-label" data-i18n="editor_upload_text">📷 Ajouter image</span>
           </div>
           <input type="file" id="image_file" accept="image/*" style="display:none;" onchange="previewImage(this)">
         </div>
         <div class="field-group">
-          <input type="url" id="image_url" class="sidebar-input" placeholder="Ou via URL https://..."
+          <input type="url" id="image_url" class="sidebar-input" placeholder="Ou via URL https://..." data-i18n-placeholder="editor_img_url_placeholder"
             oninput="updatePreviewFromUrl(this.value)">
         </div>
         <div class="field-group">
-          <input type="text" id="image_caption" class="sidebar-input" placeholder="Légende / Crédit">
+          <input type="text" id="image_caption" class="sidebar-input" placeholder="Légende / Crédit" data-i18n-placeholder="editor_caption_placeholder">
         </div>
 
-        <h3 class="panel-title">SEO</h3>
+        <h3 class="panel-title" data-i18n="editor_panel_seo">SEO</h3>
         <div class="field-group">
           <input type="text" id="slug" class="sidebar-input" placeholder="slug-auto"
             style="background:#f4f4f4; color:#666;">
@@ -201,7 +201,7 @@
       </div>
 
       <div class="settings-footer">
-        <button type="submit" class="btn-publish">Publier</button>
+        <button type="submit" class="btn-publish" data-i18n="editor_btn_publish">Publier</button>
         <div id="status-msg"></div>
       </div>
     </aside>
@@ -299,7 +299,7 @@
 
     if (editId) {
       window.isEditing = true;
-      submitBtn.textContent = 'Mettre à jour';
+      submitBtn.textContent = t('editor_btn_update');
       loadArticleData(editId);
     }
 
@@ -341,7 +341,7 @@
     document.getElementById('articleForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const statusDiv = document.getElementById('status-msg');
-      submitBtn.textContent = 'Traitement...';
+      submitBtn.textContent = t('editor_btn_processing');
       submitBtn.disabled = true;
       statusDiv.textContent = '';
 
@@ -386,7 +386,7 @@
 
         if (json.success) {
           statusDiv.style.color = 'green';
-          statusDiv.textContent = window.isEditing ? '✅ Mis à jour !' : '✅ Publié !';
+          statusDiv.textContent = window.isEditing ? t('editor_updated_ok') : t('editor_saved_ok');
           setTimeout(() => window.location.href = `article.html?id=${json.article.id}`, 1000);
         } else {
           throw new Error(json.error);
@@ -394,7 +394,7 @@
       } catch (err) {
         statusDiv.style.color = 'red';
         statusDiv.textContent = '❌ ' + err.message;
-        submitBtn.textContent = window.isEditing ? 'Mettre à jour' : 'Publier';
+        submitBtn.textContent = window.isEditing ? t('editor_btn_update') : t('editor_btn_publish');
         submitBtn.disabled = false;
       }
     });

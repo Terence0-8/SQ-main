@@ -131,22 +131,22 @@
     <aside class="settings-right">
       <div class="settings-scroll">
 
-        <h3 class="panel-title">SOURCE</h3>
+        <h3 class="panel-title" data-i18n="editor_panel_seo">SOURCE</h3>
         <div class="field-group">
-          <label>Lien YouTube</label>
+          <label data-i18n="editor_label_youtube">Lien YouTube</label>
           <input type="url" id="video_url" class="sidebar-input" placeholder="https://www.youtube.com/watch?v=..."
             required oninput="updatePreview(this.value)">
         </div>
 
-        <h3 class="panel-title">INFOS</h3>
+        <h3 class="panel-title" data-i18n="editor_panel_publication">INFOS</h3>
         <div class="field-group">
-          <label>Titre</label>
-          <input type="text" id="title" class="sidebar-input" placeholder="Titre de l'émission" required
+          <label data-i18n="editor_label_title_emission">Titre</label>
+          <input type="text" id="title" class="sidebar-input" placeholder="Titre de l'émission" data-i18n-placeholder="editor_title_emission_placeholder" required
             oninput="document.getElementById('preview-title').textContent = this.value || 'Titre...'">
         </div>
 
         <div class="field-group">
-          <label>Catégorie</label>
+          <label data-i18n="editor_label_category">Catégorie</label>
           <select id="category" class="sidebar-input">
             <option>Politique</option>
             <option>Société</option>
@@ -157,19 +157,19 @@
         </div>
 
         <div class="field-group">
-          <label>Description</label>
-          <textarea id="description" class="sidebar-input" placeholder="Résumé, invités..."
+          <label data-i18n="editor_label_desc">Description</label>
+          <textarea id="description" class="sidebar-input" placeholder="Résumé, invités..." data-i18n-placeholder="editor_desc_placeholder"
             oninput="document.getElementById('preview-desc').textContent = this.value || 'Description...'"></textarea>
         </div>
 
         <div class="field-group">
-          <label>Durée (Minutes)</label>
+          <label data-i18n="editor_label_duration">Durée (Minutes)</label>
           <input type="number" id="duration" class="sidebar-input" placeholder="ex: 45">
         </div>
 
-        <h3 class="panel-title">IMAGE (OPTIONNEL)</h3>
+        <h3 class="panel-title" data-i18n="editor_panel_illustration">IMAGE (OPTIONNEL)</h3>
         <div class="field-group">
-          <label>Couverture personnalisée</label>
+          <label data-i18n="editor_upload_text">Couverture personnalisée</label>
           <input type="file" id="image_file" accept="image/*" class="sidebar-input">
           <small style="color:#888; font-size:0.75rem;">Si vide, on utilise la miniature YouTube.</small>
         </div>
@@ -177,7 +177,7 @@
       </div>
 
       <div class="settings-footer">
-        <button type="submit" class="btn-publish">Mettre en ligne</button>
+        <button type="submit" class="btn-publish" data-i18n="editor_btn_publish_emission">Mettre en ligne</button>
         <div id="status-msg"></div>
       </div>
     </aside>
@@ -222,7 +222,7 @@
         if (em.video_url) updatePreview(em.video_url);
         document.getElementById('preview-title').textContent = em.title || 'Titre...';
         document.getElementById('preview-desc').textContent = em.description || 'Description...';
-        document.querySelector('.btn-publish').textContent = 'Mettre à jour';
+        document.querySelector('.btn-publish').textContent = t('editor_btn_update_emission');
         document.title = `Modifier — ${em.title} — Solitiquo`;
       } catch (err) {
         const msg = document.getElementById('status-msg');
@@ -245,7 +245,7 @@
       e.preventDefault();
       const btn = document.querySelector('.btn-publish');
       const msg = document.getElementById('status-msg');
-      btn.textContent = 'Traitement...'; btn.disabled = true; msg.textContent = '';
+      btn.textContent = t('editor_btn_processing'); btn.disabled = true; msg.textContent = '';
 
       const formData = new FormData();
       formData.append('title', document.getElementById('title').value);
@@ -264,12 +264,12 @@
         const json = await res.json();
         if (json.success) {
           msg.style.color = 'green';
-          msg.textContent = editId ? '✅ Émission mise à jour !' : '✅ Émission publiée !';
+          msg.textContent = editId ? t('editor_updated_ok') : t('editor_saved_ok');
           setTimeout(() => window.location.href = 'emissions.html', 1000);
         } else { throw new Error(json.error); }
       } catch (err) {
         msg.style.color = 'red'; msg.textContent = 'Erreur: ' + err.message;
-        btn.textContent = editId ? 'Réessayer' : 'Mettre en ligne'; btn.disabled = false;
+        btn.textContent = editId ? t('editor_btn_update_emission') : t('editor_btn_publish_emission'); btn.disabled = false;
       }
     });
   </script>

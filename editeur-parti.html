@@ -118,10 +118,10 @@
 
     <div class="paper-zone">
       <div class="paper-sheet">
-        <input type="text" id="party-name" placeholder="Nom complet du Parti..." autocomplete="off" required>
-        <input type="text" id="party-acronym" placeholder="ACRONYME (ex: RDPC)" required>
+        <input type="text" id="party-name" placeholder="Nom complet du Parti..." data-i18n-placeholder="editor_name_placeholder" autocomplete="off" required>
+        <input type="text" id="party-acronym" placeholder="ACRONYME (ex: RDPC)" data-i18n-placeholder="editor_label_acronym" required>
         <div id="editor-content" contenteditable="true">
-          <p>Histoire, idéologie et fondements...</p>
+          <p data-i18n="editor_presentation_placeholder">Histoire, idéologie et fondements...</p>
         </div>
       </div>
     </div>
@@ -129,7 +129,7 @@
     <aside class="settings-right">
       <div class="settings-scroll">
 
-        <h3 class="panel-title">Identité Visuelle</h3>
+        <h3 class="panel-title" data-i18n="editor_panel_illustration">Identité Visuelle</h3>
         <div class="field-group">
           <label>Logo du Parti</label>
           <div class="mini-upload" onclick="document.getElementById('logo_file').click()">
@@ -150,9 +150,9 @@
           <input type="text" id="leader_url" class="sidebar-input" placeholder="Ou URL..." style="margin-top:5px; font-size:0.8rem;">
         </div>
 
-        <h3 class="panel-title">Fiche Technique</h3>
+        <h3 class="panel-title" data-i18n="editor_panel_publication">Fiche Technique</h3>
         <div class="field-group">
-          <label>Nom du Leader</label>
+          <label data-i18n="editor_label_leader">Nom du Leader</label>
           <input type="text" id="leader_name" class="sidebar-input" placeholder="Prénom Nom">
         </div>
         <div class="field-group">
@@ -193,7 +193,7 @@
         </div>
 
         <div class="settings-footer">
-          <button type="submit" class="btn-save">Enregistrer le dossier</button>
+          <button type="submit" class="btn-save" data-i18n="editor_btn_publish_parti">Enregistrer le dossier</button>
           <div id="msg" style="text-align:center; margin-top:10px; font-size:0.85rem;"></div>
         </div>
       </div>
@@ -286,7 +286,7 @@
     const btnSave = document.querySelector('.btn-save');
 
     if (editId) {
-      if (btnSave) btnSave.textContent = "Mettre à jour le dossier";
+      if (btnSave) btnSave.textContent = t('editor_btn_update_parti');
       loadPartyData(editId);
     }
 
@@ -330,7 +330,7 @@
       e.preventDefault();
       const btn = document.querySelector('.btn-save');
       const msg = document.getElementById('msg');
-      btn.textContent = "Enregistrement en cours..."; 
+      btn.textContent = t('editor_btn_processing'); 
       btn.disabled = true;
 
       const formData = new FormData();
@@ -388,7 +388,7 @@
 
         if (json.success) {
           msg.style.color = "green"; 
-          msg.textContent = "✅ Dossier enregistré avec succès !";
+          msg.textContent = t('editor_saved_ok');
           setTimeout(() => window.location.href = `dossier.html?id=${json.id || editId}`, 1200);
         } else {
           throw new Error(json.error || 'Erreur lors de la sauvegarde');
@@ -396,7 +396,7 @@
       } catch (err) {
         msg.style.color = "red"; 
         msg.textContent = "Erreur : " + err.message;
-        btn.textContent = editId ? "Mettre à jour le dossier" : "Enregistrer le dossier"; 
+        btn.textContent = editId ? t('editor_btn_update_parti') : t('editor_btn_publish_parti'); 
         btn.disabled = false;
       }
     });

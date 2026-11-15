@@ -126,7 +126,7 @@
 
     <div class="paper-zone">
       <div class="paper-sheet">
-        <input type="text" id="title" placeholder="Titre de l'épisode..." required autocomplete="off">
+        <input type="text" id="title" placeholder="Titre de l'épisode..." data-i18n-placeholder="editor_title_podcast_placeholder" required autocomplete="off">
 
         <span class="section-label">DESCRIPTION</span>
         <textarea id="description" rows="3" placeholder="Résumé de l'épisode..."></textarea>
@@ -142,7 +142,7 @@
     <aside class="settings-right">
       <div class="settings-scroll">
 
-        <h3 class="panel-title">MÉDIAS</h3>
+        <h3 class="panel-title" data-i18n="editor_panel_illustration">MÉDIAS</h3>
 
         <div class="field-group">
           <label style="font-weight:600; font-size:0.85rem; margin-bottom:8px; display:block;">Fichier Audio
@@ -178,12 +178,12 @@
             oninput="previewCoverUrl(this.value)">
         </div>
 
-        <h3 class="panel-title">CHAPITRAGE</h3>
+        <h3 class="panel-title" data-i18n="editor_panel_seo">CHAPITRAGE</h3>
         <div id="chapters-container" style="margin-bottom:15px;"></div>
         <button type="button" class="btn-add-chapter" onclick="addChapterRow()"
           style="width:100%; padding:8px; cursor:pointer;">+ Ajouter un chapitre</button>
 
-        <h3 class="panel-title">DÉTAILS</h3>
+        <h3 class="panel-title" data-i18n="editor_panel_publication">DÉTAILS</h3>
 
         <div class="field-group">
           <select id="category" class="sidebar-input">
@@ -198,7 +198,7 @@
       </div>
 
       <div class="settings-footer">
-        <button type="submit" class="btn-publish">Mettre en ligne</button>
+        <button type="submit" class="btn-publish" data-i18n="editor_btn_publish_podcast">Mettre en ligne</button>
         <div id="status-msg"></div>
       </div>
     </aside>
@@ -288,7 +288,7 @@
         // Supprimer le chapitre "Intro" par défaut
         document.getElementById('chapters-container').innerHTML = '';
 
-        document.querySelector('.btn-publish').textContent = 'Mettre à jour';
+        document.querySelector('.btn-publish').textContent = t('editor_btn_update');
         document.title = `Modifier — ${p.title} — Solitiquo`;
       } catch (err) {
         const msg = document.getElementById('status-msg');
@@ -311,7 +311,7 @@
       e.preventDefault();
       const btn = document.querySelector('.btn-publish');
       const msg = document.getElementById('status-msg');
-      btn.textContent = 'Envoi en cours...'; btn.disabled = true; msg.textContent = '';
+      btn.textContent = t('editor_btn_processing'); btn.disabled = true; msg.textContent = '';
 
       const chapters = [];
       document.querySelectorAll('.chapter-item').forEach(row => {
@@ -351,12 +351,12 @@
         const json = await res.json();
         if (json.success) {
           msg.style.color = 'green';
-          msg.textContent = editId ? '✅ Podcast mis à jour !' : '✅ Podcast publié !';
+          msg.textContent = editId ? t('editor_updated_ok') : t('editor_saved_ok');
           setTimeout(() => window.location.href = 'podcasts.html', 1500);
         } else { throw new Error(json.error); }
       } catch (err) {
         msg.style.color = 'red'; msg.textContent = 'Erreur: ' + err.message;
-        btn.textContent = editId ? 'Réessayer' : 'Mettre en ligne'; btn.disabled = false;
+        btn.textContent = editId ? t('editor_btn_update') : t('editor_btn_publish_podcast'); btn.disabled = false;
       }
     });
   </script>

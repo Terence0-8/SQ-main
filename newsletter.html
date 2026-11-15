@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://res.cloudinary.com" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#37463D">
+  <meta name="description" content="Newsletter Solitiquo — Restez informé avec notre sélection éditoriale envoyée directement dans votre boîte mail.">
+  <meta property="og:title" content="Newsletter — Solitiquo" />
+  <meta property="og:description" content="Le média de référence pour l'analyse politique et sociale au Cameroun. Abonnez-vous à notre newsletter." />
+  <meta property="og:image" content="https://solitiquo.com/logo.png" />
+  <meta property="og:url" content="https://solitiquo.com/newsletter.html" />
+  <meta property="og:type" content="website" />
+  <link rel="alternate" hreflang="fr" href="https://solitiquo.com/fr/" />
+  <link rel="alternate" hreflang="en" href="https://solitiquo.com/en/" />
+  <link rel="alternate" hreflang="x-default" href="https://solitiquo.com/" />
+  <title>Newsletter — Solitiquo</title>
+  <link rel="stylesheet" href="css/shared.css?v=38" />
+  <link rel="stylesheet" href="css/pages/newsletter.css?v=38" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;700&display=swap&subset=latin-ext" rel="stylesheet" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png">
+  <meta name="apple-mobile-web-app-title" content="Solitiquo">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body id="page-newsletter">
+
+  <header class="premium-header">
+    <div class="ph-left">
+      <div class="burger-container">
+        <button class="burger-btn" id="burgerBtn">
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+          <div class="burger-line"></div>
+        </button>
+      </div>
+      <a href="index.html" class="ph-brand">
+        <img src="logo.svg" alt="S">
+        <div class="brand-sep"></div>
+        <span class="brand-text">Solitiquo</span>
+      </a>
+    </div>
+
+    <div class="ph-center">
+      <nav class="ph-nav">
+        <a href="politique.html" class="ph-link" data-i18n="nav_pol">Politique</a>
+        <a href="social.html" class="ph-link" data-i18n="nav_soc">Social</a>
+        <a href="partis-politiques.html" class="ph-link" data-i18n="nav_parties">Partis</a>
+        <a href="emissions.html" class="ph-link" data-i18n="nav_shows">Émissions</a>
+        <a href="podcasts.html" class="ph-link" data-i18n="nav_podcasts">Podcasts</a>
+        <a href="data.html" class="ph-link ph-link-data">
+          <span class="ph-data-dot"></span>
+          <span data-i18n="nav_data">DATA</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="ph-right" style="justify-content:flex-end;gap:15px;">
+      <div class="lang-switch-container">
+        <button class="lang-toggle-btn" id="langToggleBtn" type="button" aria-label="Passer en anglais" title="EN">
+          <svg class="lang-flag-svg" viewBox="0 0 60 30" width="26" height="18" aria-hidden="true"><clipPath id="uk-clip-nl"><path d="M0 0v30h60V0z"/></clipPath><clipPath id="uk-t-nl"><path d="M30 15h30v15zm0 0V0H0zm0 0H0v15zm0 0v-15h30z"/></clipPath><g clip-path="url(#uk-clip-nl)"><path d="M0 0v30h60V0z" fill="#012169"/><path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30m0-30L0 30" clip-path="url(#uk-t-nl)" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/></g></svg>
+        </button>
+      </div>
+      <a href="auth.html" class="ph-btn-auth" data-i18n="nav_login">S'identifier</a>
+    </div>
+
+    <button id="burgerSearchBtn" class="burger-search-btn" aria-label="Rechercher">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="11" cy="11" r="7" />
+        <path d="M21 21l-4.35-4.35" />
+      </svg>
+    </button>
+  </header>
+
+  <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+  <nav id="mobileNav" class="mobile-nav-sidebar">
+    <div class="mobile-nav-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img src="logo.svg" class="mobile-logo" alt="S">
+        <span style="font-family:'Playfair Display';font-weight:700;font-size:1.5rem;">Solitiquo</span>
+      </div>
+      <button id="mobileNavClose" class="mobile-nav-close">×</button>
+    </div>
+    <ul class="mobile-nav-list">
+      <li><a href="index.html" class="mobile-nav-link" data-i18n="nav_home">Accueil</a></li>
+      <li><a href="politique.html" class="mobile-nav-link" data-i18n="nav_pol">Politique</a></li>
+      <li><a href="social.html" class="mobile-nav-link" data-i18n="nav_soc">Social</a></li>
+      <li><a href="partis-politiques.html" class="mobile-nav-link" data-i18n="nav_parties">Partis</a></li>
+      <li><a href="emissions.html" class="mobile-nav-link" data-i18n="nav_shows">Émissions</a></li>
+      <li><a href="podcasts.html" class="mobile-nav-link" data-i18n="nav_podcasts">Podcasts</a></li>
+      <li><a href="data.html" class="mobile-nav-link" data-i18n="nav_data">DATA</a></li>
+    </ul>
+    <div style="margin-top:auto;padding:1.5rem 1.8rem;border-top:1px solid rgba(0,0,0,.08);">
+      <a href="auth.html" style="color:#333;text-decoration:none;font-weight:600;display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
+        <span>👤</span> <span data-i18n="nav_login">S'identifier</span>
+      </a>
+      <div style="display:flex;gap:8px;">
+        <button class="lang-seg-btn active" data-lang="fr">FR</button>
+        <button class="lang-seg-btn" data-lang="en">EN</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="nl-hero">
+    <div class="nl-hero-inner">
+      <span class="nl-hero-badge" data-i18n="nl_hero_badge">NEWSLETTER</span>
+      <h1 data-i18n="nl_page_title">Newsletter Solitiquo</h1>
+      <p data-i18n="nl_page_subtitle">Restez informé avec notre sélection éditoriale envoyée directement dans votre boîte mail.</p>
+    </div>
+  </section>
+
+  <main class="nl-main">
+
+    <!-- FORMULAIRE D'INSCRIPTION -->
+    <section class="nl-subscribe-section" id="subscribeSection">
+      <div class="nl-card">
+        <h2 data-i18n="nl_subscribe_title">S'abonner à la newsletter</h2>
+
+        <div id="nl-status-msg" class="nl-status-msg" style="display:none;"></div>
+
+        <form id="nlSubscribeForm" class="nl-form" novalidate>
+          <div class="nl-form-row">
+            <label for="nlEmail" data-i18n="nl_email_label">Email de réception :</label>
+            <div class="nl-input-group">
+              <input type="email" id="nlEmail" name="email" class="nl-input"
+                placeholder="votre@email.com" data-i18n-placeholder="nl_email_placeholder"
+                required autocomplete="email" />
+              <button type="submit" class="nl-submit-btn" data-i18n="nl_subscribe_btn">S'abonner</button>
+            </div>
+          </div>
+
+          <!-- Préférences de réception -->
+          <div class="nl-prefs-section">
+            <p class="nl-prefs-intro" data-i18n="nl_pref_intro">Choisissez les newsletters que vous souhaitez recevoir :</p>
+            <div class="nl-prefs-grid">
+
+              <label class="nl-pref-card">
+                <input type="checkbox" name="pref_daily" checked class="nl-pref-check">
+                <div class="nl-pref-content">
+                  <div class="nl-pref-header">
+                    <span class="nl-pref-icon">☀️</span>
+                    <span class="nl-pref-name" data-i18n="nl_daily_title">Le Briefing Quotidien</span>
+                    <span class="nl-badge nl-badge-free" data-i18n="nl_free_badge">Gratuit</span>
+                  </div>
+                  <p class="nl-pref-desc" data-i18n="nl_daily_desc">L'essentiel de l'actualité politique, économique et sociale au Cameroun envoyé chaque matin à 7h.</p>
+                </div>
+              </label>
+
+              <label class="nl-pref-card">
+                <input type="checkbox" name="pref_weekly" checked class="nl-pref-check">
+                <div class="nl-pref-content">
+                  <div class="nl-pref-header">
+                    <span class="nl-pref-icon">📋</span>
+                    <span class="nl-pref-name" data-i18n="nl_weekly_title">L'Hebdo Politique</span>
+                    <span class="nl-badge nl-badge-free" data-i18n="nl_free_badge">Gratuit</span>
+                  </div>
+                  <p class="nl-pref-desc" data-i18n="nl_weekly_desc">Chaque samedi, une synthèse analytique des décryptages et des évolutions institutionnelles de la semaine.</p>
+                </div>
+              </label>
+
+              <label class="nl-pref-card">
+                <input type="checkbox" name="pref_special" checked class="nl-pref-check">
+                <div class="nl-pref-content">
+                  <div class="nl-pref-header">
+                    <span class="nl-pref-icon">🔍</span>
+                    <span class="nl-pref-name" data-i18n="nl_special_title">Grand Format & Enquêtes</span>
+                    <span class="nl-badge nl-badge-premium" data-i18n="nl_premium_badge">Premium</span>
+                  </div>
+                  <p class="nl-pref-desc" data-i18n="nl_special_desc">Notification exclusive dès la parution d'un dossier d'investigation ou d'une grande enquête inédite.</p>
+                </div>
+              </label>
+
+            </div>
+          </div>
+
+          <!-- Langue de réception -->
+          <div class="nl-lang-row">
+            <label data-i18n="nl_lang_label">Langue de réception :</label>
+            <div class="nl-lang-btns">
+              <button type="button" class="nl-lang-btn active" data-lang-select="fr">Français</button>
+              <button type="button" class="nl-lang-btn" data-lang-select="en">English</button>
+            </div>
+            <input type="hidden" name="language" id="nlLangInput" value="fr">
+          </div>
+
+        </form>
+      </div>
+    </section>
+
+    <!-- GESTION DE L'ABONNEMENT (connecté) -->
+    <section class="nl-manage-section" id="manageSection" style="display:none;">
+      <div class="nl-card">
+        <h2 data-i18n="nl_manage_title">Gérer mon abonnement</h2>
+        <div id="nl-manage-status" class="nl-status-msg" style="display:none;"></div>
+
+        <form id="nlManageForm" class="nl-form" novalidate>
+          <div class="nl-prefs-grid" id="managePrefsGrid">
+            <label class="nl-pref-card">
+              <input type="checkbox" name="pref_daily" class="nl-pref-check" id="mgPrefDaily">
+              <div class="nl-pref-content">
+                <div class="nl-pref-header">
+                  <span class="nl-pref-icon">☀️</span>
+                  <span class="nl-pref-name" data-i18n="nl_daily_title">Le Briefing Quotidien</span>
+                  <span class="nl-badge nl-badge-free" data-i18n="nl_free_badge">Gratuit</span>
+                </div>
+                <p class="nl-pref-desc" data-i18n="nl_daily_desc">L'essentiel de l'actualité politique, économique et sociale au Cameroun envoyé chaque matin à 7h.</p>
+              </div>
+            </label>
+
+            <label class="nl-pref-card">
+              <input type="checkbox" name="pref_weekly" class="nl-pref-check" id="mgPrefWeekly">
+              <div class="nl-pref-content">
+                <div class="nl-pref-header">
+                  <span class="nl-pref-icon">📋</span>
+                  <span class="nl-pref-name" data-i18n="nl_weekly_title">L'Hebdo Politique</span>
+                  <span class="nl-badge nl-badge-free" data-i18n="nl_free_badge">Gratuit</span>
+                </div>
+                <p class="nl-pref-desc" data-i18n="nl_weekly_desc">Chaque samedi, une synthèse analytique.</p>
+              </div>
+            </label>
+
+            <label class="nl-pref-card">
+              <input type="checkbox" name="pref_special" class="nl-pref-check" id="mgPrefSpecial">
+              <div class="nl-pref-content">
+                <div class="nl-pref-header">
+                  <span class="nl-pref-icon">🔍</span>
+                  <span class="nl-pref-name" data-i18n="nl_special_title">Grand Format & Enquêtes</span>
+                  <span class="nl-badge nl-badge-premium" data-i18n="nl_premium_badge">Premium</span>
+                </div>
+                <p class="nl-pref-desc" data-i18n="nl_special_desc">Notification exclusive dès la parution d'une enquête inédite.</p>
+              </div>
+            </label>
+          </div>
+
+          <div class="nl-manage-actions">
+            <button type="submit" class="nl-submit-btn" data-i18n="nl_save_btn">Enregistrer mes préférences</button>
+            <button type="button" id="nlUnsubscribeBtn" class="nl-unsub-btn" data-i18n="nl_unsubscribe_btn">Se désabonner</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="premium-footer">
+    <div class="footer-inner">
+      <div class="footer-top-row">
+        <a href="index.html" class="footer-brand">
+          <img src="/logo.svg" class="footer-logo" alt="Solitiquo Logo">
+          <div class="brand-sep"></div>
+          <span class="brand-text">Solitiquo</span>
+        </a>
+        <p class="footer-summary" data-i18n="footer_summary">Le média de référence pour l'analyse politique, économique et sociale au Cameroun.</p>
+      </div>
+      <div class="footer-divider"></div>
+      <div class="footer-links-row">
+        <div class="footer-link-group">
+          <span class="footer-group-title" data-i18n="footer_rubriques">Rubriques :</span>
+          <a href="index.html" class="footer-link" data-i18n="nav_home">Accueil</a>
+          <a href="politique.html" class="footer-link" data-i18n="nav_pol">Politique</a>
+          <a href="social.html" class="footer-link" data-i18n="nav_soc">Social &amp; Société</a>
+          <a href="partis-politiques.html" class="footer-link" data-i18n="nav_parties">Partis Politiques</a>
+          <a href="podcasts.html" class="footer-link" data-i18n="nav_podcasts">Podcasts</a>
+          <a href="emissions.html" class="footer-link" data-i18n="nav_shows">Émissions</a>
+        </div>
+        <div class="footer-link-group">
+          <span class="footer-group-title" data-i18n="footer_account">Espace :</span>
+          <a href="abonnement.html" class="footer-link" data-i18n="nav_sub">S'abonner</a>
+          <a href="auth.html" class="footer-link" data-i18n="nav_login">Connexion / Inscription</a>
+          <a href="profil.html" class="footer-link" data-i18n="nav_profile">Mon Compte</a>
+          <a href="newsletter.html" class="footer-link" data-i18n="tab_newsletter">Newsletter</a>
+        </div>
+        <div class="footer-link-group">
+          <span class="footer-group-title" data-i18n="footer_legal_contact">Légal &amp; Contact :</span>
+          <a href="contact.html" class="footer-link" data-i18n="footer_contact">Nous écrire / Contact</a>
+          <a href="mentions-legales.html" class="footer-link" data-i18n="footer_legal">Mentions légales</a>
+          <a href="conditions-utilisation.html" class="footer-link" data-i18n="footer_terms">Conditions d'utilisation</a>
+          <a href="politique-confidentialite.html" class="footer-link" data-i18n="footer_privacy">Politique de confidentialité</a>
+          <a href="cookies.html" class="footer-link" data-i18n="footer_cookies">Gestion des cookies</a>
+        </div>
+      </div>
+      <div class="footer-bottom" data-i18n="footer_copyright">&copy; 2026 Solitiquo. Le média d'analyse et d'information. Tous droits réservés.</div>
+    </div>
+  </footer>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/config.js"></script>
+  <script src="/js/api.js?v=38"></script>
+  <script>
+    // ── MENU MOBILE ──────────────────────────────────────────────
+    const burger = document.getElementById('burgerBtn');
+    const mobileNav = document.getElementById('mobileNav');
+    const mobileClose = document.getElementById('mobileNavClose');
+    const overlay = document.getElementById('mobileNavOverlay');
+
+    function toggleMenu(show) {
+      mobileNav.classList.toggle('nav-open', show);
+      overlay.classList.toggle('active', show);
+      document.body.classList.toggle('menu-open', show);
+    }
+    if (burger) burger.addEventListener('click', () => toggleMenu(true));
+    if (mobileClose) mobileClose.addEventListener('click', () => toggleMenu(false));
+    if (overlay) overlay.addEventListener('click', () => toggleMenu(false));
+
+    // ── SÉLECTEUR LANGUE ──────────────────────────────────────────
+    document.querySelectorAll('[data-lang-select]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-lang-select]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('nlLangInput').value = btn.dataset.langSelect;
+      });
+    });
+
+    // ── SHOW STATUS ───────────────────────────────────────────────
+    function showStatus(el, msg, type) {
+      el.textContent = msg;
+      el.className = `nl-status-msg nl-status-${type}`;
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 6000);
+    }
+
+    // ── CSRF TOKEN ────────────────────────────────────────────────
+    async function getCsrfToken() {
+      try {
+        const r = await fetch(`${window.API_URL}/csrf-token`, { credentials: 'include' });
+        const d = await r.json();
+        return d.csrfToken || '';
+      } catch (_) { return ''; }
+    }
+
+    // ── INIT ──────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', async () => {
+      SolitiquoAPI.initUserInterface();
+      await initLanguageSwitcher();
+
+      // Pré-remplir l'email si connecté, gérer la section subscribe/manage
+      try {
+        const profile = await SolitiquoAPI.getProfile();
+        if (profile && profile.email) {
+          const emailInput = document.getElementById('nlEmail');
+          if (emailInput) emailInput.value = profile.email;
+        }
+
+        // Vérifier le statut de l'abonnement
+        const statusRes = await fetch(`${window.API_URL}/newsletter/status`, { credentials: 'include' });
+        if (statusRes.ok) {
+          const status = await statusRes.json();
+          if (status.subscribed) {
+            // Afficher la section de gestion
+            document.getElementById('subscribeSection').style.display = 'none';
+            document.getElementById('manageSection').style.display = 'block';
+            // Remplir les préférences
+            if (status.preferences) {
+              document.getElementById('mgPrefDaily').checked = status.preferences.daily;
+              document.getElementById('mgPrefWeekly').checked = status.preferences.weekly;
+              document.getElementById('mgPrefSpecial').checked = status.preferences.special;
+            }
+          }
+        }
+      } catch (_) {
+        // Non connecté ou erreur réseau — garder le formulaire d'inscription
+      }
+
+      // Vérifier le paramètre unsubscribe dans l'URL
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('unsubscribe') === '1' && params.get('token')) {
+        const statusEl = document.getElementById('nl-status-msg');
+        statusEl.style.display = 'block';
+        statusEl.className = 'nl-status-msg nl-status-info';
+        statusEl.textContent = t('msg_loading') || 'Traitement…';
+        try {
+          const csrf = await getCsrfToken();
+          const r = await fetch(`${window.API_URL}/newsletter/unsubscribe`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+            credentials: 'include',
+            body: JSON.stringify({ token: params.get('token') }),
+          });
+          const d = await r.json();
+          showStatus(statusEl, d.success ? (t('nl_unsubscribed_msg') || 'Désabonnement effectué.') : (d.error || 'Erreur'), d.success ? 'success' : 'error');
+        } catch (_) {
+          showStatus(statusEl, t('nl_error_server') || 'Erreur.', 'error');
+        }
+      }
+    });
+
+    // ── FORMULAIRE D'INSCRIPTION ──────────────────────────────────
+    document.getElementById('nlSubscribeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('[type=submit]');
+      const statusEl = document.getElementById('nl-status-msg');
+      const email = document.getElementById('nlEmail').value.trim();
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showStatus(statusEl, t('nl_error_invalid_email') || 'Email invalide.', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = t('processing') || 'Traitement…';
+
+      const payload = {
+        email,
+        pref_daily: e.target.querySelector('[name=pref_daily]').checked,
+        pref_weekly: e.target.querySelector('[name=pref_weekly]').checked,
+        pref_special: e.target.querySelector('[name=pref_special]').checked,
+        language: document.getElementById('nlLangInput').value,
+        source: 'newsletter-page',
+      };
+
+      try {
+        const csrf = await getCsrfToken();
+        const r = await fetch(`${window.API_URL}/newsletter/subscribe`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+        const d = await r.json();
+
+        if (d.success) {
+          showStatus(statusEl, t('nl_subscribed_msg') || '✓ Inscription confirmée !', 'success');
+          e.target.reset();
+        } else if (d.already_subscribed) {
+          showStatus(statusEl, t('nl_already_subscribed') || 'Vous êtes déjà abonné.', 'info');
+        } else {
+          showStatus(statusEl, d.error || (t('nl_error_server') || 'Erreur lors de l\'inscription.'), 'error');
+        }
+      } catch (_) {
+        showStatus(statusEl, t('nl_error_server') || 'Erreur. Réessayez.', 'error');
+      }
+
+      btn.disabled = false;
+      btn.textContent = t('nl_subscribe_btn') || 'S\'abonner';
+    });
+
+    // ── FORMULAIRE DE GESTION ─────────────────────────────────────
+    document.getElementById('nlManageForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('[type=submit]');
+      const statusEl = document.getElementById('nl-manage-status');
+
+      btn.disabled = true;
+      const payload = {
+        pref_daily: document.getElementById('mgPrefDaily').checked,
+        pref_weekly: document.getElementById('mgPrefWeekly').checked,
+        pref_special: document.getElementById('mgPrefSpecial').checked,
+      };
+
+      try {
+        const csrf = await getCsrfToken();
+        const r = await fetch(`${window.API_URL}/newsletter/preferences`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+        const d = await r.json();
+        showStatus(statusEl, d.success ? (t('nl_saved') || '✓ Préférences enregistrées !') : (d.error || 'Erreur'), d.success ? 'success' : 'error');
+      } catch (_) {
+        showStatus(statusEl, t('nl_error_server') || 'Erreur.', 'error');
+      }
+
+      btn.disabled = false;
+    });
+
+    // ── DÉSINSCRIPTION ────────────────────────────────────────────
+    document.getElementById('nlUnsubscribeBtn').addEventListener('click', async () => {
+      if (!confirm(t('msg_confirm_delete') || 'Confirmer la désinscription ?')) return;
+      const statusEl = document.getElementById('nl-manage-status');
+
+      try {
+        const csrf = await getCsrfToken();
+        const r = await fetch(`${window.API_URL}/newsletter/unsubscribe`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+          credentials: 'include',
+          body: JSON.stringify({}),
+        });
+        const d = await r.json();
+        if (d.success) {
+          showStatus(statusEl, t('nl_unsubscribed_msg') || 'Désabonnement effectué.', 'success');
+          setTimeout(() => {
+            document.getElementById('manageSection').style.display = 'none';
+            document.getElementById('subscribeSection').style.display = 'block';
+          }, 2000);
+        } else {
+          showStatus(statusEl, d.error || 'Erreur.', 'error');
+        }
+      } catch (_) {
+        showStatus(statusEl, t('nl_error_server') || 'Erreur.', 'error');
+      }
+    });
+  </script>
+  <script src="/js/lazyload.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  </script>
+</body>
+
+</html>

@@ -237,6 +237,7 @@ const csrfExemptPaths = [
   '/api/language/preference',
   '/api/analytics/track',
   '/api/comments/',
+  '/api/newsletter/unsubscribe',
   '/api/admin/comments',
 ];
 
@@ -273,7 +274,7 @@ app.use('/api/stripe', require('./backend/routes/stripe'));
 
 const apiRoutes = [
   'articles', 'language', 'polls', 'comments', 'auth', 'podcasts',
-  'admin', 'analytics', 'emissions', 'contact', 'search', 'subscriptions', 'parties', 'translate', 'data'
+  'admin', 'analytics', 'emissions', 'contact', 'search', 'subscriptions', 'parties', 'translate', 'data', 'newsletter'
 ];
 
 apiRoutes.forEach(route => {

@@ -16,24 +16,66 @@ const EU_COUNTRIES = [
 ];
 
 const CURRENCY_PRICING = {
-  'XOF': { symbol: 'FCFA', amount: 3000,  stripe_cents: null, provider: 'flutterwave' },
-  'XAF': { symbol: 'FCFA', amount: 3000,  stripe_cents: null, provider: 'flutterwave' },
-  'EUR': { symbol: '€',    amount: 6.99,  yearly: 69.90, yearly_amount: 69.90, stripe_cents: 699,  provider: 'stripe'      },
-  'GBP': { symbol: '£',    amount: 6.99,  yearly: 69.90, yearly_amount: 69.90, stripe_cents: 699,  provider: 'stripe'      },
-  'USD': { symbol: '$',    amount: 7.99,  yearly: 79.90, yearly_amount: 79.90, stripe_cents: 799,  provider: 'stripe'      },
-  'CAD': { symbol: 'CA$',  amount: 9.99,  yearly: 99.90, yearly_amount: 99.90, stripe_cents: 999,  provider: 'stripe'      },
+  // Zone FCFA — Flutterwave (Mobile Money + carte)
+  'XOF': { symbol: 'FCFA', amount: 3000,  yearly_amount: 30000, stripe_cents: null, provider: 'flutterwave' },
+  'XAF': { symbol: 'FCFA', amount: 3000,  yearly_amount: 30000, stripe_cents: null, provider: 'flutterwave' },
+  // Afrique anglophone — Flutterwave (devises locales)
+  'NGN': { symbol: '₦',    amount: 4500,  yearly_amount: 45000, stripe_cents: null, provider: 'flutterwave' },
+  'GHS': { symbol: 'GH₵',  amount: 60,    yearly_amount: 600,   stripe_cents: null, provider: 'flutterwave' },
+  'KES': { symbol: 'KSh',  amount: 1000,  yearly_amount: 10000, stripe_cents: null, provider: 'flutterwave' },
+  'ZAR': { symbol: 'R',    amount: 130,   yearly_amount: 1300,  stripe_cents: null, provider: 'flutterwave' },
+  'TZS': { symbol: 'TSh',  amount: 18000, yearly_amount: 180000,stripe_cents: null, provider: 'flutterwave' },
+  'UGX': { symbol: 'USh',  amount: 28000, yearly_amount: 280000,stripe_cents: null, provider: 'flutterwave' },
+  'RWF': { symbol: 'FRw',  amount: 8000,  yearly_amount: 80000, stripe_cents: null, provider: 'flutterwave' },
+  // Afrique du Nord & Moyen-Orient — Stripe
+  'MAD': { symbol: 'MAD',  amount: 75,    yearly_amount: 750,   stripe_cents: 7500, provider: 'stripe'      },
+  'EGP': { symbol: 'EGP',  amount: 250,   yearly_amount: 2500,  stripe_cents: 25000,provider: 'stripe'      },
+  // Europe & Occident — Stripe
+  'EUR': { symbol: '€',    amount: 6.99,  yearly_amount: 69.90, stripe_cents: 699,  provider: 'stripe'      },
+  'GBP': { symbol: '£',    amount: 6.99,  yearly_amount: 69.90, stripe_cents: 699,  provider: 'stripe'      },
+  'USD': { symbol: '$',    amount: 7.99,  yearly_amount: 79.90, stripe_cents: 799,  provider: 'stripe'      },
+  'CAD': { symbol: 'CA$',  amount: 9.99,  yearly_amount: 99.90, stripe_cents: 999,  provider: 'stripe'      },
+  'AUD': { symbol: 'A$',   amount: 11.99, yearly_amount: 119.90,stripe_cents: 1199, provider: 'stripe'      },
+  'CHF': { symbol: 'CHF',  amount: 7.99,  yearly_amount: 79.90, stripe_cents: 799,  provider: 'stripe'      },
 };
 
+// Pays couverts par zone Flutterwave francophone (FCFA)
+const XOF_COUNTRIES = ['BJ', 'BF', 'CI', 'GW', 'ML', 'NE', 'SN', 'TG'];
+const XAF_COUNTRIES = ['CM', 'CF', 'TD', 'CG', 'GQ', 'GA'];
+
 function getPricingForCountry(countryCode) {
-  if (['CM', 'BJ', 'TG', 'SN', 'CI'].includes(countryCode))
+  if (!countryCode) return { country: 'US', currency: 'USD', ...CURRENCY_PRICING['USD'] };
+
+  if (XOF_COUNTRIES.includes(countryCode))
     return { country: countryCode, currency: 'XOF', ...CURRENCY_PRICING['XOF'] };
+  if (XAF_COUNTRIES.includes(countryCode))
+    return { country: countryCode, currency: 'XAF', ...CURRENCY_PRICING['XAF'] };
+
+  // Afrique anglophone
+  if (countryCode === 'NG') return { country: 'NG', currency: 'NGN', ...CURRENCY_PRICING['NGN'] };
+  if (countryCode === 'GH') return { country: 'GH', currency: 'GHS', ...CURRENCY_PRICING['GHS'] };
+  if (countryCode === 'KE') return { country: 'KE', currency: 'KES', ...CURRENCY_PRICING['KES'] };
+  if (countryCode === 'ZA') return { country: 'ZA', currency: 'ZAR', ...CURRENCY_PRICING['ZAR'] };
+  if (countryCode === 'TZ') return { country: 'TZ', currency: 'TZS', ...CURRENCY_PRICING['TZS'] };
+  if (countryCode === 'UG') return { country: 'UG', currency: 'UGX', ...CURRENCY_PRICING['UGX'] };
+  if (countryCode === 'RW') return { country: 'RW', currency: 'RWF', ...CURRENCY_PRICING['RWF'] };
+
+  // Afrique du Nord
+  if (countryCode === 'MA') return { country: 'MA', currency: 'MAD', ...CURRENCY_PRICING['MAD'] };
+  if (countryCode === 'EG') return { country: 'EG', currency: 'EGP', ...CURRENCY_PRICING['EGP'] };
+  // Autres pays africains → USD via Stripe (couverture large)
+  const AFRICA_USD = ['DZ','LY','TN','SD','SO','ET','ER','DJ','MZ','ZM','ZW','MW','LS','SZ','BW','NA','AO','MG','MU','SC','KM','CV','ST','SL','LR','GN','GM','MR','MR','BI','SS','CD'];
+  if (AFRICA_USD.includes(countryCode))
+    return { country: countryCode, currency: 'USD', ...CURRENCY_PRICING['USD'] };
+
   if (EU_COUNTRIES.includes(countryCode))
     return { country: countryCode, currency: 'EUR', ...CURRENCY_PRICING['EUR'] };
-  if (countryCode === 'GB')
-    return { country: 'GB', currency: 'GBP', ...CURRENCY_PRICING['GBP'] };
-  if (countryCode === 'CA')
-    return { country: 'CA', currency: 'CAD', ...CURRENCY_PRICING['CAD'] };
-  return { country: countryCode || 'US', currency: 'USD', ...CURRENCY_PRICING['USD'] };
+  if (countryCode === 'GB') return { country: 'GB', currency: 'GBP', ...CURRENCY_PRICING['GBP'] };
+  if (countryCode === 'CA') return { country: 'CA', currency: 'CAD', ...CURRENCY_PRICING['CAD'] };
+  if (countryCode === 'AU') return { country: 'AU', currency: 'AUD', ...CURRENCY_PRICING['AUD'] };
+  if (countryCode === 'CH') return { country: 'CH', currency: 'CHF', ...CURRENCY_PRICING['CHF'] };
+
+  return { country: countryCode, currency: 'USD', ...CURRENCY_PRICING['USD'] };
 }
 
 function getCountryFromReq(req) {
@@ -168,9 +210,10 @@ router.post('/init-payment', verifyCsrf, isAuthenticated, async (req, res) => {
     const pricing = getPricingForCountry(country);
     const currency = pricing.currency; // 'XOF' pour Cameroun/UEMOA
 
+    const pricingForCurrency = CURRENCY_PRICING[currency] || CURRENCY_PRICING['XOF'];
     const amount = plan === 'yearly'
-      ? PLAN_CONFIG['yearly'].xof_amount
-      : CURRENCY_PRICING[currency].amount;
+      ? (pricingForCurrency.yearly_amount || pricingForCurrency.amount * 10)
+      : pricingForCurrency.amount;
 
     const transactionId = `FLW-${Date.now()}-${userId}`;
 

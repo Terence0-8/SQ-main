@@ -209,9 +209,24 @@
     function formatPrice(currency, amount) {
       if (currency === 'XOF' || currency === 'XAF')
         return `${Number(amount).toLocaleString('fr-FR')} FCFA`;
-      return new Intl.NumberFormat('fr-FR', {
-        style: 'currency', currency, minimumFractionDigits: 2
-      }).format(amount);
+      // Devises africaines sans décimales
+      const noDecimals = ['NGN','GHS','KES','ZAR','TZS','UGX','RWF','MAD','EGP'];
+      if (noDecimals.includes(currency)) {
+        try {
+          return new Intl.NumberFormat('en-US', {
+            style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0
+          }).format(amount);
+        } catch (_) {
+          return `${Number(amount).toLocaleString()} ${currency}`;
+        }
+      }
+      try {
+        return new Intl.NumberFormat('fr-FR', {
+          style: 'currency', currency, minimumFractionDigits: 2
+        }).format(amount);
+      } catch (_) {
+        return `${amount} ${currency}`;
+      }
     }
 
     function showGlobalError(msg, isHtml = false) {
@@ -286,14 +301,26 @@
       const badgeEl = document.getElementById('secure-badge');
       const logosEl = document.getElementById('payment-logos');
 
+      // Logos Mobile Money selon devise/pays
+      const FCFA_CURRENCIES = ['XOF', 'XAF'];
+      const ANGLOPHONE_AFRICA = ['NGN', 'GHS', 'KES', 'ZAR', 'TZS', 'UGX', 'RWF'];
       if (provider === 'flutterwave') {
         badgeEl.innerHTML = '🔒 Paiement sécurisé par <strong>Flutterwave</strong>';
-        logosEl.innerHTML = `
-          <span style="display:inline-flex;align-items:center;gap:4px;background:#FF6600;color:#fff;font-weight:700;font-size:12px;padding:3px 8px;border-radius:4px;">Orange Money</span>
-          <span style="display:inline-flex;align-items:center;gap:4px;background:#FFCC00;color:#000;font-weight:700;font-size:12px;padding:3px 8px;border-radius:4px;">MTN MoMo</span>
+        let logoHtml = '';
+        if (FCFA_CURRENCIES.includes(currency)) {
+          logoHtml = `
+            <span style="display:inline-flex;align-items:center;gap:4px;background:#FF6600;color:#fff;font-weight:700;font-size:12px;padding:3px 8px;border-radius:4px;">Orange Money</span>
+            <span style="display:inline-flex;align-items:center;gap:4px;background:#FFCC00;color:#000;font-weight:700;font-size:12px;padding:3px 8px;border-radius:4px;">MTN MoMo</span>`;
+        } else if (ANGLOPHONE_AFRICA.includes(currency)) {
+          logoHtml = `
+            <span style="display:inline-flex;align-items:center;gap:4px;background:#0066CC;color:#fff;font-weight:700;font-size:12px;padding:3px 8px;border-radius:4px;">Mobile Money</span>
+            <span style="display:inline-flex;align-items:center;gap:4px;background:#00AA55;color:#fff;font-weight:700;font-size:12px;padding:3px 8px;border-radius:4px;">Bank Transfer</span>`;
+        }
+        logoHtml += `
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 22" height="22" aria-label="Visa" style="background:#1A1F71;border-radius:3px;padding:1px 5px;vertical-align:middle;">
             <text x="2" y="15" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="15" fill="#fff">VISA</text>
           </svg>`;
+        logosEl.innerHTML = logoHtml;
       } else {
         badgeEl.innerHTML = '🔒 Paiement sécurisé par <strong>Stripe</strong>';
         logosEl.innerHTML = `
